@@ -6,30 +6,42 @@
 
 @layer base {
   :root {
-    /* Institutional "Glass Box" palette */
+    /* Crimson Institutional palette — shades of red */
     --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    --foreground: 0 0% 5%;
 
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 0 0% 5%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
+    --popover-foreground: 0 0% 5%;
 
-    /* Academic Blue */
-    --primary: 221.2 83.2% 53.3%;
+    /* Primary: Deep Crimson */
+    --primary: 0 72% 45%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
+    /* Primary shades */
+    --primary-50: 0 60% 97%;
+    --primary-100: 0 55% 93%;
+    --primary-200: 0 58% 85%;
+    --primary-300: 0 62% 72%;
+    --primary-400: 0 68% 58%;
+    --primary-500: 0 72% 45%;
+    --primary-600: 0 75% 38%;
+    --primary-700: 0 72% 32%;
+    --primary-800: 0 68% 26%;
+    --primary-900: 0 62% 22%;
 
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
+    --secondary: 0 10% 96%;
+    --secondary-foreground: 0 0% 10%;
 
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --muted: 0 8% 95%;
+    --muted-foreground: 0 5% 45%;
 
-    /* Success Green - grades/payments */
+    --accent: 0 15% 94%;
+    --accent-foreground: 0 0% 10%;
+
+    /* Success Green */
     --success: 142.1 76.2% 36.3%;
     --success-foreground: 0 0% 100%;
 
@@ -40,40 +52,40 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 221.2 83.2% 53.3%;
+    --border: 0 8% 90%;
+    --input: 0 8% 90%;
+    --ring: 0 72% 45%;
 
     --radius: 0.75rem;
     --radius-inner: 0.5rem;
     --radius-component: 0.25rem;
 
-    /* Shadows - no borders, layered shadows */
+    /* Shadows */
     --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.04);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04);
     --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
 
-    /* Sidebar - Command Level (L1) */
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 221.2 83.2% 53.3%;
+    /* Sidebar - Dark crimson L1 command */
+    --sidebar-background: 0 45% 10%;
+    --sidebar-foreground: 0 10% 92%;
+    --sidebar-primary: 0 72% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 221.2 83.2% 53.3%;
+    --sidebar-accent: 0 30% 16%;
+    --sidebar-accent-foreground: 0 10% 92%;
+    --sidebar-border: 0 25% 15%;
+    --sidebar-ring: 0 72% 50%;
 
     /* Surface levels */
     --surface-l2: 0 0% 100%;
-    --surface-l3: 240 4.8% 97.5%;
+    --surface-l3: 0 8% 97.5%;
 
-    /* Chart colors */
-    --chart-1: 221.2 83.2% 53.3%;
+    /* Chart colors - red spectrum */
+    --chart-1: 0 72% 45%;
     --chart-2: 142.1 76.2% 36.3%;
     --chart-3: 38 92% 50%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 0 84.2% 60.2%;
+    --chart-4: 0 60% 65%;
+    --chart-5: 0 45% 30%;
   }
 }
 
@@ -120,5 +132,13 @@
 
   .transition-default {
     transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--primary-600)), hsl(var(--primary-400)));
+  }
+
+  .gradient-subtle {
+    background: linear-gradient(135deg, hsl(var(--primary-50)), hsl(var(--primary-100)));
   }
 }
