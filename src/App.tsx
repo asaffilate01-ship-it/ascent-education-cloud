@@ -15,6 +15,7 @@ import SuperadminPlatform from "./pages/superadmin/SuperadminPlatform";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 
 // Application
 import StudentApplication from "./pages/apply/StudentApplication";
@@ -83,6 +84,7 @@ function AppRoutes() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/apply" element={<StudentApplication />} />
 
       {/* Tenant Public Pages */}

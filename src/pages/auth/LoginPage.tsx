@@ -1,39 +1,36 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { UserRole } from '@/types/platform';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Cloud, Eye, EyeOff, GraduationCap, ArrowRight } from 'lucide-react';
+import { Cloud, Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const { setRole } = useAuth();
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const DEMO_ACCOUNTS = [
-    { role: 'superadmin' as UserRole, label: 'Platform Owner', email: 'admin@educloud.com', path: '/landlord' },
-    { role: 'centre_director' as UserRole, label: 'Centre Director', email: 'director@edupathway.pk', path: '/director' },
-    { role: 'student' as UserRole, label: 'Student', email: 'sara.ali@email.com', path: '/student' },
-    { role: 'lecturer' as UserRole, label: 'Lecturer', email: 'dr.khan@edupathway.pk', path: '/lecturer' },
-    { role: 'agent' as UserRole, label: 'Agent', email: 'agent@karachi.com', path: '/agent' },
-  ];
-
-  const handleDemoLogin = (account: typeof DEMO_ACCOUNTS[0]) => {
-    setRole(account.role);
-    navigate(account.path);
-  };
-
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      setError('Please enter email and password');
+      toast.error('Please enter email and password');
       return;
     }
-    // Demo: default to student
-    setRole('student');
+
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
+    toast.success('Signed in successfully');
+    // Auth state change in context will load user and roles
+    // For now navigate to a default; the app can redirect based on role
     navigate('/student');
   };
 
@@ -82,10 +79,6 @@ export default function LoginPage() {
           <h2 className="text-2xl font-bold mb-1">Welcome back</h2>
           <p className="text-muted-foreground text-sm mb-6">Sign in to your account to continue</p>
 
-          {error && (
-            <div className="bg-destructive/10 text-destructive text-xs p-3 rounded-lg mb-4">{error}</div>
-          )}
-
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="text-label mb-1.5 block">Email</label>
@@ -115,33 +108,11 @@ export default function LoginPage() {
                 </button>
               </div>
             </div>
-            <Button type="submit" className="w-full py-3">
+            <Button type="submit" className="w-full py-3" disabled={loading}>
+              {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               Sign In <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
           </form>
-
-          <div className="flex items-center gap-3 my-6">
-            <div className="flex-1 h-px bg-border" />
-            <span className="text-xs text-muted-foreground">or quick demo access</span>
-            <div className="flex-1 h-px bg-border" />
-          </div>
-
-          {/* Demo Accounts */}
-          <div className="space-y-2">
-            {DEMO_ACCOUNTS.map((acc) => (
-              <button
-                key={acc.role}
-                onClick={() => handleDemoLogin(acc)}
-                className="w-full flex items-center justify-between p-3 rounded-lg border border-border hover:border-primary/30 hover:bg-primary/5 transition-default text-left group"
-              >
-                <div>
-                  <p className="text-sm font-medium group-hover:text-primary transition-default">{acc.label}</p>
-                  <p className="text-[10px] text-muted-foreground">{acc.email}</p>
-                </div>
-                <ArrowRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-default" />
-              </button>
-            ))}
-          </div>
 
           <p className="text-center text-xs text-muted-foreground mt-6">
             Don't have an account? <Link to="/register" className="text-primary hover:underline font-medium">Register</Link>

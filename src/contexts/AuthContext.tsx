@@ -1,38 +1,28 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { UserRole } from '@/types/platform';
+import type { User, Session } from '@supabase/supabase-js';
 
 interface AuthUser {
   id: string;
   name: string;
   email: string;
   role: UserRole;
+  roles: UserRole[];
   tenantId?: string;
   avatarUrl?: string;
 }
 
 interface AuthContextType {
   user: AuthUser | null;
+  session: Session | null;
+  loading: boolean;
   setRole: (role: UserRole) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
-
-const DEMO_USERS: Record<UserRole, AuthUser> = {
-  superadmin: { id: '1', name: 'Platform Owner', email: 'admin@edusaas.com', role: 'superadmin' },
-  centre_director: { id: '2', name: 'Dr. Shahid Malik', email: 'director@college.pk', role: 'centre_director', tenantId: 'demo-tenant' },
-  admissions_admin: { id: '3', name: 'Ayesha Tariq', email: 'admissions@college.pk', role: 'admissions_admin', tenantId: 'demo-tenant' },
-  lecturer: { id: '4', name: 'Dr. Ahmed Khan', email: 'ahmed@college.pk', role: 'lecturer', tenantId: 'demo-tenant' },
-  programme_leader: { id: '5', name: 'Prof. Nadia Shah', email: 'nadia@college.pk', role: 'programme_leader', tenantId: 'demo-tenant' },
-  iqa_officer: { id: '6', name: 'Mr. Imran Syed', email: 'iqa@college.pk', role: 'iqa_officer', tenantId: 'demo-tenant' },
-  exams_officer: { id: '7', name: 'Ms. Sana Mir', email: 'exams@college.pk', role: 'exams_officer', tenantId: 'demo-tenant' },
-  finance_officer: { id: '8', name: 'Mr. Tariq Hussain', email: 'finance@college.pk', role: 'finance_officer', tenantId: 'demo-tenant' },
-  marketing_officer: { id: '9', name: 'Ms. Hira Ali', email: 'marketing@college.pk', role: 'marketing_officer', tenantId: 'demo-tenant' },
-  agent: { id: '10', name: 'Bilal Recruitment', email: 'bilal@agents.pk', role: 'agent' },
-  student: { id: '11', name: 'Sara Ali', email: 'sara@student.pk', role: 'student', tenantId: 'demo-tenant' },
-  university_partner: { id: '12', name: 'University of London', email: 'partner@uni.ac.uk', role: 'university_partner' },
-  employer_partner: { id: '13', name: 'Tech Corp HR', email: 'hr@techcorp.com', role: 'employer_partner' },
-};
 
 export const ROLE_LABELS: Record<UserRole, string> = {
   superadmin: 'Super Admin',
@@ -50,14 +40,107 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   employer_partner: 'Employer Partner',
 };
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(DEMO_USERS.superadmin);
+export const ROLE_HOME: Record<UserRole, string> = {
+  superadmin: '/landlord',
+  centre_director: '/director',
+  admissions_admin: '/admissions',
+  lecturer: '/lecturer',
+  programme_leader: '/programme',
+  iqa_officer: '/qa',
+  exams_officer: '/exams',
+  finance_officer: '/finance',
+  marketing_officer: '/marketing',
+  agent: '/agent',
+  student: '/student',
+  university_partner: '/partner',
+  employer_partner: '/employer',
+};
 
-  const setRole = (role: UserRole) => setUser(DEMO_USERS[role]);
-  const logout = () => setUser(null);
+async function fetchAuthUser(supaUser: User): Promise<AuthUser> {
+  // Fetch profile
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('full_name, tenant_id, avatar_url')
+    .eq('user_id', supaUser.id)
+    .single();
+
+  // Fetch roles
+  const { data: rolesData } = await supabase
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', supaUser.id);
+
+  const roles = (rolesData || []).map((r: any) => r.role as UserRole);
+  const primaryRole = roles[0] || 'student';
+
+  return {
+    id: supaUser.id,
+    name: profile?.full_name || supaUser.email || 'User',
+    email: supaUser.email || '',
+    role: primaryRole,
+    roles,
+    tenantId: profile?.tenant_id || undefined,
+    avatarUrl: profile?.avatar_url || undefined,
+  };
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const loadUser = async (supaSession: Session | null) => {
+    if (!supaSession?.user) {
+      setUser(null);
+      setSession(null);
+      setLoading(false);
+      return;
+    }
+    setSession(supaSession);
+    try {
+      const authUser = await fetchAuthUser(supaSession.user);
+      setUser(authUser);
+    } catch {
+      setUser(null);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    // Set up listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, newSession) => {
+        loadUser(newSession);
+      }
+    );
+
+    // Then get initial session
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      loadUser(s);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const setRole = (role: UserRole) => {
+    if (user) setUser({ ...user, role });
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setSession(null);
+  };
+
+  const refreshProfile = async () => {
+    if (session?.user) {
+      const authUser = await fetchAuthUser(session.user);
+      setUser(authUser);
+    }
+  };
 
   return (
-    <AuthContext.Provider value={{ user, setRole, logout }}>
+    <AuthContext.Provider value={{ user, session, loading, setRole, logout, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );
