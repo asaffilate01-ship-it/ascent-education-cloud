@@ -14,16 +14,464 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      applications: {
+        Row: {
+          agent_id: string | null
+          counsellor: string | null
+          created_at: string
+          email: string
+          id: string
+          level: string | null
+          notes: string | null
+          phone: string | null
+          programme_id: string | null
+          programme_name: string | null
+          source: string | null
+          stage: Database["public"]["Enums"]["application_stage"]
+          student_name: string
+          tenant_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          agent_id?: string | null
+          counsellor?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          level?: string | null
+          notes?: string | null
+          phone?: string | null
+          programme_id?: string | null
+          programme_name?: string | null
+          source?: string | null
+          stage?: Database["public"]["Enums"]["application_stage"]
+          student_name: string
+          tenant_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          agent_id?: string | null
+          counsellor?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          level?: string | null
+          notes?: string | null
+          phone?: string | null
+          programme_id?: string | null
+          programme_name?: string | null
+          source?: string | null
+          stage?: Database["public"]["Enums"]["application_stage"]
+          student_name?: string
+          tenant_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      attendance_records: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          method: string | null
+          module_id: string | null
+          status: Database["public"]["Enums"]["attendance_status"]
+          student_id: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          id?: string
+          method?: string | null
+          module_id?: string | null
+          status?: Database["public"]["Enums"]["attendance_status"]
+          student_id: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          method?: string | null
+          module_id?: string | null
+          status?: Database["public"]["Enums"]["attendance_status"]
+          student_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_records_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_records_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          amount: number
+          created_at: string
+          due_date: string | null
+          id: string
+          instalments: number | null
+          issued_date: string
+          paid: number
+          status: Database["public"]["Enums"]["invoice_status"]
+          student_id: string | null
+          student_name: string
+          tenant_id: string | null
+          type: Database["public"]["Enums"]["invoice_type"]
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          instalments?: number | null
+          issued_date?: string
+          paid?: number
+          status?: Database["public"]["Enums"]["invoice_status"]
+          student_id?: string | null
+          student_name: string
+          tenant_id?: string | null
+          type?: Database["public"]["Enums"]["invoice_type"]
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          instalments?: number | null
+          issued_date?: string
+          paid?: number
+          status?: Database["public"]["Enums"]["invoice_status"]
+          student_id?: string | null
+          student_name?: string
+          tenant_id?: string | null
+          type?: Database["public"]["Enums"]["invoice_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      modules: {
+        Row: {
+          code: string | null
+          created_at: string
+          credits: number | null
+          id: string
+          lecturer_id: string | null
+          programme_id: string
+          status: Database["public"]["Enums"]["programme_status"]
+          tenant_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          credits?: number | null
+          id?: string
+          lecturer_id?: string | null
+          programme_id: string
+          status?: Database["public"]["Enums"]["programme_status"]
+          tenant_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          credits?: number | null
+          id?: string
+          lecturer_id?: string | null
+          programme_id?: string
+          status?: Database["public"]["Enums"]["programme_status"]
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "modules_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "modules_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          phone: string | null
+          tenant_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          phone?: string | null
+          tenant_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          phone?: string | null
+          tenant_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      programmes: {
+        Row: {
+          awarding_body: Database["public"]["Enums"]["awarding_body"]
+          created_at: string
+          credits: number | null
+          duration: string | null
+          enrolled: number | null
+          id: string
+          level: string
+          modules_count: number | null
+          status: Database["public"]["Enums"]["programme_status"]
+          tenant_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          awarding_body: Database["public"]["Enums"]["awarding_body"]
+          created_at?: string
+          credits?: number | null
+          duration?: string | null
+          enrolled?: number | null
+          id?: string
+          level: string
+          modules_count?: number | null
+          status?: Database["public"]["Enums"]["programme_status"]
+          tenant_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          awarding_body?: Database["public"]["Enums"]["awarding_body"]
+          created_at?: string
+          credits?: number | null
+          duration?: string | null
+          enrolled?: number | null
+          id?: string
+          level?: string
+          modules_count?: number | null
+          status?: Database["public"]["Enums"]["programme_status"]
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "programmes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenants: {
+        Row: {
+          accent_color: string | null
+          brand_name: string | null
+          created_at: string
+          custom_domain: string | null
+          id: string
+          logo_url: string | null
+          monthly_revenue: number | null
+          name: string
+          plan: Database["public"]["Enums"]["tenant_plan"]
+          primary_color: string | null
+          slug: string
+          status: Database["public"]["Enums"]["tenant_status"]
+          students_count: number | null
+          updated_at: string
+        }
+        Insert: {
+          accent_color?: string | null
+          brand_name?: string | null
+          created_at?: string
+          custom_domain?: string | null
+          id?: string
+          logo_url?: string | null
+          monthly_revenue?: number | null
+          name: string
+          plan?: Database["public"]["Enums"]["tenant_plan"]
+          primary_color?: string | null
+          slug: string
+          status?: Database["public"]["Enums"]["tenant_status"]
+          students_count?: number | null
+          updated_at?: string
+        }
+        Update: {
+          accent_color?: string | null
+          brand_name?: string | null
+          created_at?: string
+          custom_domain?: string | null
+          id?: string
+          logo_url?: string | null
+          monthly_revenue?: number | null
+          name?: string
+          plan?: Database["public"]["Enums"]["tenant_plan"]
+          primary_color?: string | null
+          slug?: string
+          status?: Database["public"]["Enums"]["tenant_status"]
+          students_count?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          tenant_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          tenant_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          tenant_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_tenant_id: { Args: { _user_id: string }; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role:
+        | "superadmin"
+        | "centre_director"
+        | "admissions_admin"
+        | "lecturer"
+        | "programme_leader"
+        | "iqa_officer"
+        | "exams_officer"
+        | "finance_officer"
+        | "marketing_officer"
+        | "agent"
+        | "student"
+        | "university_partner"
+        | "employer_partner"
+      application_stage:
+        | "lead"
+        | "contacted"
+        | "qualified"
+        | "applied"
+        | "under_review"
+        | "conditional_offer"
+        | "unconditional_offer"
+        | "deposit_paid"
+        | "enrolled"
+        | "lost"
+        | "deferred"
+      attendance_status: "present" | "absent" | "late" | "excused"
+      awarding_body: "OTHM" | "QUALIFI" | "IAB"
+      invoice_status: "paid" | "partial" | "overdue" | "pending" | "refunded"
+      invoice_type: "tuition" | "exam" | "deposit" | "commission"
+      programme_status: "active" | "draft" | "archived"
+      tenant_plan: "starter" | "professional" | "enterprise"
+      tenant_status: "active" | "suspended" | "onboarding"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +598,42 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: [
+        "superadmin",
+        "centre_director",
+        "admissions_admin",
+        "lecturer",
+        "programme_leader",
+        "iqa_officer",
+        "exams_officer",
+        "finance_officer",
+        "marketing_officer",
+        "agent",
+        "student",
+        "university_partner",
+        "employer_partner",
+      ],
+      application_stage: [
+        "lead",
+        "contacted",
+        "qualified",
+        "applied",
+        "under_review",
+        "conditional_offer",
+        "unconditional_offer",
+        "deposit_paid",
+        "enrolled",
+        "lost",
+        "deferred",
+      ],
+      attendance_status: ["present", "absent", "late", "excused"],
+      awarding_body: ["OTHM", "QUALIFI", "IAB"],
+      invoice_status: ["paid", "partial", "overdue", "pending", "refunded"],
+      invoice_type: ["tuition", "exam", "deposit", "commission"],
+      programme_status: ["active", "draft", "archived"],
+      tenant_plan: ["starter", "professional", "enterprise"],
+      tenant_status: ["active", "suspended", "onboarding"],
+    },
   },
 } as const
