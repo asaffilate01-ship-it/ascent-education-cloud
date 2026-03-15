@@ -1,10 +1,11 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
-import DataTable from '@/components/ui/DataTable';
-import { UserPlus, Users, FileText, Award, TrendingUp, MessageSquare } from 'lucide-react';
+import { UserPlus, Users, FileText, Award, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Application } from '@/types/platform';
+import { useState } from 'react';
+import AddLeadModal from '@/components/modals/AddLeadModal';
 
 const PIPELINE_STAGES = [
   { key: 'lead', label: 'Lead', count: 28 },
@@ -43,13 +44,14 @@ const docStatusVariant = (s: string): 'success' | 'warning' | 'danger' | 'info' 
 };
 
 export default function AdmissionsCRM() {
+  const [addLeadOpen, setAddLeadOpen] = useState(false);
+
   return (
     <DashboardLayout
       title="Admissions Pipeline"
       subtitle="Lead-to-Enrolment CRM — All application stages"
-      actions={<Button size="sm"><UserPlus className="w-3.5 h-3.5 mr-1.5" /> New Lead</Button>}
+      actions={<Button size="sm" onClick={() => setAddLeadOpen(true)}><UserPlus className="w-3.5 h-3.5 mr-1.5" /> New Lead</Button>}
     >
-      {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Total Leads" value="143" change="+23 this week" changeType="positive" icon={UserPlus} />
         <StatCard label="Applications" value="62" change="43% conversion" changeType="positive" icon={FileText} />
@@ -74,7 +76,7 @@ export default function AdmissionsCRM() {
                   }`}
                   style={{ height: `${height}%`, opacity: isLost ? 0.6 : 1 - (i * 0.06) }}
                 />
-                <span className="text-[9px] text-muted-foreground text-center leading-tight mt-1">{stage.label}</span>
+                <span className="text-[9px] text-muted-foreground text-center leading-tight mt-1 hidden sm:block">{stage.label}</span>
               </div>
             );
           })}
@@ -92,12 +94,12 @@ export default function AdmissionsCRM() {
             <thead>
               <tr className="surface-data">
                 <th className="text-label text-left px-4 py-3">Student</th>
-                <th className="text-label text-left px-4 py-3">Programme</th>
+                <th className="text-label text-left px-4 py-3 hidden md:table-cell">Programme</th>
                 <th className="text-label text-left px-4 py-3">Stage</th>
-                <th className="text-label text-left px-4 py-3">Documents</th>
-                <th className="text-label text-left px-4 py-3">Counsellor</th>
-                <th className="text-label text-left px-4 py-3">Source</th>
-                <th className="text-label text-left px-4 py-3">Last Activity</th>
+                <th className="text-label text-left px-4 py-3 hidden lg:table-cell">Documents</th>
+                <th className="text-label text-left px-4 py-3 hidden md:table-cell">Counsellor</th>
+                <th className="text-label text-left px-4 py-3 hidden lg:table-cell">Source</th>
+                <th className="text-label text-left px-4 py-3 hidden sm:table-cell">Last Activity</th>
               </tr>
             </thead>
             <tbody>
@@ -107,20 +109,20 @@ export default function AdmissionsCRM() {
                     <p className="text-sm font-medium">{app.studentName}</p>
                     <p className="text-xs text-muted-foreground">{app.email}</p>
                   </td>
-                  <td className="px-4 py-3 text-sm">{app.programme}</td>
+                  <td className="px-4 py-3 text-sm hidden md:table-cell">{app.programme}</td>
                   <td className="px-4 py-3">
                     <StatusBadge status={app.stage.replace(/_/g, ' ')} variant={stageVariant(app.stage)} />
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-1">
+                  <td className="px-4 py-3 hidden lg:table-cell">
+                    <div className="flex gap-1 flex-wrap">
                       {app.documents.map((doc) => (
                         <StatusBadge key={doc.name} status={doc.name} variant={docStatusVariant(doc.status)} />
                       ))}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-sm">{app.counsellor}</td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground">{app.source}</td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground">{app.lastActivity}</td>
+                  <td className="px-4 py-3 text-sm hidden md:table-cell">{app.counsellor}</td>
+                  <td className="px-4 py-3 text-sm text-muted-foreground hidden lg:table-cell">{app.source}</td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground hidden sm:table-cell">{app.lastActivity}</td>
                 </tr>
               ))}
             </tbody>
@@ -128,7 +130,7 @@ export default function AdmissionsCRM() {
         </div>
       </div>
 
-      {/* Eligibility Rules */}
+      {/* Eligibility Rules & Counsellor Activity */}
       <div className="grid lg:grid-cols-2 gap-4 mt-6">
         <div className="surface-card p-5">
           <h3 className="text-sm font-semibold mb-3">Eligibility Rules Engine</h3>
@@ -169,6 +171,8 @@ export default function AdmissionsCRM() {
           </div>
         </div>
       </div>
+
+      <AddLeadModal open={addLeadOpen} onOpenChange={setAddLeadOpen} />
     </DashboardLayout>
   );
 }

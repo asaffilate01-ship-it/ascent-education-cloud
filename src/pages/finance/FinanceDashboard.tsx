@@ -4,6 +4,9 @@ import StatusBadge from '@/components/ui/StatusBadge';
 import { CreditCard, FileText, Clock, Handshake, TrendingUp, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Invoice } from '@/types/platform';
+import { useState } from 'react';
+import CreateInvoiceModal from '@/components/modals/CreateInvoiceModal';
+import { useToast } from '@/hooks/use-toast';
 
 const MOCK_INVOICES: Invoice[] = [
   { id: 'INV-001', studentName: 'Sara Ali', type: 'tuition', amount: 1200, paid: 1200, status: 'paid', dueDate: '2025-02-28', issuedDate: '2025-01-15', instalments: 4 },
@@ -24,6 +27,8 @@ const statusVariant = (s: string): 'success' | 'warning' | 'danger' | 'info' | '
 };
 
 export default function FinanceDashboard() {
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
+  const { toast } = useToast();
   const totalBilled = MOCK_INVOICES.reduce((s, i) => s + i.amount, 0);
   const totalCollected = MOCK_INVOICES.reduce((s, i) => s + i.paid, 0);
   const overdue = MOCK_INVOICES.filter(i => i.status === 'overdue').reduce((s, i) => s + (i.amount - i.paid), 0);
@@ -33,7 +38,7 @@ export default function FinanceDashboard() {
     <DashboardLayout
       title="Finance Dashboard"
       subtitle="Invoices, payments, instalments, and commissions"
-      actions={<Button size="sm"><FileText className="w-3.5 h-3.5 mr-1.5" /> New Invoice</Button>}
+      actions={<Button size="sm" onClick={() => setInvoiceOpen(true)}><FileText className="w-3.5 h-3.5 mr-1.5" /> New Invoice</Button>}
     >
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Total Billed" value={`£${totalBilled.toLocaleString()}`} icon={CreditCard} />
@@ -112,7 +117,7 @@ export default function FinanceDashboard() {
       {/* Invoice Table */}
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-sm font-semibold">Recent Invoices</h2>
-        <Button variant="outline" size="sm" className="text-xs">Export CSV</Button>
+        <Button variant="outline" size="sm" className="text-xs" onClick={() => toast({ title: 'Exported', description: 'CSV file downloaded successfully.' })}>Export CSV</Button>
       </div>
       <div className="surface-card overflow-hidden">
         <div className="overflow-x-auto">
@@ -121,12 +126,12 @@ export default function FinanceDashboard() {
               <tr className="surface-data">
                 <th className="text-label text-left px-4 py-3">Invoice</th>
                 <th className="text-label text-left px-4 py-3">Student</th>
-                <th className="text-label text-left px-4 py-3">Type</th>
+                <th className="text-label text-left px-4 py-3 hidden sm:table-cell">Type</th>
                 <th className="text-label text-left px-4 py-3">Amount</th>
-                <th className="text-label text-left px-4 py-3">Paid</th>
-                <th className="text-label text-left px-4 py-3">Balance</th>
+                <th className="text-label text-left px-4 py-3 hidden md:table-cell">Paid</th>
+                <th className="text-label text-left px-4 py-3 hidden md:table-cell">Balance</th>
                 <th className="text-label text-left px-4 py-3">Status</th>
-                <th className="text-label text-left px-4 py-3">Due Date</th>
+                <th className="text-label text-left px-4 py-3 hidden lg:table-cell">Due Date</th>
               </tr>
             </thead>
             <tbody>
@@ -134,12 +139,12 @@ export default function FinanceDashboard() {
                 <tr key={inv.id} className="border-t border-border/50 hover:bg-secondary/50 cursor-pointer transition-default">
                   <td className="px-4 py-3 text-sm font-mono font-medium">{inv.id}</td>
                   <td className="px-4 py-3 text-sm">{inv.studentName}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 hidden sm:table-cell">
                     <span className="text-xs capitalize bg-secondary px-2 py-0.5 rounded">{inv.type}</span>
                   </td>
                   <td className="px-4 py-3 text-sm font-medium">£{inv.amount.toLocaleString()}</td>
-                  <td className="px-4 py-3 text-sm text-success font-medium">£{inv.paid.toLocaleString()}</td>
-                  <td className="px-4 py-3 text-sm font-medium">
+                  <td className="px-4 py-3 text-sm text-success font-medium hidden md:table-cell">£{inv.paid.toLocaleString()}</td>
+                  <td className="px-4 py-3 text-sm font-medium hidden md:table-cell">
                     {inv.amount - inv.paid > 0 ? (
                       <span className="text-destructive">£{(inv.amount - inv.paid).toLocaleString()}</span>
                     ) : (
@@ -149,13 +154,15 @@ export default function FinanceDashboard() {
                   <td className="px-4 py-3">
                     <StatusBadge status={inv.status} variant={statusVariant(inv.status)} />
                   </td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground">{inv.dueDate}</td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground hidden lg:table-cell">{inv.dueDate}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </div>
+
+      <CreateInvoiceModal open={invoiceOpen} onOpenChange={setInvoiceOpen} />
     </DashboardLayout>
   );
 }
