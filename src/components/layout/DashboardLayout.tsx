@@ -1,10 +1,11 @@
 import { ReactNode } from 'react';
 import DashboardSidebar from './DashboardSidebar';
-import { Bell, Search, Moon, Sun } from 'lucide-react';
+import { Search, Moon, Sun } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation, Link } from 'react-router-dom';
 import { useTheme } from '@/hooks/useTheme';
 import CommandPalette from '@/components/CommandPalette';
+import NotificationBell from '@/components/NotificationBell';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 
@@ -81,10 +82,7 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
                 <Moon className="w-4 h-4 text-muted-foreground" />
               )}
             </button>
-            <button className="p-2 rounded-lg hover:bg-secondary transition-default relative">
-              <Bell className="w-4 h-4 text-muted-foreground" />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-destructive rounded-full" />
-            </button>
+            <NotificationBell />
             <div className="w-7 h-7 lg:w-8 lg:h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-medium">
               {user?.name?.charAt(0) || 'U'}
             </div>

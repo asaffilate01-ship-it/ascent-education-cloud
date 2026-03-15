@@ -1,7 +1,10 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { Building2, CheckCircle, ChevronRight, FileText, Globe, Palette, Users, CreditCard, Shield } from 'lucide-react';
+import { Building2, CheckCircle, ChevronRight, FileText, Globe, Palette, Users, CreditCard, Shield, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 const STEPS = [
   { id: 1, title: 'Centre Details', icon: Building2 },
@@ -13,21 +16,56 @@ const STEPS = [
 ];
 
 export default function TenantOnboarding() {
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
+  const [launching, setLaunching] = useState(false);
   const [formData, setFormData] = useState({
     centreName: '',
     slug: '',
     country: 'Pakistan',
     city: '',
     companyReg: '',
-    plan: 'professional',
+    plan: 'professional' as 'starter' | 'professional' | 'enterprise',
     adminName: '',
     adminEmail: '',
     primaryColor: '#b91c1c',
+    accentColor: '#D4A853',
     brandName: '',
   });
 
   const updateField = (key: string, value: string) => setFormData(prev => ({ ...prev, [key]: value }));
+
+  const handleLaunch = async () => {
+    if (!formData.centreName || !formData.slug) {
+      toast.error('Centre name and slug are required');
+      return;
+    }
+    setLaunching(true);
+    try {
+      const { data: tenant, error } = await supabase
+        .from('tenants')
+        .insert({
+          name: formData.centreName,
+          slug: formData.slug.toLowerCase().replace(/[^a-z0-9-]/g, ''),
+          plan: formData.plan,
+          status: 'onboarding' as const,
+          primary_color: formData.primaryColor,
+          accent_color: formData.accentColor,
+          brand_name: formData.brandName || formData.centreName,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast.success(`${formData.centreName} created successfully!`);
+      navigate('/landlord');
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to create centre');
+    } finally {
+      setLaunching(false);
+    }
+  };
 
   return (
     <DashboardLayout title="Onboard New Centre" subtitle="Step-by-step setup for new tenant">
@@ -62,19 +100,19 @@ export default function TenantOnboarding() {
             <div className="space-y-4">
               <div>
                 <label className="text-label mb-1.5 block">Centre Name</label>
-                <input value={formData.centreName} onChange={(e) => updateField('centreName', e.target.value)} placeholder="e.g. EduPathway Lahore" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none" />
+                <input value={formData.centreName} onChange={(e) => updateField('centreName', e.target.value)} placeholder="e.g. EduPathway Lahore" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none text-foreground" />
               </div>
               <div>
                 <label className="text-label mb-1.5 block">URL Slug</label>
                 <div className="flex items-center bg-secondary rounded-lg">
                   <span className="text-xs text-muted-foreground pl-3">educloud.com/</span>
-                  <input value={formData.slug} onChange={(e) => updateField('slug', e.target.value)} placeholder="edupathway" className="flex-1 bg-transparent text-sm px-1 py-2.5 outline-none" />
+                  <input value={formData.slug} onChange={(e) => updateField('slug', e.target.value)} placeholder="edupathway" className="flex-1 bg-transparent text-sm px-1 py-2.5 outline-none text-foreground" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-label mb-1.5 block">Country</label>
-                  <select value={formData.country} onChange={(e) => updateField('country', e.target.value)} className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none">
+                  <select value={formData.country} onChange={(e) => updateField('country', e.target.value)} className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none text-foreground">
                     <option>Pakistan</option>
                     <option>India</option>
                     <option>UAE</option>
@@ -84,12 +122,12 @@ export default function TenantOnboarding() {
                 </div>
                 <div>
                   <label className="text-label mb-1.5 block">City</label>
-                  <input value={formData.city} onChange={(e) => updateField('city', e.target.value)} placeholder="Lahore" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none" />
+                  <input value={formData.city} onChange={(e) => updateField('city', e.target.value)} placeholder="Lahore" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none text-foreground" />
                 </div>
               </div>
               <div>
                 <label className="text-label mb-1.5 block">Company Registration Number</label>
-                <input value={formData.companyReg} onChange={(e) => updateField('companyReg', e.target.value)} placeholder="Company reg #" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none" />
+                <input value={formData.companyReg} onChange={(e) => updateField('companyReg', e.target.value)} placeholder="Company reg #" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none text-foreground" />
               </div>
             </div>
           </div>
@@ -100,9 +138,9 @@ export default function TenantOnboarding() {
             <h3 className="text-lg font-bold mb-4">Choose a Plan</h3>
             <div className="grid md:grid-cols-3 gap-4">
               {[
-                { id: 'starter', name: 'Starter', price: '£200/mo', features: ['Up to 50 students', 'Basic LMS', '1 Admin', 'Email support'] },
-                { id: 'professional', name: 'Professional', price: '£500/mo', features: ['Up to 500 students', 'Full LMS + Video + QA', '5 Admins', 'Agent portal', 'Custom branding'], popular: true },
-                { id: 'enterprise', name: 'Enterprise', price: '£1,000/mo', features: ['Unlimited students', 'Full platform', 'Custom domain', 'API access', 'White-label', 'SLA'] },
+                { id: 'starter' as const, name: 'Starter', price: '£200/mo', features: ['Up to 50 students', 'Basic LMS', '1 Admin', 'Email support'] },
+                { id: 'professional' as const, name: 'Professional', price: '£500/mo', features: ['Up to 500 students', 'Full LMS + Video + QA', '5 Admins', 'Agent portal', 'Custom branding'], popular: true },
+                { id: 'enterprise' as const, name: 'Enterprise', price: '£1,000/mo', features: ['Unlimited students', 'Full platform', 'Custom domain', 'API access', 'White-label', 'SLA'] },
               ].map((plan) => (
                 <div
                   key={plan.id}
@@ -150,13 +188,22 @@ export default function TenantOnboarding() {
             <div className="space-y-4">
               <div>
                 <label className="text-label mb-1.5 block">Brand Name</label>
-                <input value={formData.brandName} onChange={(e) => updateField('brandName', e.target.value)} placeholder="EduPathway" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none" />
+                <input value={formData.brandName} onChange={(e) => updateField('brandName', e.target.value)} placeholder="EduPathway" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none text-foreground" />
               </div>
-              <div>
-                <label className="text-label mb-1.5 block">Primary Colour</label>
-                <div className="flex items-center gap-3">
-                  <input type="color" value={formData.primaryColor} onChange={(e) => updateField('primaryColor', e.target.value)} className="w-10 h-10 rounded-lg cursor-pointer" />
-                  <span className="text-sm text-muted-foreground">{formData.primaryColor}</span>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-label mb-1.5 block">Primary Colour</label>
+                  <div className="flex items-center gap-3">
+                    <input type="color" value={formData.primaryColor} onChange={(e) => updateField('primaryColor', e.target.value)} className="w-10 h-10 rounded-lg cursor-pointer" />
+                    <span className="text-sm text-muted-foreground">{formData.primaryColor}</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-label mb-1.5 block">Accent Colour</label>
+                  <div className="flex items-center gap-3">
+                    <input type="color" value={formData.accentColor} onChange={(e) => updateField('accentColor', e.target.value)} className="w-10 h-10 rounded-lg cursor-pointer" />
+                    <span className="text-sm text-muted-foreground">{formData.accentColor}</span>
+                  </div>
                 </div>
               </div>
               <div>
@@ -165,10 +212,6 @@ export default function TenantOnboarding() {
                   <p className="text-sm text-muted-foreground">Drop logo here or click to upload</p>
                   <p className="text-[10px] text-muted-foreground mt-1">PNG, SVG — recommended 200×60px</p>
                 </div>
-              </div>
-              <div>
-                <label className="text-label mb-1.5 block">Custom Domain (Optional)</label>
-                <input placeholder="learn.edupathway.pk" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none" />
               </div>
             </div>
           </div>
@@ -181,11 +224,11 @@ export default function TenantOnboarding() {
             <div className="space-y-4">
               <div>
                 <label className="text-label mb-1.5 block">Full Name</label>
-                <input value={formData.adminName} onChange={(e) => updateField('adminName', e.target.value)} placeholder="Dr. Imran Shah" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none" />
+                <input value={formData.adminName} onChange={(e) => updateField('adminName', e.target.value)} placeholder="Dr. Imran Shah" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none text-foreground" />
               </div>
               <div>
                 <label className="text-label mb-1.5 block">Email Address</label>
-                <input type="email" value={formData.adminEmail} onChange={(e) => updateField('adminEmail', e.target.value)} placeholder="director@edupathway.pk" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none" />
+                <input type="email" value={formData.adminEmail} onChange={(e) => updateField('adminEmail', e.target.value)} placeholder="director@edupathway.pk" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none text-foreground" />
               </div>
               <p className="text-xs text-muted-foreground">An invitation email will be sent to create their password and complete setup.</p>
             </div>
@@ -202,7 +245,7 @@ export default function TenantOnboarding() {
                 { label: 'Location', value: `${formData.city || '...'}, ${formData.country}` },
                 { label: 'Plan', value: formData.plan.charAt(0).toUpperCase() + formData.plan.slice(1) },
                 { label: 'Admin', value: formData.adminName || 'Not set' },
-                { label: 'Brand', value: formData.brandName || 'Not set' },
+                { label: 'Brand', value: formData.brandName || formData.centreName || 'Not set' },
               ].map((item) => (
                 <div key={item.label} className="surface-data p-3 rounded-lg">
                   <p className="text-[10px] text-muted-foreground uppercase">{item.label}</p>
@@ -227,8 +270,9 @@ export default function TenantOnboarding() {
               Next <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           ) : (
-            <Button className="px-8">
-              <CheckCircle className="w-4 h-4 mr-1.5" /> Launch Centre
+            <Button className="px-8" onClick={handleLaunch} disabled={launching}>
+              {launching ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-1.5" />}
+              Launch Centre
             </Button>
           )}
         </div>
