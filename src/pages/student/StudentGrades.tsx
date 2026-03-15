@@ -1,11 +1,15 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { BarChart3, Award, TrendingUp, BookOpen } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { DashboardSkeleton } from '@/components/ui/Skeletons';
 
-const MODULE_GRADES = [
-  { module: 'Strategic Management', assignments: [{ name: 'Strategy Report', grade: 68, weight: 60 }, { name: 'Case Study', grade: 72, weight: 40 }], overall: 70, status: 'in_progress' },
-  { module: 'Financial Analysis', assignments: [{ name: 'Ratio Analysis', grade: null, weight: 50 }, { name: 'Investment Appraisal', grade: null, weight: 50 }], overall: null, status: 'in_progress' },
-  { module: 'Business Environment', assignments: [{ name: 'Macro Report', grade: 72, weight: 50 }, { name: 'SWOT Analysis', grade: 78, weight: 30 }, { name: 'Group Project', grade: 75, weight: 20 }], overall: 74, status: 'completed' },
-];
+interface ModuleGrade {
+  module: string;
+  assignments: { name: string; grade: number | null; weight: number }[];
+  overall: number | null;
+  status: string;
+}
 
 const getGradeClass = (grade: number) => {
   if (grade >= 70) return 'Distinction';
@@ -15,26 +19,85 @@ const getGradeClass = (grade: number) => {
 };
 
 export default function StudentGrades() {
-  const completedModules = MODULE_GRADES.filter(m => m.overall !== null);
+  const [moduleGrades, setModuleGrades] = useState<ModuleGrade[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchGrades() {
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+
+      // Fetch assignments with their modules
+      const { data: assignments } = await supabase
+        .from('assignments')
+        .select('*, modules(title)')
+        .order('deadline', { ascending: true });
+
+      // Fetch student's submissions
+      let submissionsMap: Record<string, any> = {};
+      if (user) {
+        const { data: subs } = await supabase
+          .from('submissions')
+          .select('*')
+          .eq('student_id', user.id);
+        for (const s of subs || []) {
+          submissionsMap[s.assignment_id] = s;
+        }
+      }
+
+      // Group by module
+      const moduleMap: Record<string, ModuleGrade> = {};
+      for (const a of assignments || []) {
+        const moduleName = (a as any).modules?.title || 'Unknown Module';
+        if (!moduleMap[moduleName]) {
+          moduleMap[moduleName] = { module: moduleName, assignments: [], overall: null, status: 'in_progress' };
+        }
+        const sub = submissionsMap[a.id];
+        moduleMap[moduleName].assignments.push({
+          name: a.title,
+          grade: sub?.grade || null,
+          weight: Math.round(100 / (assignments || []).filter((x: any) => (x as any).modules?.title === moduleName).length),
+        });
+      }
+
+      // Calculate overall grades
+      const grades = Object.values(moduleMap).map((mod) => {
+        const graded = mod.assignments.filter((a) => a.grade !== null);
+        if (graded.length === mod.assignments.length && graded.length > 0) {
+          const totalWeight = graded.reduce((s, a) => s + a.weight, 0);
+          mod.overall = Math.round(graded.reduce((s, a) => s + (a.grade || 0) * a.weight, 0) / totalWeight);
+          mod.status = 'completed';
+        }
+        return mod;
+      });
+
+      setModuleGrades(grades);
+      setLoading(false);
+    }
+    fetchGrades();
+  }, []);
+
+  if (loading) return <DashboardSkeleton />;
+
+  const completedModules = moduleGrades.filter((m) => m.overall !== null);
   const avgGrade = completedModules.length > 0
     ? Math.round(completedModules.reduce((s, m) => s + (m.overall || 0), 0) / completedModules.length)
     : 0;
 
   return (
     <DashboardLayout title="Grades & Results" subtitle="Academic performance across all modules">
-      {/* Summary */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="surface-card p-5 text-center">
           <p className="text-3xl font-bold text-primary">{avgGrade}%</p>
           <p className="text-xs text-muted-foreground mt-1">Overall Average</p>
-          <span className="text-xs font-semibold text-primary">{getGradeClass(avgGrade)}</span>
+          {avgGrade > 0 && <span className="text-xs font-semibold text-primary">{getGradeClass(avgGrade)}</span>}
         </div>
         <div className="surface-card p-5 text-center">
-          <p className="text-3xl font-bold">{completedModules.length}/{MODULE_GRADES.length}</p>
+          <p className="text-3xl font-bold">{completedModules.length}/{moduleGrades.length}</p>
           <p className="text-xs text-muted-foreground mt-1">Modules Graded</p>
         </div>
         <div className="surface-card p-5 text-center">
-          <p className="text-3xl font-bold text-success">{completedModules.filter(m => (m.overall || 0) >= 70).length}</p>
+          <p className="text-3xl font-bold text-success">{completedModules.filter((m) => (m.overall || 0) >= 70).length}</p>
           <p className="text-xs text-muted-foreground mt-1">Distinctions</p>
         </div>
         <div className="surface-card p-5 text-center">
@@ -43,9 +106,8 @@ export default function StudentGrades() {
         </div>
       </div>
 
-      {/* Module Grades */}
       <div className="space-y-4">
-        {MODULE_GRADES.map((mod) => (
+        {moduleGrades.map((mod) => (
           <div key={mod.module} className="surface-card p-5">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
@@ -90,6 +152,9 @@ export default function StudentGrades() {
             </div>
           </div>
         ))}
+        {moduleGrades.length === 0 && (
+          <div className="surface-card p-12 text-center text-muted-foreground text-sm">No grades available yet</div>
+        )}
       </div>
     </DashboardLayout>
   );
