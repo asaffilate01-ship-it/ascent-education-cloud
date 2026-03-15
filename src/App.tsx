@@ -15,6 +15,7 @@ import SuperadminPlatform from "./pages/superadmin/SuperadminPlatform";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 
 // Application
 import StudentApplication from "./pages/apply/StudentApplication";
