@@ -25,16 +25,6 @@ export default function AttendanceDashboard() {
     return map;
   }, [modules]);
 
-  if (loading) return <DashboardSkeleton />;
-
-  const today = new Date().toISOString().split('T')[0];
-  const todayRecords = records.filter((r) => r.date === today);
-  const presentToday = todayRecords.filter((r) => r.status === 'present' || r.status === 'excused').length;
-  const absentToday = todayRecords.filter((r) => r.status === 'absent').length;
-  const lateToday = todayRecords.filter((r) => r.status === 'late').length;
-  const totalToday = todayRecords.length;
-  const rate = totalToday > 0 ? Math.round((presentToday / totalToday) * 100) : 0;
-
   // Aggregate per-student overall attendance
   const studentAgg = useMemo(() => {
     const map: Record<string, { total: number; present: number }> = {};
@@ -45,6 +35,16 @@ export default function AttendanceDashboard() {
     });
     return map;
   }, [records]);
+
+  if (loading) return <DashboardSkeleton />;
+
+  const today = new Date().toISOString().split('T')[0];
+  const todayRecords = records.filter((r) => r.date === today);
+  const presentToday = todayRecords.filter((r) => r.status === 'present' || r.status === 'excused').length;
+  const absentToday = todayRecords.filter((r) => r.status === 'absent').length;
+  const lateToday = todayRecords.filter((r) => r.status === 'late').length;
+  const totalToday = todayRecords.length;
+  const rate = totalToday > 0 ? Math.round((presentToday / totalToday) * 100) : 0;
 
   const atRiskStudents = Object.entries(studentAgg)
     .filter(([, s]) => s.total > 0 && (s.present / s.total) < 0.7)
