@@ -1,10 +1,11 @@
 import { ReactNode } from 'react';
 import DashboardSidebar from './DashboardSidebar';
-import { Bell, Search, Moon, Sun } from 'lucide-react';
+import { Search, Moon, Sun } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation, Link } from 'react-router-dom';
 import { useTheme } from '@/hooks/useTheme';
 import CommandPalette from '@/components/CommandPalette';
+import NotificationBell from '@/components/NotificationBell';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 
