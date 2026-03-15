@@ -8,9 +8,10 @@ import {
   Settings, Palette, Globe, FileCheck, LogOut,
   ChevronLeft, ChevronRight, UserCheck, Calendar,
   Award, Megaphone, FileText, AlertTriangle, FolderOpen,
-  Handshake, Monitor, Clock, Cloud
+  Handshake, Monitor, Clock, Cloud, Menu, X
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
 interface NavItem {
   label: string;
@@ -183,21 +184,26 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
   ],
 };
 
+export { NAV_CONFIG };
+
 export default function DashboardSidebar() {
   const { user, setRole, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const location = useLocation();
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
 
   if (!user) return null;
 
   const sections = NAV_CONFIG[user.role] || [];
   const isLandlord = user.role === 'superadmin';
 
-  return (
-    <aside
-      className={`fixed left-0 top-0 h-screen bg-sidebar text-sidebar-foreground flex flex-col z-50 transition-default ${
-        collapsed ? 'w-16' : 'w-60'
-      }`}
-    >
+  const sidebarContent = (
+    <>
       {/* Brand */}
       <div className="flex items-center gap-3 px-4 h-14 border-b border-sidebar-border">
         <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
@@ -210,13 +216,20 @@ export default function DashboardSidebar() {
           )}
         </div>
         {!collapsed && (
-          <div className="overflow-hidden">
+          <div className="overflow-hidden flex-1">
             <p className="text-sm font-bold truncate">{isLandlord ? 'EduCloud' : 'EduPathway'}</p>
             <p className="text-[10px] text-sidebar-foreground/50 uppercase tracking-wider">
               {isLandlord ? 'Platform Owner' : ROLE_LABELS[user.role]}
             </p>
           </div>
         )}
+        {/* Mobile close */}
+        <button
+          onClick={() => setMobileOpen(false)}
+          className="lg:hidden p-1 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/50"
+        >
+          <X className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Nav */}
@@ -289,7 +302,7 @@ export default function DashboardSidebar() {
       <div className="px-2 py-2 border-t border-sidebar-border flex items-center gap-2">
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="p-2 rounded-lg hover:bg-sidebar-accent transition-default text-sidebar-foreground/50"
+          className="hidden lg:block p-2 rounded-lg hover:bg-sidebar-accent transition-default text-sidebar-foreground/50"
         >
           {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
         </button>
@@ -303,6 +316,36 @@ export default function DashboardSidebar() {
           </button>
         )}
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile hamburger button */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        className="lg:hidden fixed top-3 left-3 z-50 p-2 rounded-lg bg-background shadow-md border border-border"
+      >
+        <Menu className="w-5 h-5 text-foreground" />
+      </button>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-foreground/40 z-50"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`fixed left-0 top-0 h-screen bg-sidebar text-sidebar-foreground flex flex-col z-50 transition-default
+          ${collapsed ? 'w-16' : 'w-60'}
+          ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}
+      >
+        {sidebarContent}
+      </aside>
+    </>
   );
 }
