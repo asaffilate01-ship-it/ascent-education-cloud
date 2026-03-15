@@ -40,7 +40,7 @@ export default function StudentAssignments() {
               activeTab === tab ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:bg-accent'
             }`}
           >
-            {tab} {tab !== 'all' && `(${ASSIGNMENTS.filter(a => tab === 'all' || a.status === tab).length})`}
+            {tab} {tab !== 'all' && `(${ASSIGNMENTS.filter(a => (tab as string) === 'all' || a.status === (tab as string)).length})`}
           </button>
         ))}
       </div>
