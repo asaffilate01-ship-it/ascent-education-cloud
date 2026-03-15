@@ -1,0 +1,311 @@
+import { GraduationCap, BookOpen, Users, ArrowRight, Shield, Video, MapPin, Phone, Mail } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
+import { TenantTheme } from '@/types/platform';
+
+// This represents a tenant's customisable landing page
+// In production, theme would come from DB based on tenant slug
+
+const DEFAULT_THEME: TenantTheme = {
+  primaryColor: '#b91c1c',
+  accentColor: '#16a34a',
+  logoUrl: '',
+  faviconUrl: '',
+  fontFamily: 'Inter',
+  heroTitle: 'Your Gateway to UK Qualifications from Pakistan',
+  heroSubtitle: 'Study OTHM, QUALIFI & IAB accredited Level 3–5 diplomas 80% online. Then progress to UK, Canadian & Australian universities for your final year.',
+  heroImageUrl: '',
+  customDomain: 'edupathway.pk',
+  brandName: 'EduPathway',
+};
+
+export default function TenantLandingPage() {
+  const theme = DEFAULT_THEME;
+
+  return (
+    <div className="min-h-screen bg-background" style={{ fontFamily: theme.fontFamily }}>
+      {/* Nav */}
+      <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm shadow-surface-sm">
+        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: theme.primaryColor }}>
+              <GraduationCap className="w-4 h-4 text-primary-foreground" />
+            </div>
+            <span className="font-bold text-foreground">{theme.brandName}</span>
+          </div>
+          <div className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
+            <a href="#courses" className="hover:text-foreground transition-default">Courses</a>
+            <a href="#pathways" className="hover:text-foreground transition-default">Pathways</a>
+            <a href="#about" className="hover:text-foreground transition-default">About</a>
+            <a href="#contact" className="hover:text-foreground transition-default">Contact</a>
+            <Link to="/student">
+              <Button variant="outline" size="sm">Student Login</Button>
+            </Link>
+            <Link to="/director">
+              <Button size="sm" style={{ backgroundColor: theme.primaryColor }}>Apply Now</Button>
+            </Link>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${theme.primaryColor}08, ${theme.accentColor}08)` }} />
+        <div className="relative max-w-6xl mx-auto px-6 py-20 lg:py-28">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-full mb-6" style={{ backgroundColor: `${theme.primaryColor}15`, color: theme.primaryColor }}>
+              <Shield className="w-3 h-3" /> OTHM · QUALIFI · IAB Accredited Centre
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground tracking-tight leading-[1.1]">
+              {theme.heroTitle}
+            </h1>
+            <p className="text-lg text-muted-foreground mt-5 leading-relaxed max-w-2xl">
+              {theme.heroSubtitle}
+            </p>
+            <div className="flex gap-3 mt-8">
+              <Button size="lg" style={{ backgroundColor: theme.primaryColor }}>
+                Apply Now <ArrowRight className="w-4 h-4 ml-1" />
+              </Button>
+              <Button variant="outline" size="lg">Download Prospectus</Button>
+            </div>
+            {/* Quick stats */}
+            <div className="grid grid-cols-4 gap-6 mt-12">
+              {[
+                { value: '342', label: 'Students' },
+                { value: '50–70%', label: 'Cost Savings' },
+                { value: '80%', label: 'Online' },
+                { value: '95%', label: 'Pass Rate' },
+              ].map((s) => (
+                <div key={s.label}>
+                  <p className="text-2xl font-bold" style={{ color: theme.primaryColor }}>{s.value}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{s.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Why Us */}
+      <section className="py-16" style={{ background: `${theme.primaryColor}04` }}>
+        <div className="max-w-6xl mx-auto px-6">
+          <h2 className="text-2xl font-bold text-center mb-10">Why Study With {theme.brandName}?</h2>
+          <div className="grid md:grid-cols-3 gap-4">
+            {[
+              { icon: GraduationCap, title: 'UK Recognised Qualifications', desc: 'Study OTHM, QUALIFI, and IAB accredited courses — recognised by universities across the UK, Canada, Australia, and USA.' },
+              { icon: Video, title: '80% Online Learning', desc: 'Join HD live lectures from home. Interactive whiteboard, breakout rooms, and recorded sessions available 24/7.' },
+              { icon: MapPin, title: '20% In-Centre Experience', desc: 'Attend 2 residential weeks per year for workshops, presentations, tutor meetings, and formal examinations.' },
+            ].map((f) => (
+              <div key={f.title} className="surface-card p-5">
+                <div className="p-2 rounded-lg w-fit mb-3" style={{ backgroundColor: `${theme.primaryColor}15` }}>
+                  <f.icon className="w-5 h-5" style={{ color: theme.primaryColor }} />
+                </div>
+                <h3 className="text-sm font-semibold mb-1.5">{f.title}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Courses */}
+      <section id="courses" className="py-16">
+        <div className="max-w-6xl mx-auto px-6">
+          <h2 className="text-2xl font-bold text-center mb-3">Our Programmes</h2>
+          <p className="text-center text-muted-foreground mb-10">Internationally recognised qualifications delivered from Pakistan</p>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { title: 'Level 4 Diploma in Business Management', body: 'OTHM', duration: '12 months', fee: '£1,200', credits: 120, modules: 6 },
+              { title: 'Level 5 Diploma in Business Management', body: 'OTHM', duration: '12 months', fee: '£1,200', credits: 120, modules: 6 },
+              { title: 'Level 4 Diploma in Computing', body: 'QUALIFI', duration: '12 months', fee: '£1,200', credits: 120, modules: 6 },
+              { title: 'Level 5 Diploma in Computing', body: 'QUALIFI', duration: '12 months', fee: '£1,200', credits: 120, modules: 6 },
+              { title: 'Level 3 Certificate in Accounting', body: 'IAB', duration: '9 months', fee: '£800', credits: 60, modules: 4 },
+              { title: 'Level 4 Diploma in Accounting', body: 'IAB', duration: '12 months', fee: '£1,200', credits: 120, modules: 6 },
+            ].map((course) => (
+              <div key={course.title} className="surface-card p-5 hover:shadow-surface-lg transition-default cursor-pointer group">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded" style={{ backgroundColor: `${theme.primaryColor}15`, color: theme.primaryColor }}>
+                    {course.body}
+                  </span>
+                  <span className="text-xs text-muted-foreground">{course.credits} credits</span>
+                </div>
+                <h3 className="text-sm font-semibold mb-2 group-hover:text-primary transition-default">{course.title}</h3>
+                <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
+                  <span>{course.duration}</span>
+                  <span>{course.modules} modules</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-lg font-bold" style={{ color: theme.primaryColor }}>{course.fee}</span>
+                  <Button size="sm" variant="outline" className="text-xs">Apply</Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pathways */}
+      <section id="pathways" className="py-16" style={{ background: `${theme.primaryColor}04` }}>
+        <div className="max-w-6xl mx-auto px-6">
+          <h2 className="text-2xl font-bold text-center mb-10">Academic Pathways to Top Universities</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              { title: 'Business Management', body: 'OTHM', levels: ['Level 4 Diploma (Year 1)', 'Level 5 Diploma (Year 2)', 'BA Top-Up at UK University (Year 3)'], unis: ['Sunderland', 'Anglia Ruskin', 'Bolton'] },
+              { title: 'Computing & IT', body: 'QUALIFI', levels: ['Level 3 IT Foundation', 'Level 4 Computing', 'Level 5 Computing', 'BSc Top-Up at UK University'], unis: ['Portsmouth', 'Wolverhampton'] },
+              { title: 'Accounting & Finance', body: 'IAB', levels: ['Level 3 Accounting', 'Level 4 Accounting', 'Level 5 Accounting', 'BSc Top-Up'], unis: ['Bolton', 'Chichester'] },
+            ].map((path) => (
+              <div key={path.title} className="surface-card p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-semibold">{path.title}</h3>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded" style={{ backgroundColor: `${theme.primaryColor}15`, color: theme.primaryColor }}>{path.body}</span>
+                </div>
+                <div className="space-y-2 mb-4">
+                  {path.levels.map((level, i) => (
+                    <div key={level} className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ backgroundColor: `${theme.primaryColor}15`, color: theme.primaryColor }}>
+                        {i + 1}
+                      </div>
+                      <span className="text-sm">{level}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="border-t border-border/50 pt-3">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Partner Universities</p>
+                  <p className="text-xs font-medium">{path.unis.join(' · ')}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Delivery Model */}
+      <section className="py-16">
+        <div className="max-w-6xl mx-auto px-6">
+          <h2 className="text-2xl font-bold text-center mb-10">Hybrid Delivery Model</h2>
+          <div className="surface-card p-6 max-w-3xl mx-auto">
+            <div className="space-y-4">
+              {[
+                { period: 'Sept – Dec', label: 'Online Teaching (Term 1)', desc: 'Live lectures, assignments, quizzes, discussion forums', pct: 40 },
+                { period: 'January', label: 'Residential Week 1', desc: 'Intensive workshops, tutor meetings, presentations', pct: 10 },
+                { period: 'Feb – May', label: 'Online Teaching (Term 2)', desc: 'Live lectures, coursework, exam preparation', pct: 40 },
+                { period: 'June', label: 'Residential Week 2 + Exams', desc: 'Final workshops, formal exams at centre', pct: 10 },
+              ].map((term) => (
+                <div key={term.period} className="flex items-center gap-4">
+                  <div className="w-24 shrink-0">
+                    <p className="text-xs font-bold" style={{ color: theme.primaryColor }}>{term.period}</p>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-sm font-semibold">{term.label}</p>
+                      <span className="text-xs text-muted-foreground">{term.pct}%</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{term.desc}</p>
+                    <div className="w-full h-1.5 bg-border rounded-full mt-2">
+                      <div className="h-full rounded-full transition-default" style={{ width: `${term.pct}%`, backgroundColor: theme.primaryColor }} />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Accreditation */}
+      <section style={{ background: `${theme.primaryColor}04` }} className="py-16">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <h2 className="text-2xl font-bold mb-6">Accredited & Recognised</h2>
+          <div className="flex justify-center gap-8">
+            {['OTHM Qualifications', 'QUALIFI', 'IAB'].map((body) => (
+              <div key={body} className="surface-card px-8 py-5 text-center">
+                <Shield className="w-8 h-8 mx-auto mb-2" style={{ color: theme.primaryColor }} />
+                <p className="text-sm font-semibold">{body}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Approved Centre</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Contact */}
+      <section id="contact" className="py-16">
+        <div className="max-w-6xl mx-auto px-6">
+          <h2 className="text-2xl font-bold text-center mb-10">Get In Touch</h2>
+          <div className="grid md:grid-cols-3 gap-4 max-w-3xl mx-auto">
+            {[
+              { icon: MapPin, title: 'Visit Us', info: 'Main Boulevard, Gulberg III, Lahore, Pakistan' },
+              { icon: Phone, title: 'Call Us', info: '+92 42 1234 5678' },
+              { icon: Mail, title: 'Email Us', info: 'admissions@edupathway.pk' },
+            ].map((c) => (
+              <div key={c.title} className="surface-card p-5 text-center">
+                <c.icon className="w-5 h-5 mx-auto mb-2" style={{ color: theme.primaryColor }} />
+                <p className="text-sm font-semibold">{c.title}</p>
+                <p className="text-xs text-muted-foreground mt-1">{c.info}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-16" style={{ background: `linear-gradient(135deg, ${theme.primaryColor}, ${theme.primaryColor}cc)` }}>
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <h2 className="text-3xl font-bold text-primary-foreground mb-4">Start Your UK Qualification Journey</h2>
+          <p className="text-primary-foreground/80 mb-8 max-w-lg mx-auto">
+            Applications are now open for the next intake. Secure your place today and save 50–70% compared to studying abroad.
+          </p>
+          <div className="flex justify-center gap-3">
+            <Button size="lg" variant="outline" className="bg-background text-foreground hover:bg-background/90 border-0">
+              Apply Now <ArrowRight className="w-4 h-4 ml-1" />
+            </Button>
+            <Button size="lg" variant="outline" className="text-primary-foreground border-primary-foreground/30 hover:bg-primary-foreground/10">
+              Request a Callback
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-foreground text-background/60 py-10">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <GraduationCap className="w-5 h-5" style={{ color: theme.primaryColor }} />
+                <span className="font-bold text-background">{theme.brandName}</span>
+              </div>
+              <p className="text-xs leading-relaxed">UK-accredited education centre in Pakistan. OTHM, QUALIFI & IAB approved.</p>
+            </div>
+            <div>
+              <p className="font-semibold text-background text-sm mb-2">Courses</p>
+              <ul className="space-y-1.5 text-xs">
+                <li>Business Management</li><li>Computing & IT</li><li>Accounting</li><li>View All</li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-semibold text-background text-sm mb-2">Students</p>
+              <ul className="space-y-1.5 text-xs">
+                <li>Student Portal</li><li>Library</li><li>Timetable</li><li>Fees</li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-semibold text-background text-sm mb-2">Centre</p>
+              <ul className="space-y-1.5 text-xs">
+                <li>About Us</li><li>Careers</li><li>Contact</li><li>Agent Partnership</li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-background/10 pt-6 flex items-center justify-between text-xs">
+            <p>© 2026 {theme.brandName}. Powered by EduCloud.</p>
+            <div className="flex gap-4">
+              <span>Privacy Policy</span>
+              <span>Terms</span>
+              <span>GDPR</span>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
