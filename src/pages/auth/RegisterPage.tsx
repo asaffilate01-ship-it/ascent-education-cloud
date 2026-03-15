@@ -1,30 +1,58 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Cloud, Eye, EyeOff, ArrowRight, CheckCircle } from 'lucide-react';
+import { Cloud, Eye, EyeOff, ArrowRight, CheckCircle, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function RegisterPage() {
   const [step, setStep] = useState<'type' | 'form'>('type');
   const [accountType, setAccountType] = useState<'student' | 'agent' | 'centre'>('student');
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', password: '', confirmPassword: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
-  const { setRole } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [agreed, setAgreed] = useState(false);
   const navigate = useNavigate();
 
   const updateField = (key: string, value: string) => setFormData(prev => ({ ...prev, [key]: value }));
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (accountType === 'student') {
-      setRole('student');
-      navigate('/apply');
-    } else if (accountType === 'agent') {
-      setRole('agent');
-      navigate('/agent');
-    } else {
-      navigate('/');
+    if (!formData.name || !formData.email || !formData.password) {
+      toast.error('Please fill in all required fields');
+      return;
     }
+    if (formData.password.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+    if (!agreed) {
+      toast.error('Please agree to the Terms of Service');
+      return;
+    }
+
+    setLoading(true);
+    const { error } = await supabase.auth.signUp({
+      email: formData.email,
+      password: formData.password,
+      options: {
+        data: {
+          full_name: formData.name,
+          phone: formData.phone,
+          account_type: accountType,
+        },
+        emailRedirectTo: window.location.origin,
+      },
+    });
+    setLoading(false);
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
+    toast.success('Account created! Please check your email to verify your account.');
+    navigate('/login');
   };
 
   return (
@@ -133,18 +161,19 @@ export default function RegisterPage() {
                 <div>
                   <label className="text-label mb-1.5 block">Password</label>
                   <div className="relative">
-                    <input type={showPassword ? 'text' : 'password'} value={formData.password} onChange={(e) => updateField('password', e.target.value)} placeholder="Min 8 characters" className="w-full bg-secondary text-sm px-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-primary/20" />
+                    <input type={showPassword ? 'text' : 'password'} value={formData.password} onChange={(e) => updateField('password', e.target.value)} placeholder="Min 6 characters" className="w-full bg-secondary text-sm px-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-primary/20" />
                     <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
                 <div className="flex items-start gap-2">
-                  <input type="checkbox" className="mt-1 accent-[hsl(0,72%,45%)]" />
+                  <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-1 accent-primary" />
                   <span className="text-xs text-muted-foreground">I agree to the <a href="#" className="text-primary hover:underline">Terms of Service</a> and <a href="#" className="text-primary hover:underline">Privacy Policy</a></span>
                 </div>
-                <Button type="submit" className="w-full py-3">
-                  {accountType === 'student' ? 'Continue to Application' : 'Create Account'} <ArrowRight className="w-4 h-4 ml-1" />
+                <Button type="submit" className="w-full py-3" disabled={loading}>
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                  Create Account <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
               </form>
             </>
