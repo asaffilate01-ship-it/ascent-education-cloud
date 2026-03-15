@@ -7,13 +7,13 @@ import { Button } from '@/components/ui/button';
 
 const ATTENDANCE_DATA = [
   { id: '1', student: 'Sara Ali', module: 'Strategic Management', total: 8, present: 7, absent: 1, late: 0, rate: 88 },
-  { student: 'Omar Farooq', module: 'Strategic Management', total: 8, present: 6, absent: 1, late: 1, rate: 75 },
-  { student: 'Zara Sheikh', module: 'Strategic Management', total: 8, present: 8, absent: 0, late: 0, rate: 100 },
-  { student: 'Hassan Malik', module: 'Strategic Management', total: 8, present: 4, absent: 3, late: 1, rate: 50 },
-  { student: 'Ayesha Noor', module: 'Strategic Management', total: 8, present: 7, absent: 0, late: 1, rate: 88 },
-  { student: 'Bilal Ahmed', module: 'Strategic Management', total: 8, present: 5, absent: 2, late: 1, rate: 63 },
-  { student: 'Fatima Khan', module: 'Strategic Management', total: 8, present: 8, absent: 0, late: 0, rate: 100 },
-  { student: 'Usman Raza', module: 'Strategic Management', total: 8, present: 6, absent: 2, late: 0, rate: 75 },
+  { id: '2', student: 'Omar Farooq', module: 'Strategic Management', total: 8, present: 6, absent: 1, late: 1, rate: 75 },
+  { id: '3', student: 'Zara Sheikh', module: 'Strategic Management', total: 8, present: 8, absent: 0, late: 0, rate: 100 },
+  { id: '4', student: 'Hassan Malik', module: 'Strategic Management', total: 8, present: 4, absent: 3, late: 1, rate: 50 },
+  { id: '5', student: 'Ayesha Noor', module: 'Strategic Management', total: 8, present: 7, absent: 0, late: 1, rate: 88 },
+  { id: '6', student: 'Bilal Ahmed', module: 'Strategic Management', total: 8, present: 5, absent: 2, late: 1, rate: 63 },
+  { id: '7', student: 'Fatima Khan', module: 'Strategic Management', total: 8, present: 8, absent: 0, late: 0, rate: 100 },
+  { id: '8', student: 'Usman Raza', module: 'Strategic Management', total: 8, present: 6, absent: 2, late: 0, rate: 75 },
 ];
 
 const columns = [

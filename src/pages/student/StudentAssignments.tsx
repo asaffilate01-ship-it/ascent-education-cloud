@@ -19,7 +19,7 @@ export default function StudentAssignments() {
   const [activeTab, setActiveTab] = useState<TabType>('all');
   const [selectedAssignment, setSelectedAssignment] = useState<string | null>(null);
 
-  const filtered = activeTab === 'all' ? ASSIGNMENTS : ASSIGNMENTS.filter(a => a.status === activeTab);
+  const filtered = activeTab === 'all' ? ASSIGNMENTS : ASSIGNMENTS.filter(a => a.status === (activeTab as string));
   const pendingCount = ASSIGNMENTS.filter(a => a.status === 'pending').length;
   const selected = ASSIGNMENTS.find(a => a.id === selectedAssignment);
 
