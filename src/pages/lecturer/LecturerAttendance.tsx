@@ -6,7 +6,7 @@ import { Calendar, Users, AlertTriangle, CheckCircle, Clock } from 'lucide-react
 import { Button } from '@/components/ui/button';
 
 const ATTENDANCE_DATA = [
-  { student: 'Sara Ali', module: 'Strategic Management', total: 8, present: 7, absent: 1, late: 0, rate: 88 },
+  { id: '1', student: 'Sara Ali', module: 'Strategic Management', total: 8, present: 7, absent: 1, late: 0, rate: 88 },
   { student: 'Omar Farooq', module: 'Strategic Management', total: 8, present: 6, absent: 1, late: 1, rate: 75 },
   { student: 'Zara Sheikh', module: 'Strategic Management', total: 8, present: 8, absent: 0, late: 0, rate: 100 },
   { student: 'Hassan Malik', module: 'Strategic Management', total: 8, present: 4, absent: 3, late: 1, rate: 50 },
