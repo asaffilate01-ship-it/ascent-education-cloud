@@ -6,36 +6,24 @@ import { Button } from '@/components/ui/button';
 import { AgentLead } from '@/types/platform';
 
 const PIPELINE_STAGES = [
-  { key: 'new', label: 'New Leads', color: 'bg-muted' },
+  { key: 'lead', label: 'New Leads', color: 'bg-muted' },
   { key: 'contacted', label: 'Contacted', color: 'bg-primary/20' },
-  { key: 'interested', label: 'Interested', color: 'bg-warning/20' },
+  { key: 'qualified', label: 'Qualified', color: 'bg-warning/20' },
   { key: 'applied', label: 'Applied', color: 'bg-primary/40' },
   { key: 'enrolled', label: 'Enrolled', color: 'bg-success/20' },
 ] as const;
 
 const MOCK_LEADS: AgentLead[] = [
-  { id: '1', name: 'Ahmed Raza', email: 'ahmed@gmail.com', phone: '+92300123456', whatsapp: '+92300123456', course: 'Level 4 Business', stage: 'new', assignedAgent: '5', lastContact: '2025-03-14', notes: 'Interested via Facebook ad', paymentStatus: 'pending', commissionAmount: 150, createdAt: '2025-03-14' },
+  { id: '1', name: 'Ahmed Raza', email: 'ahmed@gmail.com', phone: '+92300123456', whatsapp: '+92300123456', course: 'Level 4 Business', stage: 'lead', assignedAgent: '5', lastContact: '2025-03-14', notes: 'Interested via Facebook ad', paymentStatus: 'pending', commissionAmount: 150, createdAt: '2025-03-14' },
   { id: '2', name: 'Fatima Noor', email: 'fatima@gmail.com', phone: '+92301234567', whatsapp: '+92301234567', course: 'Level 5 Computing', stage: 'contacted', assignedAgent: '5', lastContact: '2025-03-13', notes: 'Sent brochure', paymentStatus: 'pending', commissionAmount: 200, createdAt: '2025-03-10' },
-  { id: '3', name: 'Hassan Ali', email: 'hassan@yahoo.com', phone: '+92312345678', whatsapp: '+92312345678', course: 'Level 3 Accounting', stage: 'interested', assignedAgent: '5', lastContact: '2025-03-12', notes: 'Wants installment plan', paymentStatus: 'pending', commissionAmount: 120, createdAt: '2025-03-05' },
+  { id: '3', name: 'Hassan Ali', email: 'hassan@yahoo.com', phone: '+92312345678', whatsapp: '+92312345678', course: 'Level 3 Accounting', stage: 'qualified', assignedAgent: '5', lastContact: '2025-03-12', notes: 'Wants installment plan', paymentStatus: 'pending', commissionAmount: 120, createdAt: '2025-03-05' },
   { id: '4', name: 'Ayesha Khan', email: 'ayesha@hotmail.com', phone: '+92321234567', whatsapp: '+92321234567', course: 'Level 4 IT', stage: 'applied', assignedAgent: '5', lastContact: '2025-03-11', notes: 'Documents submitted', paymentStatus: 'partial', commissionAmount: 180, createdAt: '2025-02-28' },
   { id: '5', name: 'Usman Tariq', email: 'usman@gmail.com', phone: '+92333456789', whatsapp: '+92333456789', course: 'Level 5 Business', stage: 'enrolled', assignedAgent: '5', lastContact: '2025-03-10', notes: 'Fully enrolled', paymentStatus: 'paid', commissionAmount: 250, createdAt: '2025-02-15' },
-  { id: '6', name: 'Zainab Malik', email: 'zainab@gmail.com', phone: '+92345678901', whatsapp: '+92345678901', course: 'Level 4 Business', stage: 'new', assignedAgent: '5', lastContact: '2025-03-14', notes: 'Walk-in inquiry', paymentStatus: 'pending', commissionAmount: 150, createdAt: '2025-03-14' },
+  { id: '6', name: 'Zainab Malik', email: 'zainab@gmail.com', phone: '+92345678901', whatsapp: '+92345678901', course: 'Level 4 Business', stage: 'lead', assignedAgent: '5', lastContact: '2025-03-14', notes: 'Walk-in inquiry', paymentStatus: 'pending', commissionAmount: 150, createdAt: '2025-03-14' },
   { id: '7', name: 'Bilal Hussain', email: 'bilal@yahoo.com', phone: '+92301112233', whatsapp: '+92301112233', course: 'Level 3 IT', stage: 'contacted', assignedAgent: '5', lastContact: '2025-03-13', notes: 'Called, interested in scholarship', paymentStatus: 'pending', commissionAmount: 100, createdAt: '2025-03-12' },
 ];
 
-const stageVariant = (s: string) => {
-  const map: Record<string, 'neutral' | 'info' | 'warning' | 'success' | 'danger'> = {
-    new: 'neutral', contacted: 'info', interested: 'warning', applied: 'info', enrolled: 'success', lost: 'danger'
-  };
-  return map[s] || 'neutral';
-};
-
 export default function AgentDashboard() {
-  const pipelineCounts = PIPELINE_STAGES.map(stage => ({
-    ...stage,
-    count: MOCK_LEADS.filter(l => l.stage === stage.key).length,
-  }));
-
   const totalCommission = MOCK_LEADS.filter(l => l.stage === 'enrolled').reduce((s, l) => s + l.commissionAmount, 0);
   const pipelineValue = MOCK_LEADS.reduce((s, l) => s + l.commissionAmount, 0);
 
@@ -82,7 +70,7 @@ export default function AgentDashboard() {
         </div>
       </div>
 
-      {/* Recent Activity */}
+      {/* Overdue Payments */}
       <div className="surface-card p-5 mt-6">
         <h3 className="text-sm font-semibold mb-3">Overdue Payments to Chase</h3>
         <div className="space-y-2">
