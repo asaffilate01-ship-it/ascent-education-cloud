@@ -3,13 +3,26 @@ import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { GraduationCap, Building2, Users, CreditCard, Shield, BookOpen, FileCheck, Handshake, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useState } from 'react';
+import AddStudentModal from '@/components/modals/AddStudentModal';
+import { useToast } from '@/hooks/use-toast';
 
 export default function CentreDirectorDashboard() {
+  const [addStudentOpen, setAddStudentOpen] = useState(false);
+  const { toast } = useToast();
+
   return (
     <DashboardLayout
       title="Centre Director"
       subtitle="Lahore College of Business — Full operations view"
-      actions={<Button size="sm">Generate Report</Button>}
+      actions={
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={() => toast({ title: 'Report Generated', description: 'Monthly report has been downloaded.' })}>
+            Generate Report
+          </Button>
+          <Button size="sm" onClick={() => setAddStudentOpen(true)}>+ Add Student</Button>
+        </div>
+      }
     >
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Total Students" value="342" change="+14 this term" changeType="positive" icon={GraduationCap} />
@@ -18,7 +31,6 @@ export default function CentreDirectorDashboard() {
         <StatCard label="Compliance Score" value="87%" change="Target: 95%" changeType="negative" icon={Shield} />
       </div>
 
-      {/* Operations Overview */}
       <div className="grid lg:grid-cols-3 gap-4 mb-6">
         <div className="surface-card p-5">
           <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
@@ -96,7 +108,6 @@ export default function CentreDirectorDashboard() {
         </div>
       </div>
 
-      {/* Admissions Funnel + Finance Summary */}
       <div className="grid lg:grid-cols-2 gap-4">
         <div className="surface-card p-5">
           <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
@@ -146,6 +157,8 @@ export default function CentreDirectorDashboard() {
           </div>
         </div>
       </div>
+
+      <AddStudentModal open={addStudentOpen} onOpenChange={setAddStudentOpen} />
     </DashboardLayout>
   );
 }

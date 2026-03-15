@@ -6,6 +6,7 @@ import { useLocation, Link } from 'react-router-dom';
 import { useTheme } from '@/hooks/useTheme';
 import CommandPalette from '@/components/CommandPalette';
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -28,7 +29,6 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
   const { theme, toggleTheme } = useTheme();
   const [cmdOpen, setCmdOpen] = useState(false);
 
-  // Build breadcrumbs from path
   const pathSegments = location.pathname.split('/').filter(Boolean);
   const breadcrumbs = pathSegments.map((seg, i) => ({
     label: BREADCRUMB_LABELS[seg] || seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' '),
@@ -43,7 +43,6 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
         {/* Top bar */}
         <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm h-14 flex items-center justify-between px-4 lg:px-6 shadow-surface-sm">
           <div className="ml-10 lg:ml-0">
-            {/* Breadcrumbs */}
             {breadcrumbs.length > 1 && (
               <div className="flex items-center gap-1 text-[10px] text-muted-foreground mb-0.5">
                 {breadcrumbs.map((bc, i) => (
@@ -63,7 +62,6 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
           </div>
           <div className="flex items-center gap-1.5 lg:gap-3">
             {actions}
-            {/* Search trigger */}
             <button
               onClick={() => setCmdOpen(true)}
               className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary text-muted-foreground text-xs hover:bg-secondary/80 transition-default"
@@ -72,7 +70,6 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
               <span className="hidden md:inline">Search...</span>
               <kbd className="hidden md:inline text-[10px] bg-background px-1.5 py-0.5 rounded font-mono">⌘K</kbd>
             </button>
-            {/* Theme toggle */}
             <button
               onClick={toggleTheme}
               className="p-2 rounded-lg hover:bg-secondary transition-default"
@@ -94,10 +91,16 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
           </div>
         </header>
 
-        {/* Content */}
-        <main className="p-4 lg:p-6 animate-fade-in">
+        {/* Content with page transition */}
+        <motion.main
+          key={location.pathname}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25, ease: 'easeOut' }}
+          className="p-4 lg:p-6"
+        >
           {children}
-        </main>
+        </motion.main>
       </div>
 
       <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
