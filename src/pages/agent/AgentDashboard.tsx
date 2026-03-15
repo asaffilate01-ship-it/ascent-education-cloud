@@ -33,7 +33,7 @@ const stageVariant = (s: string) => {
 export default function AgentDashboard() {
   const pipelineCounts = PIPELINE_STAGES.map(stage => ({
     ...stage,
-    count: MOCK_LEADS.filter(l => l.key === stage.key || l.stage === stage.key).length,
+    count: MOCK_LEADS.filter(l => l.stage === stage.key).length,
   }));
 
   const totalCommission = MOCK_LEADS.filter(l => l.stage === 'enrolled').reduce((s, l) => s + l.commissionAmount, 0);

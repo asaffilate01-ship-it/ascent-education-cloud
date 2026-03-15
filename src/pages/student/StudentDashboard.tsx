@@ -9,7 +9,7 @@ export default function StudentDashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Courses" value="3" icon={BookOpen} />
         <StatCard label="Upcoming Classes" value="2" change="today" changeType="neutral" icon={Video} />
-        <StatCard label="Assignments Due" value="4" change="2 this week" changeType="warning" icon={ClipboardList} />
+        <StatCard label="Assignments Due" value="4" change="2 this week" changeType="negative" icon={ClipboardList} />
         <StatCard label="Overall Grade" value="72%" change="Merit" changeType="positive" icon={BarChart3} />
       </div>
 
