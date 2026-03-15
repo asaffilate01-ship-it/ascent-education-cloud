@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 
-type TableName = 'applications' | 'invoices' | 'programmes' | 'modules' | 'profiles' | 'tenants' | 'attendance_records' | 'user_roles';
+type TableName = 'applications' | 'invoices' | 'programmes' | 'modules' | 'profiles' | 'tenants' | 'attendance_records' | 'user_roles' | 'assignments' | 'submissions' | 'notifications' | 'conversations' | 'conversation_participants' | 'messages';
 
 export function useSupabaseQuery<T extends TableName>(
   table: T,

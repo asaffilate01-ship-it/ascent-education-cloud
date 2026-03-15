@@ -2,62 +2,113 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { Calendar, Users, AlertTriangle, CheckCircle } from 'lucide-react';
+import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
+import { DashboardSkeleton } from '@/components/ui/Skeletons';
+import { useMemo } from 'react';
 
 export default function AttendanceDashboard() {
+  const { data: records, loading } = useSupabaseQuery('attendance_records', {
+    orderBy: { column: 'date', ascending: false },
+  });
+  const { data: profiles } = useSupabaseQuery('profiles');
+  const { data: modules } = useSupabaseQuery('modules');
+
+  const profileMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    profiles.forEach((p) => { map[p.user_id] = p.full_name; });
+    return map;
+  }, [profiles]);
+
+  const moduleMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    modules.forEach((m) => { map[m.id] = m.title; });
+    return map;
+  }, [modules]);
+
+  if (loading) return <DashboardSkeleton />;
+
+  const today = new Date().toISOString().split('T')[0];
+  const todayRecords = records.filter((r) => r.date === today);
+  const presentToday = todayRecords.filter((r) => r.status === 'present' || r.status === 'excused').length;
+  const absentToday = todayRecords.filter((r) => r.status === 'absent').length;
+  const lateToday = todayRecords.filter((r) => r.status === 'late').length;
+  const totalToday = todayRecords.length;
+  const rate = totalToday > 0 ? Math.round((presentToday / totalToday) * 100) : 0;
+
+  // Aggregate per-student overall attendance
+  const studentAgg = useMemo(() => {
+    const map: Record<string, { total: number; present: number }> = {};
+    records.forEach((r) => {
+      if (!map[r.student_id]) map[r.student_id] = { total: 0, present: 0 };
+      map[r.student_id].total++;
+      if (r.status === 'present' || r.status === 'excused') map[r.student_id].present++;
+    });
+    return map;
+  }, [records]);
+
+  const atRiskStudents = Object.entries(studentAgg)
+    .filter(([, s]) => s.total > 0 && (s.present / s.total) < 0.7)
+    .map(([id, s]) => ({
+      id,
+      name: profileMap[id] || id.slice(0, 8),
+      rate: Math.round((s.present / s.total) * 100),
+      absences: s.total - s.present,
+    }))
+    .sort((a, b) => a.rate - b.rate);
+
   return (
     <DashboardLayout title="Attendance" subtitle="Digital registers, absence tracking, and alerts">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard label="Today's Sessions" value="8" icon={Calendar} />
-        <StatCard label="Present" value="248" change="91% rate" changeType="positive" icon={CheckCircle} />
-        <StatCard label="Absent" value="18" change="4 flagged" changeType="negative" icon={AlertTriangle} />
-        <StatCard label="Late Arrivals" value="7" icon={Users} />
+        <StatCard label="Today's Records" value={totalToday || '—'} icon={Calendar} />
+        <StatCard label="Present" value={presentToday} change={totalToday > 0 ? `${rate}% rate` : '—'} changeType={rate >= 80 ? 'positive' : 'negative'} icon={CheckCircle} />
+        <StatCard label="Absent" value={absentToday} change={absentToday > 3 ? `${absentToday} flagged` : '—'} changeType="negative" icon={AlertTriangle} />
+        <StatCard label="Late Arrivals" value={lateToday} icon={Users} />
       </div>
 
       {/* Today's Register */}
       <div className="surface-card p-5 mb-6">
         <h3 className="text-sm font-semibold mb-4">Today's Register</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="surface-data">
-                <th className="text-label text-left px-4 py-3">Student</th>
-                <th className="text-label text-left px-4 py-3">Module</th>
-                <th className="text-label text-left px-4 py-3">Time</th>
-                <th className="text-label text-left px-4 py-3">Method</th>
-                <th className="text-label text-left px-4 py-3">Status</th>
-                <th className="text-label text-left px-4 py-3">Overall %</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                { student: 'Sara Ali', module: 'Strategic Management', time: '09:02', method: 'Online', status: 'present', overall: 94 },
-                { student: 'Omar Farooq', module: 'Strategic Management', time: '09:15', method: 'Online', status: 'late', overall: 78 },
-                { student: 'Zara Sheikh', module: 'Strategic Management', time: '—', method: '—', status: 'absent', overall: 65 },
-                { student: 'Hassan Ali', module: 'IAB Accounting', time: '09:00', method: 'QR', status: 'present', overall: 88 },
-                { student: 'Ayesha Khan', module: 'Computing L4', time: '10:58', method: 'Online', status: 'present', overall: 92 },
-                { student: 'Ali Raza', module: 'Computing L4', time: '—', method: '—', status: 'absent', overall: 58 },
-              ].map((a, i) => (
-                <tr key={i} className="border-t border-border/50">
-                  <td className="px-4 py-3 text-sm font-medium">{a.student}</td>
-                  <td className="px-4 py-3 text-sm">{a.module}</td>
-                  <td className="px-4 py-3 text-sm font-mono">{a.time}</td>
-                  <td className="px-4 py-3 text-sm">{a.method}</td>
-                  <td className="px-4 py-3">
-                    <StatusBadge
-                      status={a.status}
-                      variant={a.status === 'present' ? 'success' : a.status === 'late' ? 'warning' : 'danger'}
-                    />
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`text-sm font-medium ${a.overall >= 80 ? 'text-success' : a.overall >= 70 ? 'text-warning' : 'text-destructive'}`}>
-                      {a.overall}%
-                    </span>
-                  </td>
+        {todayRecords.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="surface-data">
+                  <th className="text-label text-left px-4 py-3">Student</th>
+                  <th className="text-label text-left px-4 py-3">Module</th>
+                  <th className="text-label text-left px-4 py-3">Method</th>
+                  <th className="text-label text-left px-4 py-3">Status</th>
+                  <th className="text-label text-left px-4 py-3">Overall %</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {todayRecords.map((r) => {
+                  const overall = studentAgg[r.student_id];
+                  const overallRate = overall && overall.total > 0 ? Math.round((overall.present / overall.total) * 100) : 0;
+                  return (
+                    <tr key={r.id} className="border-t border-border/50">
+                      <td className="px-4 py-3 text-sm font-medium">{profileMap[r.student_id] || r.student_id.slice(0, 8)}</td>
+                      <td className="px-4 py-3 text-sm">{r.module_id ? moduleMap[r.module_id] || '—' : '—'}</td>
+                      <td className="px-4 py-3 text-sm">{r.method || 'manual'}</td>
+                      <td className="px-4 py-3">
+                        <StatusBadge
+                          status={r.status}
+                          variant={r.status === 'present' ? 'success' : r.status === 'late' ? 'warning' : 'danger'}
+                        />
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`text-sm font-medium ${overallRate >= 80 ? 'text-success' : overallRate >= 70 ? 'text-warning' : 'text-destructive'}`}>
+                          {overallRate}%
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground text-center py-8">No attendance records for today</p>
+        )}
       </div>
 
       {/* At-Risk Students */}
@@ -65,21 +116,21 @@ export default function AttendanceDashboard() {
         <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 text-destructive" /> At-Risk Students (Below 70% Attendance)
         </h3>
-        <div className="space-y-2">
-          {[
-            { student: 'Zara Sheikh', attendance: '65%', absences: 8, lastPresent: '10 Mar' },
-            { student: 'Ali Raza', attendance: '58%', absences: 12, lastPresent: '8 Mar' },
-            { student: 'Farhan Qureshi', attendance: '62%', absences: 10, lastPresent: '11 Mar' },
-          ].map((s) => (
-            <div key={s.student} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
-              <div>
-                <p className="text-sm font-medium">{s.student}</p>
-                <p className="text-xs text-muted-foreground">{s.absences} absences · Last present: {s.lastPresent}</p>
+        {atRiskStudents.length > 0 ? (
+          <div className="space-y-2">
+            {atRiskStudents.map((s) => (
+              <div key={s.id} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
+                <div>
+                  <p className="text-sm font-medium">{s.name}</p>
+                  <p className="text-xs text-muted-foreground">{s.absences} absences</p>
+                </div>
+                <span className="text-sm font-bold text-destructive">{s.rate}%</span>
               </div>
-              <span className="text-sm font-bold text-destructive">{s.attendance}</span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground text-center py-4">No at-risk students</p>
+        )}
       </div>
     </DashboardLayout>
   );
