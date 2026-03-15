@@ -13,6 +13,34 @@ export default function StudentCourses() {
   const { data: submissions } = useSupabaseQuery('submissions');
   const { data: profiles } = useSupabaseQuery('profiles');
 
+  // Build lecturer name map
+  const lecturerMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    profiles.forEach((p) => { map[p.user_id] = p.full_name; });
+    return map;
+  }, [profiles]);
+
+  // Group modules by programme
+  const modulesByProgramme = useMemo(() => {
+    const map: Record<string, typeof modules> = {};
+    modules.forEach((m) => {
+      if (!map[m.programme_id]) map[m.programme_id] = [];
+      map[m.programme_id].push(m);
+    });
+    return map;
+  }, [modules]);
+
+  // Module grade from submissions
+  const moduleGrades = useMemo(() => {
+    const map: Record<string, number> = {};
+    submissions.forEach((s) => {
+      if (s.grade != null) {
+        map[s.assignment_id] = s.grade;
+      }
+    });
+    return map;
+  }, [submissions]);
+
   const loading = pLoading || mLoading;
   if (loading) return <DashboardSkeleton />;
 
