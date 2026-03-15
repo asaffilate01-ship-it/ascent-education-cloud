@@ -16,6 +16,9 @@ import TenantLandingPage from "./pages/tenant/TenantLandingPage";
 import TenantAdminDashboard from "./pages/tenant/TenantAdminDashboard";
 import TenantBranding from "./pages/tenant/TenantBranding";
 import CentreDirectorDashboard from "./pages/director/CentreDirectorDashboard";
+import ProgrammeManagement from "./pages/director/ProgrammeManagement";
+import StaffManagement from "./pages/director/StaffManagement";
+import StudentManagement from "./pages/director/StudentManagement";
 
 // Modules
 import AdmissionsCRM from "./pages/admissions/AdmissionsCRM";
@@ -24,6 +27,8 @@ import FinanceDashboard from "./pages/finance/FinanceDashboard";
 import ExamsDashboard from "./pages/exams/ExamsDashboard";
 import ProgressionDashboard from "./pages/progression/ProgressionDashboard";
 import AttendanceDashboard from "./pages/attendance/AttendanceDashboard";
+import AnalyticsDashboard from "./pages/analytics/AnalyticsDashboard";
+import MarketingDashboard from "./pages/marketing/MarketingDashboard";
 
 // Virtual Classroom
 import VirtualClassroom from "./pages/classroom/VirtualClassroom";
@@ -42,8 +47,10 @@ import LecturerTeaching from "./pages/lecturer/LecturerTeaching";
 import LecturerMarking from "./pages/lecturer/LecturerMarking";
 import LecturerAttendance from "./pages/lecturer/LecturerAttendance";
 
-// Messaging
+// Shared
 import MessagingInbox from "./pages/messaging/MessagingInbox";
+import NotificationCentre from "./pages/notifications/NotificationCentre";
+import SettingsPage from "./pages/settings/SettingsPage";
 
 // User portals
 import AgentDashboard from "./pages/agent/AgentDashboard";
@@ -64,27 +71,27 @@ function AppRoutes() {
       {/* ========== LANDLORD (SaaS Owner) ========== */}
       <Route path="/landlord" element={<LandlordDashboard />} />
       <Route path="/landlord/centres" element={<LandlordDashboard />} />
-      <Route path="/landlord/users" element={<LandlordDashboard />} />
+      <Route path="/landlord/users" element={<StaffManagement />} />
       <Route path="/landlord/finance" element={<FinanceDashboard />} />
       <Route path="/landlord/subscriptions" element={<SuperadminPlatform />} />
       <Route path="/landlord/compliance" element={<QADashboard />} />
       <Route path="/landlord/onboarding" element={<TenantOnboarding />} />
       <Route path="/landlord/audit" element={<QADashboard />} />
       <Route path="/landlord/infrastructure" element={<SuperadminPlatform />} />
-      <Route path="/landlord/settings" element={<LandlordDashboard />} />
+      <Route path="/landlord/settings" element={<SettingsPage />} />
 
       {/* ========== TENANT: Centre Director ========== */}
       <Route path="/director" element={<CentreDirectorDashboard />} />
       <Route path="/director/admissions" element={<AdmissionsCRM />} />
-      <Route path="/director/programmes" element={<CentreDirectorDashboard />} />
-      <Route path="/director/staff" element={<CentreDirectorDashboard />} />
-      <Route path="/director/students" element={<CentreDirectorDashboard />} />
+      <Route path="/director/programmes" element={<ProgrammeManagement />} />
+      <Route path="/director/staff" element={<StaffManagement />} />
+      <Route path="/director/students" element={<StudentManagement />} />
       <Route path="/director/quality" element={<QADashboard />} />
       <Route path="/director/finance" element={<FinanceDashboard />} />
       <Route path="/director/agents" element={<AgentDashboard />} />
       <Route path="/director/branding" element={<TenantBranding />} />
-      <Route path="/director/reports" element={<CentreDirectorDashboard />} />
-      <Route path="/director/settings" element={<CentreDirectorDashboard />} />
+      <Route path="/director/reports" element={<AnalyticsDashboard />} />
+      <Route path="/director/settings" element={<SettingsPage />} />
 
       {/* ========== TENANT: Admissions Admin ========== */}
       <Route path="/admissions" element={<AdmissionsCRM />} />
@@ -92,8 +99,8 @@ function AppRoutes() {
       <Route path="/admissions/documents" element={<AdmissionsCRM />} />
       <Route path="/admissions/eligibility" element={<AdmissionsCRM />} />
       <Route path="/admissions/offers" element={<AdmissionsCRM />} />
-      <Route path="/admissions/counselling" element={<AdmissionsCRM />} />
-      <Route path="/admissions/reports" element={<AdmissionsCRM />} />
+      <Route path="/admissions/counselling" element={<MessagingInbox />} />
+      <Route path="/admissions/reports" element={<AnalyticsDashboard />} />
 
       {/* ========== TENANT: Lecturer ========== */}
       <Route path="/lecturer" element={<LecturerDashboard />} />
@@ -101,18 +108,18 @@ function AppRoutes() {
       <Route path="/lecturer/classroom" element={<VirtualClassroom />} />
       <Route path="/lecturer/marking" element={<LecturerMarking />} />
       <Route path="/lecturer/attendance" element={<LecturerAttendance />} />
-      <Route path="/lecturer/students" element={<LecturerDashboard />} />
-      <Route path="/lecturer/analytics" element={<LecturerDashboard />} />
+      <Route path="/lecturer/students" element={<StudentManagement />} />
+      <Route path="/lecturer/analytics" element={<AnalyticsDashboard />} />
       <Route path="/lecturer/messages" element={<MessagingInbox />} />
 
       {/* ========== TENANT: Programme Leader ========== */}
-      <Route path="/programme" element={<LecturerDashboard />} />
+      <Route path="/programme" element={<ProgrammeManagement />} />
       <Route path="/programme/modules" element={<LecturerTeaching />} />
-      <Route path="/programme/lecturers" element={<LecturerDashboard />} />
-      <Route path="/programme/students" element={<LecturerDashboard />} />
+      <Route path="/programme/lecturers" element={<StaffManagement />} />
+      <Route path="/programme/students" element={<StudentManagement />} />
       <Route path="/programme/assessments" element={<LecturerMarking />} />
       <Route path="/programme/moderation" element={<QADashboard />} />
-      <Route path="/programme/analytics" element={<LecturerDashboard />} />
+      <Route path="/programme/analytics" element={<AnalyticsDashboard />} />
 
       {/* ========== TENANT: IQA / QA Officer ========== */}
       <Route path="/qa" element={<QADashboard />} />
@@ -140,14 +147,14 @@ function AppRoutes() {
       <Route path="/finance/instalments" element={<FinanceDashboard />} />
       <Route path="/finance/commissions" element={<FinanceDashboard />} />
       <Route path="/finance/scholarships" element={<FinanceDashboard />} />
-      <Route path="/finance/reports" element={<FinanceDashboard />} />
+      <Route path="/finance/reports" element={<AnalyticsDashboard />} />
 
       {/* ========== TENANT: Marketing Officer ========== */}
-      <Route path="/marketing" element={<CentreDirectorDashboard />} />
-      <Route path="/marketing/campaigns" element={<CentreDirectorDashboard />} />
+      <Route path="/marketing" element={<MarketingDashboard />} />
+      <Route path="/marketing/campaigns" element={<MarketingDashboard />} />
       <Route path="/marketing/leads" element={<AdmissionsCRM />} />
-      <Route path="/marketing/webinars" element={<CentreDirectorDashboard />} />
-      <Route path="/marketing/analytics" element={<CentreDirectorDashboard />} />
+      <Route path="/marketing/webinars" element={<MarketingDashboard />} />
+      <Route path="/marketing/analytics" element={<AnalyticsDashboard />} />
 
       {/* ========== EXTERNAL: Agent ========== */}
       <Route path="/agent" element={<AgentDashboard />} />
@@ -155,7 +162,7 @@ function AppRoutes() {
       <Route path="/agent/applications" element={<AgentDashboard />} />
       <Route path="/agent/commissions" element={<AgentDashboard />} />
       <Route path="/agent/onboarding" element={<AgentDashboard />} />
-      <Route path="/agent/resources" element={<AgentDashboard />} />
+      <Route path="/agent/resources" element={<StudentLibrary />} />
       <Route path="/agent/messages" element={<MessagingInbox />} />
 
       {/* ========== EXTERNAL: Student ========== */}
@@ -176,13 +183,17 @@ function AppRoutes() {
       <Route path="/partner/referrals" element={<ProgressionDashboard />} />
       <Route path="/partner/applications" element={<ProgressionDashboard />} />
       <Route path="/partner/offers" element={<ProgressionDashboard />} />
-      <Route path="/partner/commissions" element={<ProgressionDashboard />} />
+      <Route path="/partner/commissions" element={<AnalyticsDashboard />} />
 
       {/* ========== EXTERNAL: Employer Partner ========== */}
       <Route path="/employer" element={<StudentCareer />} />
       <Route path="/employer/jobs" element={<StudentCareer />} />
-      <Route path="/employer/candidates" element={<StudentCareer />} />
+      <Route path="/employer/candidates" element={<StudentManagement />} />
       <Route path="/employer/internships" element={<StudentCareer />} />
+
+      {/* ========== SHARED ========== */}
+      <Route path="/notifications" element={<NotificationCentre />} />
+      <Route path="/settings" element={<SettingsPage />} />
 
       <Route path="*" element={<NotFound />} />
     </Routes>
