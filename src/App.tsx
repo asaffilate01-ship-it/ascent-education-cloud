@@ -11,10 +11,22 @@ import LandlordDashboard from "./pages/landlord/LandlordDashboard";
 import TenantOnboarding from "./pages/landlord/TenantOnboarding";
 import SuperadminPlatform from "./pages/superadmin/SuperadminPlatform";
 
-// Tenant
+// Auth
+import LoginPage from "./pages/auth/LoginPage";
+import RegisterPage from "./pages/auth/RegisterPage";
+import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
+
+// Application
+import StudentApplication from "./pages/apply/StudentApplication";
+
+// Tenant Public
 import TenantLandingPage from "./pages/tenant/TenantLandingPage";
+import TenantCoursesPage from "./pages/tenant/TenantCoursesPage";
+import TenantContactPage from "./pages/tenant/TenantContactPage";
 import TenantAdminDashboard from "./pages/tenant/TenantAdminDashboard";
 import TenantBranding from "./pages/tenant/TenantBranding";
+
+// Director
 import CentreDirectorDashboard from "./pages/director/CentreDirectorDashboard";
 import ProgrammeManagement from "./pages/director/ProgrammeManagement";
 import StaffManagement from "./pages/director/StaffManagement";
@@ -52,8 +64,10 @@ import MessagingInbox from "./pages/messaging/MessagingInbox";
 import NotificationCentre from "./pages/notifications/NotificationCentre";
 import SettingsPage from "./pages/settings/SettingsPage";
 
-// User portals
+// External portals
 import AgentDashboard from "./pages/agent/AgentDashboard";
+import UniversityPartnerPortal from "./pages/partner/UniversityPartnerPortal";
+import EmployerPortal from "./pages/employer/EmployerPortal";
 
 import NotFound from "./pages/NotFound";
 
@@ -66,7 +80,16 @@ function AppRoutes() {
     <Routes>
       {/* ========== PUBLIC ROUTES ========== */}
       <Route path="/" element={<SaaSLandingPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/apply" element={<StudentApplication />} />
+
+      {/* Tenant Public Pages */}
       <Route path="/tenant/:slug" element={<TenantLandingPage />} />
+      <Route path="/tenant/:slug/courses" element={<TenantCoursesPage />} />
+      <Route path="/tenant/:slug/about" element={<TenantLandingPage />} />
+      <Route path="/tenant/:slug/contact" element={<TenantContactPage />} />
 
       {/* ========== LANDLORD (SaaS Owner) ========== */}
       <Route path="/landlord" element={<LandlordDashboard />} />
@@ -179,17 +202,17 @@ function AppRoutes() {
       <Route path="/student/support" element={<MessagingInbox />} />
 
       {/* ========== EXTERNAL: University Partner ========== */}
-      <Route path="/partner" element={<ProgressionDashboard />} />
-      <Route path="/partner/referrals" element={<ProgressionDashboard />} />
-      <Route path="/partner/applications" element={<ProgressionDashboard />} />
-      <Route path="/partner/offers" element={<ProgressionDashboard />} />
+      <Route path="/partner" element={<UniversityPartnerPortal />} />
+      <Route path="/partner/referrals" element={<UniversityPartnerPortal />} />
+      <Route path="/partner/applications" element={<UniversityPartnerPortal />} />
+      <Route path="/partner/offers" element={<UniversityPartnerPortal />} />
       <Route path="/partner/commissions" element={<AnalyticsDashboard />} />
 
       {/* ========== EXTERNAL: Employer Partner ========== */}
-      <Route path="/employer" element={<StudentCareer />} />
-      <Route path="/employer/jobs" element={<StudentCareer />} />
-      <Route path="/employer/candidates" element={<StudentManagement />} />
-      <Route path="/employer/internships" element={<StudentCareer />} />
+      <Route path="/employer" element={<EmployerPortal />} />
+      <Route path="/employer/jobs" element={<EmployerPortal />} />
+      <Route path="/employer/candidates" element={<EmployerPortal />} />
+      <Route path="/employer/internships" element={<EmployerPortal />} />
 
       {/* ========== SHARED ========== */}
       <Route path="/notifications" element={<NotificationCentre />} />
