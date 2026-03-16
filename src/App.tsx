@@ -47,7 +47,6 @@ import AnalyticsDashboard from "./pages/analytics/AnalyticsDashboard";
 import MarketingDashboard from "./pages/marketing/MarketingDashboard";
 
 // Virtual Classroom
-import VirtualClassroom from "./pages/classroom/VirtualClassroom";
 import LiveClassroom from "./pages/classroom/LiveClassroom";
 
 // Student sub-pages
