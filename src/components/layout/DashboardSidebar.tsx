@@ -233,11 +233,11 @@ export default function DashboardSidebar() {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto py-2 px-2">
+      <nav className="flex-1 overflow-y-auto py-3 px-2.5">
         {sections.map((section, si) => (
-          <div key={si} className={si > 0 ? 'mt-4' : ''}>
+          <div key={si} className={si > 0 ? 'mt-5' : ''}>
             {section.title && !collapsed && (
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40 px-3 mb-1">
+              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-sidebar-foreground/30 px-3 mb-1.5">
                 {section.title}
               </p>
             )}
@@ -248,14 +248,14 @@ export default function DashboardSidebar() {
                   to={item.path}
                   end={item.path === sections[0]?.items[0]?.path}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-default ${
+                    `flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-default ${
                       isActive
-                        ? 'bg-sidebar-primary text-sidebar-primary-foreground'
-                        : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
+                        ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-md shadow-sidebar-primary/20'
+                        : 'text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent'
                     } ${collapsed ? 'justify-center' : ''}`
                   }
                 >
-                  <item.icon className="w-4 h-4 shrink-0" />
+                  <item.icon className="w-[18px] h-[18px] shrink-0" />
                   {!collapsed && <span className="truncate">{item.label}</span>}
                 </NavLink>
               ))}
