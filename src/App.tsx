@@ -234,6 +234,12 @@ function AppRoutes() {
       <Route path="/employer/candidates" element={<P><EmployerPortal /></P>} />
       <Route path="/employer/internships" element={<P><EmployerPortal /></P>} />
 
+      {/* ========== NEW MODULES ========== */}
+      <Route path="/onboarding" element={<P><StudentOnboarding /></P>} />
+      <Route path="/residential" element={<P><ResidentialWeeks /></P>} />
+      <Route path="/audit" element={<P><AuditLog /></P>} />
+      <Route path="/compliance" element={<P><ComplianceDashboard /></P>} />
+
       {/* ========== SHARED ========== */}
       <Route path="/notifications" element={<P><NotificationCentre /></P>} />
       <Route path="/settings" element={<P><SettingsPage /></P>} />
