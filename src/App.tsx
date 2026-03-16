@@ -82,6 +82,8 @@ import StudentOnboarding from "./pages/onboarding/StudentOnboarding";
 import ResidentialWeeks from "./pages/residential/ResidentialWeeks";
 import AuditLog from "./pages/audit/AuditLog";
 import ComplianceDashboard from "./pages/compliance/ComplianceDashboard";
+import ScheduleManager from "./pages/schedule/ScheduleManager";
+import AcademicTimeline from "./pages/schedule/AcademicTimeline";
 
 import NotFound from "./pages/NotFound";
 
@@ -132,6 +134,7 @@ function AppRoutes() {
       <Route path="/director/quality" element={<P><QADashboard /></P>} />
       <Route path="/director/finance" element={<P><FinanceDashboard /></P>} />
       <Route path="/director/agents" element={<P><AgentDashboard /></P>} />
+      <Route path="/director/schedule" element={<P><ScheduleManager /></P>} />
       <Route path="/director/branding" element={<P><TenantBranding /></P>} />
       <Route path="/director/reports" element={<P><AnalyticsDashboard /></P>} />
       <Route path="/director/settings" element={<P><SettingsPage /></P>} />
@@ -152,6 +155,7 @@ function AppRoutes() {
       <Route path="/lecturer/marking" element={<P><LecturerMarking /></P>} />
       <Route path="/lecturer/attendance" element={<P><LecturerAttendance /></P>} />
       <Route path="/lecturer/students" element={<P><StudentManagement /></P>} />
+      <Route path="/lecturer/timeline" element={<P><AcademicTimeline /></P>} />
       <Route path="/lecturer/analytics" element={<P><AnalyticsDashboard /></P>} />
       <Route path="/lecturer/messages" element={<P><MessagingInbox /></P>} />
 
@@ -161,6 +165,7 @@ function AppRoutes() {
       <Route path="/programme/lecturers" element={<P><StaffManagement /></P>} />
       <Route path="/programme/students" element={<P><StudentManagement /></P>} />
       <Route path="/programme/assessments" element={<P><LecturerMarking /></P>} />
+      <Route path="/programme/schedule" element={<P><ScheduleManager /></P>} />
       <Route path="/programme/moderation" element={<P><QADashboard /></P>} />
       <Route path="/programme/analytics" element={<P><AnalyticsDashboard /></P>} />
 
@@ -218,6 +223,7 @@ function AppRoutes() {
       <Route path="/student/library" element={<P><StudentLibrary /></P>} />
       <Route path="/student/finance" element={<P><FinanceDashboard /></P>} />
       <Route path="/student/progression" element={<P><ProgressionDashboard /></P>} />
+      <Route path="/student/timeline" element={<P><AcademicTimeline /></P>} />
       <Route path="/student/career" element={<P><StudentCareer /></P>} />
       <Route path="/student/support" element={<P><MessagingInbox /></P>} />
 
