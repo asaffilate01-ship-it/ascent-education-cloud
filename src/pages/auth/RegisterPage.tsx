@@ -108,7 +108,7 @@ export default function RegisterPage() {
           <p className="text-white/70 mt-4 text-lg max-w-md leading-relaxed">
             {accountType === 'student' && 'Start your journey to UK qualifications today.'}
             {accountType === 'agent' && 'Recruit students and earn commissions with EduCloud.'}
-            {accountType === 'centre' && 'Launch your accredited college on EduCloud.'}
+            
           </p>
         </div>
         <div className="space-y-3">
