@@ -20,7 +20,7 @@ export default function ExamsDashboard() {
   const [incidentOpen, setIncidentOpen] = useState(false);
   const [incidents, setIncidents] = useState<Array<{ id: string; student: string; type: string; description: string; time: string; severity: string }>>([]);
 
-  const { data: modules, loading } = useSupabaseQuery('modules', {
+  const { data: modules, loading: mLoading } = useSupabaseQuery('modules', {
     filters: [{ column: 'status', operator: 'eq', value: 'active' }],
     orderBy: { column: 'title', ascending: true },
   });
