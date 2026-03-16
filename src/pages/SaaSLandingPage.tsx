@@ -278,9 +278,9 @@ export default function SaaSLandingPage() {
           <h2 className="text-xl sm:text-2xl font-bold text-center mb-8 sm:mb-10">Pricing for Centres</h2>
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto">
             {[
-              { name: 'Starter', price: '£200', period: '/month', desc: 'For new centres getting started', features: ['Up to 50 students', 'Basic LMS & Classroom', '1 Admin user', 'Email support', 'EduCloud subdomain'], cta: 'Start Free Trial' },
-              { name: 'Professional', price: '£500', period: '/month', desc: 'For growing accredited centres', features: ['Up to 500 students', 'Full LMS + Video + QA', '5 Admin users', 'Custom branding', 'Agent portal', 'Priority support'], cta: 'Get Started', popular: true },
-              { name: 'Enterprise', price: '£1,000', period: '/month', desc: 'For multi-campus institutions', features: ['Unlimited students', 'Full platform access', 'Unlimited admins', 'Custom domain', 'API access', 'White-label', 'SLA guarantee', 'Dedicated support'], cta: 'Contact Sales' },
+              { name: 'Starter', price: '£200', period: '/month', desc: 'For new centres getting started', features: ['Up to 50 students', 'Basic LMS & Classroom', '1 Admin user', 'Email support', 'EduCloud subdomain'], cta: 'Start Free Trial', link: 'https://buy.stripe.com/test_cNieVd5PJag2gk60mL00003' },
+              { name: 'Professional', price: '£500', period: '/month', desc: 'For growing accredited centres', features: ['Up to 500 students', 'Full LMS + Video + QA', '5 Admin users', 'Custom branding', 'Agent portal', 'Priority support'], cta: 'Get Started', popular: true, link: 'https://buy.stripe.com/test_7sY5kD91Vdsefg20mL00004' },
+              { name: 'Enterprise', price: '£1,000', period: '/month', desc: 'For multi-campus institutions', features: ['Unlimited students', 'Full platform access', 'Unlimited admins', 'Custom domain', 'API access', 'White-label', 'SLA guarantee', 'Dedicated support'], cta: 'Contact Sales', link: 'https://buy.stripe.com/test_00w5kDemfewi6Jw0mL00005' },
             ].map((plan) => (
               <div key={plan.name} className={`surface-card p-5 sm:p-6 relative ${plan.popular ? 'ring-2 ring-primary' : ''}`}>
                 {plan.popular && (
