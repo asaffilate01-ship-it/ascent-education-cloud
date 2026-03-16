@@ -9,6 +9,7 @@ import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { useAuth } from '@/contexts/AuthContext';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
 import { useMemo } from 'react';
+import ProgressTracker from '@/components/student/ProgressTracker';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
@@ -117,6 +118,11 @@ export default function StudentDashboard() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Progress Tracker */}
+      <div className="mb-6">
+        <ProgressTracker modules={modules} submissions={mySubmissions} assignments={assignments} />
       </div>
 
       {/* Recent Grades */}
