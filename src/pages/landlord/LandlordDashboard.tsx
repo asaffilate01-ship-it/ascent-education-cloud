@@ -8,6 +8,7 @@ import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useMemo } from 'react';
+import OnboardTenantModal from '@/components/modals/OnboardTenantModal';
 
 const statusVariant = (s: string) => {
   if (s === 'active') return 'success' as const;
@@ -16,7 +17,7 @@ const statusVariant = (s: string) => {
 };
 
 export default function LandlordDashboard() {
-  const { data: tenants, loading: tLoading } = useSupabaseQuery('tenants', {
+  const { data: tenants, loading: tLoading, refetch } = useSupabaseQuery('tenants', {
     orderBy: { column: 'created_at', ascending: false },
   });
   const { data: invoices, loading: iLoading } = useSupabaseQuery('invoices');
@@ -82,7 +83,7 @@ export default function LandlordDashboard() {
       actions={
         <div className="flex gap-2">
           <Button variant="outline" size="sm"><FileText className="w-3.5 h-3.5 mr-1.5" />Export</Button>
-          <Button size="sm"><Building2 className="w-3.5 h-3.5 mr-1.5" />Onboard Centre</Button>
+          <OnboardTenantModal onSuccess={refetch} />
         </div>
       }
     >
