@@ -77,6 +77,12 @@ import EmployerPortal from "./pages/employer/EmployerPortal";
 import PrivacyPolicyPage from "./pages/legal/PrivacyPolicyPage";
 import TermsOfServicePage from "./pages/legal/TermsOfServicePage";
 
+// New Modules
+import StudentOnboarding from "./pages/onboarding/StudentOnboarding";
+import ResidentialWeeks from "./pages/residential/ResidentialWeeks";
+import AuditLog from "./pages/audit/AuditLog";
+import ComplianceDashboard from "./pages/compliance/ComplianceDashboard";
+
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -111,9 +117,9 @@ function AppRoutes() {
       <Route path="/landlord/users" element={<P><StaffManagement /></P>} />
       <Route path="/landlord/finance" element={<P><FinanceDashboard /></P>} />
       <Route path="/landlord/subscriptions" element={<P><SuperadminPlatform /></P>} />
-      <Route path="/landlord/compliance" element={<P><QADashboard /></P>} />
+      <Route path="/landlord/compliance" element={<P><ComplianceDashboard /></P>} />
       <Route path="/landlord/onboarding" element={<P><TenantOnboarding /></P>} />
-      <Route path="/landlord/audit" element={<P><QADashboard /></P>} />
+      <Route path="/landlord/audit" element={<P><AuditLog /></P>} />
       <Route path="/landlord/infrastructure" element={<P><SuperadminPlatform /></P>} />
       <Route path="/landlord/settings" element={<P><SettingsPage /></P>} />
 
@@ -227,6 +233,12 @@ function AppRoutes() {
       <Route path="/employer/jobs" element={<P><EmployerPortal /></P>} />
       <Route path="/employer/candidates" element={<P><EmployerPortal /></P>} />
       <Route path="/employer/internships" element={<P><EmployerPortal /></P>} />
+
+      {/* ========== NEW MODULES ========== */}
+      <Route path="/onboarding" element={<P><StudentOnboarding /></P>} />
+      <Route path="/residential" element={<P><ResidentialWeeks /></P>} />
+      <Route path="/audit" element={<P><AuditLog /></P>} />
+      <Route path="/compliance" element={<P><ComplianceDashboard /></P>} />
 
       {/* ========== SHARED ========== */}
       <Route path="/notifications" element={<P><NotificationCentre /></P>} />

@@ -215,6 +215,60 @@ export type Database = {
           },
         ]
       }
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          entity_id: string | null
+          entity_type: string
+          id: string
+          ip_address: string | null
+          tenant_id: string | null
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          ip_address?: string | null
+          tenant_id?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          ip_address?: string | null
+          tenant_id?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       classroom_sessions: {
         Row: {
           created_at: string
@@ -272,6 +326,75 @@ export type Database = {
           },
           {
             foreignKeyName: "classroom_sessions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      compliance_checklists: {
+        Row: {
+          awarding_body: string
+          category: string
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          due_date: string | null
+          evidence_notes: string | null
+          evidence_url: string | null
+          id: string
+          is_completed: boolean
+          item_description: string | null
+          item_title: string
+          priority: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          awarding_body: string
+          category: string
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          due_date?: string | null
+          evidence_notes?: string | null
+          evidence_url?: string | null
+          id?: string
+          is_completed?: boolean
+          item_description?: string | null
+          item_title: string
+          priority?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          awarding_body?: string
+          category?: string
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          due_date?: string | null
+          evidence_notes?: string | null
+          evidence_url?: string | null
+          id?: string
+          is_completed?: boolean
+          item_description?: string | null
+          item_title?: string
+          priority?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_checklists_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compliance_checklists_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants_public"
@@ -469,6 +592,72 @@ export type Database = {
           },
           {
             foreignKeyName: "job_listings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kyc_documents: {
+        Row: {
+          created_at: string
+          document_type: string
+          expiry_date: string | null
+          file_name: string | null
+          file_url: string | null
+          id: string
+          metadata: Json | null
+          rejection_reason: string | null
+          status: string
+          tenant_id: string | null
+          updated_at: string
+          user_id: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          document_type: string
+          expiry_date?: string | null
+          file_name?: string | null
+          file_url?: string | null
+          id?: string
+          metadata?: Json | null
+          rejection_reason?: string | null
+          status?: string
+          tenant_id?: string | null
+          updated_at?: string
+          user_id: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          document_type?: string
+          expiry_date?: string | null
+          file_name?: string | null
+          file_url?: string | null
+          id?: string
+          metadata?: Json | null
+          rejection_reason?: string | null
+          status?: string
+          tenant_id?: string | null
+          updated_at?: string
+          user_id?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kyc_documents_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kyc_documents_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants_public"
@@ -778,6 +967,216 @@ export type Database = {
           },
           {
             foreignKeyName: "programmes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      residential_bookings: {
+        Row: {
+          check_in_at: string | null
+          check_out_at: string | null
+          created_at: string
+          dietary_requirements: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          id: string
+          meal_plan: string
+          residential_week_id: string
+          room_type: string
+          special_needs: string | null
+          status: string
+          student_id: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          check_in_at?: string | null
+          check_out_at?: string | null
+          created_at?: string
+          dietary_requirements?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          id?: string
+          meal_plan?: string
+          residential_week_id: string
+          room_type?: string
+          special_needs?: string | null
+          status?: string
+          student_id: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          check_in_at?: string | null
+          check_out_at?: string | null
+          created_at?: string
+          dietary_requirements?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          id?: string
+          meal_plan?: string
+          residential_week_id?: string
+          room_type?: string
+          special_needs?: string | null
+          status?: string
+          student_id?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "residential_bookings_residential_week_id_fkey"
+            columns: ["residential_week_id"]
+            isOneToOne: false
+            referencedRelation: "residential_weeks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "residential_bookings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "residential_bookings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      residential_sessions: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_time: string
+          id: string
+          lecturer_id: string | null
+          location: string | null
+          max_attendees: number | null
+          module_id: string | null
+          residential_week_id: string
+          session_type: string
+          start_time: string
+          tenant_id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_time: string
+          id?: string
+          lecturer_id?: string | null
+          location?: string | null
+          max_attendees?: number | null
+          module_id?: string | null
+          residential_week_id: string
+          session_type?: string
+          start_time: string
+          tenant_id: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_time?: string
+          id?: string
+          lecturer_id?: string | null
+          location?: string | null
+          max_attendees?: number | null
+          module_id?: string | null
+          residential_week_id?: string
+          session_type?: string
+          start_time?: string
+          tenant_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "residential_sessions_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "residential_sessions_residential_week_id_fkey"
+            columns: ["residential_week_id"]
+            isOneToOne: false
+            referencedRelation: "residential_weeks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "residential_sessions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "residential_sessions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      residential_weeks: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          location: string | null
+          max_capacity: number | null
+          semester: number
+          start_date: string
+          status: string
+          tenant_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          location?: string | null
+          max_capacity?: number | null
+          semester?: number
+          start_date: string
+          status?: string
+          tenant_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          location?: string | null
+          max_capacity?: number | null
+          semester?: number
+          start_date?: string
+          status?: string
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "residential_weeks_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "residential_weeks_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants_public"
