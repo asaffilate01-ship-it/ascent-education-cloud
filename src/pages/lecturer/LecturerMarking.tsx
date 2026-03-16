@@ -178,8 +178,31 @@ export default function LecturerMarking() {
                 <Button className="flex-1" onClick={handleSubmitGrade} disabled={saving || !gradeInput}>
                   <CheckCircle className="w-4 h-4 mr-1.5" /> {saving ? 'Saving...' : 'Submit Grade'}
                 </Button>
-                <Button variant="outline">
-                  <MessageSquare className="w-4 h-4 mr-1.5" /> Request Resubmission
+                <Button variant="outline" onClick={async () => {
+                  setAiLoading(true);
+                  try {
+                    const { data, error } = await supabase.functions.invoke('ai-grading-assistant', {
+                      body: {
+                        studentName: submission.student_name,
+                        assignmentTitle: submission.assignment_title,
+                        moduleName: submission.module_title,
+                        wordCount: submission.word_count,
+                        plagiarismScore: submission.plagiarism_score,
+                      },
+                    });
+                    if (error) throw error;
+                    setFeedbackInput(data.feedback || '');
+                    // Extract suggested grade from feedback
+                    const gradeMatch = data.feedback?.match(/(\d{1,3})%/);
+                    if (gradeMatch && !gradeInput) setGradeInput(gradeMatch[1]);
+                    toast({ title: 'AI Feedback Generated', description: 'Review and edit the suggested feedback before submitting.' });
+                  } catch (e: any) {
+                    toast({ title: 'AI Error', description: e.message, variant: 'destructive' });
+                  }
+                  setAiLoading(false);
+                }} disabled={aiLoading}>
+                  {aiLoading ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Sparkles className="w-4 h-4 mr-1.5" />}
+                  {aiLoading ? 'Generating…' : 'AI Feedback'}
                 </Button>
               </div>
               <p className="text-[10px] text-muted-foreground text-center">
