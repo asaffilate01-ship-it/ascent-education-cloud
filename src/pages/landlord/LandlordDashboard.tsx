@@ -75,33 +75,6 @@ export default function LandlordDashboard() {
     return { plan, tenants: filtered.length, mrr, pct: totalMRR ? Math.round((mrr / totalMRR) * 100) : 0 };
   });
 
-  // MRR trend (simulate from tenants created_at spread)
-  const mrrTrend = useMemo(() => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    let cumulative = 0;
-    return months.map((m, i) => {
-      const joined = tenants.filter(t => new Date(t.created_at).getMonth() <= i);
-      cumulative = joined.reduce((s, t) => s + Number(t.monthly_revenue || 0), 0);
-      return { month: m, mrr: cumulative };
-    });
-  }, [tenants]);
-
-  // Enrolment trend from applications
-  const enrolmentTrend = useMemo(() => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return months.map(m => {
-      const mApps = applications.filter(a => {
-        const mon = new Date(a.created_at).toLocaleString('en', { month: 'short' });
-        return mon === m;
-      });
-      return {
-        month: m,
-        applications: mApps.length,
-        enrolled: mApps.filter(a => a.stage === 'enrolled').length,
-      };
-    });
-  }, [applications]);
-
   return (
     <DashboardLayout
       title="EduCloud — Landlord Dashboard"
