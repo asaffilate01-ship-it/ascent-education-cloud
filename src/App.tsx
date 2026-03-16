@@ -79,6 +79,7 @@ import TermsOfServicePage from "./pages/legal/TermsOfServicePage";
 
 // New Modules
 import StudentOnboarding from "./pages/onboarding/StudentOnboarding";
+import LecturerOnboarding from "./pages/onboarding/LecturerOnboarding";
 import ResidentialWeeks from "./pages/residential/ResidentialWeeks";
 import AuditLog from "./pages/audit/AuditLog";
 import ComplianceDashboard from "./pages/compliance/ComplianceDashboard";
@@ -242,6 +243,7 @@ function AppRoutes() {
 
       {/* ========== NEW MODULES ========== */}
       <Route path="/onboarding" element={<P><StudentOnboarding /></P>} />
+      <Route path="/onboarding/lecturer" element={<P><LecturerOnboarding /></P>} />
       <Route path="/residential" element={<P><ResidentialWeeks /></P>} />
       <Route path="/audit" element={<P><AuditLog /></P>} />
       <Route path="/compliance" element={<P><ComplianceDashboard /></P>} />
