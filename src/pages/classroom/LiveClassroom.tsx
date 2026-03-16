@@ -3,8 +3,9 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Video, Users, Shield, Copy, ExternalLink, Settings } from 'lucide-react';
+import { Video, Users, Shield, Copy, ExternalLink } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 declare global {
@@ -22,9 +23,9 @@ export default function LiveClassroom() {
   const [isInSession, setIsInSession] = useState(false);
   const [participantCount, setParticipantCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load Jitsi Meet External API script
     if (!document.getElementById('jitsi-script')) {
       const script = document.createElement('script');
       script.id = 'jitsi-script';
@@ -47,6 +48,12 @@ export default function LiveClassroom() {
     }
   }, [user]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const room = params.get('room');
+    if (room) setRoomName(room);
+  }, []);
+
   const generateRoomName = () => {
     const id = crypto.randomUUID().slice(0, 8);
     setRoomName(`EduCloud-${id}`);
@@ -58,7 +65,45 @@ export default function LiveClassroom() {
     toast.success('Room link copied to clipboard');
   };
 
-  const startSession = () => {
+  const persistSession = async () => {
+    if (!user) return null;
+    try {
+      const { data, error } = await supabase
+        .from('classroom_sessions' as any)
+        .insert({
+          room_name: roomName,
+          display_name: displayName || 'Participant',
+          host_id: user.id,
+          status: 'active',
+          participant_count: 1,
+        } as any)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Failed to persist session:', error);
+        return null;
+      }
+      return (data as any)?.id || null;
+    } catch (err) {
+      console.error('Session persist error:', err);
+      return null;
+    }
+  };
+
+  const endPersistedSession = async () => {
+    if (!sessionId) return;
+    try {
+      await supabase
+        .from('classroom_sessions' as any)
+        .update({ status: 'ended', ended_at: new Date().toISOString(), participant_count: participantCount } as any)
+        .eq('id', sessionId);
+    } catch (err) {
+      console.error('Session end error:', err);
+    }
+  };
+
+  const startSession = async () => {
     if (!roomName.trim()) {
       toast.error('Please enter a room name');
       return;
@@ -69,6 +114,10 @@ export default function LiveClassroom() {
     }
 
     setIsLoading(true);
+
+    // Persist to DB
+    const id = await persistSession();
+    setSessionId(id);
 
     try {
       const api = new window.JitsiMeetExternalAPI('8x8.vc', {
@@ -106,20 +155,14 @@ export default function LiveClassroom() {
         },
       });
 
-      api.addEventListener('participantJoined', () => {
-        setParticipantCount((c) => c + 1);
-      });
-      api.addEventListener('participantLeft', () => {
-        setParticipantCount((c) => Math.max(0, c - 1));
-      });
+      api.addEventListener('participantJoined', () => setParticipantCount((c) => c + 1));
+      api.addEventListener('participantLeft', () => setParticipantCount((c) => Math.max(0, c - 1)));
       api.addEventListener('videoConferenceJoined', () => {
         setIsInSession(true);
         setIsLoading(false);
         setParticipantCount(1);
       });
-      api.addEventListener('readyToClose', () => {
-        endSession();
-      });
+      api.addEventListener('readyToClose', () => endSession());
 
       jitsiApiRef.current = api;
     } catch (err) {
@@ -129,27 +172,21 @@ export default function LiveClassroom() {
     }
   };
 
-  const endSession = () => {
+  const endSession = async () => {
+    await endPersistedSession();
     if (jitsiApiRef.current) {
       jitsiApiRef.current.dispose();
       jitsiApiRef.current = null;
     }
     setIsInSession(false);
     setParticipantCount(0);
+    setSessionId(null);
   };
-
-  // Check URL for room param
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const room = params.get('room');
-    if (room) setRoomName(room);
-  }, []);
 
   return (
     <DashboardLayout title="Live Classroom" subtitle="HD video conferencing with whiteboard & screen sharing">
       {!isInSession ? (
         <div className="max-w-2xl mx-auto space-y-6">
-          {/* Hero card */}
           <div className="surface-card p-8 text-center">
             <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
               <Video className="w-8 h-8 text-primary" />
@@ -160,57 +197,32 @@ export default function LiveClassroom() {
             </p>
           </div>
 
-          {/* Room setup */}
           <div className="surface-card p-6 space-y-4">
             <div>
               <Label htmlFor="displayName">Your Display Name</Label>
-              <Input
-                id="displayName"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="Enter your name"
-              />
+              <Input id="displayName" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Enter your name" />
             </div>
-
             <div>
               <Label htmlFor="roomName">Room Name</Label>
               <div className="flex gap-2">
-                <Input
-                  id="roomName"
-                  value={roomName}
-                  onChange={(e) => setRoomName(e.target.value)}
-                  placeholder="e.g. EduCloud-lecture-01"
-                  className="flex-1"
-                />
-                <Button variant="outline" size="sm" onClick={generateRoomName}>
-                  Generate
-                </Button>
+                <Input id="roomName" value={roomName} onChange={(e) => setRoomName(e.target.value)} placeholder="e.g. EduCloud-lecture-01" className="flex-1" />
+                <Button variant="outline" size="sm" onClick={generateRoomName}>Generate</Button>
               </div>
             </div>
-
             {roomName && (
               <div className="flex items-center gap-2 bg-secondary/50 rounded-lg p-3">
                 <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0" />
                 <span className="text-xs text-muted-foreground truncate flex-1">
                   {window.location.origin}/live-classroom?room={roomName}
                 </span>
-                <Button variant="ghost" size="sm" onClick={copyRoomLink}>
-                  <Copy className="w-3.5 h-3.5" />
-                </Button>
+                <Button variant="ghost" size="sm" onClick={copyRoomLink}><Copy className="w-3.5 h-3.5" /></Button>
               </div>
             )}
-
-            <Button
-              className="w-full"
-              size="lg"
-              onClick={startSession}
-              disabled={isLoading || !roomName.trim()}
-            >
+            <Button className="w-full" size="lg" onClick={startSession} disabled={isLoading || !roomName.trim()}>
               {isLoading ? 'Connecting...' : 'Join Session'}
             </Button>
           </div>
 
-          {/* Features */}
           <div className="grid grid-cols-3 gap-3">
             {[
               { icon: Video, title: 'HD Video & Audio', desc: 'Crystal clear conferencing' },
@@ -227,7 +239,6 @@ export default function LiveClassroom() {
         </div>
       ) : (
         <div className="space-y-3">
-          {/* Session toolbar */}
           <div className="flex items-center justify-between surface-card p-3">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1.5">
@@ -239,21 +250,11 @@ export default function LiveClassroom() {
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={copyRoomLink}>
-                <Copy className="w-3.5 h-3.5 mr-1" /> Share Link
-              </Button>
-              <Button variant="destructive" size="sm" onClick={endSession}>
-                Leave Session
-              </Button>
+              <Button variant="ghost" size="sm" onClick={copyRoomLink}><Copy className="w-3.5 h-3.5 mr-1" /> Share Link</Button>
+              <Button variant="destructive" size="sm" onClick={endSession}>Leave Session</Button>
             </div>
           </div>
-
-          {/* Jitsi container */}
-          <div
-            ref={jitsiContainerRef}
-            className="rounded-xl overflow-hidden bg-background"
-            style={{ height: 'calc(100vh - 220px)', minHeight: '500px' }}
-          />
+          <div ref={jitsiContainerRef} className="rounded-xl overflow-hidden bg-background" style={{ height: 'calc(100vh - 220px)', minHeight: '500px' }} />
         </div>
       )}
     </DashboardLayout>

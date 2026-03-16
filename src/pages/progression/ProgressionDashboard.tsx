@@ -1,43 +1,26 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
-import { GraduationCap, Award, CreditCard, Globe, FileText, Loader2, ExternalLink, MapPin, Calendar, Star } from 'lucide-react';
+import { GraduationCap, Award, CreditCard, Globe, FileText, Loader2, ExternalLink } from 'lucide-react';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { toast } from 'sonner';
-
-const PARTNER_UNIS = [
-  // UK
-  { uni: 'University of Sunderland', country: 'UK', flag: '🇬🇧', commission: '£3,000', url: 'https://www.sunderland.ac.uk', programme: 'BA Business Top-Up' },
-  { uni: 'Anglia Ruskin University', country: 'UK', flag: '🇬🇧', commission: '£2,500', url: 'https://www.aru.ac.uk', programme: 'BA Business & Management' },
-  { uni: 'University of Bolton', country: 'UK', flag: '🇬🇧', commission: '£2,000', url: 'https://www.bolton.ac.uk', programme: 'BSc Computing Top-Up' },
-  { uni: 'University of Central Lancashire', country: 'UK', flag: '🇬🇧', commission: '£2,800', url: 'https://www.uclan.ac.uk', programme: 'BBA Administration' },
-  { uni: 'University of Roehampton', country: 'UK', flag: '🇬🇧', commission: '£3,200', url: 'https://www.roehampton.ac.uk', programme: 'BA Business Management' },
-  { uni: 'University of Greenwich', country: 'UK', flag: '🇬🇧', commission: '£3,000', url: 'https://www.gre.ac.uk', programme: 'BA Business Studies' },
-  { uni: 'University of Bedfordshire', country: 'UK', flag: '🇬🇧', commission: '£2,200', url: 'https://www.beds.ac.uk', programme: 'BSc Information Systems' },
-  // Australia
-  { uni: 'Charles Sturt University', country: 'Australia', flag: '🇦🇺', commission: 'A$3,500', url: 'https://www.csu.edu.au', programme: 'Bachelor of Business' },
-  { uni: 'Southern Cross University', country: 'Australia', flag: '🇦🇺', commission: 'A$3,000', url: 'https://www.scu.edu.au', programme: 'Bachelor of Business & Enterprise' },
-  { uni: 'Western Sydney University', country: 'Australia', flag: '🇦🇺', commission: 'A$4,000', url: 'https://www.westernsydney.edu.au', programme: 'BBA Management' },
-  // Canada
-  { uni: 'Conestoga College', country: 'Canada', flag: '🇨🇦', commission: 'C$4,000', url: 'https://www.conestogac.on.ca', programme: 'BBA Honours Top-Up' },
-  { uni: 'Cape Breton University', country: 'Canada', flag: '🇨🇦', commission: 'C$3,500', url: 'https://www.cbu.ca', programme: 'BBA Community Development' },
-  { uni: 'University Canada West', country: 'Canada', flag: '🇨🇦', commission: 'C$4,500', url: 'https://www.ucanwest.ca', programme: 'Bachelor of Commerce' },
-  // USA
-  { uni: 'University of the Potomac', country: 'USA', flag: '🇺🇸', commission: '$3,000', url: 'https://www.potomac.edu', programme: 'BS Business Admin' },
-  { uni: 'Westcliff University', country: 'USA', flag: '🇺🇸', commission: '$3,500', url: 'https://www.westcliff.edu', programme: 'BBA Top-Up' },
-  { uni: 'Monroe College', country: 'USA', flag: '🇺🇸', commission: '$2,800', url: 'https://www.monroecollege.edu', programme: 'BS Business Management' },
-];
 
 export default function ProgressionDashboard() {
   const [selectedCountry, setSelectedCountry] = useState<string>('All');
+
+  const { data: universities, loading: unisLoading } = useSupabaseQuery('partner_universities' as any, {
+    orderBy: { column: 'country', ascending: true },
+  });
+
   const { data: applications, loading: appsLoading } = useSupabaseQuery('applications', {
     orderBy: { column: 'created_at', ascending: false },
   });
   const { data: programmes, loading: progsLoading } = useSupabaseQuery('programmes');
 
-  const loading = appsLoading || progsLoading;
+  const loading = appsLoading || progsLoading || unisLoading;
+  const unis = (universities || []) as any[];
 
   const eligible = (applications || []).filter(a => ['qualified', 'applied', 'under_review', 'conditional_offer', 'unconditional_offer', 'deposit_paid', 'enrolled'].includes(a.stage)).length;
   const applied = (applications || []).filter(a => !['lead', 'contacted', 'qualified', 'lost'].includes(a.stage)).length;
@@ -46,12 +29,28 @@ export default function ProgressionDashboard() {
 
   const countries = ['All', 'UK', 'Australia', 'Canada', 'USA'];
   const filteredUnis = selectedCountry === 'All'
-    ? PARTNER_UNIS
-    : PARTNER_UNIS.filter(u => u.country === selectedCountry);
+    ? unis
+    : unis.filter((u: any) => u.country === selectedCountry);
 
-  const handleReferStudent = (uni: typeof PARTNER_UNIS[0]) => {
+  const commissionRanges = useMemo(() => {
+    const byCountry: Record<string, { flag: string; commissions: string[] }> = {};
+    unis.forEach((u: any) => {
+      if (!byCountry[u.country]) byCountry[u.country] = { flag: u.flag, commissions: [] };
+      if (u.commission) byCountry[u.country].commissions.push(u.commission);
+    });
+    return Object.entries(byCountry).map(([country, data]) => ({
+      country,
+      flag: data.flag,
+      count: unis.filter((u: any) => u.country === country).length,
+      range: data.commissions.length > 1
+        ? `${data.commissions[0]} – ${data.commissions[data.commissions.length - 1]}`
+        : data.commissions[0] || 'TBC',
+    }));
+  }, [unis]);
+
+  const handleReferStudent = (uni: any) => {
     window.open(uni.url, '_blank', 'noopener,noreferrer');
-    toast.success(`Opening ${uni.uni} referral portal — commission: ${uni.commission}/student`);
+    toast.success(`Opening ${uni.name} referral portal — commission: ${uni.commission}/student`);
   };
 
   return (
@@ -66,7 +65,7 @@ export default function ProgressionDashboard() {
       {/* Partner Universities */}
       <div className="surface-card p-5 mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold">Partner Universities ({PARTNER_UNIS.length})</h3>
+          <h3 className="text-sm font-semibold">Partner Universities ({unis.length})</h3>
           <div className="flex gap-1">
             {countries.map(c => (
               <button
@@ -83,38 +82,42 @@ export default function ProgressionDashboard() {
             ))}
           </div>
         </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {filteredUnis.map((u) => (
-            <div key={u.uni} className="surface-data p-4 rounded-lg hover:shadow-lg transition-default group relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-[2px] gradient-primary opacity-0 group-hover:opacity-100 transition-default" />
-              <div className="flex items-start justify-between mb-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">{u.flag}</span>
-                  <div>
-                    <p className="text-sm font-semibold group-hover:text-primary transition-default">{u.uni}</p>
-                    <p className="text-[10px] text-muted-foreground">{u.programme}</p>
+        {unisLoading ? (
+          <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {filteredUnis.map((u: any) => (
+              <div key={u.id} className="surface-data p-4 rounded-lg hover:shadow-lg transition-default group relative overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-[2px] gradient-primary opacity-0 group-hover:opacity-100 transition-default" />
+                <div className="flex items-start justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{u.flag}</span>
+                    <div>
+                      <p className="text-sm font-semibold group-hover:text-primary transition-default">{u.name}</p>
+                      <p className="text-[10px] text-muted-foreground">{u.programme}</p>
+                    </div>
                   </div>
+                  <a href={u.url} target="_blank" rel="noopener noreferrer" className="p-1 hover:bg-accent rounded transition-default">
+                    <ExternalLink className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
+                  </a>
                 </div>
-                <a href={u.url} target="_blank" rel="noopener noreferrer" className="p-1 hover:bg-accent rounded transition-default">
-                  <ExternalLink className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
-                </a>
+                <div className="flex items-center justify-between mt-3 text-xs">
+                  <span className="text-muted-foreground">{enrolled} students referred</span>
+                  <span className="font-semibold text-primary">{u.commission || 'TBC'}/student</span>
+                </div>
+                <Button size="sm" variant="outline" className="w-full mt-3 text-xs" onClick={() => handleReferStudent(u)}>
+                  Refer Student
+                </Button>
               </div>
-              <div className="flex items-center justify-between mt-3 text-xs">
-                <span className="text-muted-foreground">{enrolled} students referred</span>
-                <span className="font-semibold text-primary">{u.commission}/student</span>
-              </div>
-              <Button size="sm" variant="outline" className="w-full mt-3 text-xs" onClick={() => handleReferStudent(u)}>
-                Refer Student
-              </Button>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Applications Table */}
       <div className="surface-card p-5 mb-6">
         <h3 className="text-sm font-semibold mb-4">Student Applications</h3>
-        {loading ? (
+        {appsLoading ? (
           <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
         ) : (
           <div className="overflow-x-auto">
@@ -156,12 +159,7 @@ export default function ProgressionDashboard() {
       <div className="surface-card p-5">
         <h3 className="text-sm font-semibold mb-3">Commission Rates by Country</h3>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {[
-            { country: 'United Kingdom', range: '£2,000 – £3,200', flag: '🇬🇧', count: PARTNER_UNIS.filter(u => u.country === 'UK').length },
-            { country: 'Canada', range: 'C$3,500 – C$4,500', flag: '🇨🇦', count: PARTNER_UNIS.filter(u => u.country === 'Canada').length },
-            { country: 'Australia', range: 'A$3,000 – A$4,000', flag: '🇦🇺', count: PARTNER_UNIS.filter(u => u.country === 'Australia').length },
-            { country: 'USA', range: '$2,800 – $3,500', flag: '🇺🇸', count: PARTNER_UNIS.filter(u => u.country === 'USA').length },
-          ].map((c) => (
+          {commissionRanges.map((c) => (
             <div key={c.country} className="surface-data p-4 rounded-lg text-center">
               <p className="text-2xl mb-1">{c.flag}</p>
               <p className="text-sm font-semibold">{c.country}</p>
