@@ -17,6 +17,26 @@ export default function SettingsPage() {
   const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
   const [savingProfile, setSavingProfile] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setUploadingAvatar(true);
+    const path = `${user.id}/${Date.now()}_${file.name}`;
+    const { error: uploadErr } = await supabase.storage.from('avatars').upload(path, file, { upsert: true });
+    if (uploadErr) {
+      toast.error('Failed to upload avatar');
+      setUploadingAvatar(false);
+      return;
+    }
+    const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path);
+    await supabase.from('profiles').update({ avatar_url: urlData.publicUrl }).eq('user_id', user.id);
+    await refreshProfile();
+    setUploadingAvatar(false);
+    toast.success('Avatar updated');
+  };
 
   const sections = [
     { id: 'profile', label: 'My Profile', icon: Camera },
