@@ -28,9 +28,10 @@ export default function TenantLandingPage() {
     async function fetchTenant() {
       if (!slug) { setLoading(false); return; }
       // Use tenants table with authenticated fallback to tenants_public view
+      // Use public view so unauthenticated visitors can see tenant branding
       const { data } = await supabase
-        .from('tenants')
-        .select('name, slug, primary_color, accent_color, logo_url, brand_name, custom_domain')
+        .from('tenants_public')
+        .select('name, slug, primary_color, accent_color, logo_url, brand_name')
         .eq('slug', slug)
         .single();
       const t = data as any;
