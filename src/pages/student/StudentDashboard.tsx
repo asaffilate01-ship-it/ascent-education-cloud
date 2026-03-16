@@ -120,6 +120,11 @@ export default function StudentDashboard() {
         </div>
       </div>
 
+      {/* Progress Tracker */}
+      <div className="mb-6">
+        <ProgressTracker modules={modules} submissions={mySubmissions} assignments={assignments} />
+      </div>
+
       {/* Recent Grades */}
       <div className="grid lg:grid-cols-2 gap-4">
         <div className="surface-card p-5">
