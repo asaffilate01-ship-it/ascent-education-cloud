@@ -1,13 +1,14 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
-import { GraduationCap, Users, CreditCard, Shield, BookOpen, FileCheck, Handshake, BarChart3 } from 'lucide-react';
+import { GraduationCap, Users, CreditCard, Shield, BookOpen, FileCheck, Handshake, BarChart3, TrendingUp, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import AddStudentModal from '@/components/modals/AddStudentModal';
 import { useToast } from '@/hooks/use-toast';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 export default function CentreDirectorDashboard() {
   const [addStudentOpen, setAddStudentOpen] = useState(false);
