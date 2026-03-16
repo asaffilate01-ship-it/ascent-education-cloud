@@ -83,7 +83,7 @@ export default function LandlordDashboard() {
       actions={
         <div className="flex gap-2">
           <Button variant="outline" size="sm"><FileText className="w-3.5 h-3.5 mr-1.5" />Export</Button>
-          <Button size="sm"><Building2 className="w-3.5 h-3.5 mr-1.5" />Onboard Centre</Button>
+          <OnboardTenantModal onSuccess={refetch} />
         </div>
       }
     >

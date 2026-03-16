@@ -212,31 +212,66 @@ export default function AnalyticsDashboard() {
         </div>
       </div>
 
-      {/* Source Performance */}
-      <div className="surface-card p-5 mb-4">
-        <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-          <Users className="w-4 h-4 text-primary" /> Lead Source Performance
-        </h3>
-        {sourceData.length > 0 ? (
-          <div className="space-y-3">
-            {sourceData.map((a) => (
-              <div key={a.agent} className="flex items-center gap-3">
-                <div className="w-28 text-xs font-medium truncate">{a.agent}</div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
-                      <div className="h-full bg-primary rounded-full" style={{ width: `${a.rate}%` }} />
+      {/* Source Performance + Grade Distribution */}
+      <div className="grid lg:grid-cols-2 gap-4 mb-4">
+        <div className="surface-card p-5">
+          <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+            <Users className="w-4 h-4 text-primary" /> Lead Source Performance
+          </h3>
+          {sourceData.length > 0 ? (
+            <div className="space-y-3">
+              {sourceData.map((a) => (
+                <div key={a.agent} className="flex items-center gap-3">
+                  <div className="w-28 text-xs font-medium truncate">{a.agent}</div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
+                        <div className="h-full bg-primary rounded-full" style={{ width: `${a.rate}%` }} />
+                      </div>
+                      <span className="text-xs font-semibold w-10 text-right">{a.rate}%</span>
                     </div>
-                    <span className="text-xs font-semibold w-10 text-right">{a.rate}%</span>
                   </div>
+                  <div className="text-xs text-muted-foreground w-16 text-right">{a.converted}/{a.leads}</div>
                 </div>
-                <div className="text-xs text-muted-foreground w-16 text-right">{a.converted}/{a.leads}</div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-6">No application data yet</p>
+          )}
+        </div>
+
+        <div className="surface-card p-5">
+          <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+            <GraduationCap className="w-4 h-4 text-primary" /> Grade Distribution
+          </h3>
+          {(() => {
+            const graded = (submissions || []).filter(s => s.grade != null);
+            const bands = [
+              { name: 'Distinction', range: '70-100', count: graded.filter(s => (s.grade ?? 0) >= 70).length, color: 'hsl(142, 76%, 36%)' },
+              { name: 'Merit', range: '60-69', count: graded.filter(s => (s.grade ?? 0) >= 60 && (s.grade ?? 0) < 70).length, color: 'hsl(45, 93%, 47%)' },
+              { name: 'Pass', range: '40-59', count: graded.filter(s => (s.grade ?? 0) >= 40 && (s.grade ?? 0) < 60).length, color: 'hsl(0, 55%, 80%)' },
+              { name: 'Refer', range: '0-39', count: graded.filter(s => (s.grade ?? 0) < 40).length, color: 'hsl(0, 72%, 45%)' },
+            ];
+            return graded.length > 0 ? (
+              <div className="space-y-3">
+                {bands.map(b => (
+                  <div key={b.name}>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="font-medium">{b.name} <span className="text-muted-foreground">({b.range}%)</span></span>
+                      <span className="font-semibold">{b.count}</span>
+                    </div>
+                    <div className="w-full h-3 bg-secondary rounded-full overflow-hidden">
+                      <div className="h-full rounded-full transition-all" style={{ width: `${graded.length > 0 ? (b.count / graded.length) * 100 : 0}%`, backgroundColor: b.color }} />
+                    </div>
+                  </div>
+                ))}
+                <p className="text-[10px] text-muted-foreground text-center mt-2">{graded.length} graded submissions</p>
               </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground text-center py-6">No application data yet</p>
-        )}
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-6">No graded submissions yet</p>
+            );
+          })()}
+        </div>
       </div>
     </DashboardLayout>
   );
