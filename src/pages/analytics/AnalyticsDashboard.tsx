@@ -10,8 +10,9 @@ export default function AnalyticsDashboard() {
   const { data: invoices, loading: invLoading } = useSupabaseQuery('invoices');
   const { data: attendance, loading: attLoading } = useSupabaseQuery('attendance_records');
   const { data: programmes, loading: progLoading } = useSupabaseQuery('programmes');
+  const { data: submissions, loading: subLoading } = useSupabaseQuery('submissions');
 
-  const loading = appsLoading || invLoading || attLoading || progLoading;
+  const loading = appsLoading || invLoading || attLoading || progLoading || subLoading;
 
   const stats = useMemo(() => {
     const apps = applications || [];
