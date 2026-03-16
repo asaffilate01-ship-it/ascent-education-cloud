@@ -55,6 +55,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Quality', icon: FileCheck, path: '/director/quality' },
       { label: 'Compliance', icon: Shield, path: '/compliance' },
       { label: 'Finance', icon: CreditCard, path: '/director/finance' },
+      { label: 'Schedule', icon: Calendar, path: '/director/schedule' },
       { label: 'Residential', icon: Building2, path: '/residential' },
       { label: 'Agents', icon: Handshake, path: '/director/agents' },
       { label: 'Audit Logs', icon: FileText, path: '/audit' },
