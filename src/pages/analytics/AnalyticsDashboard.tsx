@@ -135,10 +135,10 @@ export default function AnalyticsDashboard() {
       <div className="grid lg:grid-cols-2 gap-4 mb-4">
         <div className="surface-card p-5">
           <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-primary" /> Enrollment Trends
+            <TrendingUp className="w-4 h-4 text-primary" /> Enrolment Trends
           </h3>
           <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={enrollmentData}>
+            <BarChart data={enrolmentData}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(0, 8%, 90%)" />
               <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="hsl(0, 5%, 45%)" />
               <YAxis tick={{ fontSize: 11 }} stroke="hsl(0, 5%, 45%)" />
