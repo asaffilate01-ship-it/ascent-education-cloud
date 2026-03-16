@@ -165,6 +165,7 @@ function AppRoutes() {
       <Route path="/programme/lecturers" element={<P><StaffManagement /></P>} />
       <Route path="/programme/students" element={<P><StudentManagement /></P>} />
       <Route path="/programme/assessments" element={<P><LecturerMarking /></P>} />
+      <Route path="/programme/schedule" element={<P><ScheduleManager /></P>} />
       <Route path="/programme/moderation" element={<P><QADashboard /></P>} />
       <Route path="/programme/analytics" element={<P><AnalyticsDashboard /></P>} />
 
