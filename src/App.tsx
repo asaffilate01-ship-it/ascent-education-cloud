@@ -87,6 +87,7 @@ function AppRoutes() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/apply" element={<StudentApplication />} />
+      <Route path="/live-classroom" element={<LiveClassroom />} />
 
       {/* Tenant Public Pages */}
       <Route path="/tenant/:slug" element={<TenantLandingPage />} />
