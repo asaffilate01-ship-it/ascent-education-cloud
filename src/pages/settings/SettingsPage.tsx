@@ -80,8 +80,8 @@ export default function SettingsPage() {
       toast.error('Passwords do not match');
       return;
     }
-    if (passwords.new.length < 6) {
-      toast.error('Password must be at least 6 characters');
+    if (passwords.new.length < 8) {
+      toast.error('Password must be at least 8 characters');
       return;
     }
     setChangingPassword(true);
@@ -98,19 +98,19 @@ export default function SettingsPage() {
 
   return (
     <DashboardLayout title="Settings" subtitle="Platform configuration and preferences">
-      <div className="flex gap-6">
-        {/* Sidebar */}
-        <div className="w-52 shrink-0">
-          <div className="space-y-0.5">
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+        {/* Sidebar — horizontal scroll on mobile, vertical on desktop */}
+        <div className="lg:w-52 shrink-0">
+          <div className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0 scrollbar-hide">
             {sections.map((s) => (
               <button
                 key={s.id}
                 onClick={() => setActiveSection(s.id)}
-                className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-default text-left ${
+                className={`flex items-center gap-2 px-3 py-2 lg:py-2.5 rounded-lg text-sm transition-default text-left whitespace-nowrap ${
                   activeSection === s.id ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-secondary'
                 }`}
               >
-                <s.icon className="w-4 h-4" />
+                <s.icon className="w-4 h-4 shrink-0" />
                 {s.label}
               </button>
             ))}
