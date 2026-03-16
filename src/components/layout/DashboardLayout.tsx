@@ -22,7 +22,8 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   finance: 'Finance', marketing: 'Marketing', agent: 'Agent', student: 'Student',
   partner: 'Partner', employer: 'Employer', notifications: 'Notifications',
   settings: 'Settings', onboarding: 'Onboarding', residential: 'Residential',
-  audit: 'Audit Log', compliance: 'Compliance',
+  audit: 'Audit Log', compliance: 'Compliance', messaging: 'Messages',
+  schedule: 'Schedule', timeline: 'Timeline',
 };
 
 export default function DashboardLayout({ children, title, subtitle, actions }: DashboardLayoutProps) {
