@@ -28,8 +28,8 @@ export default function TenantLandingPage() {
     async function fetchTenant() {
       if (!slug) { setLoading(false); return; }
       const { data } = await supabase
-        .from('tenants')
-        .select('name, slug, primary_color, accent_color, logo_url, brand_name, custom_domain')
+        .from('tenants_public' as any)
+        .select('id, name, slug, primary_color, accent_color, logo_url, brand_name')
         .eq('slug', slug)
         .single();
       if (data) {
