@@ -33,8 +33,7 @@ export default function ExamsDashboard() {
     return map;
   }, [programmes]);
 
-  const loading = mLoading;
-  if (loading) return <DashboardSkeleton />;
+
 
   const HALLS = ['Hall A', 'Hall B', 'Hall C'];
 
