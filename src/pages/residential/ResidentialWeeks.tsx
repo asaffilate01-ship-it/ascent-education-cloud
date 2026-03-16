@@ -80,7 +80,7 @@ export default function ResidentialWeeks() {
     special_needs: '',
   });
 
-  const isStaff = role && !['student', 'agent'].includes(role);
+  const isStaff = user?.role && !['student', 'agent'].includes(user.role);
 
   useEffect(() => {
     fetchWeeks();
