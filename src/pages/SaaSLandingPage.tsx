@@ -336,31 +336,39 @@ export default function SaaSLandingPage() {
         </div>
       </section>
 
-      {/* Architecture */}
+      {/* Platform Flow */}
       <section className="gradient-subtle py-12 sm:py-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-center mb-8 sm:mb-10">Architecture</h2>
-          <div className="surface-card p-4 sm:p-6 max-w-3xl mx-auto">
-            <div className="space-y-3 text-sm font-mono text-center">
-              <div className="surface-data p-3 rounded-lg font-semibold text-xs sm:text-sm">EduCloud SaaS Platform (Landlord Layer)</div>
-              <div className="text-muted-foreground">↓</div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                {['Tenant A (EduPathway)', 'Tenant B (College X)', 'Tenant C (Academy Y)'].map((t) => (
-                  <div key={t} className="bg-primary/10 text-primary text-[10px] sm:text-xs font-medium p-2.5 rounded-lg">{t}</div>
+          <h2 className="text-xl sm:text-2xl font-bold text-center mb-3">The Complete Student Journey</h2>
+          <p className="text-center text-muted-foreground mb-8 sm:mb-10 max-w-xl mx-auto">
+            From first enquiry to university graduation — every step managed on one platform
+          </p>
+          <div className="max-w-4xl mx-auto">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+              {[
+                { step: '01', label: 'Lead Capture', desc: 'Website, agents, social media, walk-ins', colour: 'bg-primary/10 text-primary' },
+                { step: '02', label: 'Application', desc: 'Online form, documents, ID verification', colour: 'bg-primary/15 text-primary' },
+                { step: '03', label: 'Offer & Enrol', desc: 'Eligibility check, offer letter, deposit', colour: 'bg-primary/20 text-primary' },
+                { step: '04', label: 'Study', desc: 'LMS, live classes, assignments, exams', colour: 'bg-primary/25 text-primary' },
+                { step: '05', label: 'Graduate', desc: 'Certification, university progression', colour: 'bg-primary/30 text-primary' },
+              ].map((s) => (
+                <div key={s.step} className="surface-card p-4 text-center relative">
+                  <span className="text-3xl font-black text-primary/10 absolute top-2 right-2">{s.step}</span>
+                  <div className={`w-10 h-10 rounded-xl ${s.colour} flex items-center justify-center mx-auto mb-2`}>
+                    <span className="text-sm font-bold">{s.step}</span>
+                  </div>
+                  <p className="text-xs font-semibold mb-1">{s.label}</p>
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">{s.desc}</p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-6 surface-card p-4 sm:p-5">
+              <p className="text-xs font-semibold text-center mb-3 text-muted-foreground uppercase tracking-wider">Supporting Services Throughout</p>
+              <div className="flex flex-wrap justify-center gap-2">
+                {['Finance & Billing', 'Agent Commissions', 'QA & Compliance', 'Attendance Tracking', 'Analytics & Reports', 'Messaging', 'Notifications', 'Document Storage'].map((s) => (
+                  <span key={s} className="text-[10px] font-medium bg-secondary text-foreground px-3 py-1.5 rounded-full">{s}</span>
                 ))}
               </div>
-              <div className="text-muted-foreground">↓</div>
-              <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
-                {['Admissions', 'LMS', 'Attendance', 'Exams', 'QA', 'Finance', 'Agents', 'Progression', 'Careers', 'Identity'].map((s) => (
-                  <div key={s} className="bg-primary/5 text-foreground text-[10px] font-medium p-1.5 rounded text-center">{s}</div>
-                ))}
-              </div>
-              <div className="text-muted-foreground">↓</div>
-              <div className="surface-data p-3 rounded-lg text-xs">Shared Services · Auth · Notifications · Storage</div>
-              <div className="text-muted-foreground">↓</div>
-              <div className="surface-data p-3 rounded-lg text-xs">PostgreSQL · Object Storage · Edge Functions</div>
-              <div className="text-muted-foreground">↓</div>
-              <div className="surface-data p-3 rounded-lg text-xs">Analytics · Audit Logs · BI Layer</div>
             </div>
           </div>
         </div>
