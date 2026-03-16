@@ -117,9 +117,9 @@ function AppRoutes() {
       <Route path="/landlord/users" element={<P><StaffManagement /></P>} />
       <Route path="/landlord/finance" element={<P><FinanceDashboard /></P>} />
       <Route path="/landlord/subscriptions" element={<P><SuperadminPlatform /></P>} />
-      <Route path="/landlord/compliance" element={<P><QADashboard /></P>} />
+      <Route path="/landlord/compliance" element={<P><ComplianceDashboard /></P>} />
       <Route path="/landlord/onboarding" element={<P><TenantOnboarding /></P>} />
-      <Route path="/landlord/audit" element={<P><QADashboard /></P>} />
+      <Route path="/landlord/audit" element={<P><AuditLog /></P>} />
       <Route path="/landlord/infrastructure" element={<P><SuperadminPlatform /></P>} />
       <Route path="/landlord/settings" element={<P><SettingsPage /></P>} />
 
