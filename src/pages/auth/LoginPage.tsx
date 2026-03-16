@@ -5,6 +5,8 @@ import { lovable } from '@/integrations/lovable/index';
 import { Button } from '@/components/ui/button';
 import { Cloud, Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { ROLE_HOME } from '@/contexts/AuthContext';
+import type { UserRole } from '@/types/platform';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -22,7 +24,7 @@ export default function LoginPage() {
     }
 
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
 
     if (error) {
@@ -31,7 +33,18 @@ export default function LoginPage() {
     }
 
     toast.success('Signed in successfully');
-    navigate('/student');
+
+    // Role-based redirect
+    if (data.user) {
+      const { data: roles } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', data.user.id);
+      const primaryRole = (roles?.[0]?.role as UserRole) || 'student';
+      navigate(ROLE_HOME[primaryRole] || '/student');
+    } else {
+      navigate('/student');
+    }
   };
 
   const handleGoogleSignIn = async () => {

@@ -1,44 +1,45 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
-import { Briefcase, Users, GraduationCap, MapPin, Clock, Plus, Eye, Edit, ExternalLink, Search, Building2 } from 'lucide-react';
+import { Briefcase, Users, GraduationCap, MapPin, Clock, Plus, Eye, Edit, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
-
-const JOB_POSTS = [
-  { id: '1', title: 'Business Analyst Intern', type: 'Internship', location: 'Lahore', applications: 12, status: 'active', posted: '2025-03-01', deadline: 'Apr 15' },
-  { id: '2', title: 'Junior Accountant', type: 'Full-time', location: 'Karachi', applications: 8, status: 'active', posted: '2025-03-05', deadline: 'Apr 30' },
-  { id: '3', title: 'Marketing Assistant', type: 'Part-time', location: 'Remote', applications: 22, status: 'active', posted: '2025-02-20', deadline: 'Mar 30' },
-  { id: '4', title: 'IT Support Technician', type: 'Full-time', location: 'Islamabad', applications: 5, status: 'active', posted: '2025-03-10', deadline: 'May 15' },
-  { id: '5', title: 'Data Entry Clerk', type: 'Contract', location: 'Remote', applications: 15, status: 'closed', posted: '2025-01-15', deadline: 'Feb 28' },
-];
-
-const CANDIDATES = [
-  { id: '1', name: 'Sara Ali', programme: 'Level 5 Business Mgmt', grade: '72%', skills: 'Strategy, Finance, Research', appliedFor: 'Business Analyst Intern', status: 'shortlisted' },
-  { id: '2', name: 'Zara Sheikh', programme: 'Level 5 Business Mgmt', grade: '78%', skills: 'Marketing, Analysis, Presentations', appliedFor: 'Marketing Assistant', status: 'interview' },
-  { id: '3', name: 'Usman Raza', programme: 'Level 5 Computing', grade: '68%', skills: 'Python, SQL, Cloud', appliedFor: 'IT Support Technician', status: 'applied' },
-  { id: '4', name: 'Fatima Khan', programme: 'Level 3 Accounting', grade: '82%', skills: 'Accounting, Excel, QuickBooks', appliedFor: 'Junior Accountant', status: 'shortlisted' },
-  { id: '5', name: 'Ali Hussain', programme: 'Level 4 Computing', grade: '62%', skills: 'Networking, Linux, Security', appliedFor: 'IT Support Technician', status: 'applied' },
-];
+import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
+import { DashboardSkeleton } from '@/components/ui/Skeletons';
 
 export default function EmployerPortal() {
   const [activeTab, setActiveTab] = useState<'jobs' | 'candidates'>('jobs');
   const [search, setSearch] = useState('');
 
+  // Use programmes as proxy for available talent pool, applications for candidates
+  const { data: applications, loading: aLoading } = useSupabaseQuery('applications', {
+    orderBy: { column: 'updated_at', ascending: false },
+  });
+  const { data: programmes, loading: pLoading } = useSupabaseQuery('programmes');
+
+  const loading = aLoading || pLoading;
+  if (loading) return <DashboardSkeleton />;
+
+  // Candidates = enrolled applications
+  const candidates = applications.filter(a => a.stage === 'enrolled');
+  const filteredCandidates = candidates.filter(c =>
+    c.student_name.toLowerCase().includes(search.toLowerCase()) ||
+    (c.programme_name || '').toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <DashboardLayout
       title="Employer Partner Portal"
-      subtitle="TechCorp Pakistan — Manage job listings and candidates"
+      subtitle="Manage recruitment and connect with qualified graduates"
       actions={<Button size="sm"><Plus className="w-3.5 h-3.5 mr-1.5" />Post New Job</Button>}
     >
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard label="Active Listings" value={JOB_POSTS.filter(j => j.status === 'active').length} icon={Briefcase} />
-        <StatCard label="Total Applications" value={JOB_POSTS.reduce((s, j) => s + j.applications, 0)} change="+8 this week" changeType="positive" icon={Users} />
-        <StatCard label="Shortlisted" value={CANDIDATES.filter(c => c.status === 'shortlisted').length} icon={GraduationCap} />
-        <StatCard label="Interviews Scheduled" value={CANDIDATES.filter(c => c.status === 'interview').length} icon={Clock} />
+        <StatCard label="Available Graduates" value={candidates.length} icon={Users} />
+        <StatCard label="Programmes" value={programmes.length} icon={GraduationCap} />
+        <StatCard label="Active Centres" value={new Set(applications.map(a => a.tenant_id)).size} icon={Briefcase} />
+        <StatCard label="Avg Placement" value="85%" change="completion rate" changeType="positive" icon={Clock} />
       </div>
 
-      {/* Tabs */}
       <div className="flex gap-1 mb-4">
         {(['jobs', 'candidates'] as const).map((tab) => (
           <button
@@ -48,39 +49,36 @@ export default function EmployerPortal() {
               activeTab === tab ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:bg-accent'
             }`}
           >
-            {tab === 'jobs' ? 'Job Listings' : 'Candidates'}
+            {tab === 'jobs' ? 'Programmes' : `Candidates (${candidates.length})`}
           </button>
         ))}
       </div>
 
       {activeTab === 'jobs' && (
         <div className="space-y-2">
-          {JOB_POSTS.map((job) => (
-            <div key={job.id} className="surface-card p-4 flex items-center gap-4 hover:shadow-lg transition-default">
-              <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
-                job.status === 'active' ? 'bg-primary/10' : 'bg-secondary'
-              }`}>
-                <Briefcase className={`w-4 h-4 ${job.status === 'active' ? 'text-primary' : 'text-muted-foreground'}`} />
+          {programmes.map((prog) => (
+            <div key={prog.id} className="surface-card p-4 flex items-center gap-4 hover:shadow-lg transition-default">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-primary/10">
+                <GraduationCap className="w-4 h-4 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold">{job.title}</p>
+                <p className="text-sm font-semibold">{prog.title}</p>
                 <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
-                  <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {job.location}</span>
-                  <span>{job.type}</span>
-                  <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> Due {job.deadline}</span>
+                  <span>{prog.level}</span>
+                  <span>{prog.awarding_body}</span>
+                  <span>{prog.duration || 'N/A'}</span>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-sm font-bold">{job.applications}</p>
-                <p className="text-[10px] text-muted-foreground">applications</p>
+                <p className="text-sm font-bold">{prog.enrolled || 0}</p>
+                <p className="text-[10px] text-muted-foreground">enrolled</p>
               </div>
-              <StatusBadge status={job.status === 'active' ? 'Active' : 'Closed'} variant={job.status === 'active' ? 'success' : 'neutral'} />
-              <div className="flex gap-1">
-                <Button variant="outline" size="sm" className="h-7 w-7 p-0"><Eye className="w-3.5 h-3.5" /></Button>
-                <Button variant="outline" size="sm" className="h-7 w-7 p-0"><Edit className="w-3.5 h-3.5" /></Button>
-              </div>
+              <StatusBadge status={prog.status === 'active' ? 'Active' : prog.status} variant={prog.status === 'active' ? 'success' : 'neutral'} />
             </div>
           ))}
+          {programmes.length === 0 && (
+            <div className="surface-card p-12 text-center text-muted-foreground text-sm">No programmes available</div>
+          )}
         </div>
       )}
 
@@ -91,36 +89,29 @@ export default function EmployerPortal() {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search candidates by name, skills, or programme..."
+              placeholder="Search candidates by name or programme..."
               className="w-full bg-secondary text-sm pl-9 pr-4 py-2.5 rounded-lg outline-none text-foreground placeholder:text-muted-foreground"
             />
           </div>
           <div className="space-y-2">
-            {CANDIDATES.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.skills.toLowerCase().includes(search.toLowerCase())).map((c) => (
+            {filteredCandidates.map((c) => (
               <div key={c.id} className="surface-card p-4 flex items-center gap-4 hover:shadow-lg transition-default">
                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <span className="text-[10px] font-bold text-primary">{c.name.split(' ').map(n => n[0]).join('')}</span>
+                  <span className="text-[10px] font-bold text-primary">
+                    {c.student_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                  </span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold">{c.name}</p>
-                  <p className="text-xs text-muted-foreground">{c.programme} · Grade: {c.grade}</p>
-                  <div className="flex gap-1 mt-1.5">
-                    {c.skills.split(', ').map((s) => (
-                      <span key={s} className="text-[9px] bg-secondary px-1.5 py-0.5 rounded font-medium">{s}</span>
-                    ))}
-                  </div>
+                  <p className="text-sm font-semibold">{c.student_name}</p>
+                  <p className="text-xs text-muted-foreground">{c.programme_name || 'No programme'} · {c.level || 'N/A'}</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-xs text-muted-foreground">Applied for</p>
-                  <p className="text-xs font-medium">{c.appliedFor}</p>
-                </div>
-                <StatusBadge
-                  status={c.status === 'shortlisted' ? 'Shortlisted' : c.status === 'interview' ? 'Interview' : 'Applied'}
-                  variant={c.status === 'shortlisted' ? 'success' : c.status === 'interview' ? 'info' : 'neutral'}
-                />
+                <StatusBadge status="Enrolled" variant="success" />
                 <Button variant="outline" size="sm" className="text-xs">View Profile</Button>
               </div>
             ))}
+            {filteredCandidates.length === 0 && (
+              <div className="surface-card p-12 text-center text-muted-foreground text-sm">No candidates found</div>
+            )}
           </div>
         </>
       )}
