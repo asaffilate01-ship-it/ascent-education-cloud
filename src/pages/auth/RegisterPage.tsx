@@ -13,7 +13,7 @@ const ACCOUNT_TYPES = [
 
 export default function RegisterPage() {
   const [step, setStep] = useState<'type' | 'form'>('type');
-  const [accountType, setAccountType] = useState<'student' | 'agent' | 'centre'>('student');
+  const [accountType, setAccountType] = useState<'student' | 'agent'>('student');
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
