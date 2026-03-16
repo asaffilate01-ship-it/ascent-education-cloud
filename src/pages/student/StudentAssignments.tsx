@@ -1,10 +1,11 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatusBadge from '@/components/ui/StatusBadge';
-import { Upload, Clock, CheckCircle, FileText } from 'lucide-react';
+import { Upload, Clock, CheckCircle, FileText, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
+import { toast } from 'sonner';
 
 interface Assignment {
   id: string;
@@ -14,10 +15,10 @@ interface Assignment {
   word_count: string | null;
   deadline: string;
   module_title?: string;
-  // Submission data (if exists for current student)
   submission_status?: 'pending' | 'submitted' | 'graded';
   grade?: number | null;
   feedback?: string | null;
+  file_url?: string | null;
 }
 
 type TabType = 'all' | 'pending' | 'submitted' | 'graded';
@@ -27,49 +28,107 @@ export default function StudentAssignments() {
   const [selectedAssignment, setSelectedAssignment] = useState<string | null>(null);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    async function fetchAssignments() {
-      setLoading(true);
-      // Fetch assignments with module title
-      const { data: assignmentsData } = await supabase
-        .from('assignments')
-        .select('*, modules(title)')
-        .order('deadline', { ascending: true });
-
-      // Fetch current user's submissions
-      const { data: { user } } = await supabase.auth.getUser();
-      let submissionsMap: Record<string, any> = {};
-      if (user) {
-        const { data: subs } = await supabase
-          .from('submissions')
-          .select('*')
-          .eq('student_id', user.id);
-        for (const s of subs || []) {
-          submissionsMap[s.assignment_id] = s;
-        }
-      }
-
-      const mapped: Assignment[] = (assignmentsData || []).map((a: any) => {
-        const sub = submissionsMap[a.id];
-        return {
-          id: a.id,
-          title: a.title,
-          type: a.type,
-          max_marks: a.max_marks,
-          word_count: a.word_count,
-          deadline: a.deadline,
-          module_title: a.modules?.title || 'Unknown Module',
-          submission_status: sub ? sub.status : 'pending',
-          grade: sub?.grade || null,
-          feedback: sub?.feedback || null,
-        };
-      });
-      setAssignments(mapped);
-      setLoading(false);
-    }
     fetchAssignments();
   }, []);
+
+  async function fetchAssignments() {
+    setLoading(true);
+    const { data: assignmentsData } = await supabase
+      .from('assignments')
+      .select('*, modules(title)')
+      .order('deadline', { ascending: true });
+
+    const { data: { user } } = await supabase.auth.getUser();
+    let submissionsMap: Record<string, any> = {};
+    if (user) {
+      const { data: subs } = await supabase
+        .from('submissions')
+        .select('*')
+        .eq('student_id', user.id);
+      for (const s of subs || []) {
+        submissionsMap[s.assignment_id] = s;
+      }
+    }
+
+    const mapped: Assignment[] = (assignmentsData || []).map((a: any) => {
+      const sub = submissionsMap[a.id];
+      return {
+        id: a.id,
+        title: a.title,
+        type: a.type,
+        max_marks: a.max_marks,
+        word_count: a.word_count,
+        deadline: a.deadline,
+        module_title: a.modules?.title || 'Unknown Module',
+        submission_status: sub ? sub.status : 'pending',
+        grade: sub?.grade || null,
+        feedback: sub?.feedback || null,
+        file_url: sub?.file_url || null,
+      };
+    });
+    setAssignments(mapped);
+    setLoading(false);
+  }
+
+  const handleFileUpload = async (assignmentId: string, file: File) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { toast.error('Please sign in first'); return; }
+
+    if (file.size > 25 * 1024 * 1024) {
+      toast.error('File too large. Maximum size is 25MB.');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const path = `${user.id}/${assignmentId}.${ext}`;
+
+      const { error: uploadErr } = await supabase.storage
+        .from('submissions')
+        .upload(path, file, { upsert: true });
+
+      if (uploadErr) throw uploadErr;
+
+      // Get the assignment's tenant_id
+      const assignment = assignments.find(a => a.id === assignmentId);
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('tenant_id, full_name')
+        .eq('user_id', user.id)
+        .single();
+
+      const { error: subErr } = await supabase.from('submissions').insert({
+        assignment_id: assignmentId,
+        student_id: user.id,
+        student_name: profile?.full_name || user.email || 'Student',
+        tenant_id: profile?.tenant_id || '',
+        file_url: path,
+        status: 'submitted',
+        word_count: null,
+      });
+
+      if (subErr) throw subErr;
+
+      toast.success('Assignment submitted successfully!');
+      await fetchAssignments();
+    } catch (err: any) {
+      console.error('Upload error:', err);
+      toast.error(err.message || 'Failed to submit assignment');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent, assignmentId: string) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file) handleFileUpload(assignmentId, file);
+  };
 
   if (loading) return <DashboardSkeleton />;
 
@@ -176,9 +235,9 @@ export default function StudentAssignments() {
             </div>
 
             {selected.submission_status === 'graded' && selected.grade && (
-              <div className="bg-success/5 border border-success/20 rounded-lg p-4 mb-4">
+              <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mb-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <CheckCircle className="w-4 h-4 text-success" />
+                  <CheckCircle className="w-4 h-4 text-primary" />
                   <span className="text-sm font-semibold">Grade: {selected.grade}%</span>
                 </div>
                 {selected.feedback && (
@@ -189,13 +248,42 @@ export default function StudentAssignments() {
 
             {selected.submission_status === 'pending' && (
               <div className="space-y-3">
-                <div className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-primary/50 transition-default cursor-pointer">
-                  <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                  <p className="text-sm font-medium">Drop files here to upload</p>
-                  <p className="text-xs text-muted-foreground mt-1">PDF, DOCX, PPTX — Max 25MB</p>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf,.docx,.pptx,.doc,.ppt,.zip"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleFileUpload(selected.id, file);
+                  }}
+                />
+                <div
+                  className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-primary/50 transition-default cursor-pointer"
+                  onClick={() => fileInputRef.current?.click()}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => handleDrop(e, selected.id)}
+                >
+                  {uploading ? (
+                    <>
+                      <Loader2 className="w-8 h-8 mx-auto mb-2 text-primary animate-spin" />
+                      <p className="text-sm font-medium">Uploading...</p>
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                      <p className="text-sm font-medium">Drop files here or click to upload</p>
+                      <p className="text-xs text-muted-foreground mt-1">PDF, DOCX, PPTX — Max 25MB</p>
+                    </>
+                  )}
                 </div>
-                <Button className="w-full">
-                  <Upload className="w-4 h-4 mr-2" /> Submit Assignment
+                <Button
+                  className="w-full"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                >
+                  {uploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
+                  {uploading ? 'Submitting...' : 'Submit Assignment'}
                 </Button>
               </div>
             )}

@@ -45,6 +45,7 @@ import MarketingDashboard from "./pages/marketing/MarketingDashboard";
 
 // Virtual Classroom
 import VirtualClassroom from "./pages/classroom/VirtualClassroom";
+import LiveClassroom from "./pages/classroom/LiveClassroom";
 
 // Student sub-pages
 import StudentDashboard from "./pages/student/StudentDashboard";
@@ -86,6 +87,7 @@ function AppRoutes() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/apply" element={<StudentApplication />} />
+      <Route path="/live-classroom" element={<LiveClassroom />} />
 
       {/* Tenant Public Pages */}
       <Route path="/tenant/:slug" element={<TenantLandingPage />} />
