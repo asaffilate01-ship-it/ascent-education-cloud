@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { GraduationCap, BookOpen, Clock, Award, Users, Globe, ArrowRight, CheckCircle, MapPin, Phone, Mail, Video, Shield } from 'lucide-react';
+import { GraduationCap, Clock, Award, Video, ArrowRight, Shield } from 'lucide-react';
+import TenantNav from '@/components/TenantNav';
 
 const COURSES = [
   { id: '1', title: 'Level 5 Diploma in Business Management', body: 'OTHM', level: 'Level 5', duration: '12 months', credits: 120, fee: '£1,200', modules: ['Strategic Management', 'Financial Analysis', 'Marketing Strategy', 'Business Environment', 'Research Methods', 'Operations Management'], progression: 'BA (Hons) Top-Up at UK universities' },
@@ -15,62 +16,44 @@ export default function TenantCoursesPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm shadow-surface-sm">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-          <Link to={`/tenant/${slug}`} className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <GraduationCap className="w-4 h-4 text-primary-foreground" />
-            </div>
-            <span className="font-bold text-foreground">EduPathway</span>
-          </Link>
-          <div className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
-            <Link to={`/tenant/${slug}`} className="hover:text-foreground transition-default">Home</Link>
-            <Link to={`/tenant/${slug}/courses`} className="text-primary font-medium">Courses</Link>
-            <Link to={`/tenant/${slug}/about`} className="hover:text-foreground transition-default">About</Link>
-            <Link to={`/tenant/${slug}/contact`} className="hover:text-foreground transition-default">Contact</Link>
-            <Link to="/login"><Button variant="outline" size="sm">Login</Button></Link>
-            <Link to="/apply"><Button size="sm">Apply Now</Button></Link>
-          </div>
-        </div>
-      </nav>
+      <TenantNav activePage="courses" />
 
       {/* Hero */}
-      <section className="gradient-subtle py-16">
-        <div className="max-w-6xl mx-auto px-6 text-center">
-          <h1 className="text-3xl md:text-4xl font-bold">Our Programmes</h1>
-          <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
-            UK-accredited qualifications from OTHM, QUALIFI, and IAB — study 80% online from Pakistan and progress to top universities worldwide
+      <section className="gradient-subtle py-12 sm:py-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">Our Programmes</h1>
+          <p className="text-muted-foreground mt-3 max-w-xl mx-auto text-sm sm:text-base">
+            UK-accredited qualifications from OTHM, QUALIFI, and IAB — study 80% online and progress to top universities worldwide
           </p>
         </div>
       </section>
 
       {/* Accreditation Badges */}
-      <section className="py-8 border-b border-border">
-        <div className="max-w-6xl mx-auto px-6 flex items-center justify-center gap-8">
+      <section className="py-6 sm:py-8 border-b border-border">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-center gap-4 sm:gap-8">
           {['OTHM Qualifications', 'QUALIFI', 'IAB Accounting'].map((body) => (
             <div key={body} className="flex items-center gap-2">
               <Shield className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-muted-foreground">{body}</span>
+              <span className="text-xs sm:text-sm font-medium text-muted-foreground">{body}</span>
             </div>
           ))}
         </div>
       </section>
 
       {/* Course Cards */}
-      <section className="py-12">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="space-y-6">
+      <section className="py-8 sm:py-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="space-y-4 sm:space-y-6">
             {COURSES.map((course) => (
-              <div key={course.id} className="surface-card p-6 hover:shadow-lg transition-default">
-                <div className="flex flex-col lg:flex-row lg:items-start gap-6">
+              <div key={course.id} className="surface-card p-4 sm:p-6 hover:shadow-lg transition-default">
+                <div className="flex flex-col lg:flex-row lg:items-start gap-4 sm:gap-6">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
                       <span className="text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded">{course.body}</span>
                       <span className="text-[10px] font-medium bg-secondary px-2 py-0.5 rounded">{course.level}</span>
                     </div>
-                    <h2 className="text-lg font-bold">{course.title}</h2>
-                    <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                    <h2 className="text-base sm:text-lg font-bold">{course.title}</h2>
+                    <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-2 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {course.duration}</span>
                       <span className="flex items-center gap-1"><Award className="w-3 h-3" /> {course.credits} credits</span>
                       <span className="flex items-center gap-1"><Video className="w-3 h-3" /> 80% Online</span>
@@ -95,12 +78,14 @@ export default function TenantCoursesPage() {
                   </div>
 
                   {/* Price & CTA */}
-                  <div className="lg:w-48 shrink-0 text-center lg:text-right">
-                    <p className="text-2xl font-bold text-primary">{course.fee}</p>
-                    <p className="text-xs text-muted-foreground">per year</p>
-                    <p className="text-[10px] text-muted-foreground mt-1">Instalment plans available</p>
+                  <div className="lg:w-48 shrink-0 flex lg:flex-col items-center lg:items-end justify-between lg:justify-start gap-2">
+                    <div className="lg:text-right">
+                      <p className="text-xl sm:text-2xl font-bold text-primary">{course.fee}</p>
+                      <p className="text-xs text-muted-foreground">per year</p>
+                      <p className="text-[10px] text-muted-foreground mt-1 hidden sm:block">Instalment plans available</p>
+                    </div>
                     <Link to="/apply">
-                      <Button className="mt-3 w-full lg:w-auto">
+                      <Button className="mt-0 lg:mt-3">
                         Apply Now <ArrowRight className="w-3.5 h-3.5 ml-1" />
                       </Button>
                     </Link>
@@ -113,17 +98,17 @@ export default function TenantCoursesPage() {
       </section>
 
       {/* Delivery Model */}
-      <section className="gradient-subtle py-12">
-        <div className="max-w-6xl mx-auto px-6">
-          <h2 className="text-2xl font-bold text-center mb-8">Hybrid Delivery Model</h2>
-          <div className="grid md:grid-cols-3 gap-4">
+      <section className="gradient-subtle py-8 sm:py-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8">Hybrid Delivery Model</h2>
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
             {[
               { pct: '80%', title: 'Online Learning', desc: 'Live HD video lectures, recorded sessions, digital whiteboard, assignments, and 24/7 learning library access' },
               { pct: '20%', title: 'Centre-Based', desc: 'Two residential weeks per year for intensive workshops, group projects, tutor meetings, and presentations' },
               { pct: '100%', title: 'Exams at Centre', desc: 'All formal examinations conducted at approved centres under invigilated conditions with ID verification' },
             ].map((d) => (
               <div key={d.title} className="surface-card p-5 text-center">
-                <p className="text-3xl font-bold text-primary mb-2">{d.pct}</p>
+                <p className="text-2xl sm:text-3xl font-bold text-primary mb-2">{d.pct}</p>
                 <p className="text-sm font-semibold mb-2">{d.title}</p>
                 <p className="text-xs text-muted-foreground leading-relaxed">{d.desc}</p>
               </div>
@@ -133,9 +118,9 @@ export default function TenantCoursesPage() {
       </section>
 
       {/* Footer CTA */}
-      <section className="py-12 text-center">
-        <h2 className="text-2xl font-bold mb-3">Ready to Start Your Pathway?</h2>
-        <p className="text-muted-foreground mb-6">Apply today and begin your journey to a UK degree</p>
+      <section className="py-10 sm:py-12 text-center px-4">
+        <h2 className="text-xl sm:text-2xl font-bold mb-3">Ready to Start Your Pathway?</h2>
+        <p className="text-muted-foreground mb-6 text-sm">Apply today and begin your journey to a UK degree</p>
         <Link to="/apply"><Button size="lg" className="px-8">Apply Now <ArrowRight className="w-4 h-4 ml-1" /></Button></Link>
       </section>
     </div>

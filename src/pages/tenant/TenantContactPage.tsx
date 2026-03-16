@@ -1,42 +1,42 @@
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { GraduationCap, MapPin, Phone, Mail, Clock, Send, Globe, MessageSquare } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, Send, Globe, MessageSquare } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
+import TenantNav from '@/components/TenantNav';
 
 export default function TenantContactPage() {
   const { slug } = useParams();
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
+  const [sending, setSending] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name || !formData.email || !formData.message) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+    setSending(true);
+    // Simulate send
+    setTimeout(() => {
+      setSending(false);
+      toast.success('Message sent! We\'ll get back to you within 24 hours.');
+      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+    }, 1000);
+  };
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm shadow-surface-sm">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-          <Link to={`/tenant/${slug}`} className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <GraduationCap className="w-4 h-4 text-primary-foreground" />
-            </div>
-            <span className="font-bold text-foreground">EduPathway</span>
-          </Link>
-          <div className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
-            <Link to={`/tenant/${slug}`} className="hover:text-foreground transition-default">Home</Link>
-            <Link to={`/tenant/${slug}/courses`} className="hover:text-foreground transition-default">Courses</Link>
-            <Link to={`/tenant/${slug}/about`} className="hover:text-foreground transition-default">About</Link>
-            <Link to={`/tenant/${slug}/contact`} className="text-primary font-medium">Contact</Link>
-            <Link to="/login"><Button variant="outline" size="sm">Login</Button></Link>
-            <Link to="/apply"><Button size="sm">Apply Now</Button></Link>
-          </div>
-        </div>
-      </nav>
+      <TenantNav activePage="contact" />
 
-      <section className="py-16">
-        <div className="max-w-6xl mx-auto px-6">
-          <h1 className="text-3xl font-bold text-center mb-3">Contact Us</h1>
-          <p className="text-center text-muted-foreground mb-12 max-w-lg mx-auto">
+      <section className="py-12 sm:py-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-center mb-3">Contact Us</h1>
+          <p className="text-center text-muted-foreground mb-8 sm:mb-12 max-w-lg mx-auto text-sm sm:text-base">
             Have questions about our programmes, admissions, or fees? Get in touch — we're here to help.
           </p>
 
-          <div className="grid lg:grid-cols-3 gap-8">
+          <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Contact Info */}
             <div className="space-y-4">
               {[
@@ -60,24 +60,24 @@ export default function TenantContactPage() {
             </div>
 
             {/* Form */}
-            <div className="lg:col-span-2 surface-card p-6">
+            <form onSubmit={handleSubmit} className="lg:col-span-2 surface-card p-4 sm:p-6">
               <h3 className="text-lg font-bold mb-4">Send us a message</h3>
-              <div className="grid md:grid-cols-2 gap-4 mb-4">
+              <div className="grid sm:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="text-label mb-1.5 block">Full Name</label>
-                  <input value={formData.name} onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))} className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none" placeholder="Your name" />
+                  <label className="text-label mb-1.5 block">Full Name *</label>
+                  <input value={formData.name} onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))} className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-primary/20" placeholder="Your name" />
                 </div>
                 <div>
-                  <label className="text-label mb-1.5 block">Email</label>
-                  <input type="email" value={formData.email} onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))} className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none" placeholder="you@example.com" />
+                  <label className="text-label mb-1.5 block">Email *</label>
+                  <input type="email" value={formData.email} onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))} className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-primary/20" placeholder="you@example.com" />
                 </div>
                 <div>
                   <label className="text-label mb-1.5 block">Phone / WhatsApp</label>
-                  <input value={formData.phone} onChange={(e) => setFormData(p => ({ ...p, phone: e.target.value }))} className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none" placeholder="+92" />
+                  <input value={formData.phone} onChange={(e) => setFormData(p => ({ ...p, phone: e.target.value }))} className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-primary/20" placeholder="+92" />
                 </div>
                 <div>
                   <label className="text-label mb-1.5 block">Subject</label>
-                  <select value={formData.subject} onChange={(e) => setFormData(p => ({ ...p, subject: e.target.value }))} className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none">
+                  <select value={formData.subject} onChange={(e) => setFormData(p => ({ ...p, subject: e.target.value }))} className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-primary/20">
                     <option value="">Select a topic</option>
                     <option>Admissions Enquiry</option>
                     <option>Fee Information</option>
@@ -90,19 +90,19 @@ export default function TenantContactPage() {
                 </div>
               </div>
               <div className="mb-4">
-                <label className="text-label mb-1.5 block">Message</label>
+                <label className="text-label mb-1.5 block">Message *</label>
                 <textarea
                   value={formData.message}
                   onChange={(e) => setFormData(p => ({ ...p, message: e.target.value }))}
                   rows={5}
-                  className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none resize-none"
+                  className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none resize-none focus:ring-2 focus:ring-primary/20"
                   placeholder="How can we help you?"
                 />
               </div>
-              <Button className="px-8">
-                <Send className="w-4 h-4 mr-1.5" /> Send Message
+              <Button className="px-8" type="submit" disabled={sending}>
+                {sending ? 'Sending...' : <><Send className="w-4 h-4 mr-1.5" /> Send Message</>}
               </Button>
-            </div>
+            </form>
           </div>
         </div>
       </section>
