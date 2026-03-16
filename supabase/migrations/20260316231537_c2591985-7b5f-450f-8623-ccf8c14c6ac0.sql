@@ -1,0 +1,7 @@
+
+-- Fix overly permissive audit_logs insert policy
+DROP POLICY "System inserts audit logs" ON public.audit_logs;
+
+CREATE POLICY "Authenticated users insert audit logs"
+ON public.audit_logs FOR INSERT TO authenticated
+WITH CHECK (user_id = auth.uid());
