@@ -707,6 +707,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_user_account: { Args: { _user_id: string }; Returns: undefined }
+      export_user_data: { Args: { _user_id: string }; Returns: Json }
       get_user_tenant_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
