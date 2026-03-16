@@ -1,10 +1,9 @@
-import { GraduationCap, BookOpen, Users, ArrowRight, Shield, Video, MapPin, Phone, Mail } from 'lucide-react';
+import { GraduationCap, BookOpen, Users, ArrowRight, Shield, Video, MapPin, Phone, Mail, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { TenantTheme } from '@/types/platform';
-
-// This represents a tenant's customisable landing page
-// In production, theme would come from DB based on tenant slug
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 const DEFAULT_THEME: TenantTheme = {
   primaryColor: '#b91c1c',
@@ -12,15 +11,52 @@ const DEFAULT_THEME: TenantTheme = {
   logoUrl: '',
   faviconUrl: '',
   fontFamily: 'Inter',
-  heroTitle: 'Your Gateway to UK Qualifications from Pakistan',
-  heroSubtitle: 'Study OTHM, QUALIFI & IAB accredited Level 3–5 diplomas 80% online. Then progress to UK, Canadian & Australian universities for your final year.',
+  heroTitle: 'Your Gateway to UK Qualifications',
+  heroSubtitle: 'Study OTHM, QUALIFI & IAB accredited Level 3–5 diplomas 80% online.',
   heroImageUrl: '',
-  customDomain: 'edupathway.pk',
+  customDomain: '',
   brandName: 'EduPathway',
 };
 
 export default function TenantLandingPage() {
-  const theme = DEFAULT_THEME;
+  const { slug } = useParams<{ slug: string }>();
+  const [theme, setTheme] = useState<TenantTheme>(DEFAULT_THEME);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchTenant() {
+      if (!slug) { setLoading(false); return; }
+      const { data } = await supabase
+        .from('tenants')
+        .select('*')
+        .eq('slug', slug)
+        .single();
+      if (data) {
+        setTheme({
+          primaryColor: data.primary_color || DEFAULT_THEME.primaryColor,
+          accentColor: data.accent_color || DEFAULT_THEME.accentColor,
+          logoUrl: data.logo_url || '',
+          faviconUrl: '',
+          fontFamily: 'Inter',
+          heroTitle: `Welcome to ${data.brand_name || data.name}`,
+          heroSubtitle: 'Study accredited diplomas and progress to top universities worldwide.',
+          heroImageUrl: '',
+          customDomain: data.custom_domain || '',
+          brandName: data.brand_name || data.name,
+        });
+      }
+      setLoading(false);
+    }
+    fetchTenant();
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background" style={{ fontFamily: theme.fontFamily }}>
