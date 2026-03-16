@@ -17,8 +17,37 @@ export default function CentreDirectorDashboard() {
   const { data: programmes, loading: progLoading } = useSupabaseQuery('programmes');
   const { data: applications, loading: appLoading } = useSupabaseQuery('applications');
   const { data: invoices, loading: invLoading } = useSupabaseQuery('invoices');
+  const { data: attendance, loading: attLoading } = useSupabaseQuery('attendance_records');
 
-  const loading = progLoading || appLoading || invLoading;
+  // Revenue trend by month
+  const revenueTrend = useMemo(() => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return months.map(m => {
+      const mInvs = invoices.filter(i => new Date(i.issued_date).toLocaleString('en', { month: 'short' }) === m);
+      return {
+        month: m,
+        billed: mInvs.reduce((s, i) => s + Number(i.amount), 0),
+        collected: mInvs.reduce((s, i) => s + Number(i.paid), 0),
+      };
+    });
+  }, [invoices]);
+
+  // Attendance rate by week
+  const attendanceTrend = useMemo(() => {
+    const weeks: Record<string, { present: number; total: number }> = {};
+    attendance.forEach((a, i) => {
+      const wk = `W${Math.floor(i / 7) + 1}`;
+      if (!weeks[wk]) weeks[wk] = { present: 0, total: 0 };
+      weeks[wk].total++;
+      if (a.status === 'present' || a.status === 'late') weeks[wk].present++;
+    });
+    return Object.entries(weeks).slice(0, 8).map(([week, d]) => ({
+      week,
+      rate: d.total > 0 ? Math.round((d.present / d.total) * 100) : 0,
+    }));
+  }, [attendance]);
+
+  const loading = progLoading || appLoading || invLoading || attLoading;
   if (loading) return <DashboardSkeleton />;
 
   const totalStudents = programmes.reduce((s, p) => s + (p.enrolled || 0), 0);
