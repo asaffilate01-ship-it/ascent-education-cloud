@@ -36,48 +36,44 @@ export default function ExamsDashboard() {
   const loading = mLoading;
   if (loading) return <DashboardSkeleton />;
 
-  const today = new Date();
   const HALLS = ['Hall A', 'Hall B', 'Hall C'];
 
-  const examSchedule = modules.slice(0, 8).map((mod, i) => {
-    const examDate = new Date(today);
-    examDate.setDate(today.getDate() + 5 + i * 3);
-    const prog = programmeMap[mod.programme_id] || { level: '—', enrolled: 0 };
-    return {
-      id: mod.id,
-      date: examDate,
-      dateStr: examDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-      time: i % 2 === 0 ? '09:00 – 12:00' : '14:00 – 17:00',
-      module: mod.title,
-      code: mod.code || `MOD-${i + 1}`,
-      level: prog.level,
-      room: HALLS[i % 3],
-      students: prog.enrolled,
-      invigilator: `Staff ${i + 1}`,
-      status: i < 5 ? 'Scheduled' : i < 7 ? 'Pending Approval' : 'Completed',
-    };
-  });
+  const examSchedule = useMemo(() => {
+    const today = new Date();
+    return modules.slice(0, 8).map((mod, i) => {
+      const examDate = new Date(today);
+      examDate.setDate(today.getDate() + 5 + i * 3);
+      const prog = programmeMap[mod.programme_id] || { level: '—', enrolled: 0 };
+      return {
+        id: mod.id,
+        date: examDate,
+        dateStr: examDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        time: i % 2 === 0 ? '09:00 – 12:00' : '14:00 – 17:00',
+        module: mod.title,
+        code: mod.code || `MOD-${i + 1}`,
+        level: prog.level,
+        room: HALLS[i % 3],
+        students: prog.enrolled,
+        invigilator: `Staff ${i + 1}`,
+        status: i < 5 ? 'Scheduled' : i < 7 ? 'Pending Approval' : 'Completed',
+      };
+    });
+  }, [modules, programmeMap]);
 
-  const totalStudents = examSchedule.reduce((s, e) => s + e.students, 0);
+  const totalStudents = useMemo(() => examSchedule.reduce((s, e) => s + e.students, 0), [examSchedule]);
 
-  // Seating plan: generate seat grid per hall
-  const seatingData = HALLS.map((hall) => {
+  const seatingData = useMemo(() => HALLS.map((hall) => {
     const examsInHall = examSchedule.filter(e => e.room === hall);
     const totalSeats = Math.max(examsInHall.reduce((s, e) => s + e.students, 0), 20);
     const rows = Math.ceil(totalSeats / 5);
     return { hall, exams: examsInHall, totalSeats, rows, cols: 5 };
-  });
+  }), [examSchedule]);
 
-  // Results from graded submissions
-  const gradedSubmissions = submissions.filter(s => s.grade !== null);
+  const gradedSubmissions = useMemo(() => submissions.filter(s => s.grade !== null), [submissions]);
+
   const resultsByModule = useMemo(() => {
     const map: Record<string, { module: string; total: number; graded: number; avg: number; distinction: number; merit: number; pass: number; fail: number }> = {};
     for (const sub of gradedSubmissions) {
-      const mod = modules.find(m => {
-        const assignment = sub.assignment_id;
-        return true; // simplified grouping
-      });
-      const key = sub.student_name; // group by student for simplicity
       if (!map[sub.assignment_id]) {
         map[sub.assignment_id] = { module: 'Module', total: 0, graded: 0, avg: 0, distinction: 0, merit: 0, pass: 0, fail: 0 };
       }
@@ -91,7 +87,7 @@ export default function ExamsDashboard() {
       else entry.fail++;
     }
     return Object.values(map).map(e => ({ ...e, avg: e.graded > 0 ? Math.round(e.avg / e.graded) : 0 }));
-  }, [gradedSubmissions, modules]);
+  }, [gradedSubmissions]);
 
   const handleLogIncident = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
