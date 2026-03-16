@@ -36,9 +36,9 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Subscriptions', icon: PieChart, path: '/landlord/subscriptions' },
     ]},
     { title: 'Operations', items: [
-      { label: 'Compliance', icon: Shield, path: '/landlord/compliance' },
+      { label: 'Compliance', icon: Shield, path: '/compliance' },
       { label: 'Onboarding', icon: UserPlus, path: '/landlord/onboarding' },
-      { label: 'Audit Logs', icon: FileText, path: '/landlord/audit' },
+      { label: 'Audit Logs', icon: FileText, path: '/audit' },
       { label: 'Infrastructure', icon: Globe, path: '/landlord/infrastructure' },
       { label: 'Settings', icon: Settings, path: '/landlord/settings' },
     ]},
