@@ -1,12 +1,25 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { Settings, Bell, Lock, Globe, Palette, Users, Shield, Database, Mail, Smartphone } from 'lucide-react';
+import { Settings, Bell, Lock, Globe, Palette, Users, Shield, Database, Mail, Smartphone, Loader2, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export default function SettingsPage() {
-  const [activeSection, setActiveSection] = useState('general');
+  const { user, refreshProfile } = useAuth();
+  const [activeSection, setActiveSection] = useState('profile');
+  const [profileData, setProfileData] = useState({
+    full_name: user?.name || '',
+    email: user?.email || '',
+    phone: '',
+  });
+  const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
 
   const sections = [
+    { id: 'profile', label: 'My Profile', icon: Camera },
     { id: 'general', label: 'General', icon: Settings },
     { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'security', label: 'Security', icon: Lock },
@@ -16,6 +29,47 @@ export default function SettingsPage() {
     { id: 'privacy', label: 'Privacy & GDPR', icon: Shield },
     { id: 'data', label: 'Data & Backup', icon: Database },
   ];
+
+  const handleSaveProfile = async () => {
+    if (!user) return;
+    setSavingProfile(true);
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        full_name: profileData.full_name,
+        phone: profileData.phone || null,
+      })
+      .eq('user_id', user.id);
+    setSavingProfile(false);
+
+    if (error) {
+      toast.error('Failed to update profile');
+      return;
+    }
+    await refreshProfile();
+    toast.success('Profile updated successfully');
+  };
+
+  const handleChangePassword = async () => {
+    if (passwords.new !== passwords.confirm) {
+      toast.error('Passwords do not match');
+      return;
+    }
+    if (passwords.new.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+    setChangingPassword(true);
+    const { error } = await supabase.auth.updateUser({ password: passwords.new });
+    setChangingPassword(false);
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setPasswords({ current: '', new: '', confirm: '' });
+    toast.success('Password changed successfully');
+  };
 
   return (
     <DashboardLayout title="Settings" subtitle="Platform configuration and preferences">
@@ -40,6 +94,50 @@ export default function SettingsPage() {
 
         {/* Content */}
         <div className="flex-1 surface-card p-6">
+          {activeSection === 'profile' && (
+            <div className="max-w-lg">
+              <h3 className="text-lg font-bold mb-4">My Profile</h3>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xl font-bold">
+                  {user?.name?.charAt(0) || 'U'}
+                </div>
+                <div>
+                  <p className="font-semibold">{user?.name}</p>
+                  <p className="text-xs text-muted-foreground">{user?.email}</p>
+                  <p className="text-xs text-muted-foreground capitalize mt-0.5">{user?.role?.replace('_', ' ')}</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-label mb-1.5 block">Full Name</label>
+                  <input
+                    value={profileData.full_name}
+                    onChange={(e) => setProfileData(prev => ({ ...prev, full_name: e.target.value }))}
+                    className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+                <div>
+                  <label className="text-label mb-1.5 block">Email</label>
+                  <input value={user?.email || ''} disabled className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none opacity-60" />
+                  <p className="text-[10px] text-muted-foreground mt-1">Email cannot be changed here</p>
+                </div>
+                <div>
+                  <label className="text-label mb-1.5 block">Phone / WhatsApp</label>
+                  <input
+                    value={profileData.phone}
+                    onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
+                    placeholder="+92 300 1234567"
+                    className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+                <Button onClick={handleSaveProfile} disabled={savingProfile}>
+                  {savingProfile && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                  Save Profile
+                </Button>
+              </div>
+            </div>
+          )}
+
           {activeSection === 'general' && (
             <div className="max-w-lg">
               <h3 className="text-lg font-bold mb-4">General Settings</h3>
@@ -117,6 +215,30 @@ export default function SettingsPage() {
             <div className="max-w-lg">
               <h3 className="text-lg font-bold mb-4">Security Settings</h3>
               <div className="space-y-4">
+                {/* Change Password */}
+                <div className="surface-data p-4 rounded-lg">
+                  <p className="text-sm font-medium mb-3">Change Password</p>
+                  <div className="space-y-3">
+                    <input
+                      type="password"
+                      placeholder="New password"
+                      value={passwords.new}
+                      onChange={(e) => setPasswords(p => ({ ...p, new: e.target.value }))}
+                      className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-primary/20"
+                    />
+                    <input
+                      type="password"
+                      placeholder="Confirm new password"
+                      value={passwords.confirm}
+                      onChange={(e) => setPasswords(p => ({ ...p, confirm: e.target.value }))}
+                      className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-primary/20"
+                    />
+                    <Button onClick={handleChangePassword} disabled={changingPassword} size="sm">
+                      {changingPassword && <Loader2 className="w-3 h-3 animate-spin mr-1" />}
+                      Update Password
+                    </Button>
+                  </div>
+                </div>
                 <div className="surface-data p-4 rounded-lg">
                   <div className="flex items-center justify-between">
                     <div>
@@ -129,28 +251,10 @@ export default function SettingsPage() {
                 <div className="surface-data p-4 rounded-lg">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium">Change Password</p>
-                      <p className="text-xs text-muted-foreground">Last changed 45 days ago</p>
-                    </div>
-                    <Button variant="outline" size="sm">Change</Button>
-                  </div>
-                </div>
-                <div className="surface-data p-4 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
                       <p className="text-sm font-medium">Active Sessions</p>
                       <p className="text-xs text-muted-foreground">2 devices currently logged in</p>
                     </div>
                     <Button variant="outline" size="sm">Manage</Button>
-                  </div>
-                </div>
-                <div className="surface-data p-4 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium">Login History</p>
-                      <p className="text-xs text-muted-foreground">View recent login attempts</p>
-                    </div>
-                    <Button variant="outline" size="sm">View</Button>
                   </div>
                 </div>
               </div>
@@ -173,7 +277,6 @@ export default function SettingsPage() {
                   { label: 'Consent Records', desc: 'View your consent history', action: 'View' },
                   { label: 'Privacy Notice', desc: 'Read our privacy policy', action: 'Read' },
                   { label: 'Data Deletion', desc: 'Request deletion of your account', action: 'Request' },
-                  { label: 'Document Retention', desc: 'Academic records retained per policy', action: 'Details' },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center justify-between py-3 border-b border-border/50">
                     <div>
@@ -187,7 +290,7 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {!['general', 'notifications', 'security', 'privacy'].includes(activeSection) && (
+          {!['profile', 'general', 'notifications', 'security', 'privacy'].includes(activeSection) && (
             <div className="max-w-lg text-center py-12">
               <Settings className="w-12 h-12 mx-auto mb-3 text-muted-foreground/20" />
               <p className="text-sm font-medium text-muted-foreground">

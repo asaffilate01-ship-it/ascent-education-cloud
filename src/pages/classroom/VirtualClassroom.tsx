@@ -1,12 +1,11 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
-import { 
-  Video, VideoOff, Mic, MicOff, Monitor, Hand, MessageSquare, 
-  Users, Settings, PhoneOff, Maximize, PenTool, FileText,
-  Camera, ScreenShare, MoreVertical, Clock, Circle,
-  ChevronDown, Send, Smile, Paperclip
+import {
+  Video, VideoOff, Mic, MicOff, Monitor, Hand, MessageSquare,
+  Users, PhoneOff, PenTool, ScreenShare, Clock, Circle, Send
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const MOCK_STUDENTS = [
   { id: 1, name: 'Sara Ali', status: 'online', camera: true, mic: false, hand: false },
@@ -23,26 +22,160 @@ const MOCK_STUDENTS = [
   { id: 12, name: 'Kamran Yousuf', status: 'offline', camera: false, mic: false, hand: false },
 ];
 
-const CHAT_MESSAGES = [
-  { sender: 'Dr. Khan', text: 'Welcome to today\'s lecture on Strategic Management', time: '09:01', role: 'lecturer' },
+const CHAT_MESSAGES_INIT = [
+  { sender: 'Dr. Khan', text: "Welcome to today's lecture on Strategic Management", time: '09:01', role: 'lecturer' },
   { sender: 'Sara Ali', text: 'Good morning sir!', time: '09:02', role: 'student' },
   { sender: 'Omar Farooq', text: 'Can you share the slides please?', time: '09:03', role: 'student' },
   { sender: 'Dr. Khan', text: 'Slides are now being shared. Please open your notebooks.', time: '09:04', role: 'lecturer' },
-  { sender: 'Ayesha Noor', text: 'Sir, will this topic be in the exam?', time: '09:08', role: 'student' },
-  { sender: 'Dr. Khan', text: 'Yes, competitive strategy analysis is a key exam topic.', time: '09:09', role: 'lecturer' },
 ];
 
-type ViewMode = 'gallery' | 'speaker' | 'whiteboard';
+type ViewMode = 'speaker' | 'gallery' | 'whiteboard';
+type DrawTool = 'pen' | 'text' | 'eraser';
 
 export default function VirtualClassroom() {
+  const { user } = useAuth();
   const [viewMode, setViewMode] = useState<ViewMode>('speaker');
   const [chatOpen, setChatOpen] = useState(true);
   const [participantsOpen, setParticipantsOpen] = useState(false);
   const [isRecording, setIsRecording] = useState(true);
-  const [cameraOn, setCameraOn] = useState(true);
-  const [micOn, setMicOn] = useState(true);
+  const [cameraOn, setCameraOn] = useState(false);
+  const [micOn, setMicOn] = useState(false);
   const [screenSharing, setScreenSharing] = useState(false);
   const [chatMessage, setChatMessage] = useState('');
+  const [chatMessages, setChatMessages] = useState(CHAT_MESSAGES_INIT);
+  const [elapsed, setElapsed] = useState(0);
+
+  // Whiteboard state
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [drawTool, setDrawTool] = useState<DrawTool>('pen');
+  const [drawColor, setDrawColor] = useState('#000000');
+  const [lineWidth, setLineWidth] = useState(3);
+  const lastPoint = useRef<{ x: number; y: number } | null>(null);
+
+  // Local video stream
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  // Timer
+  useEffect(() => {
+    const interval = setInterval(() => setElapsed(prev => prev + 1), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatTime = (s: number) => {
+    const h = Math.floor(s / 3600).toString().padStart(2, '0');
+    const m = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
+    const sec = (s % 60).toString().padStart(2, '0');
+    return `${h}:${m}:${sec}`;
+  };
+
+  // Camera toggle with real media
+  const toggleCamera = useCallback(async () => {
+    if (cameraOn) {
+      streamRef.current?.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+      if (videoRef.current) videoRef.current.srcObject = null;
+      setCameraOn(false);
+    } else {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: micOn });
+        streamRef.current = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
+        }
+        setCameraOn(true);
+      } catch {
+        // Camera not available in preview
+        setCameraOn(true);
+      }
+    }
+  }, [cameraOn, micOn]);
+
+  const toggleMic = useCallback(async () => {
+    if (streamRef.current) {
+      const audioTracks = streamRef.current.getAudioTracks();
+      audioTracks.forEach(t => (t.enabled = !micOn));
+    }
+    setMicOn(!micOn);
+  }, [micOn]);
+
+  // Cleanup media on unmount
+  useEffect(() => {
+    return () => {
+      streamRef.current?.getTracks().forEach(t => t.stop());
+    };
+  }, []);
+
+  // Whiteboard drawing
+  const getCanvasPos = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: (e.clientX - rect.left) * (canvas.width / rect.width),
+      y: (e.clientY - rect.top) * (canvas.height / rect.height),
+    };
+  };
+
+  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    setIsDrawing(true);
+    lastPoint.current = getCanvasPos(e);
+  };
+
+  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDrawing || !canvasRef.current) return;
+    const ctx = canvasRef.current.getContext('2d');
+    if (!ctx || !lastPoint.current) return;
+    const pos = getCanvasPos(e);
+
+    ctx.beginPath();
+    ctx.moveTo(lastPoint.current.x, lastPoint.current.y);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.strokeStyle = drawTool === 'eraser' ? '#FFFFFF' : drawColor;
+    ctx.lineWidth = drawTool === 'eraser' ? lineWidth * 4 : lineWidth;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+    lastPoint.current = pos;
+  };
+
+  const stopDrawing = () => {
+    setIsDrawing(false);
+    lastPoint.current = null;
+  };
+
+  const clearCanvas = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  };
+
+  // Init canvas white
+  useEffect(() => {
+    if (viewMode === 'whiteboard' && canvasRef.current) {
+      const ctx = canvasRef.current.getContext('2d');
+      if (ctx) {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      }
+    }
+  }, [viewMode]);
+
+  const handleSendChat = () => {
+    if (!chatMessage.trim()) return;
+    setChatMessages(prev => [...prev, {
+      sender: user?.name || 'You',
+      text: chatMessage,
+      time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+      role: 'student',
+    }]);
+    setChatMessage('');
+  };
 
   const onlineCount = MOCK_STUDENTS.filter(s => s.status === 'online').length;
   const handsUp = MOCK_STUDENTS.filter(s => s.hand).length;
@@ -58,7 +191,7 @@ export default function VirtualClassroom() {
           </div>
           <span className="text-sm font-medium">Strategic Management — Week 8: Competitive Analysis</span>
           <span className="text-xs text-muted-foreground flex items-center gap-1">
-            <Clock className="w-3 h-3" /> 01:23:45
+            <Clock className="w-3 h-3" /> {formatTime(elapsed)}
           </span>
         </div>
         <div className="flex items-center gap-3">
@@ -71,7 +204,7 @@ export default function VirtualClassroom() {
             <Users className="w-3 h-3" /> {onlineCount}/{MOCK_STUDENTS.length}
           </span>
           {handsUp > 0 && (
-            <span className="text-xs text-warning font-medium flex items-center gap-1">
+            <span className="text-xs font-medium flex items-center gap-1 text-warning">
               <Hand className="w-3 h-3" /> {handsUp}
             </span>
           )}
@@ -100,17 +233,6 @@ export default function VirtualClassroom() {
           <div className="flex-1 rounded-xl overflow-hidden bg-foreground/95 relative">
             {viewMode === 'speaker' && (
               <>
-                {/* Main speaker */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
-                      <span className="text-3xl font-bold text-primary-foreground/70">DK</span>
-                    </div>
-                    <p className="text-primary-foreground/80 text-sm font-medium">Dr. Ahmed Khan</p>
-                    <p className="text-primary-foreground/40 text-xs">Sharing screen...</p>
-                  </div>
-                </div>
-                {/* Slide preview overlay */}
                 <div className="absolute inset-4 rounded-lg bg-background/95 p-8 flex flex-col items-center justify-center">
                   <div className="text-center max-w-xl">
                     <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-4">Chapter 8 — Strategic Management</p>
@@ -123,8 +245,23 @@ export default function VirtualClassroom() {
                     <p className="text-sm text-muted-foreground">Slide 14 of 32</p>
                   </div>
                 </div>
-                {/* Mini student grid */}
-                <div className="absolute bottom-3 right-3 flex gap-1.5">
+                {/* Self-view camera */}
+                <div className="absolute bottom-3 right-3 w-40 h-28 rounded-lg overflow-hidden bg-foreground/80 border-2 border-primary/30">
+                  {cameraOn ? (
+                    <video ref={videoRef} className="w-full h-full object-cover" muted playsInline autoPlay />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-1">
+                          <span className="text-xs font-bold text-primary-foreground/70">{user?.name?.charAt(0) || 'U'}</span>
+                        </div>
+                        <p className="text-[9px] text-primary-foreground/50">Camera off</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {/* Mini student strip */}
+                <div className="absolute bottom-3 left-3 flex gap-1.5">
                   {MOCK_STUDENTS.filter(s => s.camera && s.status === 'online').slice(0, 4).map((s) => (
                     <div key={s.id} className="w-20 h-14 rounded-lg bg-foreground/80 flex items-center justify-center relative">
                       <span className="text-[10px] text-primary-foreground/60 font-medium">{s.name.split(' ')[0]}</span>
@@ -137,7 +274,23 @@ export default function VirtualClassroom() {
 
             {viewMode === 'gallery' && (
               <div className="grid grid-cols-4 gap-2 p-3 h-full auto-rows-fr">
-                {MOCK_STUDENTS.map((s) => (
+                {/* Self */}
+                <div className="rounded-lg overflow-hidden bg-foreground/80 flex items-center justify-center relative border-2 border-primary/40">
+                  {cameraOn ? (
+                    <video ref={viewMode === 'gallery' ? videoRef : undefined} className="w-full h-full object-cover" muted playsInline autoPlay />
+                  ) : (
+                    <div className="text-center">
+                      <div className="w-10 h-10 rounded-full bg-primary/30 flex items-center justify-center mx-auto mb-1">
+                        <span className="text-xs font-bold text-primary-foreground/70">{user?.name?.charAt(0) || 'U'}</span>
+                      </div>
+                      <p className="text-[10px] text-primary-foreground/70 font-medium">You</p>
+                    </div>
+                  )}
+                  <div className="absolute bottom-1.5 left-1.5 flex gap-1">
+                    {micOn ? <Mic className="w-2.5 h-2.5 text-success" /> : <MicOff className="w-2.5 h-2.5 text-destructive/70" />}
+                  </div>
+                </div>
+                {MOCK_STUDENTS.slice(0, 11).map((s) => (
                   <div key={s.id} className={`rounded-lg flex items-center justify-center relative ${
                     s.status === 'offline' ? 'bg-foreground/60' : s.camera ? 'bg-foreground/80' : 'bg-foreground/70'
                   }`}>
@@ -149,9 +302,8 @@ export default function VirtualClassroom() {
                       </div>
                       <p className="text-[10px] text-primary-foreground/70 font-medium">{s.name}</p>
                     </div>
-                    {/* Status indicators */}
                     <div className="absolute bottom-1.5 left-1.5 flex gap-1">
-                      {s.mic ? <Mic className="w-2.5 h-2.5 text-primary-foreground/50" /> : <MicOff className="w-2.5 h-2.5 text-destructive/70" />}
+                      {s.mic ? <Mic className="w-2.5 h-2.5 text-success" /> : <MicOff className="w-2.5 h-2.5 text-destructive/70" />}
                       {!s.camera && <VideoOff className="w-2.5 h-2.5 text-destructive/70" />}
                     </div>
                     {s.hand && <Hand className="w-3.5 h-3.5 text-warning absolute top-1.5 right-1.5 animate-bounce" />}
@@ -166,30 +318,64 @@ export default function VirtualClassroom() {
             {viewMode === 'whiteboard' && (
               <div className="absolute inset-0 bg-background flex flex-col">
                 {/* Whiteboard toolbar */}
-                <div className="flex items-center gap-2 p-3 border-b border-border">
-                  <Button variant="outline" size="sm" className="h-8 text-xs"><PenTool className="w-3 h-3 mr-1" />Draw</Button>
-                  <Button variant="outline" size="sm" className="h-8 text-xs">Text</Button>
-                  <Button variant="outline" size="sm" className="h-8 text-xs">Shape</Button>
-                  <Button variant="outline" size="sm" className="h-8 text-xs">Eraser</Button>
+                <div className="flex items-center gap-2 p-3 border-b border-border flex-wrap">
+                  <Button
+                    variant={drawTool === 'pen' ? 'default' : 'outline'}
+                    size="sm"
+                    className="h-8 text-xs"
+                    onClick={() => setDrawTool('pen')}
+                  >
+                    <PenTool className="w-3 h-3 mr-1" />Draw
+                  </Button>
+                  <Button
+                    variant={drawTool === 'eraser' ? 'default' : 'outline'}
+                    size="sm"
+                    className="h-8 text-xs"
+                    onClick={() => setDrawTool('eraser')}
+                  >
+                    Eraser
+                  </Button>
                   <div className="flex gap-1 ml-2">
-                    {['bg-foreground', 'bg-primary', 'bg-destructive', 'bg-success', 'bg-warning'].map((c, i) => (
-                      <button key={i} className={`w-5 h-5 rounded-full ${c} border-2 border-background`} />
+                    {[
+                      { color: '#000000', cls: 'bg-foreground' },
+                      { color: 'hsl(var(--primary))', cls: 'bg-primary' },
+                      { color: '#EF4444', cls: 'bg-destructive' },
+                      { color: '#22C55E', cls: 'bg-success' },
+                      { color: '#EAB308', cls: 'bg-warning' },
+                    ].map((c, i) => (
+                      <button
+                        key={i}
+                        onClick={() => { setDrawColor(c.color); setDrawTool('pen'); }}
+                        className={`w-5 h-5 rounded-full ${c.cls} border-2 ${drawColor === c.color ? 'border-primary ring-2 ring-primary/30' : 'border-background'}`}
+                      />
                     ))}
                   </div>
+                  <select
+                    value={lineWidth}
+                    onChange={(e) => setLineWidth(Number(e.target.value))}
+                    className="h-8 text-xs bg-secondary rounded-lg px-2 ml-2"
+                  >
+                    <option value={2}>Thin</option>
+                    <option value={3}>Medium</option>
+                    <option value={6}>Thick</option>
+                    <option value={10}>Extra Thick</option>
+                  </select>
                   <div className="ml-auto flex gap-2">
-                    <Button variant="outline" size="sm" className="h-8 text-xs">Undo</Button>
-                    <Button variant="outline" size="sm" className="h-8 text-xs">Clear</Button>
-                    <Button variant="outline" size="sm" className="h-8 text-xs">Save</Button>
+                    <Button variant="outline" size="sm" className="h-8 text-xs" onClick={clearCanvas}>Clear</Button>
                   </div>
                 </div>
-                {/* Canvas area */}
-                <div className="flex-1 flex items-center justify-center text-muted-foreground">
-                  <div className="text-center">
-                    <PenTool className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                    <p className="text-sm font-medium">Interactive Whiteboard</p>
-                    <p className="text-xs mt-1">Draw diagrams, write formulas, annotate slides</p>
-                    <p className="text-[10px] mt-2 text-primary">Canvas integration ready for WebRTC</p>
-                  </div>
+                {/* Canvas */}
+                <div className="flex-1 relative">
+                  <canvas
+                    ref={canvasRef}
+                    width={1920}
+                    height={1080}
+                    className="absolute inset-0 w-full h-full cursor-crosshair"
+                    onMouseDown={startDrawing}
+                    onMouseMove={draw}
+                    onMouseUp={stopDrawing}
+                    onMouseLeave={stopDrawing}
+                  />
                 </div>
               </div>
             )}
@@ -201,7 +387,7 @@ export default function VirtualClassroom() {
               variant={micOn ? 'outline' : 'destructive'}
               size="sm"
               className="rounded-full w-10 h-10 p-0"
-              onClick={() => setMicOn(!micOn)}
+              onClick={toggleMic}
             >
               {micOn ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
             </Button>
@@ -209,7 +395,7 @@ export default function VirtualClassroom() {
               variant={cameraOn ? 'outline' : 'destructive'}
               size="sm"
               className="rounded-full w-10 h-10 p-0"
-              onClick={() => setCameraOn(!cameraOn)}
+              onClick={toggleCamera}
             >
               {cameraOn ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
             </Button>
@@ -256,7 +442,7 @@ export default function VirtualClassroom() {
           </div>
         </div>
 
-        {/* Side Panel: Chat or Participants */}
+        {/* Side Panel */}
         {(chatOpen || participantsOpen) && (
           <div className="w-72 surface-card flex flex-col shrink-0">
             {chatOpen && (
@@ -265,8 +451,8 @@ export default function VirtualClassroom() {
                   <h3 className="text-sm font-semibold">Class Chat</h3>
                 </div>
                 <div className="flex-1 overflow-y-auto p-3 space-y-3">
-                  {CHAT_MESSAGES.map((m, i) => (
-                    <div key={i} className={m.role === 'lecturer' ? '' : ''}>
+                  {chatMessages.map((m, i) => (
+                    <div key={i}>
                       <div className="flex items-center gap-1.5 mb-0.5">
                         <span className={`text-[10px] font-semibold ${m.role === 'lecturer' ? 'text-primary' : 'text-foreground'}`}>
                           {m.sender}
@@ -284,10 +470,11 @@ export default function VirtualClassroom() {
                     <input
                       value={chatMessage}
                       onChange={(e) => setChatMessage(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') handleSendChat(); }}
                       placeholder="Type a message..."
                       className="flex-1 bg-secondary text-sm px-3 py-2 rounded-lg outline-none text-foreground placeholder:text-muted-foreground"
                     />
-                    <Button size="sm" className="h-9 w-9 p-0 shrink-0">
+                    <Button size="sm" className="h-9 w-9 p-0 shrink-0" onClick={handleSendChat}>
                       <Send className="w-3.5 h-3.5" />
                     </Button>
                   </div>
@@ -298,10 +485,9 @@ export default function VirtualClassroom() {
             {participantsOpen && (
               <>
                 <div className="p-3 border-b border-border">
-                  <h3 className="text-sm font-semibold">Participants ({MOCK_STUDENTS.length})</h3>
+                  <h3 className="text-sm font-semibold">Participants ({MOCK_STUDENTS.length + 1})</h3>
                 </div>
                 <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
-                  {/* Lecturer */}
                   <div className="flex items-center gap-2.5 p-2 rounded-lg bg-primary/5">
                     <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center">
                       <span className="text-[10px] font-bold text-primary">DK</span>
@@ -312,7 +498,6 @@ export default function VirtualClassroom() {
                     </div>
                     <Mic className="w-3 h-3 text-success" />
                   </div>
-                  {/* Students */}
                   {MOCK_STUDENTS.map((s) => (
                     <div key={s.id} className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-secondary transition-default">
                       <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center relative">
@@ -329,16 +514,9 @@ export default function VirtualClassroom() {
                       <div className="flex items-center gap-1">
                         {s.hand && <Hand className="w-3 h-3 text-warning" />}
                         {s.mic ? <Mic className="w-3 h-3 text-success" /> : <MicOff className="w-3 h-3 text-muted-foreground/40" />}
-                        <button className="p-1 hover:bg-accent rounded">
-                          <MoreVertical className="w-3 h-3 text-muted-foreground" />
-                        </button>
                       </div>
                     </div>
                   ))}
-                </div>
-                <div className="p-3 border-t border-border space-y-1.5">
-                  <Button variant="outline" size="sm" className="w-full text-xs">Mute All Students</Button>
-                  <Button variant="outline" size="sm" className="w-full text-xs">Disable All Cameras</Button>
                 </div>
               </>
             )}
