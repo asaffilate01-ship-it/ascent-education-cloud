@@ -4,25 +4,32 @@ import { MapPin, Phone, Mail, Clock, Send, Globe, MessageSquare } from 'lucide-r
 import { useState } from 'react';
 import { toast } from 'sonner';
 import TenantNav from '@/components/TenantNav';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function TenantContactPage() {
   const { slug } = useParams();
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
   const [sending, setSending] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.message) {
       toast.error('Please fill in all required fields');
       return;
     }
     setSending(true);
-    // Simulate send
-    setTimeout(() => {
-      setSending(false);
+    try {
+      const { data, error } = await supabase.functions.invoke('contact-form', {
+        body: { ...formData, tenant_slug: slug },
+      });
+      if (error) throw error;
       toast.success('Message sent! We\'ll get back to you within 24 hours.');
       setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
-    }, 1000);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to send message. Please try again.');
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
