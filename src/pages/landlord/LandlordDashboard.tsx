@@ -17,7 +17,7 @@ const statusVariant = (s: string) => {
 };
 
 export default function LandlordDashboard() {
-  const { data: tenants, loading: tLoading } = useSupabaseQuery('tenants', {
+  const { data: tenants, loading: tLoading, refetch } = useSupabaseQuery('tenants', {
     orderBy: { column: 'created_at', ascending: false },
   });
   const { data: invoices, loading: iLoading } = useSupabaseQuery('invoices');
