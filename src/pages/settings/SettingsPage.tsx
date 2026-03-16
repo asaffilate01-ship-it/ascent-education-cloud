@@ -1,7 +1,7 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { Settings, Bell, Lock, Globe, Palette, Users, Shield, Database, Mail, Smartphone, Loader2, Camera } from 'lucide-react';
+import { Settings, Bell, Lock, Globe, Palette, Users, Shield, Database, Mail, Smartphone, Loader2, Camera, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
