@@ -1,8 +1,11 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
-import { UserPlus, CreditCard, Users, TrendingUp, Phone } from 'lucide-react';
+import { UserPlus, CreditCard, Users, TrendingUp, Phone, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useState } from 'react';
+import AddLeadModal from '@/components/modals/AddLeadModal';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { useAuth } from '@/contexts/AuthContext';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
@@ -17,17 +20,26 @@ const PIPELINE_STAGES = [
 
 export default function AgentDashboard() {
   const { user } = useAuth();
-  const { data: applications, loading } = useSupabaseQuery('applications', {
+  const [addLeadOpen, setAddLeadOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const { data: applications, loading, refetch } = useSupabaseQuery('applications', {
     orderBy: { column: 'updated_at', ascending: false },
   });
   const { data: invoices } = useSupabaseQuery('invoices');
 
   if (loading) return <DashboardSkeleton />;
 
-  // Filter to agent's own applications
   const myApps = user?.id
     ? applications.filter(a => a.agent_id === user.id || a.source === 'agent')
     : applications;
+
+  const filtered = search
+    ? myApps.filter(a =>
+        a.student_name.toLowerCase().includes(search.toLowerCase()) ||
+        a.email.toLowerCase().includes(search.toLowerCase()) ||
+        (a.programme_name || '').toLowerCase().includes(search.toLowerCase())
+      )
+    : myApps;
 
   const enrolledCount = myApps.filter(a => a.stage === 'enrolled').length;
   const commissionInvoices = invoices.filter(i => i.type === 'commission');
@@ -38,7 +50,11 @@ export default function AgentDashboard() {
     <DashboardLayout
       title="Agent Pipeline"
       subtitle="Your recruitment dashboard"
-      actions={<Button size="sm"><UserPlus className="w-3.5 h-3.5 mr-1.5" /> Add Lead</Button>}
+      actions={
+        <Button size="sm" onClick={() => setAddLeadOpen(true)}>
+          <UserPlus className="w-3.5 h-3.5 mr-1.5" /> Add Lead
+        </Button>
+      }
     >
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Pipeline Value" value={`£${pipelineValue.toLocaleString()}`} icon={TrendingUp} />
@@ -47,12 +63,25 @@ export default function AgentDashboard() {
         <StatCard label="Earned Commission" value={`£${totalEarned.toLocaleString()}`} change="Paid" changeType="positive" icon={CreditCard} />
       </div>
 
+      {/* Search */}
+      <div className="mb-4">
+        <div className="relative max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+          <Input
+            placeholder="Search leads..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9 h-8 text-sm"
+          />
+        </div>
+      </div>
+
       {/* Pipeline Kanban */}
       <div className="mb-4">
         <h2 className="text-sm font-semibold mb-3">Sales Pipeline</h2>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {PIPELINE_STAGES.map((stage) => {
-            const leads = myApps.filter(a => a.stage === stage.key);
+            const leads = filtered.filter(a => a.stage === stage.key);
             return (
               <div key={stage.key} className="surface-data rounded-lg p-3">
                 <div className="flex items-center justify-between mb-3">
@@ -102,6 +131,8 @@ export default function AgentDashboard() {
           )}
         </div>
       </div>
+
+      <AddLeadModal open={addLeadOpen} onOpenChange={setAddLeadOpen} onCreated={refetch} />
     </DashboardLayout>
   );
 }

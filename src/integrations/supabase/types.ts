@@ -610,6 +610,74 @@ export type Database = {
           },
         ]
       }
+      student_enrolments: {
+        Row: {
+          application_id: string | null
+          completed_at: string | null
+          created_at: string
+          enrolled_at: string
+          id: string
+          programme_id: string
+          status: string
+          student_id: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          application_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          enrolled_at?: string
+          id?: string
+          programme_id: string
+          status?: string
+          student_id: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          application_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          enrolled_at?: string
+          id?: string
+          programme_id?: string
+          status?: string
+          student_id?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_enrolments_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_enrolments_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_enrolments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_enrolments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       submissions: {
         Row: {
           assignment_id: string

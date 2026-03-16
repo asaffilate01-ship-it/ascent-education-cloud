@@ -1,8 +1,10 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
-import { CreditCard, FileText, TrendingUp, AlertTriangle, Handshake } from 'lucide-react';
+import { CreditCard, FileText, TrendingUp, AlertTriangle, Handshake, Search, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState } from 'react';
 import CreateInvoiceModal from '@/components/modals/CreateInvoiceModal';
 import { useToast } from '@/hooks/use-toast';
@@ -19,6 +21,9 @@ const statusVariant = (s: string): 'success' | 'warning' | 'danger' | 'info' | '
 
 export default function FinanceDashboard() {
   const [invoiceOpen, setInvoiceOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
   const { toast } = useToast();
   const { data: invoices, loading, refetch } = useSupabaseQuery('invoices', {
     orderBy: { column: 'created_at', ascending: false },
@@ -30,6 +35,16 @@ export default function FinanceDashboard() {
   const totalCollected = invoices.reduce((s, i) => s + Number(i.paid), 0);
   const overdue = invoices.filter((i) => i.status === 'overdue').reduce((s, i) => s + (Number(i.amount) - Number(i.paid)), 0);
   const commissionsDue = invoices.filter((i) => i.type === 'commission').reduce((s, i) => s + Number(i.amount), 0);
+
+  const filtered = invoices.filter((inv) => {
+    if (statusFilter !== 'all' && inv.status !== statusFilter) return false;
+    if (typeFilter !== 'all' && inv.type !== typeFilter) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      return inv.student_name.toLowerCase().includes(q) || inv.id.includes(q);
+    }
+    return true;
+  });
 
   return (
     <DashboardLayout
@@ -44,10 +59,43 @@ export default function FinanceDashboard() {
         <StatCard label="Commissions Due" value={`£${commissionsDue.toLocaleString()}`} icon={Handshake} />
       </div>
 
+      {/* Filters */}
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+          <Input placeholder="Search by student or ID..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-8 text-sm" />
+        </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-[130px] h-8 text-xs">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="paid">Paid</SelectItem>
+            <SelectItem value="partial">Partial</SelectItem>
+            <SelectItem value="overdue">Overdue</SelectItem>
+            <SelectItem value="refunded">Refunded</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={typeFilter} onValueChange={setTypeFilter}>
+          <SelectTrigger className="w-[130px] h-8 text-xs">
+            <SelectValue placeholder="Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="tuition">Tuition</SelectItem>
+            <SelectItem value="exam">Exam</SelectItem>
+            <SelectItem value="deposit">Deposit</SelectItem>
+            <SelectItem value="commission">Commission</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button variant="outline" size="sm" className="text-xs ml-auto" onClick={() => toast({ title: 'Exported', description: 'CSV file downloaded successfully.' })}>Export CSV</Button>
+      </div>
+
       {/* Invoice Table */}
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-sm font-semibold">Invoices ({invoices.length})</h2>
-        <Button variant="outline" size="sm" className="text-xs" onClick={() => toast({ title: 'Exported', description: 'CSV file downloaded successfully.' })}>Export CSV</Button>
+        <h2 className="text-sm font-semibold">Invoices ({filtered.length})</h2>
       </div>
       <div className="surface-card overflow-hidden">
         <div className="overflow-x-auto">
@@ -65,7 +113,7 @@ export default function FinanceDashboard() {
               </tr>
             </thead>
             <tbody>
-              {invoices.map((inv) => (
+              {filtered.map((inv) => (
                 <tr key={inv.id} className="border-t border-border/50 hover:bg-secondary/50 cursor-pointer transition-default">
                   <td className="px-4 py-3 text-sm font-mono font-medium">{inv.id.slice(0, 8)}</td>
                   <td className="px-4 py-3 text-sm">{inv.student_name}</td>
@@ -90,8 +138,8 @@ export default function FinanceDashboard() {
             </tbody>
           </table>
         </div>
-        {invoices.length === 0 && (
-          <div className="py-12 text-center text-muted-foreground text-sm">No invoices yet</div>
+        {filtered.length === 0 && (
+          <div className="py-12 text-center text-muted-foreground text-sm">No invoices match your filters</div>
         )}
       </div>
 

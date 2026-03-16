@@ -1,8 +1,10 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
-import { UserPlus, FileText, Award, TrendingUp, LayoutGrid, List } from 'lucide-react';
+import { UserPlus, FileText, Award, TrendingUp, LayoutGrid, List, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState } from 'react';
 import AddLeadModal from '@/components/modals/AddLeadModal';
 import KanbanBoard from '@/components/admissions/KanbanBoard';
@@ -33,11 +35,27 @@ const stageVariant = (s: string): 'success' | 'warning' | 'danger' | 'info' | 'n
 export default function AdmissionsCRM() {
   const [addLeadOpen, setAddLeadOpen] = useState(false);
   const [view, setView] = useState<'kanban' | 'table'>('kanban');
+  const [search, setSearch] = useState('');
+  const [stageFilter, setStageFilter] = useState<string>('all');
   const { data: applications, loading, refetch } = useSupabaseQuery('applications', {
     orderBy: { column: 'updated_at', ascending: false },
   });
 
   if (loading) return <DashboardSkeleton />;
+
+  const filtered = applications.filter((app) => {
+    if (stageFilter !== 'all' && app.stage !== stageFilter) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      return (
+        app.student_name.toLowerCase().includes(q) ||
+        app.email.toLowerCase().includes(q) ||
+        (app.programme_name || '').toLowerCase().includes(q) ||
+        (app.counsellor || '').toLowerCase().includes(q)
+      );
+    }
+    return true;
+  });
 
   const stageCounts = PIPELINE_STAGES.map((stage) => ({
     ...stage,
@@ -104,13 +122,32 @@ export default function AdmissionsCRM() {
         </div>
       </div>
 
+      {/* Search & Filters */}
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+          <Input placeholder="Search by name, email, programme..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-8 text-sm" />
+        </div>
+        <Select value={stageFilter} onValueChange={setStageFilter}>
+          <SelectTrigger className="w-[150px] h-8 text-xs">
+            <SelectValue placeholder="Stage" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Stages</SelectItem>
+            {PIPELINE_STAGES.map((s) => (
+              <SelectItem key={s.key} value={s.key}>{s.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* View Toggle */}
       {view === 'kanban' ? (
-        <KanbanBoard applications={applications} onRefetch={refetch} />
+        <KanbanBoard applications={filtered} onRefetch={refetch} />
       ) : (
         <>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-sm font-semibold">Recent Applications ({applications.length})</h2>
+            <h2 className="text-sm font-semibold">Applications ({filtered.length})</h2>
           </div>
           <div className="surface-card overflow-hidden">
             <div className="overflow-x-auto">
@@ -126,7 +163,7 @@ export default function AdmissionsCRM() {
                   </tr>
                 </thead>
                 <tbody>
-                  {applications.map((app) => (
+                  {filtered.map((app) => (
                     <tr key={app.id} className="border-t border-border/50 hover:bg-secondary/50 cursor-pointer transition-default">
                       <td className="px-4 py-3">
                         <p className="text-sm font-medium">{app.student_name}</p>
@@ -146,8 +183,8 @@ export default function AdmissionsCRM() {
                 </tbody>
               </table>
             </div>
-            {applications.length === 0 && (
-              <div className="py-12 text-center text-muted-foreground text-sm">No applications yet</div>
+            {filtered.length === 0 && (
+              <div className="py-12 text-center text-muted-foreground text-sm">No applications match your filters</div>
             )}
           </div>
         </>
