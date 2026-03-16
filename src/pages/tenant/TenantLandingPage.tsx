@@ -27,23 +27,25 @@ export default function TenantLandingPage() {
   useEffect(() => {
     async function fetchTenant() {
       if (!slug) { setLoading(false); return; }
+      // Use tenants table with authenticated fallback to tenants_public view
       const { data } = await supabase
-        .from('tenants_public' as any)
-        .select('id, name, slug, primary_color, accent_color, logo_url, brand_name')
+        .from('tenants')
+        .select('name, slug, primary_color, accent_color, logo_url, brand_name, custom_domain')
         .eq('slug', slug)
         .single();
-      if (data) {
+      const t = data as any;
+      if (t) {
         setTheme({
-          primaryColor: data.primary_color || DEFAULT_THEME.primaryColor,
-          accentColor: data.accent_color || DEFAULT_THEME.accentColor,
-          logoUrl: data.logo_url || '',
+          primaryColor: t.primary_color || DEFAULT_THEME.primaryColor,
+          accentColor: t.accent_color || DEFAULT_THEME.accentColor,
+          logoUrl: t.logo_url || '',
           faviconUrl: '',
           fontFamily: 'Inter',
-          heroTitle: `Welcome to ${data.brand_name || data.name}`,
+          heroTitle: `Welcome to ${t.brand_name || t.name}`,
           heroSubtitle: 'Study accredited diplomas and progress to top universities worldwide.',
           heroImageUrl: '',
-          customDomain: data.custom_domain || '',
-          brandName: data.brand_name || data.name,
+          customDomain: t.custom_domain || '',
+          brandName: t.brand_name || t.name,
         });
       }
       setLoading(false);
