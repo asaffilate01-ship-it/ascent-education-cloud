@@ -20,8 +20,9 @@ export default function LandlordDashboard() {
     orderBy: { column: 'created_at', ascending: false },
   });
   const { data: invoices, loading: iLoading } = useSupabaseQuery('invoices');
+  const { data: applications, loading: aLoading } = useSupabaseQuery('applications');
 
-  const loading = tLoading || iLoading;
+  const loading = tLoading || iLoading || aLoading;
   if (loading) return <DashboardSkeleton />;
 
   const totalMRR = tenants.reduce((s, t) => s + Number(t.monthly_revenue || 0), 0);
