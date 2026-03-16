@@ -215,6 +215,70 @@ export type Database = {
           },
         ]
       }
+      classroom_sessions: {
+        Row: {
+          created_at: string
+          display_name: string
+          ended_at: string | null
+          host_id: string
+          id: string
+          module_id: string | null
+          participant_count: number
+          room_name: string
+          started_at: string
+          status: string
+          tenant_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          display_name: string
+          ended_at?: string | null
+          host_id: string
+          id?: string
+          module_id?: string | null
+          participant_count?: number
+          room_name: string
+          started_at?: string
+          status?: string
+          tenant_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          ended_at?: string | null
+          host_id?: string
+          id?: string
+          module_id?: string | null
+          participant_count?: number
+          room_name?: string
+          started_at?: string
+          status?: string
+          tenant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classroom_sessions_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "classroom_sessions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "classroom_sessions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversation_participants: {
         Row: {
           conversation_id: string
@@ -342,6 +406,69 @@ export type Database = {
           },
           {
             foreignKeyName: "invoices_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_listings: {
+        Row: {
+          company: string
+          created_at: string
+          deadline: string | null
+          description: string | null
+          id: string
+          location: string
+          salary: string | null
+          status: string
+          tenant_id: string | null
+          title: string
+          type: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          company: string
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          location: string
+          salary?: string | null
+          status?: string
+          tenant_id?: string | null
+          title: string
+          type?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          company?: string
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          location?: string
+          salary?: string | null
+          status?: string
+          tenant_id?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_listings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_listings_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants_public"
@@ -498,6 +625,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      partner_universities: {
+        Row: {
+          commission: string | null
+          country: string
+          created_at: string
+          fee: string | null
+          flag: string
+          id: string
+          ielts: string | null
+          intake: string | null
+          name: string
+          programme: string
+          status: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          commission?: string | null
+          country: string
+          created_at?: string
+          fee?: string | null
+          flag?: string
+          id?: string
+          ielts?: string | null
+          intake?: string | null
+          name: string
+          programme: string
+          status?: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          commission?: string | null
+          country?: string
+          created_at?: string
+          fee?: string | null
+          flag?: string
+          id?: string
+          ielts?: string | null
+          intake?: string | null
+          name?: string
+          programme?: string
+          status?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
