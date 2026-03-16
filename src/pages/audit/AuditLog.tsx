@@ -41,7 +41,7 @@ const ENTITY_ICONS: Record<string, typeof Activity> = {
 };
 
 export default function AuditLog() {
-  const { role } = useAuth();
+  const { user } = useAuth();
   const [logs, setLogs] = useState<AuditEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
