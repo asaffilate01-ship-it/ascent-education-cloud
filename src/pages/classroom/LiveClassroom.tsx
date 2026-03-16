@@ -43,7 +43,7 @@ export default function LiveClassroom() {
 
   useEffect(() => {
     if (user?.email) {
-      setDisplayName(user.user_metadata?.full_name || user.email.split('@')[0]);
+      setDisplayName((user as any)?.user_metadata?.full_name || user.email?.split('@')[0] || 'Participant');
     }
   }, [user]);
 
