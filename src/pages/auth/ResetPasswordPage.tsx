@@ -78,7 +78,7 @@ export default function ResetPasswordPage() {
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Min 6 characters"
+                placeholder="Min 8 characters"
                 className="w-full bg-secondary text-sm px-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-primary/20"
               />
               <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
