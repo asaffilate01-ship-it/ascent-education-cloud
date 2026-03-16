@@ -47,7 +47,6 @@ import AnalyticsDashboard from "./pages/analytics/AnalyticsDashboard";
 import MarketingDashboard from "./pages/marketing/MarketingDashboard";
 
 // Virtual Classroom
-import VirtualClassroom from "./pages/classroom/VirtualClassroom";
 import LiveClassroom from "./pages/classroom/LiveClassroom";
 
 // Student sub-pages
@@ -143,7 +142,7 @@ function AppRoutes() {
       {/* ========== TENANT: Lecturer ========== */}
       <Route path="/lecturer" element={<P><LecturerDashboard /></P>} />
       <Route path="/lecturer/teaching" element={<P><LecturerTeaching /></P>} />
-      <Route path="/lecturer/classroom" element={<P><VirtualClassroom /></P>} />
+      <Route path="/lecturer/classroom" element={<P><LiveClassroom /></P>} />
       <Route path="/lecturer/marking" element={<P><LecturerMarking /></P>} />
       <Route path="/lecturer/attendance" element={<P><LecturerAttendance /></P>} />
       <Route path="/lecturer/students" element={<P><StudentManagement /></P>} />
@@ -206,7 +205,7 @@ function AppRoutes() {
       {/* ========== EXTERNAL: Student ========== */}
       <Route path="/student" element={<P><StudentDashboard /></P>} />
       <Route path="/student/courses" element={<P><StudentCourses /></P>} />
-      <Route path="/student/classroom" element={<P><VirtualClassroom /></P>} />
+      <Route path="/student/classroom" element={<P><LiveClassroom /></P>} />
       <Route path="/student/assignments" element={<P><StudentAssignments /></P>} />
       <Route path="/student/grades" element={<P><StudentGrades /></P>} />
       <Route path="/student/attendance" element={<P><AttendanceDashboard /></P>} />
