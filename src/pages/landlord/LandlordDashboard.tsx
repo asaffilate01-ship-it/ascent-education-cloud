@@ -22,6 +22,25 @@ export default function LandlordDashboard() {
   const { data: invoices, loading: iLoading } = useSupabaseQuery('invoices');
   const { data: applications, loading: aLoading } = useSupabaseQuery('applications');
 
+  // MRR trend
+  const mrrTrend = useMemo(() => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return months.map((m, i) => {
+      const joined = tenants.filter(t => new Date(t.created_at).getMonth() <= i);
+      const mrr = joined.reduce((s, t) => s + Number(t.monthly_revenue || 0), 0);
+      return { month: m, mrr };
+    });
+  }, [tenants]);
+
+  // Enrolment trend
+  const enrolmentTrend = useMemo(() => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return months.map(m => {
+      const mApps = applications.filter(a => new Date(a.created_at).toLocaleString('en', { month: 'short' }) === m);
+      return { month: m, applications: mApps.length, enrolled: mApps.filter(a => a.stage === 'enrolled').length };
+    });
+  }, [applications]);
+
   const loading = tLoading || iLoading || aLoading;
   if (loading) return <DashboardSkeleton />;
 
