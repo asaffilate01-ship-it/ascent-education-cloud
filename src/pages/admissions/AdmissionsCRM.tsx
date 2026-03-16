@@ -1,13 +1,13 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
-import { UserPlus, FileText, Award, TrendingUp } from 'lucide-react';
+import { UserPlus, FileText, Award, TrendingUp, LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import AddLeadModal from '@/components/modals/AddLeadModal';
+import KanbanBoard from '@/components/admissions/KanbanBoard';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
-import type { Tables } from '@/integrations/supabase/types';
 
 const PIPELINE_STAGES = [
   { key: 'lead', label: 'Lead' },
@@ -32,13 +32,13 @@ const stageVariant = (s: string): 'success' | 'warning' | 'danger' | 'info' | 'n
 
 export default function AdmissionsCRM() {
   const [addLeadOpen, setAddLeadOpen] = useState(false);
+  const [view, setView] = useState<'kanban' | 'table'>('kanban');
   const { data: applications, loading, refetch } = useSupabaseQuery('applications', {
     orderBy: { column: 'updated_at', ascending: false },
   });
 
   if (loading) return <DashboardSkeleton />;
 
-  // Compute pipeline counts from real data
   const stageCounts = PIPELINE_STAGES.map((stage) => ({
     ...stage,
     count: applications.filter((a) => a.stage === stage.key).length,
@@ -53,7 +53,27 @@ export default function AdmissionsCRM() {
     <DashboardLayout
       title="Admissions Pipeline"
       subtitle="Lead-to-Enrolment CRM — All application stages"
-      actions={<Button size="sm" onClick={() => setAddLeadOpen(true)}><UserPlus className="w-3.5 h-3.5 mr-1.5" /> New Lead</Button>}
+      actions={
+        <div className="flex items-center gap-2">
+          <div className="flex items-center rounded-md border border-border overflow-hidden">
+            <button
+              onClick={() => setView('kanban')}
+              className={`p-1.5 transition-colors ${view === 'kanban' ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:text-foreground'}`}
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => setView('table')}
+              className={`p-1.5 transition-colors ${view === 'table' ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:text-foreground'}`}
+            >
+              <List className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <Button size="sm" onClick={() => setAddLeadOpen(true)}>
+            <UserPlus className="w-3.5 h-3.5 mr-1.5" /> New Lead
+          </Button>
+        </div>
+      }
     >
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Total Leads" value={String(totalLeads)} icon={UserPlus} />
@@ -84,48 +104,54 @@ export default function AdmissionsCRM() {
         </div>
       </div>
 
-      {/* Applications Table */}
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-sm font-semibold">Recent Applications ({applications.length})</h2>
-      </div>
-      <div className="surface-card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="surface-data">
-                <th className="text-label text-left px-4 py-3">Student</th>
-                <th className="text-label text-left px-4 py-3 hidden md:table-cell">Programme</th>
-                <th className="text-label text-left px-4 py-3">Stage</th>
-                <th className="text-label text-left px-4 py-3 hidden md:table-cell">Counsellor</th>
-                <th className="text-label text-left px-4 py-3 hidden lg:table-cell">Source</th>
-                <th className="text-label text-left px-4 py-3 hidden sm:table-cell">Updated</th>
-              </tr>
-            </thead>
-            <tbody>
-              {applications.map((app) => (
-                <tr key={app.id} className="border-t border-border/50 hover:bg-secondary/50 cursor-pointer transition-default">
-                  <td className="px-4 py-3">
-                    <p className="text-sm font-medium">{app.student_name}</p>
-                    <p className="text-xs text-muted-foreground">{app.email}</p>
-                  </td>
-                  <td className="px-4 py-3 text-sm hidden md:table-cell">{app.programme_name || '—'}</td>
-                  <td className="px-4 py-3">
-                    <StatusBadge status={app.stage.replace(/_/g, ' ')} variant={stageVariant(app.stage)} />
-                  </td>
-                  <td className="px-4 py-3 text-sm hidden md:table-cell">{app.counsellor || '—'}</td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground hidden lg:table-cell">{app.source || '—'}</td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground hidden sm:table-cell">
-                    {new Date(app.updated_at).toLocaleDateString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {applications.length === 0 && (
-          <div className="py-12 text-center text-muted-foreground text-sm">No applications yet</div>
-        )}
-      </div>
+      {/* View Toggle */}
+      {view === 'kanban' ? (
+        <KanbanBoard applications={applications} onRefetch={refetch} />
+      ) : (
+        <>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-sm font-semibold">Recent Applications ({applications.length})</h2>
+          </div>
+          <div className="surface-card overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="surface-data">
+                    <th className="text-label text-left px-4 py-3">Student</th>
+                    <th className="text-label text-left px-4 py-3 hidden md:table-cell">Programme</th>
+                    <th className="text-label text-left px-4 py-3">Stage</th>
+                    <th className="text-label text-left px-4 py-3 hidden md:table-cell">Counsellor</th>
+                    <th className="text-label text-left px-4 py-3 hidden lg:table-cell">Source</th>
+                    <th className="text-label text-left px-4 py-3 hidden sm:table-cell">Updated</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {applications.map((app) => (
+                    <tr key={app.id} className="border-t border-border/50 hover:bg-secondary/50 cursor-pointer transition-default">
+                      <td className="px-4 py-3">
+                        <p className="text-sm font-medium">{app.student_name}</p>
+                        <p className="text-xs text-muted-foreground">{app.email}</p>
+                      </td>
+                      <td className="px-4 py-3 text-sm hidden md:table-cell">{app.programme_name || '—'}</td>
+                      <td className="px-4 py-3">
+                        <StatusBadge status={app.stage.replace(/_/g, ' ')} variant={stageVariant(app.stage)} />
+                      </td>
+                      <td className="px-4 py-3 text-sm hidden md:table-cell">{app.counsellor || '—'}</td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground hidden lg:table-cell">{app.source || '—'}</td>
+                      <td className="px-4 py-3 text-xs text-muted-foreground hidden sm:table-cell">
+                        {new Date(app.updated_at).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {applications.length === 0 && (
+              <div className="py-12 text-center text-muted-foreground text-sm">No applications yet</div>
+            )}
+          </div>
+        </>
+      )}
 
       <AddLeadModal open={addLeadOpen} onOpenChange={setAddLeadOpen} onCreated={refetch} />
     </DashboardLayout>
