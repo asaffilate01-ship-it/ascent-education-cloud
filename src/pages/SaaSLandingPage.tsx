@@ -1,12 +1,14 @@
 import { 
   GraduationCap, BookOpen, Users, Globe, ArrowRight, Shield, Video, 
   Briefcase, CreditCard, FileCheck, UserPlus, BarChart3, Building2,
-  Zap, CheckCircle, Server, Lock, Cloud, Smartphone, Layers, Menu, X
+  Zap, CheckCircle, Server, Lock, Cloud, Smartphone, Layers, Menu, X,
+  Star, Quote
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import heroDashboard from '@/assets/hero-dashboard.png';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
