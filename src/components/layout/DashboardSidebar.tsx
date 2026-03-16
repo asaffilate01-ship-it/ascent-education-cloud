@@ -162,6 +162,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Assignments', icon: ClipboardList, path: '/student/assignments' },
       { label: 'Grades', icon: BarChart3, path: '/student/grades' },
       { label: 'Attendance', icon: Calendar, path: '/student/attendance' },
+      { label: 'Timeline', icon: Clock, path: '/student/timeline' },
       { label: 'Library', icon: Library, path: '/student/library' },
     ]},
     { title: 'Services', items: [
