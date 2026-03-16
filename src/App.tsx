@@ -223,6 +223,7 @@ function AppRoutes() {
       <Route path="/student/library" element={<P><StudentLibrary /></P>} />
       <Route path="/student/finance" element={<P><FinanceDashboard /></P>} />
       <Route path="/student/progression" element={<P><ProgressionDashboard /></P>} />
+      <Route path="/student/timeline" element={<P><AcademicTimeline /></P>} />
       <Route path="/student/career" element={<P><StudentCareer /></P>} />
       <Route path="/student/support" element={<P><MessagingInbox /></P>} />
 
