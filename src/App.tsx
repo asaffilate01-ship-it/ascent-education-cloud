@@ -134,6 +134,7 @@ function AppRoutes() {
       <Route path="/director/quality" element={<P><QADashboard /></P>} />
       <Route path="/director/finance" element={<P><FinanceDashboard /></P>} />
       <Route path="/director/agents" element={<P><AgentDashboard /></P>} />
+      <Route path="/director/schedule" element={<P><ScheduleManager /></P>} />
       <Route path="/director/branding" element={<P><TenantBranding /></P>} />
       <Route path="/director/reports" element={<P><AnalyticsDashboard /></P>} />
       <Route path="/director/settings" element={<P><SettingsPage /></P>} />
