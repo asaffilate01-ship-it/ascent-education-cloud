@@ -28,9 +28,10 @@ export default function TenantLandingPage() {
     async function fetchTenant() {
       if (!slug) { setLoading(false); return; }
       // Use tenants table with authenticated fallback to tenants_public view
+      // Use public view so unauthenticated visitors can see tenant branding
       const { data } = await supabase
-        .from('tenants')
-        .select('name, slug, primary_color, accent_color, logo_url, brand_name, custom_domain')
+        .from('tenants_public')
+        .select('name, slug, primary_color, accent_color, logo_url, brand_name')
         .eq('slug', slug)
         .single();
       const t = data as any;
@@ -310,10 +311,10 @@ export default function TenantLandingPage() {
           </div>
           <div className="border-t border-background/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
             <p>© 2026 {theme.brandName}. Powered by EduCloud.</p>
-            <div className="flex gap-4">
-              <span>Privacy Policy</span>
-              <span>Terms</span>
-              <span>GDPR</span>
+          <div className="flex gap-4">
+              <Link to="/privacy" className="hover:text-background transition-default">Privacy Policy</Link>
+              <Link to="/terms" className="hover:text-background transition-default">Terms</Link>
+              <Link to="/privacy" className="hover:text-background transition-default">GDPR</Link>
             </div>
           </div>
         </div>
