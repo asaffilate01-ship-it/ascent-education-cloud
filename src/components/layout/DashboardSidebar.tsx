@@ -53,8 +53,11 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
     ]},
     { title: 'Operations', items: [
       { label: 'Quality', icon: FileCheck, path: '/director/quality' },
+      { label: 'Compliance', icon: Shield, path: '/compliance' },
       { label: 'Finance', icon: CreditCard, path: '/director/finance' },
+      { label: 'Residential', icon: Building2, path: '/residential' },
       { label: 'Agents', icon: Handshake, path: '/director/agents' },
+      { label: 'Audit Logs', icon: FileText, path: '/audit' },
       { label: 'Reports', icon: BarChart3, path: '/director/reports' },
       { label: 'Branding', icon: Palette, path: '/director/branding' },
       { label: 'Settings', icon: Settings, path: '/director/settings' },
