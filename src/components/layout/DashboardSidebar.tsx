@@ -40,6 +40,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Onboarding', icon: UserPlus, path: '/landlord/onboarding' },
       { label: 'Audit Logs', icon: FileText, path: '/audit' },
       { label: 'Infrastructure', icon: Globe, path: '/landlord/infrastructure' },
+      { label: 'Messages', icon: MessageSquare, path: '/messaging' },
       { label: 'Settings', icon: Settings, path: '/landlord/settings' },
     ]},
   ],
@@ -60,6 +61,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Agents', icon: Handshake, path: '/director/agents' },
       { label: 'Audit Logs', icon: FileText, path: '/audit' },
       { label: 'Reports', icon: BarChart3, path: '/director/reports' },
+      { label: 'Messages', icon: MessageSquare, path: '/messaging' },
       { label: 'Branding', icon: Palette, path: '/director/branding' },
       { label: 'Settings', icon: Settings, path: '/director/settings' },
     ]},
@@ -72,6 +74,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Eligibility', icon: UserCheck, path: '/admissions/eligibility' },
       { label: 'Offers', icon: Award, path: '/admissions/offers' },
       { label: 'Counselling', icon: MessageSquare, path: '/admissions/counselling' },
+      { label: 'Messages', icon: MessageSquare, path: '/messaging' },
       { label: 'Reports', icon: BarChart3, path: '/admissions/reports' },
     ]},
   ],
@@ -85,7 +88,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Timeline', icon: Clock, path: '/lecturer/timeline' },
       { label: 'Students', icon: GraduationCap, path: '/lecturer/students' },
       { label: 'Analytics', icon: BarChart3, path: '/lecturer/analytics' },
-      { label: 'Messages', icon: MessageSquare, path: '/lecturer/messages' },
+      { label: 'Messages', icon: MessageSquare, path: '/messaging' },
     ]},
   ],
   programme_leader: [
@@ -98,6 +101,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Schedule', icon: Calendar, path: '/programme/schedule' },
       { label: 'Moderation', icon: FileCheck, path: '/programme/moderation' },
       { label: 'Analytics', icon: BarChart3, path: '/programme/analytics' },
+      { label: 'Messages', icon: MessageSquare, path: '/messaging' },
     ]},
   ],
   iqa_officer: [
@@ -110,6 +114,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Appeals', icon: MessageSquare, path: '/qa/appeals' },
       { label: 'Audit Trail', icon: FileText, path: '/qa/audit' },
       { label: 'EV Packs', icon: FolderOpen, path: '/qa/evidence' },
+      { label: 'Messages', icon: MessageSquare, path: '/messaging' },
     ]},
   ],
   exams_officer: [
@@ -121,6 +126,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Entry Log', icon: UserCheck, path: '/exams/entry' },
       { label: 'Incidents', icon: AlertTriangle, path: '/exams/incidents' },
       { label: 'Results', icon: BarChart3, path: '/exams/results' },
+      { label: 'Messages', icon: MessageSquare, path: '/messaging' },
     ]},
   ],
   finance_officer: [
@@ -132,6 +138,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Commissions', icon: Handshake, path: '/finance/commissions' },
       { label: 'Scholarships', icon: Award, path: '/finance/scholarships' },
       { label: 'Reports', icon: BarChart3, path: '/finance/reports' },
+      { label: 'Messages', icon: MessageSquare, path: '/messaging' },
     ]},
   ],
   marketing_officer: [
@@ -141,6 +148,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Leads', icon: UserPlus, path: '/marketing/leads' },
       { label: 'Webinars', icon: Video, path: '/marketing/webinars' },
       { label: 'Analytics', icon: BarChart3, path: '/marketing/analytics' },
+      { label: 'Messages', icon: MessageSquare, path: '/messaging' },
     ]},
   ],
   agent: [
@@ -151,7 +159,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Commissions', icon: CreditCard, path: '/agent/commissions' },
       { label: 'Onboarding', icon: Briefcase, path: '/agent/onboarding' },
       { label: 'Resources', icon: Library, path: '/agent/resources' },
-      { label: 'Messages', icon: MessageSquare, path: '/agent/messages' },
+      { label: 'Messages', icon: MessageSquare, path: '/messaging' },
     ]},
   ],
   student: [
@@ -171,7 +179,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Career', icon: Briefcase, path: '/student/career' },
       { label: 'Residential', icon: Building2, path: '/residential' },
       { label: 'Onboarding', icon: UserCheck, path: '/onboarding' },
-      { label: 'Support', icon: MessageSquare, path: '/student/support' },
+      { label: 'Messages', icon: MessageSquare, path: '/messaging' },
     ]},
   ],
   university_partner: [
@@ -181,6 +189,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Applications', icon: FolderOpen, path: '/partner/applications' },
       { label: 'Offers', icon: Award, path: '/partner/offers' },
       { label: 'Commissions', icon: CreditCard, path: '/partner/commissions' },
+      { label: 'Messages', icon: MessageSquare, path: '/messaging' },
     ]},
   ],
   employer_partner: [
@@ -189,6 +198,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Job Posts', icon: Briefcase, path: '/employer/jobs' },
       { label: 'Candidates', icon: Users, path: '/employer/candidates' },
       { label: 'Internships', icon: GraduationCap, path: '/employer/internships' },
+      { label: 'Messages', icon: MessageSquare, path: '/messaging' },
     ]},
   ],
 };
