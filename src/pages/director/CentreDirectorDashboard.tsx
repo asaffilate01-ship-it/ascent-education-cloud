@@ -154,6 +154,45 @@ export default function CentreDirectorDashboard() {
         </div>
       </div>
 
+      {/* Charts Row */}
+      <div className="grid lg:grid-cols-2 gap-4 mb-6">
+        <div className="surface-card p-5">
+          <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-primary" /> Revenue Trend
+          </h3>
+          <ResponsiveContainer width="100%" height={220}>
+            <AreaChart data={revenueTrend}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+              <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `£${(v/1000).toFixed(0)}k`} />
+              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} formatter={(v: number) => [`£${v.toLocaleString()}`, '']} />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <Area type="monotone" dataKey="billed" name="Billed" fill="hsl(var(--muted-foreground))" stroke="hsl(var(--muted-foreground))" fillOpacity={0.2} />
+              <Area type="monotone" dataKey="collected" name="Collected" fill="hsl(var(--primary))" stroke="hsl(var(--primary))" fillOpacity={0.4} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="surface-card p-5">
+          <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-primary" /> Attendance Rate
+          </h3>
+          {attendanceTrend.length > 0 ? (
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={attendanceTrend}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="week" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `${v}%`} />
+                <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} formatter={(v: number) => [`${v}%`, 'Rate']} />
+                <Bar dataKey="rate" name="Attendance %" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-10">No attendance data yet</p>
+          )}
+        </div>
+      </div>
+
       <AddStudentModal open={addStudentOpen} onOpenChange={setAddStudentOpen} />
     </DashboardLayout>
   );
