@@ -82,6 +82,8 @@ import StudentOnboarding from "./pages/onboarding/StudentOnboarding";
 import ResidentialWeeks from "./pages/residential/ResidentialWeeks";
 import AuditLog from "./pages/audit/AuditLog";
 import ComplianceDashboard from "./pages/compliance/ComplianceDashboard";
+import ScheduleManager from "./pages/schedule/ScheduleManager";
+import AcademicTimeline from "./pages/schedule/AcademicTimeline";
 
 import NotFound from "./pages/NotFound";
 
