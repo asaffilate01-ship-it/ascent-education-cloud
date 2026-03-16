@@ -32,8 +32,8 @@ export default function AnalyticsDashboard() {
     return { totalEnrolled, conversionRate, avgAttendance, totalRevenue };
   }, [applications, invoices, attendance]);
 
-  // Build enrollment trend by month from applications
-  const enrollmentData = useMemo(() => {
+  // Build enrolment trend by month from applications
+  const enrolmentData = useMemo(() => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const byMonth: Record<string, { applied: number; enrolled: number }> = {};
     months.forEach(m => byMonth[m] = { applied: 0, enrolled: 0 });
