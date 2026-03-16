@@ -3,10 +3,28 @@ import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable/index';
 import { Button } from '@/components/ui/button';
-import { Cloud, Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
+import { Cloud, Eye, EyeOff, ArrowRight, Loader2, Bug, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
-import { ROLE_HOME } from '@/contexts/AuthContext';
+import { ROLE_HOME, ROLE_LABELS } from '@/contexts/AuthContext';
 import type { UserRole } from '@/types/platform';
+
+const DEV_ACCOUNTS: { role: UserRole; email: string; label: string; color: string }[] = [
+  { role: 'superadmin', email: 'dev.superadmin@educloud.test', label: 'Super Admin', color: 'bg-destructive/10 text-destructive border-destructive/20' },
+  { role: 'centre_director', email: 'dev.director@educloud.test', label: 'Centre Director', color: 'bg-primary/10 text-primary border-primary/20' },
+  { role: 'admissions_admin', email: 'dev.admissions@educloud.test', label: 'Admissions', color: 'bg-accent/50 text-accent-foreground border-accent' },
+  { role: 'lecturer', email: 'dev.lecturer@educloud.test', label: 'Lecturer', color: 'bg-secondary text-secondary-foreground border-border' },
+  { role: 'programme_leader', email: 'dev.programme@educloud.test', label: 'Programme Lead', color: 'bg-secondary text-secondary-foreground border-border' },
+  { role: 'student', email: 'dev.student@educloud.test', label: 'Student', color: 'bg-success/10 text-success border-success/20' },
+  { role: 'finance_officer', email: 'dev.finance@educloud.test', label: 'Finance', color: 'bg-warning/10 text-warning border-warning/20' },
+  { role: 'iqa_officer', email: 'dev.qa@educloud.test', label: 'QA Officer', color: 'bg-secondary text-secondary-foreground border-border' },
+  { role: 'exams_officer', email: 'dev.exams@educloud.test', label: 'Exams', color: 'bg-secondary text-secondary-foreground border-border' },
+  { role: 'marketing_officer', email: 'dev.marketing@educloud.test', label: 'Marketing', color: 'bg-secondary text-secondary-foreground border-border' },
+  { role: 'agent', email: 'dev.agent@educloud.test', label: 'Agent', color: 'bg-secondary text-secondary-foreground border-border' },
+  { role: 'university_partner', email: 'dev.unipartner@educloud.test', label: 'Uni Partner', color: 'bg-primary/10 text-primary border-primary/20' },
+  { role: 'employer_partner', email: 'dev.employer@educloud.test', label: 'Employer', color: 'bg-primary/10 text-primary border-primary/20' },
+];
+
+const DEV_PASSWORD = 'DevTest123!';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -14,6 +32,8 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [devOpen, setDevOpen] = useState(false);
+  const [devLoading, setDevLoading] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -34,7 +54,6 @@ export default function LoginPage() {
 
     toast.success('Signed in successfully');
 
-    // Role-based redirect
     if (data.user) {
       const { data: roles } = await supabase
         .from('user_roles')
@@ -45,6 +64,23 @@ export default function LoginPage() {
     } else {
       navigate('/student');
     }
+  };
+
+  const handleDevLogin = async (account: typeof DEV_ACCOUNTS[0]) => {
+    setDevLoading(account.role);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: account.email,
+      password: DEV_PASSWORD,
+    });
+    setDevLoading(null);
+
+    if (error) {
+      toast.error(`Dev login failed: ${error.message}`);
+      return;
+    }
+
+    toast.success(`Signed in as ${account.label}`);
+    navigate(ROLE_HOME[account.role] || '/student');
   };
 
   const handleGoogleSignIn = async () => {
@@ -91,7 +127,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right: Form */}
-      <div className="flex-1 flex items-center justify-center p-8">
+      <div className="flex-1 flex items-center justify-center p-8 overflow-y-auto">
         <div className="w-full max-w-md">
           <div className="lg:hidden flex items-center gap-2 mb-8">
             <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
@@ -170,6 +206,46 @@ export default function LoginPage() {
           <p className="text-center text-xs text-muted-foreground mt-2">
             <Link to="/" className="hover:underline">← Back to EduCloud</Link>
           </p>
+
+          {/* Dev Login Panel */}
+          <div className="mt-6 border border-dashed border-destructive/30 rounded-lg overflow-hidden">
+            <button
+              onClick={() => setDevOpen(!devOpen)}
+              className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-mono text-destructive/70 hover:bg-destructive/5 transition-default"
+            >
+              <span className="flex items-center gap-1.5">
+                <Bug className="w-3.5 h-3.5" />
+                DEV LOGIN — Quick Role Switch
+              </span>
+              {devOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            </button>
+            {devOpen && (
+              <div className="px-3 pb-3 pt-1">
+                <p className="text-[10px] text-muted-foreground font-mono mb-2">
+                  All accounts use password: <code className="bg-muted px-1 rounded">DevTest123!</code>
+                </p>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {DEV_ACCOUNTS.map((account) => (
+                    <button
+                      key={account.role}
+                      onClick={() => handleDevLogin(account)}
+                      disabled={!!devLoading}
+                      className={`text-left px-2.5 py-2 rounded-md border text-[11px] font-medium transition-default hover:opacity-80 disabled:opacity-50 ${account.color}`}
+                    >
+                      {devLoading === account.role ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <>
+                          <span className="block truncate">{account.label}</span>
+                          <span className="block text-[9px] opacity-60 truncate">{account.email}</span>
+                        </>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
