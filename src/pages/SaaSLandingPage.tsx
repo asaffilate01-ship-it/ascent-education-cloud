@@ -128,6 +128,21 @@ export default function SaaSLandingPage() {
               </motion.div>
             ))}
           </div>
+
+          {/* Hero Dashboard Image */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="mt-12 sm:mt-16 max-w-4xl mx-auto"
+          >
+            <img
+              src={heroDashboard}
+              alt="EduCloud platform dashboard showing student management, analytics, and course administration"
+              className="w-full rounded-xl"
+              loading="eager"
+            />
+          </motion.div>
         </div>
       </section>
 
