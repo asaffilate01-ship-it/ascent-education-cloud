@@ -90,7 +90,7 @@ export default function AuditLog() {
   const uniqueEntities = [...new Set(logs.map(l => l.entity_type))];
 
   return (
-    <DashboardLayout>
+    <DashboardLayout title="Audit Log">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>

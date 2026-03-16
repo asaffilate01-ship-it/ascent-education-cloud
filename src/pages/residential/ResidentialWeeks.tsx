@@ -143,7 +143,7 @@ export default function ResidentialWeeks() {
   }, {});
 
   return (
-    <DashboardLayout>
+    <DashboardLayout title="Residential Weeks">
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Residential Weeks</h1>

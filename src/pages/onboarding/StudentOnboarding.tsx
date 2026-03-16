@@ -104,7 +104,7 @@ export default function StudentOnboarding() {
   const progress = Math.round((completedCount / DOCUMENT_TYPES.length) * 100);
 
   return (
-    <DashboardLayout>
+    <DashboardLayout title="Student Onboarding">
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Student Onboarding</h1>
