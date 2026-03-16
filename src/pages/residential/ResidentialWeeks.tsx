@@ -64,7 +64,7 @@ const SESSION_COLOURS: Record<string, string> = {
 };
 
 export default function ResidentialWeeks() {
-  const { user, role } = useAuth();
+  const { user } = useAuth();
   const [weeks, setWeeks] = useState<ResidentialWeek[]>([]);
   const [sessions, setSessions] = useState<ResidentialSession[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
