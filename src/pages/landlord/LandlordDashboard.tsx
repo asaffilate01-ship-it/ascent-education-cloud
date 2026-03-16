@@ -150,6 +150,41 @@ export default function LandlordDashboard() {
         </div>
       </div>
 
+      {/* Charts Row */}
+      <div className="grid lg:grid-cols-2 gap-4 mb-6">
+        <div className="surface-card p-5">
+          <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-primary" /> MRR Growth
+          </h3>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={mrrTrend}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+              <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `£${(v/1000).toFixed(0)}k`} />
+              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} formatter={(v: number) => [`£${v.toLocaleString()}`, 'MRR']} />
+              <Line type="monotone" dataKey="mrr" name="MRR" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ r: 3, fill: 'hsl(var(--primary))' }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="surface-card p-5">
+          <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+            <GraduationCap className="w-4 h-4 text-primary" /> Enrolment Pipeline
+          </h3>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={enrolmentTrend}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+              <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <Bar dataKey="applications" name="Applications" fill="hsl(var(--muted-foreground))" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="enrolled" name="Enrolled" fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-base font-semibold">All Centres</h2>
         <p className="text-xs text-muted-foreground">{tenants.length} registered</p>
