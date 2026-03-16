@@ -247,8 +247,11 @@ function AppRoutes() {
       <Route path="/compliance" element={<P><ComplianceDashboard /></P>} />
 
       {/* ========== SHARED ========== */}
+      <Route path="/messaging" element={<P><MessagingInbox /></P>} />
       <Route path="/notifications" element={<P><NotificationCentre /></P>} />
       <Route path="/settings" element={<P><SettingsPage /></P>} />
+      <Route path="/schedule" element={<P><ScheduleManager /></P>} />
+      <Route path="/timeline" element={<P><AcademicTimeline /></P>} />
 
       <Route path="*" element={<NotFound />} />
     </Routes>
