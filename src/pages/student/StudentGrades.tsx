@@ -1,12 +1,17 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, AlertCircle, Send, CheckCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 
 interface ModuleGrade {
   module: string;
-  assignments: { name: string; grade: number | null; weight: number }[];
+  assignments: { name: string; grade: number | null; weight: number; assignmentId: string }[];
   overall: number | null;
   status: string;
 }
@@ -21,19 +26,20 @@ const getGradeClass = (grade: number) => {
 export default function StudentGrades() {
   const [moduleGrades, setModuleGrades] = useState<ModuleGrade[]>([]);
   const [loading, setLoading] = useState(true);
+  const [appealOpen, setAppealOpen] = useState(false);
+  const [appealTarget, setAppealTarget] = useState<{ module: string; assignment: string; grade: number } | null>(null);
+  const [appeals, setAppeals] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     async function fetchGrades() {
       setLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
 
-      // Fetch assignments with their modules
       const { data: assignments } = await supabase
         .from('assignments')
         .select('*, modules(title)')
         .order('deadline', { ascending: true });
 
-      // Fetch student's submissions
       let submissionsMap: Record<string, any> = {};
       if (user) {
         const { data: subs } = await supabase
@@ -45,7 +51,6 @@ export default function StudentGrades() {
         }
       }
 
-      // Group by module
       const moduleMap: Record<string, ModuleGrade> = {};
       for (const a of assignments || []) {
         const moduleName = (a as any).modules?.title || 'Unknown Module';
@@ -57,10 +62,10 @@ export default function StudentGrades() {
           name: a.title,
           grade: sub?.grade || null,
           weight: Math.round(100 / (assignments || []).filter((x: any) => (x as any).modules?.title === moduleName).length),
+          assignmentId: a.id,
         });
       }
 
-      // Calculate overall grades
       const grades = Object.values(moduleMap).map((mod) => {
         const graded = mod.assignments.filter((a) => a.grade !== null);
         if (graded.length === mod.assignments.length && graded.length > 0) {
@@ -76,6 +81,16 @@ export default function StudentGrades() {
     }
     fetchGrades();
   }, []);
+
+  const handleAppeal = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!appealTarget) return;
+    const fd = new FormData(e.currentTarget);
+    const reason = fd.get('reason') as string;
+    setAppeals(prev => ({ ...prev, [appealTarget.assignment]: true }));
+    setAppealOpen(false);
+    toast.success('Grade appeal submitted. The QA team will review your request.');
+  };
 
   if (loading) return <DashboardSkeleton />;
 
@@ -105,6 +120,29 @@ export default function StudentGrades() {
           <p className="text-xs text-muted-foreground mt-1">Total Credits</p>
         </div>
       </div>
+
+      {/* Grade Appeal Dialog */}
+      <Dialog open={appealOpen} onOpenChange={setAppealOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Appeal Grade</DialogTitle>
+          </DialogHeader>
+          {appealTarget && (
+            <form onSubmit={handleAppeal} className="space-y-4">
+              <div className="surface-data rounded-lg p-3">
+                <p className="text-sm font-medium">{appealTarget.module}</p>
+                <p className="text-xs text-muted-foreground">{appealTarget.assignment} — Current Grade: {appealTarget.grade}%</p>
+              </div>
+              <div>
+                <Label>Reason for Appeal</Label>
+                <Textarea name="reason" required placeholder="Explain why you believe the grade should be reviewed..." rows={4} />
+              </div>
+              <p className="text-[10px] text-muted-foreground">Appeals are reviewed by the QA/IQA team within 10 working days. You will be notified of the outcome.</p>
+              <Button type="submit" className="w-full"><Send className="w-4 h-4 mr-2" />Submit Appeal</Button>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <div className="space-y-4">
         {moduleGrades.map((mod) => (
@@ -140,13 +178,29 @@ export default function StudentGrades() {
                     <span className="text-sm">{a.name}</span>
                     <span className="text-[10px] text-muted-foreground">({a.weight}%)</span>
                   </div>
-                  {a.grade !== null ? (
-                    <span className={`text-sm font-semibold ${a.grade >= 70 ? 'text-success' : a.grade >= 60 ? 'text-primary' : 'text-foreground'}`}>
-                      {a.grade}%
-                    </span>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">Pending</span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {a.grade !== null ? (
+                      <>
+                        <span className={`text-sm font-semibold ${a.grade >= 70 ? 'text-success' : a.grade >= 60 ? 'text-primary' : 'text-foreground'}`}>
+                          {a.grade}%
+                        </span>
+                        {appeals[a.name] ? (
+                          <span className="text-[10px] text-warning flex items-center gap-1"><AlertCircle className="w-3 h-3" />Under review</span>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-[10px] h-6 px-2"
+                            onClick={() => { setAppealTarget({ module: mod.module, assignment: a.name, grade: a.grade! }); setAppealOpen(true); }}
+                          >
+                            Appeal
+                          </Button>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Pending</span>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

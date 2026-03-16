@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import CookieConsent from "@/components/CookieConsent";
+import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 
 // SaaS Platform (Landlord)
 import SaaSLandingPage from "./pages/SaaSLandingPage";
@@ -246,6 +247,7 @@ const App = () => (
         <AuthProvider>
           <AppRoutes />
           <CookieConsent />
+          <PWAInstallPrompt />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
