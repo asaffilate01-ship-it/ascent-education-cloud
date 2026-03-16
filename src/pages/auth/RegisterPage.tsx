@@ -9,7 +9,6 @@ import { toast } from 'sonner';
 const ACCOUNT_TYPES = [
   { key: 'student', label: 'Student', desc: 'I want to study', role: 'student' },
   { key: 'agent', label: 'Agent', desc: 'I recruit students', role: 'agent' },
-  { key: 'centre', label: 'Centre Director', desc: 'I run a college', role: 'centre_director' },
 ] as const;
 
 export default function RegisterPage() {
