@@ -247,6 +247,7 @@ const App = () => (
         <AuthProvider>
           <AppRoutes />
           <CookieConsent />
+          <PWAInstallPrompt />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
