@@ -2,10 +2,12 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
 import DataTable from '@/components/ui/DataTable';
-import { Building2, Users, CreditCard, GraduationCap, Shield, Zap, Server, Clock, AlertTriangle, CheckCircle, FileText } from 'lucide-react';
+import { Building2, Users, CreditCard, GraduationCap, Shield, Zap, Server, Clock, AlertTriangle, CheckCircle, FileText, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { useMemo } from 'react';
 
 const statusVariant = (s: string) => {
   if (s === 'active') return 'success' as const;
