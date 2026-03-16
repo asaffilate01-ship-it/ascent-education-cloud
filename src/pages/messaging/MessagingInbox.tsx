@@ -1,9 +1,11 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { Search, Send, Paperclip, Star, Archive } from 'lucide-react';
+import { Search, Send, Paperclip, Star, Archive, Plus, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { toast } from 'sonner';
 
 interface Conversation {
   id: string;
@@ -23,22 +25,18 @@ interface Message {
   mine: boolean;
 }
 
-// Fallback mock data when no conversations exist (no auth or fresh db)
 const MOCK_CONVERSATIONS: Conversation[] = [
   { id: '1', name: 'Dr. Ahmed Khan', type: 'direct', lastMessage: 'Please review the updated slides for Week 9', lastTime: '10:30 AM', unread: 2, avatar: 'AK' },
   { id: '2', name: 'Admissions Office', type: 'direct', lastMessage: 'Your document verification is complete', lastTime: '9:15 AM', unread: 0, avatar: 'AO' },
   { id: '3', name: 'Sara Ali', type: 'direct', lastMessage: 'Thank you for the feedback on my assignment', lastTime: 'Yesterday', unread: 0, avatar: 'SA' },
   { id: '4', name: 'Finance Department', type: 'direct', lastMessage: 'Your instalment payment is due on March 20', lastTime: 'Yesterday', unread: 1, avatar: 'FD' },
   { id: '5', name: 'Class — Strategic Management', type: 'group', lastMessage: 'Omar: Can someone share the notes from today?', lastTime: 'Mar 13', unread: 5, avatar: 'SM' },
-  { id: '6', name: 'Career Services', type: 'direct', lastMessage: 'New internship opportunity at TechCorp', lastTime: 'Mar 12', unread: 0, avatar: 'CS' },
 ];
 
 const MOCK_MESSAGES: Message[] = [
   { id: '1', sender_name: 'Dr. Ahmed Khan', content: "Good afternoon everyone. I've uploaded the updated slides for Week 9 on Porter's Value Chain analysis.", created_at: '10:15 AM', mine: false },
-  { id: '2', sender_name: 'Dr. Ahmed Khan', content: "Please review them before our next session. There's also a new reading list added to the Learning Library.", created_at: '10:16 AM', mine: false },
-  { id: '3', sender_name: 'You', content: 'Thank you sir! Will the value chain analysis be covered in the assignment?', created_at: '10:20 AM', mine: true },
-  { id: '4', sender_name: 'Dr. Ahmed Khan', content: "Yes, it's a key part of the Strategy Report. Focus on applying it to your chosen company.", created_at: '10:25 AM', mine: false },
-  { id: '5', sender_name: 'Dr. Ahmed Khan', content: 'Please review the updated slides for Week 9', created_at: '10:30 AM', mine: false },
+  { id: '2', sender_name: 'You', content: 'Thank you sir! Will the value chain analysis be covered in the assignment?', created_at: '10:20 AM', mine: true },
+  { id: '3', sender_name: 'Dr. Ahmed Khan', content: "Yes, it's a key part of the Strategy Report. Focus on applying it to your chosen company.", created_at: '10:25 AM', mine: false },
 ];
 
 export default function MessagingInbox() {
@@ -49,26 +47,58 @@ export default function MessagingInbox() {
   const [conversations, setConversations] = useState<Conversation[]>(MOCK_CONVERSATIONS);
   const [messages, setMessages] = useState<Message[]>(MOCK_MESSAGES);
   const [dbMode, setDbMode] = useState(false);
+  const [newConvoName, setNewConvoName] = useState('');
+  const [newConvoOpen, setNewConvoOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     async function fetchConversations() {
       if (!user) return;
+      const { data: parts } = await supabase
+        .from('conversation_participants')
+        .select('conversation_id')
+        .eq('user_id', user.id);
+
+      if (!parts || parts.length === 0) return;
+
+      const convoIds = parts.map(p => p.conversation_id);
       const { data: convos } = await supabase
         .from('conversations')
-        .select('*, conversation_participants!inner(user_id)')
+        .select('*')
+        .in('id', convoIds)
         .order('updated_at', { ascending: false });
 
       if (convos && convos.length > 0) {
         setDbMode(true);
-        const mapped: Conversation[] = convos.map((c: any) => ({
-          id: c.id,
-          name: c.name || 'Conversation',
-          type: c.type,
-          lastMessage: '',
-          lastTime: new Date(c.updated_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
-          unread: 0,
-          avatar: (c.name || 'C').slice(0, 2).toUpperCase(),
+        // Fetch last message for each conversation
+        const mapped: Conversation[] = await Promise.all(convos.map(async (c: any) => {
+          const { data: lastMsg } = await supabase
+            .from('messages')
+            .select('content, created_at')
+            .eq('conversation_id', c.id)
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+          const { count } = await supabase
+            .from('messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('conversation_id', c.id)
+            .eq('read', false)
+            .neq('sender_id', user.id);
+
+          return {
+            id: c.id,
+            name: c.name || 'Conversation',
+            type: c.type,
+            lastMessage: lastMsg?.[0]?.content || '',
+            lastTime: lastMsg?.[0]?.created_at
+              ? new Date(lastMsg[0].created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+              : '',
+            unread: count || 0,
+            avatar: (c.name || 'C').slice(0, 2).toUpperCase(),
+          };
         }));
         setConversations(mapped);
         if (mapped.length > 0) setSelectedConvo(mapped[0].id);
@@ -106,13 +136,16 @@ export default function MessagingInbox() {
       .channel(`messages-${selectedConvo}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${selectedConvo}` }, (payload) => {
         const m = payload.new as any;
-        setMessages((prev) => [...prev, {
-          id: m.id,
-          sender_name: m.sender_name,
-          content: m.content,
-          created_at: new Date(m.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
-          mine: m.sender_id === user?.id,
-        }]);
+        setMessages((prev) => {
+          if (prev.some(msg => msg.id === m.id)) return prev;
+          return [...prev, {
+            id: m.id,
+            sender_name: m.sender_name,
+            content: m.content,
+            created_at: new Date(m.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+            mine: m.sender_id === user?.id,
+          }];
+        });
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
@@ -132,7 +165,6 @@ export default function MessagingInbox() {
         content: message,
       });
     } else {
-      // Mock mode
       setMessages((prev) => [...prev, {
         id: String(Date.now()),
         sender_name: 'You',
@@ -144,6 +176,74 @@ export default function MessagingInbox() {
     setMessage('');
   };
 
+  const handleCreateConversation = async () => {
+    if (!newConvoName.trim() || !user) return;
+    setCreating(true);
+    const { data: convo, error } = await supabase
+      .from('conversations')
+      .insert({ name: newConvoName.trim(), type: 'direct' })
+      .select()
+      .single();
+
+    if (error || !convo) {
+      toast.error('Failed to create conversation');
+      setCreating(false);
+      return;
+    }
+
+    await supabase.from('conversation_participants').insert({
+      conversation_id: convo.id,
+      user_id: user.id,
+    });
+
+    const newConvo: Conversation = {
+      id: convo.id,
+      name: convo.name || 'Conversation',
+      type: convo.type,
+      lastMessage: '',
+      lastTime: 'Now',
+      unread: 0,
+      avatar: (convo.name || 'C').slice(0, 2).toUpperCase(),
+    };
+    setConversations(prev => [newConvo, ...prev]);
+    setSelectedConvo(convo.id);
+    setDbMode(true);
+    setNewConvoName('');
+    setNewConvoOpen(false);
+    setCreating(false);
+    toast.success('Conversation created');
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    const path = `${user.id}/${Date.now()}_${file.name}`;
+    const { error } = await supabase.storage.from('resources').upload(path, file);
+    if (error) {
+      toast.error('File upload failed');
+      return;
+    }
+    const { data: urlData } = supabase.storage.from('resources').getPublicUrl(path);
+    const fileMessage = `📎 [${file.name}](${urlData.publicUrl})`;
+    if (dbMode) {
+      await supabase.from('messages').insert({
+        conversation_id: selectedConvo,
+        sender_id: user.id,
+        sender_name: user.name,
+        content: fileMessage,
+      });
+    } else {
+      setMessages(prev => [...prev, {
+        id: String(Date.now()),
+        sender_name: 'You',
+        content: fileMessage,
+        created_at: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+        mine: true,
+      }]);
+    }
+    toast.success('File shared');
+  };
+
   const filteredConvos = conversations.filter((c) =>
     c.name.toLowerCase().includes(search.toLowerCase())
   );
@@ -151,7 +251,29 @@ export default function MessagingInbox() {
   const selectedConversation = conversations.find((c) => c.id === selectedConvo);
 
   return (
-    <DashboardLayout title="Messages" subtitle="Inbox and announcements">
+    <DashboardLayout title="Messages" subtitle="Inbox and announcements"
+      actions={
+        <Dialog open={newConvoOpen} onOpenChange={setNewConvoOpen}>
+          <DialogTrigger asChild>
+            <Button size="sm" className="gap-1.5"><Plus className="w-3.5 h-3.5" /> New Chat</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader><DialogTitle>New Conversation</DialogTitle></DialogHeader>
+            <div className="space-y-3 pt-2">
+              <input
+                value={newConvoName}
+                onChange={(e) => setNewConvoName(e.target.value)}
+                placeholder="Conversation name..."
+                className="w-full bg-secondary text-sm px-3 py-2 rounded-lg outline-none"
+              />
+              <Button onClick={handleCreateConversation} disabled={creating} className="w-full">
+                {creating ? 'Creating...' : 'Create Conversation'}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      }
+    >
       <div className="flex gap-0 h-[calc(100vh-180px)] surface-card overflow-hidden rounded-xl">
         {/* Conversation List */}
         <div className="w-80 border-r border-border flex flex-col shrink-0">
@@ -234,7 +356,8 @@ export default function MessagingInbox() {
 
           <div className="p-3 border-t border-border">
             <div className="flex gap-2 items-end">
-              <Button variant="ghost" size="sm" className="w-9 h-9 p-0 shrink-0">
+              <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} />
+              <Button variant="ghost" size="sm" className="w-9 h-9 p-0 shrink-0" onClick={() => fileInputRef.current?.click()}>
                 <Paperclip className="w-4 h-4" />
               </Button>
               <textarea
