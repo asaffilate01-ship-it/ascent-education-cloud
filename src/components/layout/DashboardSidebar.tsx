@@ -207,18 +207,18 @@ export default function DashboardSidebar() {
       {/* Brand */}
       <div className="flex items-center gap-3 px-4 h-14 border-b border-sidebar-border">
         <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-          isLandlord ? 'gradient-primary' : 'bg-sidebar-primary'
+          isLandlord ? 'gradient-gold' : 'gradient-primary'
         }`}>
           {isLandlord ? (
-            <Cloud className="w-4 h-4 text-sidebar-primary-foreground" />
+            <Cloud className="w-4 h-4 text-white" />
           ) : (
             <GraduationCap className="w-4 h-4 text-sidebar-primary-foreground" />
           )}
         </div>
         {!collapsed && (
           <div className="overflow-hidden flex-1">
-            <p className="text-sm font-bold truncate">{isLandlord ? 'EduCloud' : 'EduPathway'}</p>
-            <p className="text-[10px] text-sidebar-foreground/50 uppercase tracking-wider">
+            <p className="text-sm font-extrabold tracking-tight truncate">{isLandlord ? 'EduCloud' : 'EduPathway'}</p>
+            <p className="text-[10px] text-sidebar-foreground/40 uppercase tracking-[0.1em] font-semibold">
               {isLandlord ? 'Platform Owner' : ROLE_LABELS[user.role]}
             </p>
           </div>
