@@ -76,7 +76,6 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Dashboard', icon: LayoutDashboard, path: '/lecturer' },
       { label: 'Teaching', icon: BookOpen, path: '/lecturer/teaching' },
       { label: 'Classroom', icon: Video, path: '/lecturer/classroom' },
-      { label: 'Live Class', icon: Monitor, path: '/live-classroom' },
       { label: 'Marking', icon: ClipboardList, path: '/lecturer/marking' },
       { label: 'Attendance', icon: Calendar, path: '/lecturer/attendance' },
       { label: 'Students', icon: GraduationCap, path: '/lecturer/students' },
@@ -154,7 +153,6 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Dashboard', icon: LayoutDashboard, path: '/student' },
       { label: 'Courses', icon: BookOpen, path: '/student/courses' },
       { label: 'Classroom', icon: Video, path: '/student/classroom' },
-      { label: 'Live Class', icon: Monitor, path: '/live-classroom' },
       { label: 'Assignments', icon: ClipboardList, path: '/student/assignments' },
       { label: 'Grades', icon: BarChart3, path: '/student/grades' },
       { label: 'Attendance', icon: Calendar, path: '/student/attendance' },
@@ -209,18 +207,18 @@ export default function DashboardSidebar() {
       {/* Brand */}
       <div className="flex items-center gap-3 px-4 h-14 border-b border-sidebar-border">
         <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-          isLandlord ? 'gradient-primary' : 'bg-sidebar-primary'
+          isLandlord ? 'gradient-gold' : 'gradient-primary'
         }`}>
           {isLandlord ? (
-            <Cloud className="w-4 h-4 text-sidebar-primary-foreground" />
+            <Cloud className="w-4 h-4 text-white" />
           ) : (
             <GraduationCap className="w-4 h-4 text-sidebar-primary-foreground" />
           )}
         </div>
         {!collapsed && (
           <div className="overflow-hidden flex-1">
-            <p className="text-sm font-bold truncate">{isLandlord ? 'EduCloud' : 'EduPathway'}</p>
-            <p className="text-[10px] text-sidebar-foreground/50 uppercase tracking-wider">
+            <p className="text-sm font-extrabold tracking-tight truncate">{isLandlord ? 'EduCloud' : 'EduPathway'}</p>
+            <p className="text-[10px] text-sidebar-foreground/40 uppercase tracking-[0.1em] font-semibold">
               {isLandlord ? 'Platform Owner' : ROLE_LABELS[user.role]}
             </p>
           </div>
@@ -235,11 +233,11 @@ export default function DashboardSidebar() {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto py-2 px-2">
+      <nav className="flex-1 overflow-y-auto py-3 px-2.5">
         {sections.map((section, si) => (
-          <div key={si} className={si > 0 ? 'mt-4' : ''}>
+          <div key={si} className={si > 0 ? 'mt-5' : ''}>
             {section.title && !collapsed && (
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40 px-3 mb-1">
+              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-sidebar-foreground/30 px-3 mb-1.5">
                 {section.title}
               </p>
             )}
@@ -250,14 +248,14 @@ export default function DashboardSidebar() {
                   to={item.path}
                   end={item.path === sections[0]?.items[0]?.path}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-default ${
+                    `flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-default ${
                       isActive
-                        ? 'bg-sidebar-primary text-sidebar-primary-foreground'
-                        : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
+                        ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-md shadow-sidebar-primary/20'
+                        : 'text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent'
                     } ${collapsed ? 'justify-center' : ''}`
                   }
                 >
-                  <item.icon className="w-4 h-4 shrink-0" />
+                  <item.icon className="w-[18px] h-[18px] shrink-0" />
                   {!collapsed && <span className="truncate">{item.label}</span>}
                 </NavLink>
               ))}
