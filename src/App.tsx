@@ -79,6 +79,7 @@ import TermsOfServicePage from "./pages/legal/TermsOfServicePage";
 
 // New Modules
 import StudentOnboarding from "./pages/onboarding/StudentOnboarding";
+import LecturerOnboarding from "./pages/onboarding/LecturerOnboarding";
 import ResidentialWeeks from "./pages/residential/ResidentialWeeks";
 import AuditLog from "./pages/audit/AuditLog";
 import ComplianceDashboard from "./pages/compliance/ComplianceDashboard";
