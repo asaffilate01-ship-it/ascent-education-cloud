@@ -29,6 +29,7 @@ export default function LecturerMarking() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
   const { toast } = useToast();
 
   const fetchSubmissions = async () => {
