@@ -102,7 +102,7 @@ const DEFAULT_ITEMS: Record<string, { category: string; title: string; descripti
 };
 
 export default function ComplianceDashboard() {
-  const { user, role } = useAuth();
+  const { user } = useAuth();
   const [items, setItems] = useState<ChecklistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeBody, setActiveBody] = useState('OTHM');
