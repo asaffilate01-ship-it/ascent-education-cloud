@@ -8,7 +8,8 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
 export default function SettingsPage() {
-  const { user, refreshProfile } = useAuth();
+  const { user, refreshProfile, logout } = useAuth();
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('profile');
   const [profileData, setProfileData] = useState({
     full_name: user?.name || '',
@@ -19,6 +20,9 @@ export default function SettingsPage() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [exportingData, setExportingData] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
