@@ -231,7 +231,7 @@ export default function LiveClassroom() {
           <div className="flex items-center justify-between surface-card p-3">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                 <span className="text-sm font-semibold">Live: {roomName}</span>
               </div>
               <span className="text-xs text-muted-foreground flex items-center gap-1">
