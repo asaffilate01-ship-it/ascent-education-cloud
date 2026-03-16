@@ -427,19 +427,28 @@ export default function SaaSLandingPage() {
             <div>
               <p className="font-semibold text-background text-sm mb-2">Platform</p>
               <ul className="space-y-1.5 text-xs">
-                <li>Features</li><li>Pricing</li><li>Security</li><li>Integrations</li>
+                <li><a href="#features" className="hover:text-background transition-default">Features</a></li>
+                <li><a href="#pricing" className="hover:text-background transition-default">Pricing</a></li>
+                <li><a href="#security" className="hover:text-background transition-default">Security</a></li>
+                <li><a href="#modules" className="hover:text-background transition-default">Modules</a></li>
               </ul>
             </div>
             <div>
               <p className="font-semibold text-background text-sm mb-2">Resources</p>
               <ul className="space-y-1.5 text-xs">
-                <li>Documentation</li><li>API Reference</li><li>Help Centre</li><li>Status</li>
+                <li><Link to="/apply" className="hover:text-background transition-default">Apply Now</Link></li>
+                <li><Link to="/login" className="hover:text-background transition-default">Login</Link></li>
+                <li><Link to="/register" className="hover:text-background transition-default">Register</Link></li>
+                <li><a href="mailto:support@educloud.com" className="hover:text-background transition-default">Help Centre</a></li>
               </ul>
             </div>
             <div>
               <p className="font-semibold text-background text-sm mb-2">Legal</p>
               <ul className="space-y-1.5 text-xs">
-                <li>Privacy Policy</li><li>Terms of Service</li><li>GDPR</li><li>Data Processing</li>
+                <li><Link to="/privacy" className="hover:text-background transition-default">Privacy Policy</Link></li>
+                <li><Link to="/terms" className="hover:text-background transition-default">Terms of Service</Link></li>
+                <li><Link to="/privacy" className="hover:text-background transition-default">GDPR</Link></li>
+                <li><Link to="/privacy#data-processing" className="hover:text-background transition-default">Data Processing</Link></li>
               </ul>
             </div>
           </div>
