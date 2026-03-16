@@ -77,6 +77,12 @@ import EmployerPortal from "./pages/employer/EmployerPortal";
 import PrivacyPolicyPage from "./pages/legal/PrivacyPolicyPage";
 import TermsOfServicePage from "./pages/legal/TermsOfServicePage";
 
+// New Modules
+import StudentOnboarding from "./pages/onboarding/StudentOnboarding";
+import ResidentialWeeks from "./pages/residential/ResidentialWeeks";
+import AuditLog from "./pages/audit/AuditLog";
+import ComplianceDashboard from "./pages/compliance/ComplianceDashboard";
+
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
