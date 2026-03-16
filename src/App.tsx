@@ -243,6 +243,7 @@ function AppRoutes() {
 
       {/* ========== NEW MODULES ========== */}
       <Route path="/onboarding" element={<P><StudentOnboarding /></P>} />
+      <Route path="/onboarding/lecturer" element={<P><LecturerOnboarding /></P>} />
       <Route path="/residential" element={<P><ResidentialWeeks /></P>} />
       <Route path="/audit" element={<P><AuditLog /></P>} />
       <Route path="/compliance" element={<P><ComplianceDashboard /></P>} />
