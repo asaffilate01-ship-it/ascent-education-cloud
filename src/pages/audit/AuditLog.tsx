@@ -84,7 +84,7 @@ export default function AuditLog() {
     a.click();
   };
 
-  if (loading) return <DashboardLayout><DashboardSkeleton /></DashboardLayout>;
+  if (loading) return <DashboardLayout title="Audit Log"><DashboardSkeleton /></DashboardLayout>;
 
   const uniqueActions = [...new Set(logs.map(l => l.action))];
   const uniqueEntities = [...new Set(logs.map(l => l.entity_type))];
