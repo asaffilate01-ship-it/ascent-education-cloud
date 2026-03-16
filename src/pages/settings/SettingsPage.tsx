@@ -1,7 +1,7 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { Settings, Bell, Lock, Globe, Palette, Users, Shield, Database, Mail, Smartphone, Loader2, Camera } from 'lucide-react';
+import { Settings, Bell, Lock, Globe, Palette, Users, Shield, Database, Mail, Smartphone, Loader2, Camera, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -17,6 +17,26 @@ export default function SettingsPage() {
   const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
   const [savingProfile, setSavingProfile] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setUploadingAvatar(true);
+    const path = `${user.id}/${Date.now()}_${file.name}`;
+    const { error: uploadErr } = await supabase.storage.from('avatars').upload(path, file, { upsert: true });
+    if (uploadErr) {
+      toast.error('Failed to upload avatar');
+      setUploadingAvatar(false);
+      return;
+    }
+    const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path);
+    await supabase.from('profiles').update({ avatar_url: urlData.publicUrl }).eq('user_id', user.id);
+    await refreshProfile();
+    setUploadingAvatar(false);
+    toast.success('Avatar updated');
+  };
 
   const sections = [
     { id: 'profile', label: 'My Profile', icon: Camera },
@@ -98,8 +118,22 @@ export default function SettingsPage() {
             <div className="max-w-lg">
               <h3 className="text-lg font-bold mb-4">My Profile</h3>
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xl font-bold">
-                  {user?.name?.charAt(0) || 'U'}
+                <div className="relative group">
+                  {user?.avatarUrl ? (
+                    <img src={user.avatarUrl} alt="Avatar" className="w-16 h-16 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xl font-bold">
+                      {user?.name?.charAt(0) || 'U'}
+                    </div>
+                  )}
+                  <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+                  <button
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={uploadingAvatar}
+                    className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-default"
+                  >
+                    {uploadingAvatar ? <Loader2 className="w-5 h-5 animate-spin text-white" /> : <Upload className="w-5 h-5 text-white" />}
+                  </button>
                 </div>
                 <div>
                   <p className="font-semibold">{user?.name}</p>
