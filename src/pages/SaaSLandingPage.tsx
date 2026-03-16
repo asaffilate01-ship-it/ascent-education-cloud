@@ -1,12 +1,14 @@
 import { 
   GraduationCap, BookOpen, Users, Globe, ArrowRight, Shield, Video, 
   Briefcase, CreditCard, FileCheck, UserPlus, BarChart3, Building2,
-  Zap, CheckCircle, Server, Lock, Cloud, Smartphone, Layers, Menu, X
+  Zap, CheckCircle, Server, Lock, Cloud, Smartphone, Layers, Menu, X,
+  Star, Quote
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import heroDashboard from '@/assets/hero-dashboard.png';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -126,6 +128,21 @@ export default function SaaSLandingPage() {
               </motion.div>
             ))}
           </div>
+
+          {/* Hero Dashboard Image */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="mt-12 sm:mt-16 max-w-4xl mx-auto"
+          >
+            <img
+              src={heroDashboard}
+              alt="EduCloud platform dashboard showing student management, analytics, and course administration"
+              className="w-full rounded-xl"
+              loading="eager"
+            />
+          </motion.div>
         </div>
       </section>
 
@@ -349,8 +366,34 @@ export default function SaaSLandingPage() {
         </div>
       </section>
 
+      {/* Testimonials */}
+      <section className="py-12 sm:py-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-center mb-3">Trusted by Education Leaders</h2>
+          <p className="text-center text-muted-foreground mb-8 sm:mb-10">See what our centres are saying</p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { name: 'Dr. Sarah Khan', role: 'Centre Director, EduPathway London', quote: 'EduCloud transformed our college operations. We went from spreadsheets to a fully digital campus in 2 weeks. The QA module alone saved us 40 hours per audit cycle.' },
+              { name: 'James Okonkwo', role: 'Programme Leader, Manchester Academy', quote: 'The multi-tenant setup means each of our 3 campuses has independent branding but I can oversee everything from one dashboard. Brilliant architecture.' },
+              { name: 'Fatima Al-Rashid', role: 'Recruitment Agent, Gulf Region', quote: 'The agent portal is a game-changer. I can track my students from lead to enrolment, see commission breakdowns, and communicate directly with admissions.' },
+            ].map((t) => (
+              <motion.div key={t.name} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="surface-card p-5">
+                <div className="flex gap-0.5 mb-3">
+                  {[1,2,3,4,5].map(s => <Star key={s} className="w-3.5 h-3.5 fill-warning text-warning" />)}
+                </div>
+                <p className="text-sm text-foreground/80 leading-relaxed mb-4">"{t.quote}"</p>
+                <div>
+                  <p className="text-sm font-semibold">{t.name}</p>
+                  <p className="text-xs text-muted-foreground">{t.role}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
-      <section className="py-16 sm:py-20">
+      <section className="gradient-subtle py-16 sm:py-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
           <h2 className="text-2xl sm:text-3xl font-bold mb-4">Ready to Launch Your Education Centre?</h2>
           <p className="text-muted-foreground mb-8 max-w-lg mx-auto">
@@ -358,12 +401,14 @@ export default function SaaSLandingPage() {
             Your virtual college, live in minutes.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-3">
-            <Link to="/landlord">
+            <Link to="/register">
               <Button size="lg" className="px-8 w-full sm:w-auto">
                 Start Free Trial <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             </Link>
-            <Button variant="outline" size="lg" className="w-full sm:w-auto">Book a Demo</Button>
+            <a href="mailto:sales@educloud.com?subject=Book%20a%20Demo">
+              <Button variant="outline" size="lg" className="w-full sm:w-auto">Book a Demo</Button>
+            </a>
           </div>
         </div>
       </section>
@@ -382,19 +427,28 @@ export default function SaaSLandingPage() {
             <div>
               <p className="font-semibold text-background text-sm mb-2">Platform</p>
               <ul className="space-y-1.5 text-xs">
-                <li>Features</li><li>Pricing</li><li>Security</li><li>Integrations</li>
+                <li><a href="#features" className="hover:text-background transition-default">Features</a></li>
+                <li><a href="#pricing" className="hover:text-background transition-default">Pricing</a></li>
+                <li><a href="#security" className="hover:text-background transition-default">Security</a></li>
+                <li><a href="#modules" className="hover:text-background transition-default">Modules</a></li>
               </ul>
             </div>
             <div>
               <p className="font-semibold text-background text-sm mb-2">Resources</p>
               <ul className="space-y-1.5 text-xs">
-                <li>Documentation</li><li>API Reference</li><li>Help Centre</li><li>Status</li>
+                <li><Link to="/apply" className="hover:text-background transition-default">Apply Now</Link></li>
+                <li><Link to="/login" className="hover:text-background transition-default">Login</Link></li>
+                <li><Link to="/register" className="hover:text-background transition-default">Register</Link></li>
+                <li><a href="mailto:support@educloud.com" className="hover:text-background transition-default">Help Centre</a></li>
               </ul>
             </div>
             <div>
               <p className="font-semibold text-background text-sm mb-2">Legal</p>
               <ul className="space-y-1.5 text-xs">
-                <li>Privacy Policy</li><li>Terms of Service</li><li>GDPR</li><li>Data Processing</li>
+                <li><Link to="/privacy" className="hover:text-background transition-default">Privacy Policy</Link></li>
+                <li><Link to="/terms" className="hover:text-background transition-default">Terms of Service</Link></li>
+                <li><Link to="/privacy" className="hover:text-background transition-default">GDPR</Link></li>
+                <li><Link to="/privacy#data-processing" className="hover:text-background transition-default">Data Processing</Link></li>
               </ul>
             </div>
           </div>

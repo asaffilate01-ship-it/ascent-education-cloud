@@ -73,6 +73,10 @@ import AgentDashboard from "./pages/agent/AgentDashboard";
 import UniversityPartnerPortal from "./pages/partner/UniversityPartnerPortal";
 import EmployerPortal from "./pages/employer/EmployerPortal";
 
+// Legal
+import PrivacyPolicyPage from "./pages/legal/PrivacyPolicyPage";
+import TermsOfServicePage from "./pages/legal/TermsOfServicePage";
+
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -91,6 +95,8 @@ function AppRoutes() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/apply" element={<StudentApplication />} />
+      <Route path="/privacy" element={<PrivacyPolicyPage />} />
+      <Route path="/terms" element={<TermsOfServicePage />} />
       <Route path="/live-classroom" element={<P><LiveClassroom /></P>} />
 
       {/* Tenant Public Pages */}

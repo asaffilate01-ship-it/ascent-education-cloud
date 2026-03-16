@@ -254,7 +254,7 @@ export default function RegisterPage() {
                   />
                   <span className="text-xs text-muted-foreground">
                     I consent to the processing of my personal data in accordance with the{' '}
-                    <a href="#" className="text-primary hover:underline">Privacy Policy</a> and GDPR regulations.
+                    <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link> and GDPR regulations.
                   </span>
                 </label>
 
@@ -268,8 +268,8 @@ export default function RegisterPage() {
                   />
                   <span className="text-xs text-muted-foreground">
                     I agree to the{' '}
-                    <a href="#" className="text-primary hover:underline">Terms of Service</a> and{' '}
-                    <a href="#" className="text-primary hover:underline">Privacy Policy</a>.
+                    <Link to="/terms" className="text-primary hover:underline">Terms of Service</Link> and{' '}
+                    <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
                   </span>
                 </label>
 
