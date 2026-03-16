@@ -268,8 +268,8 @@ export default function RegisterPage() {
                   />
                   <span className="text-xs text-muted-foreground">
                     I agree to the{' '}
-                    <a href="#" className="text-primary hover:underline">Terms of Service</a> and{' '}
-                    <a href="#" className="text-primary hover:underline">Privacy Policy</a>.
+                    <Link to="/terms" className="text-primary hover:underline">Terms of Service</Link> and{' '}
+                    <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
                   </span>
                 </label>
 
