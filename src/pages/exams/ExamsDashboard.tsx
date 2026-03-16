@@ -88,6 +88,8 @@ export default function ExamsDashboard() {
     return Object.values(map).map(e => ({ ...e, avg: e.graded > 0 ? Math.round(e.avg / e.graded) : 0 }));
   }, [gradedSubmissions]);
 
+  if (mLoading) return <DashboardSkeleton />;
+
   const handleLogIncident = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
