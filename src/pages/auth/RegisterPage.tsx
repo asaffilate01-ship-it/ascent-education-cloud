@@ -9,12 +9,11 @@ import { toast } from 'sonner';
 const ACCOUNT_TYPES = [
   { key: 'student', label: 'Student', desc: 'I want to study', role: 'student' },
   { key: 'agent', label: 'Agent', desc: 'I recruit students', role: 'agent' },
-  { key: 'centre', label: 'Centre Director', desc: 'I run a college', role: 'centre_director' },
 ] as const;
 
 export default function RegisterPage() {
   const [step, setStep] = useState<'type' | 'form'>('type');
-  const [accountType, setAccountType] = useState<'student' | 'agent' | 'centre'>('student');
+  const [accountType, setAccountType] = useState<'student' | 'agent'>('student');
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -109,7 +108,7 @@ export default function RegisterPage() {
           <p className="text-white/70 mt-4 text-lg max-w-md leading-relaxed">
             {accountType === 'student' && 'Start your journey to UK qualifications today.'}
             {accountType === 'agent' && 'Recruit students and earn commissions with EduCloud.'}
-            {accountType === 'centre' && 'Launch your accredited college on EduCloud.'}
+            
           </p>
         </div>
         <div className="space-y-3">

@@ -1,13 +1,15 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { Settings, Bell, Lock, Globe, Palette, Users, Shield, Database, Mail, Smartphone, Loader2, Camera, Upload } from 'lucide-react';
+import { Settings, Bell, Lock, Globe, Palette, Users, Shield, Database, Mail, Smartphone, Loader2, Camera, Upload, Download, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 export default function SettingsPage() {
-  const { user, refreshProfile } = useAuth();
+  const { user, refreshProfile, logout } = useAuth();
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('profile');
   const [profileData, setProfileData] = useState({
     full_name: user?.name || '',
@@ -18,6 +20,9 @@ export default function SettingsPage() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [exportingData, setExportingData] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -306,20 +311,92 @@ export default function SettingsPage() {
                   </div>
                   <p className="text-xs text-muted-foreground">All data processing complies with GDPR regulations. Student data is encrypted at rest and in transit.</p>
                 </div>
-                {[
-                  { label: 'Data Export', desc: 'Download all your personal data', action: 'Export' },
-                  { label: 'Consent Records', desc: 'View your consent history', action: 'View' },
-                  { label: 'Privacy Notice', desc: 'Read our privacy policy', action: 'Read' },
-                  { label: 'Data Deletion', desc: 'Request deletion of your account', action: 'Request' },
-                ].map((item) => (
-                  <div key={item.label} className="flex items-center justify-between py-3 border-b border-border/50">
-                    <div>
-                      <p className="text-sm font-medium">{item.label}</p>
-                      <p className="text-xs text-muted-foreground">{item.desc}</p>
-                    </div>
-                    <Button variant="outline" size="sm" className="text-xs">{item.action}</Button>
+
+                {/* Data Export */}
+                <div className="flex items-center justify-between py-3 border-b border-border/50">
+                  <div>
+                    <p className="text-sm font-medium">Data Export</p>
+                    <p className="text-xs text-muted-foreground">Download all your personal data as JSON</p>
                   </div>
-                ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs"
+                    disabled={exportingData}
+                    onClick={async () => {
+                      if (!user) return;
+                      setExportingData(true);
+                      const { data, error } = await supabase.rpc('export_user_data', { _user_id: user.id });
+                      setExportingData(false);
+                      if (error) { toast.error('Export failed'); return; }
+                      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url; a.download = `educloud-data-export-${new Date().toISOString().slice(0, 10)}.json`;
+                      a.click(); URL.revokeObjectURL(url);
+                      toast.success('Data exported successfully');
+                    }}
+                  >
+                    {exportingData ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Download className="w-3 h-3 mr-1" />}
+                    Export
+                  </Button>
+                </div>
+
+                {/* Consent Records */}
+                <div className="flex items-center justify-between py-3 border-b border-border/50">
+                  <div>
+                    <p className="text-sm font-medium">Consent Records</p>
+                    <p className="text-xs text-muted-foreground">View your consent history</p>
+                  </div>
+                  <Button variant="outline" size="sm" className="text-xs" onClick={() => {
+                    const consent = localStorage.getItem('cookie_consent');
+                    toast.info(`Cookie consent: ${consent || 'Not set'}. GDPR consent: Given at registration.`);
+                  }}>View</Button>
+                </div>
+
+                {/* Privacy Notice */}
+                <div className="flex items-center justify-between py-3 border-b border-border/50">
+                  <div>
+                    <p className="text-sm font-medium">Privacy Notice</p>
+                    <p className="text-xs text-muted-foreground">Read our privacy policy</p>
+                  </div>
+                  <Button variant="outline" size="sm" className="text-xs">Read</Button>
+                </div>
+
+                {/* Account Deletion */}
+                <div className="flex items-center justify-between py-3 border-b border-border/50">
+                  <div>
+                    <p className="text-sm font-medium text-destructive">Delete Account</p>
+                    <p className="text-xs text-muted-foreground">Permanently delete your account and all data</p>
+                  </div>
+                  {!showDeleteConfirm ? (
+                    <Button variant="outline" size="sm" className="text-xs text-destructive border-destructive/30" onClick={() => setShowDeleteConfirm(true)}>
+                      <Trash2 className="w-3 h-3 mr-1" /> Request
+                    </Button>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" className="text-xs" onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="text-xs"
+                        disabled={deletingAccount}
+                        onClick={async () => {
+                          if (!user) return;
+                          setDeletingAccount(true);
+                          const { error } = await supabase.rpc('delete_user_account', { _user_id: user.id });
+                          if (error) { toast.error('Deletion failed'); setDeletingAccount(false); return; }
+                          await logout();
+                          navigate('/');
+                          toast.success('Account deleted');
+                        }}
+                      >
+                        {deletingAccount ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+                        Confirm Delete
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
