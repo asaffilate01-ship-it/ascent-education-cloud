@@ -285,9 +285,11 @@ export default function SaaSLandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Button className="w-full" variant={plan.popular ? 'default' : 'outline'}>
-                  {plan.cta}
-                </Button>
+                <Link to="/register">
+                  <Button className="w-full" variant={plan.popular ? 'default' : 'outline'}>
+                    {plan.cta}
+                  </Button>
+                </Link>
               </div>
             ))}
           </div>
