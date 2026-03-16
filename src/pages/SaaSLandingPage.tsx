@@ -302,11 +302,11 @@ export default function SaaSLandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Link to="/register">
+                <a href={plan.link} target="_blank" rel="noopener noreferrer">
                   <Button className="w-full" variant={plan.popular ? 'default' : 'outline'}>
-                    {plan.cta}
+                    {plan.cta} <ArrowRight className="w-3.5 h-3.5 ml-1" />
                   </Button>
-                </Link>
+                </a>
               </div>
             ))}
           </div>
