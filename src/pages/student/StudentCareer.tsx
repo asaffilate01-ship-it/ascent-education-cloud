@@ -1,30 +1,43 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Briefcase, FileText, GraduationCap, Globe, Building2, ChevronRight, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
+import { useMemo } from 'react';
 
 const PARTNER_UNIVERSITIES = [
-  { name: 'University of Sunderland', country: 'UK', programme: 'BA (Hons) Business Management', commission: '£3,000', intake: 'Sep 2025' },
-  { name: 'Anglia Ruskin University', country: 'UK', programme: 'BA (Hons) Business & Management', commission: '£2,500', intake: 'Jan 2026' },
-  { name: 'University of Bolton', country: 'UK', programme: 'BSc Computing Top-Up', commission: '£2,800', intake: 'Sep 2025' },
-  { name: 'University of Central Lancashire', country: 'Canada', programme: 'BBA Top-Up', commission: '$4,000', intake: 'Sep 2025' },
+  { name: 'University of Sunderland', country: 'UK', programme: 'BA (Hons) Business Management', intake: 'Sep 2025' },
+  { name: 'Anglia Ruskin University', country: 'UK', programme: 'BA (Hons) Business & Management', intake: 'Jan 2026' },
+  { name: 'University of Bolton', country: 'UK', programme: 'BSc Computing Top-Up', intake: 'Sep 2025' },
+  { name: 'University of Central Lancashire', country: 'Canada', programme: 'BBA Top-Up', intake: 'Sep 2025' },
 ];
 
 const JOB_LISTINGS = [
   { title: 'Business Analyst Intern', company: 'TechCorp Pakistan', type: 'Internship', location: 'Lahore', deadline: 'Apr 15' },
   { title: 'Marketing Assistant', company: 'Global Brands Ltd', type: 'Part-time', location: 'Remote', deadline: 'Mar 30' },
   { title: 'Graduate Trainee', company: 'Allied Bank', type: 'Full-time', location: 'Islamabad', deadline: 'May 1' },
+  { title: 'Data Entry Specialist', company: 'Systems Ltd', type: 'Part-time', location: 'Karachi', deadline: 'Apr 5' },
 ];
 
 export default function StudentCareer() {
+  const { data: programmes } = useSupabaseQuery('programmes', {
+    filters: [{ column: 'status', operator: 'eq', value: 'active' }],
+  });
+
+  const stats = useMemo(() => ({
+    universities: PARTNER_UNIVERSITIES.length,
+    jobs: JOB_LISTINGS.length,
+    programmes: programmes.length,
+  }), [programmes]);
+
   return (
     <DashboardLayout title="Career & Progression" subtitle="University pathways, CV builder, and job opportunities">
       {/* Career Tools */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
-          { icon: FileText, label: 'CV Builder', desc: 'Create professional CV', action: 'Start' },
-          { icon: GraduationCap, label: 'University Apps', desc: '4 partner universities', action: 'Apply' },
-          { icon: Briefcase, label: 'Job Board', desc: '3 opportunities', action: 'Browse' },
-          { icon: Globe, label: 'Visa Guide', desc: 'UK, Canada, Australia', action: 'Read' },
+          { icon: FileText, label: 'CV Builder', desc: 'Create professional CV', action: 'Start', count: '' },
+          { icon: GraduationCap, label: 'University Apps', desc: `${stats.universities} partner universities`, action: 'Apply', count: String(stats.universities) },
+          { icon: Briefcase, label: 'Job Board', desc: `${stats.jobs} opportunities`, action: 'Browse', count: String(stats.jobs) },
+          { icon: Globe, label: 'Visa Guide', desc: 'UK, Canada, Australia', action: 'Read', count: '' },
         ].map((tool) => (
           <div key={tool.label} className="surface-card p-5 text-center hover:shadow-lg transition-default cursor-pointer group">
             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-3 group-hover:bg-primary/20 transition-default">
@@ -81,8 +94,8 @@ export default function StudentCareer() {
               <p className="text-sm font-medium">{job.title}</p>
               <p className="text-xs text-muted-foreground">{job.company} · {job.location}</p>
             </div>
-            <span className="text-[10px] font-medium bg-secondary px-2 py-0.5 rounded">{job.type}</span>
-            <span className="text-xs text-muted-foreground">Due {job.deadline}</span>
+            <span className="text-[10px] font-medium bg-secondary px-2 py-0.5 rounded hidden sm:inline">{job.type}</span>
+            <span className="text-xs text-muted-foreground hidden sm:inline">Due {job.deadline}</span>
             <Button variant="outline" size="sm" className="text-xs">Apply</Button>
           </div>
         ))}
