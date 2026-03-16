@@ -1,7 +1,7 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatCard from '@/components/ui/StatCard';
 import { Users, GraduationCap, TrendingUp, BookOpen, CreditCard, Calendar, Target, Loader2 } from 'lucide-react';
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, RadialBarChart, RadialBar } from 'recharts';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { useMemo } from 'react';
 
