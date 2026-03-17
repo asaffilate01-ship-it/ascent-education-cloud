@@ -60,6 +60,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Residential', icon: Building2, path: '/residential' },
       { label: 'Agents', icon: Handshake, path: '/director/agents' },
       { label: 'Audit Logs', icon: FileText, path: '/audit' },
+      { label: 'Report Cards', icon: FileText, path: '/lecturer/report-cards' },
       { label: 'Reports', icon: BarChart3, path: '/director/reports' },
       { label: 'Messages', icon: MessageSquare, path: '/messaging' },
       { label: 'Branding', icon: Palette, path: '/director/branding' },
