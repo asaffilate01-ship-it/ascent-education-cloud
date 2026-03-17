@@ -256,6 +256,23 @@ export default function DashboardSidebar() {
     setMobileOpen(false);
   }, [location.pathname]);
 
+  // Swipe to close on mobile
+  useEffect(() => {
+    if (!mobileOpen) return;
+    let startX = 0;
+    const onTouchStart = (e: TouchEvent) => { startX = e.touches[0].clientX; };
+    const onTouchEnd = (e: TouchEvent) => {
+      const diff = startX - e.changedTouches[0].clientX;
+      if (diff > 60) setMobileOpen(false);
+    };
+    document.addEventListener('touchstart', onTouchStart, { passive: true });
+    document.addEventListener('touchend', onTouchEnd, { passive: true });
+    return () => {
+      document.removeEventListener('touchstart', onTouchStart);
+      document.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [mobileOpen]);
+
   if (!user) return null;
 
   const sections = NAV_CONFIG[user.role] || [];
