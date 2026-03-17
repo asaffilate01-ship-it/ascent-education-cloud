@@ -73,6 +73,9 @@ const LeaveManagement = lazy(() => import("./pages/leave/LeaveManagement"));
 const HealthRecords = lazy(() => import("./pages/health/HealthRecords"));
 const TransportTracking = lazy(() => import("./pages/transport/TransportTracking"));
 const AIRecommendations = lazy(() => import("./pages/ai/AIRecommendations"));
+const QuizDashboard = lazy(() => import("./pages/quiz/QuizDashboard"));
+const ForumPage = lazy(() => import("./pages/forums/ForumPage"));
+const GradebookPage = lazy(() => import("./pages/gradebook/GradebookPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
