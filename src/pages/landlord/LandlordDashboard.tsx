@@ -102,7 +102,7 @@ export default function LandlordDashboard() {
               <div key={p.plan}>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="font-medium capitalize">{p.plan}</span>
-                  <span className="text-muted-foreground">{p.tenants} centres · £{p.mrr.toLocaleString()}/mo</span>
+                  <span className="text-muted-foreground">{p.tenants} centres · Rs.{p.mrr.toLocaleString()}/mo</span>
                 </div>
                 <div className="w-full h-2 bg-border rounded-full">
                   <div className="h-full bg-primary rounded-full transition-default" style={{ width: `${p.pct}%` }} />
