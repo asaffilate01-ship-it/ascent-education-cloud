@@ -103,7 +103,7 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
         </motion.main>
       </div>
 
-      <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
+      <AdvancedSearch open={cmdOpen} onOpenChange={setCmdOpen} />
     </div>
   );
 }
