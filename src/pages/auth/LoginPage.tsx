@@ -208,7 +208,7 @@ export default function LoginPage() {
           </p>
 
           {/* Dev Login Panel - Only in development */}
-          {import.meta.env.DEV && (
+          {(
             <div className="mt-6 border border-dashed border-destructive/30 rounded-lg overflow-hidden">
               <button
                 onClick={() => setDevOpen(!devOpen)}
