@@ -119,23 +119,35 @@ export default function TenantLandingPage() {
               </div>
             </motion.div>
 
-            {/* Right side — feature highlights */}
+            {/* Right side — hero image */}
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.2 }} className="hidden lg:block">
-              <div className="grid grid-cols-2 gap-4">
-                {[
-                  { icon: Video, title: 'HD Live Classes', desc: 'Join interactive lectures from anywhere with screen sharing and whiteboard' },
-                  { icon: GraduationCap, title: 'UK Qualifications', desc: 'Earn internationally recognised Level 3–5 diplomas' },
-                  { icon: Globe, title: 'Global University Pathway', desc: 'Progress to universities in UK, USA, Australia, Canada & more' },
-                  { icon: Shield, title: 'Accredited Centre', desc: 'OTHM, QUALIFI & IAB approved with full QA compliance' },
-                ].map((f) => (
-                  <div key={f.title} className="surface-card p-5 border border-border/50 hover:border-primary/15 transition-all hover:shadow-lg">
-                    <div className="p-2.5 rounded-xl w-fit mb-3" style={{ backgroundColor: `${pc}10` }}>
-                      <f.icon className="w-5 h-5" style={{ color: pc }} />
+              <div className="relative">
+                <div className="absolute inset-0 rounded-2xl" style={{ background: `linear-gradient(135deg, ${pc}15, transparent)` }} />
+                <img
+                  src={theme.heroImageUrl || tenantHero}
+                  alt={`${theme.brandName} students learning together`}
+                  className="w-full rounded-2xl shadow-2xl border border-border/30 object-cover aspect-[16/10]"
+                  loading="eager"
+                />
+                {/* Floating stats card */}
+                <div className="absolute -bottom-6 -left-6 surface-card p-4 rounded-xl shadow-xl border border-border/50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: `${pc}15` }}>
+                      <GraduationCap className="w-5 h-5" style={{ color: pc }} />
                     </div>
-                    <h3 className="text-sm font-bold mb-1">{f.title}</h3>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{f.desc}</p>
+                    <div>
+                      <p className="text-sm font-bold">95% Pass Rate</p>
+                      <p className="text-[10px] text-muted-foreground">Across all programmes</p>
+                    </div>
                   </div>
-                ))}
+                </div>
+                {/* Floating accreditation badge */}
+                <div className="absolute -top-4 -right-4 surface-card px-4 py-2 rounded-full shadow-xl border border-border/50">
+                  <div className="flex items-center gap-2 text-xs font-bold">
+                    <Shield className="w-4 h-4" style={{ color: pc }} />
+                    <span>UK Accredited</span>
+                  </div>
+                </div>
               </div>
             </motion.div>
           </div>
