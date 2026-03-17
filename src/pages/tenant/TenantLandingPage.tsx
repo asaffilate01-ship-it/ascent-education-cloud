@@ -230,7 +230,7 @@ export default function TenantLandingPage() {
               <h3 className="text-lg font-bold text-muted-foreground mb-6 mt-4">3-Year Degree Abroad</h3>
               <div className="space-y-3 mb-6">
                 {[
-                  { label: 'Tuition (3 years)', value: '£27,000–£45,000' },
+                  { label: 'Tuition (3 years × £15,000+)', value: '£45,000–£60,000+' },
                   { label: 'Living costs (3 years)', value: '£36,000–£45,000' },
                   { label: 'Visa & flights', value: '£3,000–£5,000' },
                 ].map(item => (
@@ -242,7 +242,7 @@ export default function TenantLandingPage() {
               </div>
               <div className="border-t border-border/50 pt-4 flex justify-between items-center">
                 <span className="text-sm font-bold">Total Cost</span>
-                <span className="text-2xl font-extrabold text-destructive">Rs. 2.5–3+ Crore</span>
+                <span className="text-2xl font-extrabold text-destructive">Rs. 3–4+ Crore</span>
               </div>
             </motion.div>
 
