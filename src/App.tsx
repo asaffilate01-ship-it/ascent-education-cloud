@@ -64,6 +64,7 @@ const StudentOnboarding = lazy(() => import("./pages/onboarding/StudentOnboardin
 const LecturerOnboarding = lazy(() => import("./pages/onboarding/LecturerOnboarding"));
 const ResidentialWeeks = lazy(() => import("./pages/residential/ResidentialWeeks"));
 const AuditLog = lazy(() => import("./pages/audit/AuditLog"));
+const MyActivityLog = lazy(() => import("./pages/audit/MyActivityLog"));
 const ComplianceDashboard = lazy(() => import("./pages/compliance/ComplianceDashboard"));
 const ScheduleManager = lazy(() => import("./pages/schedule/ScheduleManager"));
 const AcademicTimeline = lazy(() => import("./pages/schedule/AcademicTimeline"));
