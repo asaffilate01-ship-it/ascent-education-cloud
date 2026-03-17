@@ -81,6 +81,7 @@ const QuizDashboard = lazy(() => import("./pages/quiz/QuizDashboard"));
 const ForumPage = lazy(() => import("./pages/forums/ForumPage"));
 const GradebookPage = lazy(() => import("./pages/gradebook/GradebookPage"));
 const ITLabsDashboard = lazy(() => import("./pages/labs/ITLabsDashboard"));
+const CertificateVerification = lazy(() => import("./pages/verify/CertificateVerification"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -157,6 +158,7 @@ function AppRoutes() {
         <Route path="/apply" element={<StudentApplication />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/terms" element={<TermsOfServicePage />} />
+        <Route path="/verify" element={<CertificateVerification />} />
         <Route path="/live-classroom" element={<P><LiveClassroom /></P>} />
 
         {/* Tenant Public Pages */}
