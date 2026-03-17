@@ -16,7 +16,7 @@ const DEFAULT_THEME: TenantTheme = {
   heroSubtitle: 'Study OTHM, QUALIFI & IAB accredited Level 3–5 diplomas 80% online.',
   heroImageUrl: '',
   customDomain: '',
-  brandName: 'EduPathway',
+  brandName: 'UniPathway',
 };
 
 export default function TenantLandingPage() {
