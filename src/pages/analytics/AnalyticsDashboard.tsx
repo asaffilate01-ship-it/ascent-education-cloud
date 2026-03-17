@@ -128,7 +128,7 @@ export default function AnalyticsDashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Total Enrolled" value={String(stats.totalEnrolled)} icon={GraduationCap} />
         <StatCard label="Avg Attendance" value={`${stats.avgAttendance}%`} icon={Calendar} />
-        <StatCard label="Revenue Collected" value={`£${stats.totalRevenue.toLocaleString()}`} icon={CreditCard} />
+        <StatCard label="Revenue Collected" value={`Rs.${stats.totalRevenue.toLocaleString()}`} icon={CreditCard} />
         <StatCard label="Conversion Rate" value={`${stats.conversionRate}%`} change="Lead → Enrolled" changeType="positive" icon={Target} />
       </div>
 
