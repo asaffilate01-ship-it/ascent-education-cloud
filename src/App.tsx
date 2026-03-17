@@ -80,6 +80,7 @@ const AIRecommendations = lazy(() => import("./pages/ai/AIRecommendations"));
 const QuizDashboard = lazy(() => import("./pages/quiz/QuizDashboard"));
 const ForumPage = lazy(() => import("./pages/forums/ForumPage"));
 const GradebookPage = lazy(() => import("./pages/gradebook/GradebookPage"));
+const ITLabsDashboard = lazy(() => import("./pages/labs/ITLabsDashboard"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -212,6 +213,7 @@ function AppRoutes() {
         <Route path="/lecturer/timeline" element={<LecturerR><AcademicTimeline /></LecturerR>} />
         <Route path="/lecturer/analytics" element={<LecturerR><AnalyticsDashboard /></LecturerR>} />
         <Route path="/lecturer/messages" element={<LecturerR><MessagingInbox /></LecturerR>} />
+        <Route path="/lecturer/labs" element={<LecturerR><ITLabsDashboard /></LecturerR>} />
 
         {/* ========== TENANT: Programme Leader ========== */}
         <Route path="/programme" element={<Programme><ProgrammeManagement /></Programme>} />
@@ -280,6 +282,7 @@ function AppRoutes() {
         <Route path="/student/timeline" element={<StudentR><AcademicTimeline /></StudentR>} />
         <Route path="/student/career" element={<StudentR><StudentCareer /></StudentR>} />
         <Route path="/student/support" element={<StudentR><MessagingInbox /></StudentR>} />
+        <Route path="/student/labs" element={<StudentR><ITLabsDashboard /></StudentR>} />
 
         {/* ========== EXTERNAL: University Partner ========== */}
         <Route path="/partner" element={<PartnerR><UniversityPartnerPortal /></PartnerR>} />
