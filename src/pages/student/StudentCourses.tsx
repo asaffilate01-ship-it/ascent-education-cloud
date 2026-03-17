@@ -89,7 +89,7 @@ export default function StudentCourses() {
                   <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {prog.duration || '—'}</span>
                     <span className="flex items-center gap-1"><Award className="w-3 h-3" /> {prog.credits || 0} credits</span>
-                    <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {prog.enrolled || 0} students</span>
+                    <span className="flex items-center gap-1"><BookOpen className="w-3 h-3" /> {progModules.length} modules</span>
                   </div>
                 </div>
                 <div className="text-right">
