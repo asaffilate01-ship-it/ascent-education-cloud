@@ -35,7 +35,7 @@ export default function TenantContactPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <TenantNav activePage="contact" />
+      <TenantNav brandName={brandName} primaryColor={primaryColor} activePage="contact" />
 
       <section className="py-12 sm:py-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">

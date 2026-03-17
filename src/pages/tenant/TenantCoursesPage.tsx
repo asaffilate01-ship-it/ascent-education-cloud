@@ -14,10 +14,11 @@ const COURSES = [
 
 export default function TenantCoursesPage() {
   const { slug } = useParams();
+  const { brandName, primaryColor } = useTenantBranding();
 
   return (
     <div className="min-h-screen bg-background">
-      <TenantNav activePage="courses" />
+      <TenantNav brandName={brandName} primaryColor={primaryColor} activePage="courses" />
 
       {/* Hero */}
       <section className="gradient-subtle py-12 sm:py-16">
