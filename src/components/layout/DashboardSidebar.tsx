@@ -206,6 +206,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Transport', icon: Bus, path: '/transport' },
       { label: 'Residential', icon: Building2, path: '/residential' },
       { label: 'Onboarding', icon: UserCheck, path: '/onboarding' },
+      { label: 'Activity Log', icon: Activity, path: '/my-activity' },
       { label: 'Messages', icon: MessageSquare, path: '/messaging' },
     ]},
   ],
