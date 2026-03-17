@@ -1,4 +1,4 @@
-import { GraduationCap, BookOpen, Users, ArrowRight, Shield, Video, MapPin, Phone, Mail, Loader2, CheckCircle, Star, Clock, Globe, Award, Sparkles, ChevronRight, Play, Target, Zap, Flame, Home, Banknote, Plane, Heart, TrendingDown, BadgeCheck } from 'lucide-react';
+import { GraduationCap, BookOpen, Users, ArrowRight, Shield, Video, MapPin, Phone, Mail, Loader2, CheckCircle, Star, Clock, Globe, Award, Sparkles, ChevronRight, Play, Target, Zap, Flame, Home, Banknote, Plane, Heart, TrendingDown, BadgeCheck, Briefcase, Building2, Laptop, Stethoscope, Calculator, FileText, UserCheck, Handshake, CircleDot } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useParams } from 'react-router-dom';
 import { TenantTheme } from '@/types/platform';
