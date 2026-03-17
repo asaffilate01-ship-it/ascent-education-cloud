@@ -1,18 +1,17 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import * as jose from "https://deno.land/x/jose@v4.14.4/index.ts";
+import { corsHeaders, rateLimit, rateLimitResponse, getClientIp } from '../_shared/cors.ts';
+import { authenticateRequest } from '../_shared/auth.ts';
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const ip = getClientIp(req);
+  if (!rateLimit(ip, 20, 60_000)) return rateLimitResponse();
 
   try {
+    const auth = await authenticateRequest(req);
+    if (auth instanceof Response) return auth;
+
     const JAAS_APP_ID = Deno.env.get("JAAS_APP_ID");
     const JAAS_API_KEY = Deno.env.get("JAAS_API_KEY");
     const JAAS_KEY_ID = Deno.env.get("JAAS_KEY_ID");
@@ -25,38 +24,24 @@ serve(async (req) => {
 
     if (!roomName || !displayName) {
       return new Response(JSON.stringify({ error: "roomName and displayName are required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Normalize the PEM key - handle various input formats
+    // Normalize the PEM key
     let pemKey = JAAS_API_KEY.trim();
-    // Replace literal \n with actual newlines
     pemKey = pemKey.replace(/\\n/g, '\n');
-    
-    // Extract just the base64 content and rebuild proper PEM
     const base64Content = pemKey
       .replace(/-----BEGIN (RSA )?PRIVATE KEY-----/g, '')
       .replace(/-----END (RSA )?PRIVATE KEY-----/g, '')
-      .replace(/\s+/g, ''); // Remove ALL whitespace
-    
-    // Rebuild with proper PEM format (64-char lines)
+      .replace(/\s+/g, '');
     const lines = base64Content.match(/.{1,64}/g) || [];
     pemKey = `-----BEGIN PRIVATE KEY-----\n${lines.join('\n')}\n-----END PRIVATE KEY-----`;
 
-
-
-    // Import the RSA private key
     const privateKey = await jose.importPKCS8(pemKey, "RS256");
 
-    // Build the JWT payload per JaaS spec
-    // Use nbf in the past to avoid clock-skew rejections
     const now = Math.floor(Date.now() / 1000);
-    const nbf = now - 30; // 30s buffer for clock skew
-
-    // Strip the prefix from room name for the JWT room claim
-    // JaaS expects just the room name without the AppID prefix
+    const nbf = now - 30;
     const roomForJwt = roomName.replace(/^vpaas-magic-cookie-[^/]+\//, '');
 
     const jwt = await new jose.SignJWT({
@@ -66,9 +51,9 @@ serve(async (req) => {
       room: roomForJwt,
       context: {
         user: {
-          id: userId || crypto.randomUUID(),
-          name: displayName,
-          email: email || "",
+          id: userId || auth.userId,
+          name: String(displayName).slice(0, 100),
+          email: email || auth.email,
           avatar: avatarUrl || "",
           moderator: isModerator ? "true" : "false",
         },
@@ -79,14 +64,12 @@ serve(async (req) => {
           "outbound-call": "false",
           "sip-outbound-call": "false",
         },
-        room: {
-          regex: false,
-        },
+        room: { regex: false },
       },
     })
       .setProtectedHeader({ alg: "RS256", kid: `${JAAS_APP_ID}/${JAAS_KEY_ID}`, typ: "JWT" })
       .setIssuedAt(now)
-      .setExpirationTime(now + 7200) // 2 hours
+      .setExpirationTime(now + 7200)
       .setNotBefore(nbf)
       .sign(privateKey);
 

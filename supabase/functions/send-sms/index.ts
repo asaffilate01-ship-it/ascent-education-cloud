@@ -1,33 +1,17 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { corsHeaders, rateLimit, rateLimitResponse, getClientIp } from '../_shared/cors.ts'
+import { authenticateRequest } from '../_shared/auth.ts'
 
 const GATEWAY_URL = 'https://connector-gateway.lovable.dev/twilio'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
 
-  try {
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
-    }
+  const ip = getClientIp(req)
+  if (!rateLimit(ip, 10, 60_000)) return rateLimitResponse()
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!
-    const anonClient = createClient(supabaseUrl, anonKey)
-    const token = authHeader.replace('Bearer ', '')
-    const { data: claims, error: authError } = await anonClient.auth.getUser(token)
-    if (authError || !claims.user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
-    }
+  try {
+    const auth = await authenticateRequest(req)
+    if (auth instanceof Response) return auth
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
     const TWILIO_API_KEY = Deno.env.get('TWILIO_API_KEY')
@@ -52,6 +36,14 @@ Deno.serve(async (req) => {
       })
     }
 
+    // Basic phone number validation
+    const phoneRegex = /^\+?[1-9]\d{6,14}$/
+    if (!phoneRegex.test(to.replace(/[\s-]/g, ''))) {
+      return new Response(JSON.stringify({ error: 'Invalid phone number format' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
     const response = await fetch(`${GATEWAY_URL}/Messages.json`, {
       method: 'POST',
       headers: {
@@ -62,7 +54,7 @@ Deno.serve(async (req) => {
       body: new URLSearchParams({
         To: to,
         From: from || Deno.env.get('TWILIO_FROM_NUMBER') || '+15005550006',
-        Body: body,
+        Body: String(body).slice(0, 1600), // SMS max ~1600 chars
       }),
     })
 

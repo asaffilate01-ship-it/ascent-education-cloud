@@ -1,12 +1,12 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { corsHeaders, rateLimit, rateLimitResponse, getClientIp } from '../_shared/cors.ts'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
+
+  const ip = getClientIp(req)
+  // Webhooks can be bursty — generous limit
+  if (!rateLimit(ip, 100, 60_000)) return rateLimitResponse()
 
   try {
     const STRIPE_WEBHOOK_SECRET = Deno.env.get('STRIPE_WEBHOOK_SECRET')
@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Simple signature verification (timestamp + payload)
+    // Stripe signature verification
     const elements = signature.split(',')
     const timestampEl = elements.find(e => e.startsWith('t='))
     const sigEl = elements.find(e => e.startsWith('v1='))
@@ -38,9 +38,16 @@ Deno.serve(async (req) => {
     }
 
     const timestamp = timestampEl.split('=')[1]
-    const signedPayload = `${timestamp}.${body}`
+    
+    // Reject events older than 5 minutes (replay attack prevention)
+    const eventAge = Math.floor(Date.now() / 1000) - parseInt(timestamp, 10)
+    if (eventAge > 300) {
+      return new Response(JSON.stringify({ error: 'Webhook timestamp too old' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
 
-    // HMAC-SHA256 verification
+    const signedPayload = `${timestamp}.${body}`
     const encoder = new TextEncoder()
     const key = await crypto.subtle.importKey(
       'raw', encoder.encode(STRIPE_WEBHOOK_SECRET),
@@ -69,13 +76,11 @@ Deno.serve(async (req) => {
         const tenantId = pi.metadata?.tenant_id
 
         if (invoiceId) {
-          // Update invoice status
           await supabase.from('invoices').update({
             status: 'paid',
             paid: pi.amount / 100,
           }).eq('id', invoiceId)
 
-          // Get invoice for notification
           const { data: invoice } = await supabase.from('invoices').select('student_id, student_name, amount').eq('id', invoiceId).single()
 
           if (invoice?.student_id) {
@@ -90,7 +95,6 @@ Deno.serve(async (req) => {
           }
         }
 
-        // Audit log
         await supabase.from('audit_logs').insert({
           action: 'stripe_payment_succeeded',
           entity_type: 'payment',
@@ -112,7 +116,7 @@ Deno.serve(async (req) => {
               user_id: invoice.student_id,
               tenant_id: pi.metadata?.tenant_id,
               title: 'Payment Failed',
-              message: `Your payment could not be processed. Please try again or contact finance.`,
+              message: 'Your payment could not be processed. Please try again or contact finance.',
               type: 'finance',
               severity: 'error',
             })

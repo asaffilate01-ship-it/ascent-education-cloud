@@ -32,3 +32,9 @@ verify_jwt = false
 
 [functions.jaas-token]
 verify_jwt = false
+
+[functions.lecture-reminders]
+verify_jwt = false
+
+[functions.aws-lab-manager]
+verify_jwt = false

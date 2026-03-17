@@ -1,17 +1,20 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { corsHeaders, rateLimit, rateLimitResponse, getClientIp } from '../_shared/cors.ts'
+import { authenticateRequest } from '../_shared/auth.ts'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
 
+  const ip = getClientIp(req)
+  if (!rateLimit(ip, 10, 60_000)) return rateLimitResponse()
+
   try {
+    const auth = await authenticateRequest(req)
+    if (auth instanceof Response) return auth
+
     const { submissionId, studentName, assignmentTitle, wordCount, submissionText } = await req.json()
 
-    if (!submissionId) {
+    if (!submissionId || typeof submissionId !== 'string') {
       return new Response(JSON.stringify({ error: 'submissionId is required' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
@@ -36,8 +39,8 @@ Return ONLY valid JSON in this exact format:
 
     const userPrompt = `Analyze this academic submission for plagiarism and AI-generated content:
 
-Student: ${studentName || 'Unknown'}
-Assignment: ${assignmentTitle || 'Unknown'}
+Student: ${String(studentName || 'Unknown').slice(0, 200)}
+Assignment: ${String(assignmentTitle || 'Unknown').slice(0, 200)}
 Word Count: ${wordCount || 'Unknown'}
 
 Submission text (first 3000 chars):
@@ -65,7 +68,6 @@ Provide your analysis as JSON.`
     const aiData = await response.json()
     const rawContent = aiData.choices?.[0]?.message?.content || '{}'
     
-    // Extract JSON from potential markdown code blocks
     const jsonMatch = rawContent.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, rawContent]
     let analysis
     try {
@@ -81,12 +83,11 @@ Provide your analysis as JSON.`
       }
     }
 
-    // Save to plagiarism_reports table
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    )
 
-    // Get tenant_id from submission
     const { data: sub } = await supabase.from('submissions').select('tenant_id').eq('id', submissionId).single()
 
     if (sub) {
@@ -101,7 +102,6 @@ Provide your analysis as JSON.`
         tenant_id: sub.tenant_id,
       }, { onConflict: 'submission_id' })
 
-      // Update submission plagiarism_score
       await supabase.from('submissions').update({
         plagiarism_score: analysis.overall_score || 0,
       }).eq('id', submissionId)

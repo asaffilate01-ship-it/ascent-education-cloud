@@ -1,10 +1,6 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { corsHeaders, rateLimit, rateLimitResponse, getClientIp } from '../_shared/cors.ts';
+import { authenticateRequest } from '../_shared/auth.ts';
 
 const AWS_REGION = Deno.env.get('AWS_REGION') || 'eu-west-2';
 const AWS_ACCESS_KEY_ID = Deno.env.get('AWS_ACCESS_KEY_ID');
@@ -67,8 +63,13 @@ async function awsRequest(service: string, action: string, params: Record<string
   return await resp.json();
 }
 
-serve(async (req) => {
+const VALID_ACTIONS = ['list_vms', 'start_vm', 'stop_vm', 'allocate_vm', 'deallocate_vm', 'get_connection_url', 'create_lab_session'] as const;
+
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
+
+  const ip = getClientIp(req);
+  if (!rateLimit(ip, 20, 60_000)) return rateLimitResponse();
 
   if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) {
     return new Response(JSON.stringify({ error: 'AWS credentials not configured' }), {
@@ -76,65 +77,47 @@ serve(async (req) => {
     });
   }
 
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-  );
-
-  // Verify auth
-  const authHeader = req.headers.get('Authorization');
-  if (!authHeader) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-      status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-
-  const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
-  if (authError || !user) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-      status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-
-  const { action, ...params } = await req.json();
-
   try {
+    const auth = await authenticateRequest(req);
+    if (auth instanceof Response) return auth;
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
+    const { action, ...params } = await req.json();
+
+    if (!action || !VALID_ACTIONS.includes(action)) {
+      return new Response(JSON.stringify({ error: `Invalid action. Must be one of: ${VALID_ACTIONS.join(', ')}` }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     let result;
     switch (action) {
       case 'list_vms': {
-        // List VMs for tenant from database
         const { data } = await supabase.from('lab_vms').select('*').eq('tenant_id', params.tenant_id);
         result = { vms: data };
         break;
       }
-
       case 'start_vm': {
-        // Start an EC2 instance
-        const ec2Result = await awsRequest('ec2', 'StartInstances', {
-          InstanceIds: [params.instance_id],
-        });
-        // Update DB
+        const ec2Result = await awsRequest('ec2', 'StartInstances', { InstanceIds: [params.instance_id] });
         await supabase.from('lab_vms').update({ vm_status: 'starting' }).eq('id', params.vm_id);
         result = ec2Result;
         break;
       }
-
       case 'stop_vm': {
-        const ec2Result = await awsRequest('ec2', 'StopInstances', {
-          InstanceIds: [params.instance_id],
-        });
+        const ec2Result = await awsRequest('ec2', 'StopInstances', { InstanceIds: [params.instance_id] });
         await supabase.from('lab_vms').update({ vm_status: 'stopping' }).eq('id', params.vm_id);
         result = ec2Result;
         break;
       }
-
       case 'allocate_vm': {
-        // Create a new VM allocation in the database
-        // In production, this would also launch a WorkSpace or EC2 instance
         const { data: vm } = await supabase.from('lab_vms').insert({
           student_id: params.student_id,
           tenant_id: params.tenant_id,
-          vm_name: params.vm_name || `Lab-VM-${Date.now()}`,
+          vm_name: String(params.vm_name || `Lab-VM-${Date.now()}`).slice(0, 100),
           os_type: params.os_type || 'windows',
           instance_type: params.instance_type || 't3.medium',
           lab_session_id: params.lab_session_id,
@@ -143,15 +126,12 @@ serve(async (req) => {
         result = { vm };
         break;
       }
-
       case 'deallocate_vm': {
         await supabase.from('lab_vms').update({ vm_status: 'stopped' }).eq('id', params.vm_id);
         result = { success: true };
         break;
       }
-
       case 'get_connection_url': {
-        // In production: generate a presigned WorkSpaces Web URL or nice-dcv session
         const { data: vm } = await supabase.from('lab_vms').select('*').eq('id', params.vm_id).single();
         if (vm?.connection_url) {
           await supabase.from('lab_vms').update({ last_accessed_at: new Date().toISOString() }).eq('id', params.vm_id);
@@ -161,13 +141,12 @@ serve(async (req) => {
         }
         break;
       }
-
       case 'create_lab_session': {
         const { data: session } = await supabase.from('lab_sessions').insert({
-          title: params.title,
-          description: params.description,
+          title: String(params.title || '').slice(0, 200),
+          description: params.description ? String(params.description).slice(0, 1000) : null,
           module_id: params.module_id,
-          lecturer_id: user.id,
+          lecturer_id: auth.userId,
           tenant_id: params.tenant_id,
           scheduled_at: params.scheduled_at,
           is_lab_mode: true,
@@ -175,9 +154,6 @@ serve(async (req) => {
         result = { session };
         break;
       }
-
-      default:
-        result = { error: 'Unknown action' };
     }
 
     return new Response(JSON.stringify(result), {
@@ -185,7 +161,7 @@ serve(async (req) => {
     });
   } catch (err) {
     console.error('AWS Lab Manager error:', err);
-    return new Response(JSON.stringify({ error: err.message }), {
+    return new Response(JSON.stringify({ error: err instanceof Error ? err.message : 'Unknown error' }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }

@@ -1,35 +1,49 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
-}
+import { corsHeaders, rateLimit, rateLimitResponse, getClientIp } from '../_shared/cors.ts'
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
+  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
+
+  const ip = getClientIp(req)
+  // Strict rate limit for public form — 5 submissions per minute
+  if (!rateLimit(ip, 5, 60_000)) return rateLimitResponse()
 
   try {
     const { name, email, phone, subject, message, tenant_slug } = await req.json()
 
     if (!name || !email || !message) {
-      return new Response(JSON.stringify({ error: 'name, email, and message are required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      return new Response(JSON.stringify({ error: 'name, email, and message are required' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
     }
 
-    // Basic email validation
+    // Input validation
+    if (typeof name !== 'string' || name.length > 200) {
+      return new Response(JSON.stringify({ error: 'Invalid name' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) {
-      return new Response(JSON.stringify({ error: 'Invalid email address' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    if (!emailRegex.test(email) || email.length > 254) {
+      return new Response(JSON.stringify({ error: 'Invalid email address' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
     }
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    if (typeof message !== 'string' || message.length > 5000) {
+      return new Response(JSON.stringify({ error: 'Message too long (max 5000 chars)' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
 
-    // Find tenant
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    )
+
     let tenantId = null
-    if (tenant_slug) {
+    if (tenant_slug && typeof tenant_slug === 'string') {
       const { data: tenant } = await supabase
         .from('tenants')
         .select('id')
@@ -38,27 +52,29 @@ Deno.serve(async (req) => {
       tenantId = tenant?.id || null
     }
 
-    // Create as a lead application
     const { data, error } = await supabase.from('applications').insert({
-      student_name: name,
-      email,
-      phone: phone || null,
+      student_name: name.slice(0, 200),
+      email: email.slice(0, 254),
+      phone: phone ? String(phone).slice(0, 20) : null,
       source: 'contact_form',
-      notes: `Subject: ${subject || 'General Enquiry'}\n\n${message}`,
+      notes: `Subject: ${String(subject || 'General Enquiry').slice(0, 200)}\n\n${message.slice(0, 5000)}`,
       stage: 'lead',
       tenant_id: tenantId,
     }).select().single()
 
     if (error) {
-      return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
     }
 
     return new Response(JSON.stringify({ success: true, id: data.id }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Unknown error'
-    return new Response(JSON.stringify({ error: errorMessage }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    return new Response(JSON.stringify({ error: errorMessage }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    })
   }
 })
