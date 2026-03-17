@@ -194,7 +194,7 @@ export default function MyActivityLog() {
     if (isLecturer) {
       const { data: graded } = await supabase
         .from('submissions')
-        .select('*')
+        .select('*, assignments(title)')
         .eq('graded_by', user.id)
         .gte('created_at', cutoffStr)
         .order('graded_at', { ascending: false })
@@ -202,10 +202,11 @@ export default function MyActivityLog() {
 
       if (graded) {
         for (const g of graded) {
+          const assignmentTitle = (g as any).assignments?.title || 'Assignment';
           allActivities.push({
             id: `grade-${g.id}`,
             type: 'grade',
-            title: `Graded: ${g.title}`,
+            title: `Graded: ${assignmentTitle}`,
             description: `Score: ${g.grade}% · Student submission`,
             timestamp: g.graded_at || g.created_at,
           });
