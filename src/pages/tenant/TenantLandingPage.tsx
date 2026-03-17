@@ -218,33 +218,47 @@ export default function TenantLandingPage() {
             <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground">Internationally Recognised Qualifications</h2>
             <p className="text-muted-foreground mt-3 max-w-lg mx-auto">Choose from business, computing, and accounting pathways at Level 3–5</p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {[
-              { title: 'Level 4 Diploma in Business Management', body: 'OTHM', duration: '12 months', fee: 'Rs.720,000', gbp: '£1,800', credits: 120, modules: 6 },
-              { title: 'Level 5 Diploma in Business Management', body: 'OTHM', duration: '12 months', fee: 'Rs.880,000', gbp: '£2,200', credits: 120, modules: 6 },
-              { title: 'Level 4 Diploma in Computing', body: 'QUALIFI', duration: '12 months', fee: 'Rs.720,000', gbp: '£1,800', credits: 120, modules: 6 },
-              { title: 'Level 5 Diploma in Computing', body: 'QUALIFI', duration: '12 months', fee: 'Rs.880,000', gbp: '£2,200', credits: 120, modules: 6 },
-              { title: 'Level 3 Certificate in Accounting', body: 'IAB', duration: '9 months', fee: 'Rs.560,000', gbp: '£1,400', credits: 60, modules: 4 },
-              { title: 'Level 4 Diploma in Accounting', body: 'IAB', duration: '12 months', fee: 'Rs.720,000', gbp: '£1,800', credits: 120, modules: 6 },
+              { title: 'Level 4 Diploma in Business Management', body: 'OTHM', duration: '12 months', fee: 'Rs.720,000', gbp: '£1,800', credits: 120, modules: 6, progression: 'BA (Hons) Business Management Top-Up', unis: '🇬🇧 Sunderland · 🇬🇧 Anglia Ruskin · 🇬🇧 Bolton · 🇺🇸 Westcliff · 🇦🇺 Torrens · 🇨🇦 Yorkville' },
+              { title: 'Level 5 Diploma in Business Management', body: 'OTHM', duration: '12 months', fee: 'Rs.880,000', gbp: '£2,200', credits: 120, modules: 6, progression: 'BA (Hons) Business Management Final Year', unis: '🇬🇧 Sunderland · 🇬🇧 Anglia Ruskin · 🇬🇧 Chichester · 🇺🇸 Westcliff · 🇦🇺 Torrens · 🇨🇦 Royal Roads' },
+              { title: 'Level 3 Diploma in Childcare & Education', body: 'OTHM', duration: '9 months', fee: 'Rs.560,000', gbp: '£1,400', credits: 60, modules: 4, progression: 'Progress to Level 4 Early Years', unis: '🇬🇧 Open University · 🇬🇧 Sunderland · 🇦🇺 Charles Sturt' },
+              { title: 'Level 4 Diploma in Childcare & Education', body: 'OTHM', duration: '12 months', fee: 'Rs.720,000', gbp: '£1,800', credits: 120, modules: 6, progression: 'BA (Hons) Early Childhood Studies Top-Up', unis: '🇬🇧 Sunderland · 🇬🇧 Wolverhampton · 🇦🇺 Charles Sturt · 🇨🇦 Athabasca' },
+              { title: 'Level 3 Certificate in Accounting', body: 'IAB', duration: '9 months', fee: 'Rs.560,000', gbp: '£1,400', credits: 60, modules: 4, progression: 'Progress to Level 4 Accounting', unis: '🇬🇧 Bolton · 🇬🇧 Chichester · 🇦🇺 Deakin' },
+              { title: 'Level 4 Diploma in Accounting & Finance', body: 'IAB', duration: '12 months', fee: 'Rs.720,000', gbp: '£1,800', credits: 120, modules: 6, progression: 'BSc (Hons) Accounting & Finance Top-Up', unis: '🇬🇧 Bolton · 🇬🇧 Chichester · 🇬🇧 Northampton · 🇦🇺 Deakin · 🇺🇸 LSUS' },
+              { title: 'Level 4 Diploma in Computing & IT', body: 'QUALIFI', duration: '12 months', fee: 'Rs.720,000', gbp: '£1,800', credits: 120, modules: 6, progression: 'BSc (Hons) Computer Science Top-Up', unis: '🇬🇧 Portsmouth · 🇬🇧 Wolverhampton · 🇺🇸 LSUS · 🇦🇺 ECU · 🇨🇦 Yorkville' },
+              { title: 'Level 5 Diploma in Computing & IT', body: 'QUALIFI', duration: '12 months', fee: 'Rs.880,000', gbp: '£2,200', credits: 120, modules: 6, progression: 'BSc (Hons) Computer Science Final Year', unis: '🇬🇧 Portsmouth · 🇬🇧 Wolverhampton · 🇬🇧 Sunderland · 🇺🇸 LSUS · 🇦🇺 ECU · 🇨🇦 Yorkville' },
             ].map((course) => (
               <motion.div key={course.title} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-                className="surface-card p-6 hover:shadow-xl transition-all cursor-pointer group border border-border/50 hover:border-primary/15"
+                className="surface-card p-5 hover:shadow-xl transition-all cursor-pointer group border border-border/50 hover:border-primary/15 flex flex-col"
               >
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-3">
                   <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full" style={{ backgroundColor: `${pc}10`, color: pc }}>
                     {course.body}
                   </span>
                   <span className="text-xs text-muted-foreground font-medium">{course.credits} credits</span>
                 </div>
-                <h3 className="text-base font-bold mb-3 group-hover:text-primary transition-all leading-snug">{course.title}</h3>
-                <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
+                <h3 className="text-sm font-bold mb-2 group-hover:text-primary transition-all leading-snug">{course.title}</h3>
+                <div className="flex items-center gap-3 text-xs text-muted-foreground mb-3">
                   <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {course.duration}</span>
                   <span className="flex items-center gap-1"><BookOpen className="w-3 h-3" /> {course.modules} modules</span>
                 </div>
-                <div className="flex items-center justify-between pt-4 border-t border-border/50">
+                {/* Degree progression */}
+                <div className="rounded-lg p-2.5 mb-3 border border-border/40" style={{ backgroundColor: `${pc}04` }}>
+                  <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: pc }}>
+                    <GraduationCap className="w-3 h-3 inline mr-1" />Progression
+                  </p>
+                  <p className="text-xs font-semibold text-foreground leading-snug">{course.progression}</p>
+                </div>
+                {/* Partner unis */}
+                <div className="mb-4">
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Partner Universities</p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">{course.unis}</p>
+                </div>
+                <div className="flex items-center justify-between pt-3 border-t border-border/50 mt-auto">
                   <div>
-                    <span className="text-xl font-extrabold" style={{ color: pc }}>{course.fee}</span>
-                    <span className="text-xs text-muted-foreground ml-2">({course.gbp})</span>
+                    <span className="text-lg font-extrabold" style={{ color: pc }}>{course.fee}</span>
+                    <span className="text-[10px] text-muted-foreground ml-1.5">({course.gbp})</span>
                   </div>
                   <Link to="/apply">
                     <Button size="sm" variant="outline" className="text-xs font-semibold">Apply <ArrowRight className="w-3 h-3 ml-1" /></Button>
