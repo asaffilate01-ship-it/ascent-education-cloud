@@ -42,7 +42,7 @@ export default function LiveClassroom() {
     if (!document.getElementById('jitsi-script')) {
       const script = document.createElement('script');
       script.id = 'jitsi-script';
-      script.src = 'https://meet.jit.si/external_api.js';
+      script.src = 'https://8x8.vc/external_api.js';
       script.async = true;
       document.head.appendChild(script);
     }
