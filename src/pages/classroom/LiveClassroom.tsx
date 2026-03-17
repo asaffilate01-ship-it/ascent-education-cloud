@@ -176,6 +176,18 @@ export default function LiveClassroom() {
     } catch (err) { console.error('Session persist error:', err); return null; }
   };
 
+  const abandonSession = async (id: string | null) => {
+    if (!id) return;
+    try {
+      await supabase
+        .from('classroom_sessions' as any)
+        .update({ status: 'ended', ended_at: new Date().toISOString(), participant_count: 0 } as any)
+        .eq('id', id);
+    } catch (err) {
+      console.error('Session cleanup error:', err);
+    }
+  };
+
   const endPersistedSession = async () => {
     if (!sessionId) return;
     try {
