@@ -42,7 +42,7 @@ export default function LiveClassroom() {
     if (!document.getElementById('jitsi-script')) {
       const script = document.createElement('script');
       script.id = 'jitsi-script';
-      script.src = 'https://8x8.vc/vpaas-magic-cookie-ef5ce88c523d41a599c8b1dc5b3ab765/external_api.js';
+      script.src = 'https://meet.jit.si/external_api.js';
       script.async = true;
       document.head.appendChild(script);
     }
@@ -173,8 +173,8 @@ export default function LiveClassroom() {
     setSessionId(id);
 
     try {
-      const api = new window.JitsiMeetExternalAPI('8x8.vc', {
-        roomName: `vpaas-magic-cookie-ef5ce88c523d41a599c8b1dc5b3ab765/${roomName}`,
+      const api = new window.JitsiMeetExternalAPI('meet.jit.si', {
+        roomName: `EduCloud-${roomName}`,
         parentNode: jitsiContainerRef.current,
         width: '100%',
         height: '100%',

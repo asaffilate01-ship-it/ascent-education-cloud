@@ -5,11 +5,12 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import TenantNav from '@/components/TenantNav';
 import { supabase } from '@/integrations/supabase/client';
-
+import { useTenantBranding } from '@/hooks/useTenantBranding';
 export default function TenantContactPage() {
   const { slug } = useParams();
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
   const [sending, setSending] = useState(false);
+  const { brandName, primaryColor } = useTenantBranding();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +35,7 @@ export default function TenantContactPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <TenantNav activePage="contact" />
+      <TenantNav brandName={brandName} primaryColor={primaryColor} activePage="contact" />
 
       <section className="py-12 sm:py-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
