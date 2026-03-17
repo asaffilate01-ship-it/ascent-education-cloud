@@ -46,6 +46,13 @@ export default function TenantNav({ brandName = 'EduPathway', primaryColor, acti
               {l.label}
             </Link>
           ))}
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-lg border border-border/50 bg-background hover:bg-accent transition-all"
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {theme === 'dark' ? <Sun className="w-4 h-4 text-muted-foreground" /> : <Moon className="w-4 h-4 text-muted-foreground" />}
+          </button>
           <Link to="/login"><Button variant="outline" size="sm">Login</Button></Link>
           <Link to="/apply">
             <Button size="sm" style={primaryColor ? { backgroundColor: primaryColor } : undefined}>Apply Now</Button>
