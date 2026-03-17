@@ -37,7 +37,7 @@ export default function CertificateVerification() {
       .eq('certificate_number', query.trim().toUpperCase())
       .maybeSingle();
 
-    setResult(data as CertResult | null);
+    setResult((data as unknown as CertResult) || null);
     setLoading(false);
   };
 
