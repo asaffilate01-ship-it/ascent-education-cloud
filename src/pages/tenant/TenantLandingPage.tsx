@@ -427,6 +427,291 @@ export default function TenantLandingPage() {
         </div>
       </section>
 
+      {/* ─── PROGRAMME CAREER OUTCOMES ─── */}
+      <section className="py-20 sm:py-28" style={{ background: `${pc}03` }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-14">
+            <span className="text-xs font-bold uppercase tracking-widest mb-3 block" style={{ color: pc }}>Career-Focused Education</span>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground">Programmes That Lead to Real Careers</h2>
+            <p className="text-muted-foreground mt-3 max-w-2xl mx-auto">Every programme is designed with career outcomes in mind — from internships to professional qualifications like ACCA.</p>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-6">
+            {[
+              {
+                icon: Briefcase, title: 'Business Management', tagline: 'Build your business career and complete your degree abroad.',
+                careers: ['Business Manager', 'Marketing Executive', 'Entrepreneur', 'Operations Manager'],
+                internships: ['Corporate offices', 'Marketing agencies', 'Retail & logistics companies'],
+                progression: ['UK degree (final year entry)', 'MBA pathway', 'Global business careers'],
+              },
+              {
+                icon: Laptop, title: 'Information Technology / Computing', tagline: 'Start your tech career in Pakistan and work globally.',
+                careers: ['Software Developer', 'IT Engineer', 'Cybersecurity Analyst', 'Data Analyst'],
+                internships: ['Software houses', 'IT companies', 'Startups'],
+                progression: ['BSc Computer Science abroad', 'AI & Data Science pathways'],
+              },
+              {
+                icon: Calculator, title: 'Accounting & Finance', tagline: 'Start your accounting career and progress to ACCA or a UK degree.',
+                careers: ['Accountant', 'Financial Analyst', 'Auditor', 'Finance Manager'],
+                internships: ['Accounting firms', 'Audit firms', 'Corporate finance departments'],
+                progression: ['UK finance degree', 'ACCA qualification pathway', 'Global accounting careers'],
+                acca: true,
+              },
+              {
+                icon: Stethoscope, title: 'Health & Social Care', tagline: 'Pathway to international healthcare careers.',
+                careers: ['Care Assistant', 'Healthcare Support Worker', 'Care Coordinator'],
+                internships: ['Care homes', 'Clinics', 'Healthcare organisations'],
+                progression: ['Healthcare degrees abroad', 'Global care sector opportunities'],
+              },
+            ].map((prog) => (
+              <motion.div key={prog.title} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                className="surface-card p-7 border border-border/50 hover:shadow-xl transition-all"
+              >
+                <div className="flex items-start gap-4 mb-5">
+                  <div className="p-3 rounded-xl shrink-0" style={{ backgroundColor: `${pc}08` }}>
+                    <prog.icon className="w-6 h-6" style={{ color: pc }} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold">{prog.title}</h3>
+                    <p className="text-sm text-muted-foreground italic mt-1">"{prog.tagline}"</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: pc }}>💼 Career Outcomes</p>
+                    <ul className="space-y-1">
+                      {prog.careers.map(c => (
+                        <li key={c} className="text-xs text-muted-foreground flex items-center gap-1.5">
+                          <CheckCircle className="w-3 h-3 shrink-0" style={{ color: pc }} />{c}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: pc }}>🏢 Internships</p>
+                    <ul className="space-y-1">
+                      {prog.internships.map(i => (
+                        <li key={i} className="text-xs text-muted-foreground flex items-center gap-1.5">
+                          <Building2 className="w-3 h-3 shrink-0" style={{ color: pc }} />{i}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="rounded-lg p-3 border border-border/40 mb-3" style={{ backgroundColor: `${pc}04` }}>
+                  <p className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: pc }}>🌍 Progression</p>
+                  <div className="flex flex-wrap gap-2">
+                    {prog.progression.map(p => (
+                      <span key={p} className="text-xs font-medium bg-secondary px-2.5 py-1 rounded-full">{p}</span>
+                    ))}
+                  </div>
+                </div>
+
+                {prog.acca && (
+                  <div className="rounded-lg p-3 border-2" style={{ borderColor: `${pc}30`, backgroundColor: `${pc}06` }}>
+                    <p className="text-xs font-bold flex items-center gap-1.5" style={{ color: pc }}>
+                      <Award className="w-4 h-4" /> ACCA Progression Pathway
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                      Students completing this programme can progress towards ACCA qualification via the Association of Chartered Certified Accountants, receive guidance on exemptions, and prepare for professional accounting careers.
+                    </p>
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── INTERNSHIPS ACROSS PAKISTAN ─── */}
+      <section className="py-20 sm:py-28">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-14">
+            <span className="text-xs font-bold uppercase tracking-widest mb-3 block" style={{ color: pc }}>Work Experience</span>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground">Internships Across Pakistan</h2>
+            <p className="text-muted-foreground mt-3 max-w-2xl mx-auto">Gain real-world experience alongside your studies. We connect students with employers across major cities and industries.</p>
+          </div>
+
+          {/* Industry sectors */}
+          <div className="grid sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-12">
+            {[
+              { icon: Building2, label: 'Corporate Internships' },
+              { icon: Laptop, label: 'IT Companies' },
+              { icon: Calculator, label: 'Accounting Firms' },
+              { icon: Stethoscope, label: 'Healthcare Providers' },
+              { icon: Briefcase, label: 'SMEs & Startups' },
+            ].map((sector) => (
+              <motion.div key={sector.label} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                className="surface-card p-5 text-center border border-border/50 hover:shadow-lg transition-all"
+              >
+                <div className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: `${pc}08` }}>
+                  <sector.icon className="w-5 h-5" style={{ color: pc }} />
+                </div>
+                <p className="text-sm font-bold">{sector.label}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Cities */}
+          <div className="surface-card p-8 border border-border/50 text-center">
+            <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: pc }}>📍 Available in Major Cities</p>
+            <div className="flex flex-wrap justify-center gap-3">
+              {['Lahore', 'Karachi', 'Islamabad', 'Faisalabad', 'Multan'].map(city => (
+                <span key={city} className="text-sm font-semibold px-5 py-2.5 rounded-full border border-border/50 bg-secondary">
+                  {city}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── STUDENT JOURNEY ─── */}
+      <section className="py-20 sm:py-28" style={{ background: `${pc}03` }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-14">
+            <span className="text-xs font-bold uppercase tracking-widest mb-3 block" style={{ color: pc }}>Your Path</span>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground">The Student Journey</h2>
+            <p className="text-muted-foreground mt-3 max-w-xl mx-auto">From enrolment in Pakistan to graduating abroad — here's your path to a global career.</p>
+          </div>
+          <div className="max-w-3xl mx-auto">
+            {[
+              { step: '1', title: 'Enrol in Pakistan', desc: 'Apply online, get accepted within 48 hours, and begin your studies.' },
+              { step: '2', title: 'Study Level 3 → Level 4 → Level 5', desc: '80% online live lectures + 20% in-centre residential workshops and exams.' },
+              { step: '3', title: 'Gain Internship Experience', desc: 'Access corporate internships across Pakistan in your chosen field.' },
+              { step: '4', title: 'Transfer to International University', desc: 'Progress to partner universities in UK, Canada, Australia, or UAE.' },
+              { step: '5', title: 'Graduate Abroad', desc: 'Complete your final year on campus and receive the same degree as full-time students.' },
+              { step: '6', title: 'Start Your Global Career', desc: 'Access post-study work visas and begin your international career.' },
+            ].map((item, i) => (
+              <motion.div key={item.step} initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
+                className="flex gap-5 mb-1 last:mb-0"
+              >
+                <div className="flex flex-col items-center">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-primary-foreground shrink-0" style={{ backgroundColor: pc }}>
+                    {item.step}
+                  </div>
+                  {i < 5 && <div className="w-0.5 h-full min-h-[40px] my-1" style={{ backgroundColor: `${pc}20` }} />}
+                </div>
+                <div className="pb-6">
+                  <h3 className="text-base font-bold">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground mt-1">{item.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── CAREER & EMPLOYABILITY SUPPORT ─── */}
+      <section className="py-20 sm:py-28">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-14">
+            <span className="text-xs font-bold uppercase tracking-widest mb-3 block" style={{ color: pc }}>Career Ready</span>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground">Career & Employability Support</h2>
+            <p className="text-muted-foreground mt-3 max-w-xl mx-auto">Every student receives comprehensive career support — because your qualification should lead to a real career.</p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-5">
+            {[
+              { icon: FileText, title: 'CV Building Support' },
+              { icon: UserCheck, title: 'Interview Training' },
+              { icon: Users, title: 'Career Workshops' },
+              { icon: Handshake, title: 'Internship Placements' },
+              { icon: Briefcase, title: 'Job Readiness Training' },
+            ].map((s) => (
+              <motion.div key={s.title} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                className="surface-card p-6 text-center border border-border/50 hover:shadow-lg transition-all"
+              >
+                <div className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: `${pc}08` }}>
+                  <s.icon className="w-5 h-5" style={{ color: pc }} />
+                </div>
+                <p className="text-sm font-bold">{s.title}</p>
+              </motion.div>
+            ))}
+          </div>
+          <div className="surface-card mt-10 p-6 border-2 text-center" style={{ borderColor: `${pc}30`, backgroundColor: `${pc}04` }}>
+            <p className="text-base font-bold" style={{ color: pc }}>
+              "Start your UK degree in Pakistan, gain real work experience, and complete your final year abroad."
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── GLOBAL PATHWAYS ─── */}
+      <section className="py-20 sm:py-28" style={{ background: `${pc}03` }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-14">
+            <span className="text-xs font-bold uppercase tracking-widest mb-3 block" style={{ color: pc }}>Global Mobility</span>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground">Transfer to Universities Worldwide</h2>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { flag: '🇬🇧', country: 'United Kingdom', visa: '2-Year Post-Study Work Visa', unis: ['Sunderland', 'Anglia Ruskin', 'UCLan', 'Middlesex', 'Derby', 'Bolton'] },
+              { flag: '🇨🇦', country: 'Canada', visa: '3-Year PGWP', unis: ['Royal Roads', 'Yorkville', 'Athabasca'] },
+              { flag: '🇦🇺', country: 'Australia', visa: '2–4 Year Post-Study Visa', unis: ['Torrens', 'Deakin', 'ECU', 'Charles Sturt'] },
+              { flag: '🇦🇪', country: 'UAE', visa: 'Employment Opportunities', unis: ['Partner institutions available'] },
+            ].map((dest) => (
+              <motion.div key={dest.country} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                className="surface-card p-7 border border-border/50 hover:shadow-xl transition-all text-center"
+              >
+                <span className="text-4xl mb-3 block">{dest.flag}</span>
+                <h3 className="text-lg font-bold mb-1">{dest.country}</h3>
+                <p className="text-xs font-semibold mb-4" style={{ color: pc }}>{dest.visa}</p>
+                <div className="space-y-1.5">
+                  {dest.unis.map(u => (
+                    <p key={u} className="text-xs text-muted-foreground">{u}</p>
+                  ))}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+          <div className="mt-10 text-center surface-card p-6 border border-border/50">
+            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: pc }}>Professional Pathways</p>
+            <p className="text-sm text-muted-foreground">Students can also progress into <strong>ACCA</strong> (Association of Chartered Certified Accountants), industry certifications, and professional careers.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── PARENT-FOCUSED SECTION ─── */}
+      <section className="py-20 sm:py-28">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-14">
+            <span className="text-xs font-bold uppercase tracking-widest mb-3 block" style={{ color: pc }}>For Parents</span>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground">Why Parents Trust {theme.brandName}</h2>
+            <p className="text-muted-foreground mt-3 max-w-2xl mx-auto">We understand that investing in your child's education is one of the biggest decisions you'll make. Here's why families across Pakistan choose us.</p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              { icon: Heart, title: 'Your Child Stays Home', desc: 'No need to send your child abroad at 16–18. They study from the safety of your home for 2 years, with the same quality as UK universities.' },
+              { icon: Shield, title: 'UK-Regulated & Accredited', desc: 'All qualifications are Ofqual-regulated and recognised worldwide. Your child receives the exact same degree as students studying in the UK.' },
+              { icon: Banknote, title: 'Save Rs. 2.5+ Crore', desc: 'Instead of spending Rs. 3–4 Crore on a full 3-year degree abroad, save 50–70% by studying the first 2 years at home.' },
+              { icon: Briefcase, title: 'Real Internships & Jobs', desc: 'We provide internship placements across Pakistan — in corporate offices, IT firms, accounting practices, and healthcare organisations.' },
+              { icon: Globe, title: 'Global Degree, Global Career', desc: 'After the final year abroad, your child has a UK/Australian/Canadian degree with access to post-study work visas in those countries.' },
+              { icon: Users, title: 'Dedicated Support Team', desc: 'Personal academic tutor, career counsellor, and parent liaison officer. We keep you informed every step of the way.' },
+            ].map((f) => (
+              <motion.div key={f.title} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                className="surface-card p-7 border border-border/50 hover:shadow-xl transition-all"
+              >
+                <div className="p-3 rounded-xl w-fit mb-5" style={{ backgroundColor: `${pc}08` }}>
+                  <f.icon className="w-6 h-6" style={{ color: pc }} />
+                </div>
+                <h3 className="text-base font-bold mb-2">{f.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+          <div className="surface-card mt-10 p-8 border-2 text-center" style={{ borderColor: `${pc}30`, backgroundColor: `${pc}04` }}>
+            <p className="text-lg font-extrabold mb-2" style={{ color: pc }}>What You're Really Investing In</p>
+            <div className="flex flex-wrap justify-center gap-4 mt-4">
+              {['✅ Global degree pathway', '✅ Career outcomes', '✅ International mobility', '✅ Internships + experience'].map(item => (
+                <span key={item} className="text-sm font-semibold px-4 py-2 rounded-full bg-secondary">{item}</span>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground mt-4">This is not just a diploma — it's a complete career launchpad.</p>
+          </div>
+        </div>
+      </section>
+
       {/* ─── ACCREDITATION ─── */}
       <section className="py-20 sm:py-28" style={{ background: `${pc}03` }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
