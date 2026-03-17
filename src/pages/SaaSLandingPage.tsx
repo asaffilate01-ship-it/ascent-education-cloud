@@ -63,7 +63,7 @@ export default function SaaSLandingPage() {
             <a href="#modules" className="block text-sm text-muted-foreground" onClick={() => setMobileMenuOpen(false)}>Modules</a>
             <a href="#security" className="block text-sm text-muted-foreground" onClick={() => setMobileMenuOpen(false)}>Security</a>
             <div className="flex gap-2 pt-2">
-              <Link to="/tenant/edupathway" className="flex-1">
+              <Link to="/tenant/unipathway" className="flex-1">
                 <Button variant="outline" size="sm" className="w-full">Demo Tenant</Button>
               </Link>
               <Link to="/landlord" className="flex-1">
