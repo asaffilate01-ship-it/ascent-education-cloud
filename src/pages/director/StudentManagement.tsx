@@ -165,6 +165,13 @@ export default function StudentManagement() {
         variant={s.status === 'active' ? 'success' : s.status === 'completed' ? 'info' : 'neutral'}
       />
     )},
+    { key: 'actions', label: '', render: (s: StudentRow) => (
+      s.status === 'completed' ? (
+        <Button size="sm" variant="ghost" className="text-xs h-7" onClick={() => { setCertStudent({ name: s.name, programme: s.programme }); setCertOpen(true); }}>
+          <Award className="w-3 h-3 mr-1" /> Certificate
+        </Button>
+      ) : null
+    )},
   ];
 
   return (
