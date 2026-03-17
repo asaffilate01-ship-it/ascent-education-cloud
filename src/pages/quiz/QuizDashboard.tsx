@@ -115,7 +115,9 @@ export default function QuizDashboard() {
   };
 
   const loadQuestions = async (quizId: string) => {
-    const { data } = await supabase.from('quiz_questions').select('*').eq('quiz_id', quizId).order('sort_order');
+    // Staff see full questions; students see safe view without correct_answer
+    const table = isStaff ? 'quiz_questions' : 'quiz_questions_student';
+    const { data } = await supabase.from(table as any).select('*').eq('quiz_id', quizId).order('sort_order');
     setQuestions((data as any) || []);
   };
 
