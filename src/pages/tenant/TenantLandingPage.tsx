@@ -293,9 +293,12 @@ export default function TenantLandingPage() {
               <motion.div key={path.title} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
                 className="surface-card p-7 border border-border/50 hover:shadow-xl transition-all"
               >
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-base font-bold">{path.title}</h3>
-                  <span className="text-[10px] font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: `${pc}10`, color: pc }}>{path.body}</span>
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-base font-bold">{path.title}</h3>
+                    <span className="text-[10px] font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: `${pc}10`, color: pc }}>{path.body}</span>
+                  </div>
+                  <p className="text-xs font-semibold" style={{ color: pc }}>→ {path.degree}</p>
                 </div>
                 <div className="space-y-3 mb-6">
                   {path.levels.map((level, i) => (
