@@ -25,10 +25,34 @@ export default function FinanceDashboard() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [exporting, setExporting] = useState(false);
   const { toast } = useToast();
   const { data: invoices, loading, refetch } = useSupabaseQuery('invoices', {
     orderBy: { column: 'created_at', ascending: false },
   });
+
+  const handleExportCSV = async () => {
+    setExporting(true);
+    try {
+      const resp = await supabase.functions.invoke('export-report', {
+        body: { reportType: 'invoices', filters: statusFilter !== 'all' ? { status: statusFilter } : undefined },
+      });
+      if (resp.error) throw resp.error;
+      const csvText = typeof resp.data === 'string' ? resp.data : new TextDecoder().decode(resp.data);
+      const blob = new Blob([csvText], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `invoices-export-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast({ title: 'Exported', description: `Invoices exported to CSV.` });
+    } catch (err: any) {
+      toast({ title: 'Export failed', description: err.message || 'Could not export invoices.' });
+    } finally {
+      setExporting(false);
+    }
+  };
 
   if (loading) return <DashboardSkeleton />;
 
