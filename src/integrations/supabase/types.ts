@@ -1172,6 +1172,206 @@ export type Database = {
           },
         ]
       }
+      lab_screen_shares: {
+        Row: {
+          ended_at: string | null
+          id: string
+          is_active: boolean
+          lab_session_id: string
+          started_at: string
+          user_id: string
+          user_name: string
+          user_role: string
+        }
+        Insert: {
+          ended_at?: string | null
+          id?: string
+          is_active?: boolean
+          lab_session_id: string
+          started_at?: string
+          user_id: string
+          user_name: string
+          user_role?: string
+        }
+        Update: {
+          ended_at?: string | null
+          id?: string
+          is_active?: boolean
+          lab_session_id?: string
+          started_at?: string
+          user_id?: string
+          user_name?: string
+          user_role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_screen_shares_lab_session_id_fkey"
+            columns: ["lab_session_id"]
+            isOneToOne: false
+            referencedRelation: "lab_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lab_sessions: {
+        Row: {
+          classroom_session_id: string | null
+          created_at: string
+          description: string | null
+          ended_at: string | null
+          id: string
+          is_lab_mode: boolean
+          lecturer_id: string
+          module_id: string | null
+          scheduled_at: string | null
+          status: string
+          tenant_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          classroom_session_id?: string | null
+          created_at?: string
+          description?: string | null
+          ended_at?: string | null
+          id?: string
+          is_lab_mode?: boolean
+          lecturer_id: string
+          module_id?: string | null
+          scheduled_at?: string | null
+          status?: string
+          tenant_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          classroom_session_id?: string | null
+          created_at?: string
+          description?: string | null
+          ended_at?: string | null
+          id?: string
+          is_lab_mode?: boolean
+          lecturer_id?: string
+          module_id?: string | null
+          scheduled_at?: string | null
+          status?: string
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_sessions_classroom_session_id_fkey"
+            columns: ["classroom_session_id"]
+            isOneToOne: false
+            referencedRelation: "classroom_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_sessions_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_sessions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_sessions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lab_vms: {
+        Row: {
+          allocated_at: string
+          connection_url: string | null
+          created_at: string
+          id: string
+          instance_id: string | null
+          instance_type: string | null
+          ip_address: string | null
+          lab_session_id: string | null
+          last_accessed_at: string | null
+          os_type: string
+          specs: Json | null
+          student_id: string
+          tenant_id: string
+          updated_at: string
+          vm_name: string
+          vm_status: string
+          workspace_id: string | null
+        }
+        Insert: {
+          allocated_at?: string
+          connection_url?: string | null
+          created_at?: string
+          id?: string
+          instance_id?: string | null
+          instance_type?: string | null
+          ip_address?: string | null
+          lab_session_id?: string | null
+          last_accessed_at?: string | null
+          os_type?: string
+          specs?: Json | null
+          student_id: string
+          tenant_id: string
+          updated_at?: string
+          vm_name: string
+          vm_status?: string
+          workspace_id?: string | null
+        }
+        Update: {
+          allocated_at?: string
+          connection_url?: string | null
+          created_at?: string
+          id?: string
+          instance_id?: string | null
+          instance_type?: string | null
+          ip_address?: string | null
+          lab_session_id?: string | null
+          last_accessed_at?: string | null
+          os_type?: string
+          specs?: Json | null
+          student_id?: string
+          tenant_id?: string
+          updated_at?: string
+          vm_name?: string
+          vm_status?: string
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_vms_lab_session_id_fkey"
+            columns: ["lab_session_id"]
+            isOneToOne: false
+            referencedRelation: "lab_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_vms_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_vms_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leave_requests: {
         Row: {
           approved_at: string | null
