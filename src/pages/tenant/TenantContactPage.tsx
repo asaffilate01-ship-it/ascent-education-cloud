@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import TenantNav from '@/components/TenantNav';
 import { supabase } from '@/integrations/supabase/client';
-
+import { useTenantBranding } from '@/hooks/useTenantBranding';
 export default function TenantContactPage() {
   const { slug } = useParams();
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
