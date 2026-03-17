@@ -223,9 +223,11 @@ export default function LiveClassroom() {
 
     try {
       const fullRoomName = buildJaasRoomName(effectiveRoomName);
+      console.log('[Classroom] Requesting token for room:', fullRoomName);
+
       const { data: tokenData, error: tokenError } = await supabase.functions.invoke('jaas-token', {
         body: {
-          roomName: fullRoomName,  // Just the room name with prefix, no AppID
+          roomName: fullRoomName,
           displayName: displayName || 'Participant',
           email: user?.email || '',
           isModerator: isLecturer,
@@ -235,7 +237,7 @@ export default function LiveClassroom() {
       });
 
       if (tokenError || !tokenData?.token || !tokenData?.appId) {
-        console.error('JaaS token error:', tokenError);
+        console.error('JaaS token error:', tokenError, tokenData);
         await abandonSession(id);
         toast.error('Failed to authenticate video session');
         setIsLoading(false);
@@ -244,16 +246,19 @@ export default function LiveClassroom() {
         return;
       }
 
-      await loadJitsiApi(tokenData.appId);
+      const jitsiRoomName = `${tokenData.appId}/${fullRoomName}`;
+      console.log('[Classroom] Jitsi roomName:', jitsiRoomName);
+      console.log('[Classroom] AppId:', tokenData.appId);
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await loadJitsiApi(tokenData.appId);
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       if (!jitsiContainerRef.current || !window.JitsiMeetExternalAPI) {
         throw new Error('Video container unavailable');
       }
 
       const api = new window.JitsiMeetExternalAPI('8x8.vc', {
-        roomName: `${tokenData.appId}/${fullRoomName}`,
+        roomName: jitsiRoomName,
         parentNode: jitsiContainerRef.current,
         jwt: tokenData.token,
         width: '100%',
@@ -290,31 +295,50 @@ export default function LiveClassroom() {
       });
 
       let joinedConference = false;
-      const handleJoinFailure = async (event: unknown) => {
-        if (joinedConference) return;
+      let authFailTimeout: ReturnType<typeof setTimeout> | null = null;
 
-        console.error('Jitsi join error:', event);
+      const handleJoinFailure = async (reason: string, event?: unknown) => {
+        if (joinedConference) return;
+        if (authFailTimeout) clearTimeout(authFailTimeout);
+
+        console.error(`[Classroom] Join failure (${reason}):`, event);
         api.dispose();
         jitsiApiRef.current = null;
         await abandonSession(id);
         setIsLoading(false);
         setIsInSession(false);
         setSessionId(null);
-        toast.error('Meeting authentication failed. Please retry joining the classroom.');
+        toast.error(`Meeting failed: ${reason}. Please try again.`);
       };
+
+      // Timeout: if we haven't joined in 20s, something is wrong
+      authFailTimeout = setTimeout(() => {
+        if (!joinedConference) {
+          void handleJoinFailure('Connection timed out');
+        }
+      }, 20_000);
 
       api.addEventListener('participantJoined', () => setParticipantCount(c => c + 1));
       api.addEventListener('participantLeft', () => setParticipantCount(c => Math.max(0, c - 1)));
       api.addEventListener('videoConferenceJoined', () => {
         joinedConference = true;
+        if (authFailTimeout) clearTimeout(authFailTimeout);
         setIsInSession(true);
         setIsLoading(false);
         setParticipantCount(1);
+        console.log('[Classroom] Successfully joined conference');
+      });
+      api.addEventListener('videoConferenceLeft', () => {
+        console.log('[Classroom] Left conference');
+        if (!joinedConference) {
+          void handleJoinFailure('Disconnected before joining');
+        }
       });
       api.addEventListener('errorOccurred', (event: any) => {
+        console.error('[Classroom] errorOccurred:', JSON.stringify(event));
         const details = JSON.stringify(event).toLowerCase();
-        if (/notallowed|authentication|token|conference\.connectionerror\.notallowed/.test(details)) {
-          void handleJoinFailure(event);
+        if (/notallowed|authentication|token|conference\.connectionerror|password|forbidden/.test(details)) {
+          void handleJoinFailure('Authentication error', event);
         }
       });
       api.addEventListener('readyToClose', () => { void endSession(); });
@@ -324,7 +348,7 @@ export default function LiveClassroom() {
       });
       jitsiApiRef.current = api;
     } catch (err) {
-      console.error('Jitsi error:', err);
+      console.error('[Classroom] Jitsi error:', err);
       await abandonSession(id);
       toast.error('Failed to start video session');
       setIsLoading(false);
