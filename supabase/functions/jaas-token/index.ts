@@ -21,7 +21,7 @@ serve(async (req) => {
       throw new Error("JaaS credentials not configured");
     }
 
-    const { roomName, displayName, email, isModerator, avatarUrl } = await req.json();
+    const { roomName, displayName, email, isModerator, avatarUrl, userId } = await req.json();
 
     if (!roomName || !displayName) {
       return new Response(JSON.stringify({ error: "roomName and displayName are required" }), {

@@ -17,6 +17,21 @@ declare global {
   }
 }
 
+const JAAS_ROOM_PREFIX = 'EduCloud-';
+const JITSI_SCRIPT_ID = 'jitsi-script';
+
+const normalizeRoomName = (value: string) => {
+  const decoded = decodeURIComponent(value.trim());
+
+  return decoded
+    .replace(/^https?:\/\/8x8\.vc\//i, '')
+    .replace(/^vpaas-magic-cookie-[^/]+\//i, '')
+    .replace(new RegExp(`^${JAAS_ROOM_PREFIX}`, 'i'), '');
+};
+
+const buildJaasRoomName = (value: string) => `${JAAS_ROOM_PREFIX}${normalizeRoomName(value)}`;
+const getJitsiScriptSrc = (appId: string) => `https://8x8.vc/${appId}/external_api.js`;
+
 export default function LiveClassroom() {
   const { user } = useAuth();
   const jitsiContainerRef = useRef<HTMLDivElement>(null);
