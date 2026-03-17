@@ -282,6 +282,7 @@ function AppRoutes() {
         <Route path="/student/timeline" element={<StudentR><AcademicTimeline /></StudentR>} />
         <Route path="/student/career" element={<StudentR><StudentCareer /></StudentR>} />
         <Route path="/student/support" element={<StudentR><MessagingInbox /></StudentR>} />
+        <Route path="/student/labs" element={<StudentR><ITLabsDashboard /></StudentR>} />
 
         {/* ========== EXTERNAL: University Partner ========== */}
         <Route path="/partner" element={<PartnerR><UniversityPartnerPortal /></PartnerR>} />
