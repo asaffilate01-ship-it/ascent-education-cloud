@@ -29,8 +29,17 @@ serve(async (req) => {
       });
     }
 
+    // Normalize the PEM key - handle escaped newlines or missing formatting
+    let pemKey = JAAS_API_KEY;
+    // Replace literal \n with actual newlines
+    pemKey = pemKey.replace(/\\n/g, '\n');
+    // If the key doesn't have PEM headers, add them
+    if (!pemKey.includes('-----BEGIN')) {
+      pemKey = `-----BEGIN PRIVATE KEY-----\n${pemKey.trim()}\n-----END PRIVATE KEY-----`;
+    }
+
     // Import the RSA private key
-    const privateKey = await jose.importPKCS8(JAAS_API_KEY, "RS256");
+    const privateKey = await jose.importPKCS8(pemKey, "RS256");
 
     // Build the JWT payload per JaaS spec
     const now = Math.floor(Date.now() / 1000);
