@@ -124,7 +124,7 @@ export default function TenantLandingPage() {
                 {[
                   { icon: Video, title: 'HD Live Classes', desc: 'Join interactive lectures from anywhere with screen sharing and whiteboard' },
                   { icon: GraduationCap, title: 'UK Qualifications', desc: 'Earn internationally recognised Level 3–5 diplomas' },
-                  { icon: Globe, title: 'University Pathway', desc: 'Progress to top UK, Canadian & Australian universities' },
+                  { icon: Globe, title: 'Global University Pathway', desc: 'Progress to universities in UK, USA, Australia, Canada & more' },
                   { icon: Shield, title: 'Accredited Centre', desc: 'OTHM, QUALIFI & IAB approved with full QA compliance' },
                 ].map((f) => (
                   <div key={f.title} className="surface-card p-5 border border-border/50 hover:border-primary/15 transition-all hover:shadow-lg">
