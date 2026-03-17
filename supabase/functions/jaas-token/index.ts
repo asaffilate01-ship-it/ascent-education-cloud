@@ -51,12 +51,19 @@ serve(async (req) => {
     const privateKey = await jose.importPKCS8(pemKey, "RS256");
 
     // Build the JWT payload per JaaS spec
+    // Use nbf in the past to avoid clock-skew rejections
     const now = Math.floor(Date.now() / 1000);
+    const nbf = now - 30; // 30s buffer for clock skew
+
+    // Strip the prefix from room name for the JWT room claim
+    // JaaS expects just the room name without the AppID prefix
+    const roomForJwt = roomName.replace(/^vpaas-magic-cookie-[^/]+\//, '');
+
     const jwt = await new jose.SignJWT({
       aud: "jitsi",
       iss: "chat",
       sub: JAAS_APP_ID,
-      room: roomName,
+      room: roomForJwt,
       context: {
         user: {
           id: userId || crypto.randomUUID(),
@@ -79,8 +86,8 @@ serve(async (req) => {
     })
       .setProtectedHeader({ alg: "RS256", kid: `${JAAS_APP_ID}/${JAAS_KEY_ID}`, typ: "JWT" })
       .setIssuedAt(now)
-      .setExpirationTime(now + 3600) // 1 hour
-      .setNotBefore(now)
+      .setExpirationTime(now + 7200) // 2 hours
+      .setNotBefore(nbf)
       .sign(privateKey);
 
     return new Response(JSON.stringify({ token: jwt, appId: JAAS_APP_ID }), {
