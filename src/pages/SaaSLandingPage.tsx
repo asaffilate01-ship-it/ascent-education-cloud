@@ -447,7 +447,7 @@ export default function SaaSLandingPage() {
                 <li><Link to="/apply" className="hover:text-background transition-default">Apply Now</Link></li>
                 <li><Link to="/login" className="hover:text-background transition-default">Login</Link></li>
                 <li><Link to="/register" className="hover:text-background transition-default">Register</Link></li>
-                <li><a href="mailto:support@educloud.com" className="hover:text-background transition-default">Help Centre</a></li>
+                <li><a href="mailto:support@educloud.pk" className="hover:text-background transition-default">Help Centre</a></li>
               </ul>
             </div>
             <div>
