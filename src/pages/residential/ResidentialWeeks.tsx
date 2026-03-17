@@ -338,9 +338,9 @@ export default function ResidentialWeeks() {
             <TabsContent value="accommodation" className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[
-                  { type: 'Single Room', desc: 'Private en-suite room with study desk, Wi-Fi, and daily housekeeping', icon: BedDouble, price: '£45/night' },
-                  { type: 'Shared Dormitory (Male)', desc: '4-bed male-only dormitory with shared bathroom facilities', icon: Users, price: '£25/night' },
-                  { type: 'Shared Dormitory (Female)', desc: '4-bed female-only dormitory with shared bathroom facilities', icon: Users, price: '£25/night' },
+                  { type: 'Single Room', desc: 'Private en-suite room with study desk, Wi-Fi, and daily housekeeping', icon: BedDouble, price: 'Rs.12,000/night' },
+                  { type: 'Shared Dormitory (Male)', desc: '4-bed male-only dormitory with shared bathroom facilities', icon: Users, price: 'Rs.7,000/night' },
+                  { type: 'Shared Dormitory (Female)', desc: '4-bed female-only dormitory with shared bathroom facilities', icon: Users, price: 'Rs.7,000/night' },
                 ].map(room => (
                   <Card key={room.type} className="hover:shadow-md transition-shadow">
                     <CardContent className="pt-6 text-center space-y-3">
