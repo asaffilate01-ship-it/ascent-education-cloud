@@ -53,6 +53,7 @@ export const ROLE_HOME: Record<UserRole, string> = {
   marketing_officer: '/marketing',
   agent: '/agent',
   student: '/student',
+  parent_guardian: '/parent',
   university_partner: '/partner',
   employer_partner: '/employer',
 };
