@@ -241,7 +241,7 @@ export default function TenantOnboarding() {
             <div className="grid md:grid-cols-2 gap-4 mb-6">
               {[
                 { label: 'Centre Name', value: formData.centreName || 'Not set' },
-                { label: 'URL', value: `${formData.slug || '...'}.educloud.com` },
+                { label: 'URL', value: `${formData.slug || '...'}.educloud.pk` },
                 { label: 'Location', value: `${formData.city || '...'}, ${formData.country}` },
                 { label: 'Plan', value: formData.plan.charAt(0).toUpperCase() + formData.plan.slice(1) },
                 { label: 'Admin', value: formData.adminName || 'Not set' },

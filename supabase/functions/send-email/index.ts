@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: from || 'EduPathway <noreply@edupathway.com>',
+        from: from || 'UniPathway <noreply@unipathway.pk>',
         to: Array.isArray(to) ? to : [to],
         subject,
         html: html || undefined,
