@@ -38,3 +38,6 @@ verify_jwt = false
 
 [functions.aws-lab-manager]
 verify_jwt = false
+
+[functions.send-whatsapp]
+verify_jwt = false

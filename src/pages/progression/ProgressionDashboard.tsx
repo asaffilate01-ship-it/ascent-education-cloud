@@ -6,9 +6,15 @@ import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { Button } from '@/components/ui/button';
 import { useState, useMemo } from 'react';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
+
+const STAFF_ROLES = ['superadmin', 'centre_director', 'programme_leader', 'admissions_admin', 'marketing_officer'];
 
 export default function ProgressionDashboard() {
+  const { user } = useAuth();
   const [selectedCountry, setSelectedCountry] = useState<string>('All');
+
+  const isStaff = user?.roles?.some(r => STAFF_ROLES.includes(r)) ?? false;
 
   const { data: universities, loading: unisLoading } = useSupabaseQuery('partner_universities' as any, {
     orderBy: { column: 'country', ascending: true },
@@ -54,12 +60,27 @@ export default function ProgressionDashboard() {
   };
 
   return (
-    <DashboardLayout title="University Progression" subtitle="Partner universities, applications, offers, and commissions">
+    <DashboardLayout
+      title="University Progression"
+      subtitle={isStaff ? 'Partner universities, applications, offers, and commissions' : 'Explore partner universities and your progression pathway'}
+    >
+      {/* Stats — staff sees all, students see their own progress */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard label="Eligible Students" value={loading ? '...' : String(eligible)} icon={GraduationCap} />
-        <StatCard label="Applications Sent" value={loading ? '...' : String(applied)} change={eligible > 0 ? `${Math.round((applied / eligible) * 100)}% of eligible` : ''} changeType="positive" icon={FileText} />
-        <StatCard label="Offers Received" value={loading ? '...' : String(offered)} change={applied > 0 ? `${Math.round((offered / applied) * 100)}% success` : ''} changeType="positive" icon={Award} />
-        <StatCard label="Enrolled" value={loading ? '...' : String(enrolled)} icon={CreditCard} />
+        {isStaff ? (
+          <>
+            <StatCard label="Eligible Students" value={loading ? '...' : String(eligible)} icon={GraduationCap} />
+            <StatCard label="Applications Sent" value={loading ? '...' : String(applied)} change={eligible > 0 ? `${Math.round((applied / eligible) * 100)}% of eligible` : ''} changeType="positive" icon={FileText} />
+            <StatCard label="Offers Received" value={loading ? '...' : String(offered)} change={applied > 0 ? `${Math.round((offered / applied) * 100)}% success` : ''} changeType="positive" icon={Award} />
+            <StatCard label="Enrolled" value={loading ? '...' : String(enrolled)} icon={CreditCard} />
+          </>
+        ) : (
+          <>
+            <StatCard label="Partner Universities" value={loading ? '...' : String(unis.length)} icon={Globe} />
+            <StatCard label="Countries" value={String(countries.length - 1)} icon={GraduationCap} />
+            <StatCard label="Your Applications" value={loading ? '...' : String(applied)} icon={FileText} />
+            <StatCard label="Offers" value={loading ? '...' : String(offered)} icon={Award} />
+          </>
+        )}
       </div>
 
       {/* Partner Universities */}
@@ -102,73 +123,88 @@ export default function ProgressionDashboard() {
                   </a>
                 </div>
                 <div className="flex items-center justify-between mt-3 text-xs">
-                  <span className="text-muted-foreground">{enrolled} students referred</span>
-                  <span className="font-semibold text-primary">{u.commission || 'TBC'}/student</span>
+                  {isStaff ? (
+                    <>
+                      <span className="text-muted-foreground">{enrolled} students referred</span>
+                      <span className="font-semibold text-primary">{u.commission || 'TBC'}/student</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-muted-foreground">{u.country}</span>
+                      <span className="text-muted-foreground">{u.intake || 'Multiple intakes'}</span>
+                    </>
+                  )}
                 </div>
-                <Button size="sm" variant="outline" className="w-full mt-3 text-xs" onClick={() => handleReferStudent(u)}>
-                  Refer Student
-                </Button>
+                {isStaff && (
+                  <Button size="sm" variant="outline" className="w-full mt-3 text-xs" onClick={() => handleReferStudent(u)}>
+                    Refer Student
+                  </Button>
+                )}
               </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* Applications Table */}
-      <div className="surface-card p-5 mb-6">
-        <h3 className="text-sm font-semibold mb-4">Student Applications</h3>
-        {appsLoading ? (
-          <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="surface-data">
-                  <th className="text-label text-left px-4 py-3">Student</th>
-                  <th className="text-label text-left px-4 py-3">Programme</th>
-                  <th className="text-label text-left px-4 py-3">Level</th>
-                  <th className="text-label text-left px-4 py-3">Source</th>
-                  <th className="text-label text-left px-4 py-3">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(applications || []).slice(0, 20).map((a) => (
-                  <tr key={a.id} className="border-t border-border/50 hover:bg-accent/50 transition-default">
-                    <td className="px-4 py-3 text-sm font-medium">{a.student_name}</td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">{a.programme_name || '—'}</td>
-                    <td className="px-4 py-3 text-sm">{a.level || '—'}</td>
-                    <td className="px-4 py-3 text-sm">{a.source || '—'}</td>
-                    <td className="px-4 py-3">
-                      <StatusBadge
-                        status={a.stage.replace(/_/g, ' ')}
-                        variant={a.stage === 'enrolled' ? 'success' : ['conditional_offer', 'unconditional_offer'].includes(a.stage) ? 'info' : a.stage === 'lost' ? 'danger' : 'warning'}
-                      />
-                    </td>
+      {/* Applications Table — staff only */}
+      {isStaff && (
+        <div className="surface-card p-5 mb-6">
+          <h3 className="text-sm font-semibold mb-4">Student Applications</h3>
+          {appsLoading ? (
+            <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="surface-data">
+                    <th className="text-label text-left px-4 py-3">Student</th>
+                    <th className="text-label text-left px-4 py-3">Programme</th>
+                    <th className="text-label text-left px-4 py-3">Level</th>
+                    <th className="text-label text-left px-4 py-3">Source</th>
+                    <th className="text-label text-left px-4 py-3">Status</th>
                   </tr>
-                ))}
-                {(applications || []).length === 0 && (
-                  <tr><td colSpan={5} className="text-center py-8 text-sm text-muted-foreground">No applications yet</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* Commission Rates */}
-      <div className="surface-card p-5">
-        <h3 className="text-sm font-semibold mb-3">Commission Rates by Country</h3>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {commissionRanges.map((c) => (
-            <div key={c.country} className="surface-data p-4 rounded-lg text-center">
-              <p className="text-2xl mb-1">{c.flag}</p>
-              <p className="text-sm font-semibold">{c.country}</p>
-              <p className="text-xs text-primary font-medium mt-1">{c.range}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{c.count} partners</p>
+                </thead>
+                <tbody>
+                  {(applications || []).slice(0, 20).map((a) => (
+                    <tr key={a.id} className="border-t border-border/50 hover:bg-accent/50 transition-default">
+                      <td className="px-4 py-3 text-sm font-medium">{a.student_name}</td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">{a.programme_name || '—'}</td>
+                      <td className="px-4 py-3 text-sm">{a.level || '—'}</td>
+                      <td className="px-4 py-3 text-sm">{a.source || '—'}</td>
+                      <td className="px-4 py-3">
+                        <StatusBadge
+                          status={a.stage.replace(/_/g, ' ')}
+                          variant={a.stage === 'enrolled' ? 'success' : ['conditional_offer', 'unconditional_offer'].includes(a.stage) ? 'info' : a.stage === 'lost' ? 'danger' : 'warning'}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                  {(applications || []).length === 0 && (
+                    <tr><td colSpan={5} className="text-center py-8 text-sm text-muted-foreground">No applications yet</td></tr>
+                  )}
+                </tbody>
+              </table>
             </div>
-          ))}
+          )}
         </div>
-      </div>
+      )}
+
+      {/* Commission Rates — staff only */}
+      {isStaff && (
+        <div className="surface-card p-5">
+          <h3 className="text-sm font-semibold mb-3">Commission Rates by Country</h3>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {commissionRanges.map((c) => (
+              <div key={c.country} className="surface-data p-4 rounded-lg text-center">
+                <p className="text-2xl mb-1">{c.flag}</p>
+                <p className="text-sm font-semibold">{c.country}</p>
+                <p className="text-xs text-primary font-medium mt-1">{c.range}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{c.count} partners</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
