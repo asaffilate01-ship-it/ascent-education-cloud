@@ -381,7 +381,7 @@ export default function SaaSLandingPage() {
           <p className="text-center text-muted-foreground mb-8 sm:mb-10">See what our centres are saying</p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
-              { name: 'Dr. Sarah Khan', role: 'Centre Director, EduPathway London', quote: 'EduCloud transformed our college operations. We went from spreadsheets to a fully digital campus in 2 weeks. The QA module alone saved us 40 hours per audit cycle.' },
+              { name: 'Dr. Sarah Khan', role: 'Centre Director, UniPathway London', quote: 'EduCloud transformed our college operations. We went from spreadsheets to a fully digital campus in 2 weeks. The QA module alone saved us 40 hours per audit cycle.' },
               { name: 'James Okonkwo', role: 'Programme Leader, Manchester Academy', quote: 'The multi-tenant setup means each of our 3 campuses has independent branding but I can oversee everything from one dashboard. Brilliant architecture.' },
               { name: 'Fatima Al-Rashid', role: 'Recruitment Agent, Gulf Region', quote: 'The agent portal is a game-changer. I can track my students from lead to enrolment, see commission breakdowns, and communicate directly with admissions.' },
             ].map((t) => (
