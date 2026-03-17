@@ -473,6 +473,60 @@ export type Database = {
           },
         ]
       }
+      e_signatures: {
+        Row: {
+          created_at: string
+          document_id: string | null
+          document_type: string
+          full_name: string
+          id: string
+          ip_address: string | null
+          signature_data: string
+          signed_at: string
+          tenant_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          document_id?: string | null
+          document_type: string
+          full_name: string
+          id?: string
+          ip_address?: string | null
+          signature_data: string
+          signed_at?: string
+          tenant_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          document_id?: string | null
+          document_type?: string
+          full_name?: string
+          id?: string
+          ip_address?: string | null
+          signature_data?: string
+          signed_at?: string
+          tenant_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "e_signatures_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "e_signatures_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoices: {
         Row: {
           amount: number
@@ -815,6 +869,51 @@ export type Database = {
           },
         ]
       }
+      parent_student_links: {
+        Row: {
+          created_at: string
+          id: string
+          parent_id: string
+          relationship: string
+          student_id: string
+          tenant_id: string | null
+          verified: boolean
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          parent_id: string
+          relationship?: string
+          student_id: string
+          tenant_id?: string | null
+          verified?: boolean
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          parent_id?: string
+          relationship?: string
+          student_id?: string
+          tenant_id?: string | null
+          verified?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parent_student_links_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parent_student_links_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       partner_universities: {
         Row: {
           commission: string | null
@@ -862,6 +961,67 @@ export type Database = {
           url?: string
         }
         Relationships: []
+      }
+      plagiarism_reports: {
+        Row: {
+          ai_generated_score: number
+          analyzed_at: string | null
+          created_at: string
+          flagged_passages: Json | null
+          id: string
+          overall_score: number
+          similarity_sources: Json | null
+          status: string
+          submission_id: string
+          tenant_id: string
+        }
+        Insert: {
+          ai_generated_score?: number
+          analyzed_at?: string | null
+          created_at?: string
+          flagged_passages?: Json | null
+          id?: string
+          overall_score?: number
+          similarity_sources?: Json | null
+          status?: string
+          submission_id: string
+          tenant_id: string
+        }
+        Update: {
+          ai_generated_score?: number
+          analyzed_at?: string | null
+          created_at?: string
+          flagged_passages?: Json | null
+          id?: string
+          overall_score?: number
+          similarity_sources?: Json | null
+          status?: string
+          submission_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plagiarism_reports_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "submissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plagiarism_reports_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plagiarism_reports_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -1379,6 +1539,30 @@ export type Database = {
           status?: Database["public"]["Enums"]["tenant_status"]
           students_count?: number | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      user_presence: {
+        Row: {
+          last_seen: string
+          status: string
+          typing_in: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          last_seen?: string
+          status?: string
+          typing_in?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          last_seen?: string
+          status?: string
+          typing_in?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
