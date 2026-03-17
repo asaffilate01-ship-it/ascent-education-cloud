@@ -217,6 +217,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Applications', icon: FolderOpen, path: '/partner/applications' },
       { label: 'Offers', icon: Award, path: '/partner/offers' },
       { label: 'Commissions', icon: CreditCard, path: '/partner/commissions' },
+      { label: 'Activity Log', icon: Activity, path: '/my-activity' },
       { label: 'Messages', icon: MessageSquare, path: '/messaging' },
     ]},
   ],
