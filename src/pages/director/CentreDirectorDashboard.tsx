@@ -137,10 +137,10 @@ export default function CentreDirectorDashboard() {
           </h3>
           <div className="space-y-3">
             {[
-              { label: 'Total Billed', value: `£${totalBilled.toLocaleString()}` },
-              { label: 'Collected', value: `£${totalCollected.toLocaleString()}` },
-              { label: 'Outstanding', value: `£${outstanding.toLocaleString()}`, sub: `${overdueCount} overdue` },
-              { label: 'Commissions', value: `£${commissions.toLocaleString()}` },
+              { label: 'Total Billed', value: `Rs.${totalBilled.toLocaleString()}` },
+              { label: 'Collected', value: `Rs.${totalCollected.toLocaleString()}` },
+              { label: 'Outstanding', value: `Rs.${outstanding.toLocaleString()}`, sub: `${overdueCount} overdue` },
+              { label: 'Commissions', value: `Rs.${commissions.toLocaleString()}` },
             ].map((f) => (
               <div key={f.label} className="flex items-center justify-between py-1">
                 <div>
