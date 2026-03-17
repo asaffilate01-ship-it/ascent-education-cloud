@@ -15,8 +15,9 @@ serve(async (req) => {
   try {
     const JAAS_APP_ID = Deno.env.get("JAAS_APP_ID");
     const JAAS_API_KEY = Deno.env.get("JAAS_API_KEY");
+    const JAAS_KEY_ID = Deno.env.get("JAAS_KEY_ID");
 
-    if (!JAAS_APP_ID || !JAAS_API_KEY) {
+    if (!JAAS_APP_ID || !JAAS_API_KEY || !JAAS_KEY_ID) {
       throw new Error("JaaS credentials not configured");
     }
 
@@ -72,7 +73,7 @@ serve(async (req) => {
         },
       },
     })
-      .setProtectedHeader({ alg: "RS256", kid: `${JAAS_APP_ID}/default` })
+      .setProtectedHeader({ alg: "RS256", kid: `${JAAS_APP_ID}/${JAAS_KEY_ID}` })
       .setIssuedAt(now)
       .setExpirationTime(now + 3600) // 1 hour
       .setNotBefore(now)
