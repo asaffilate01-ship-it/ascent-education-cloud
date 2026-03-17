@@ -39,7 +39,7 @@ export default function SaaSLandingPage() {
             <a href="#pricing" className="hover:text-foreground transition-default">Pricing</a>
             <a href="#modules" className="hover:text-foreground transition-default">Modules</a>
             <a href="#security" className="hover:text-foreground transition-default">Security</a>
-            <Link to="/tenant/edupathway">
+            <Link to="/tenant/unipathway">
               <Button variant="outline" size="sm">Demo Tenant</Button>
             </Link>
             <Link to="/landlord">
