@@ -132,6 +132,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Appeals', icon: MessageSquare, path: '/qa/appeals' },
       { label: 'Audit Trail', icon: FileText, path: '/qa/audit' },
       { label: 'EV Packs', icon: FolderOpen, path: '/qa/evidence' },
+      { label: 'Activity Log', icon: Activity, path: '/my-activity' },
       { label: 'Messages', icon: MessageSquare, path: '/messaging' },
     ]},
   ],
