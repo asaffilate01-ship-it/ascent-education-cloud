@@ -228,7 +228,7 @@ export default function TenantOnboarding() {
               </div>
               <div>
                 <label className="text-label mb-1.5 block">Email Address</label>
-                <input type="email" value={formData.adminEmail} onChange={(e) => updateField('adminEmail', e.target.value)} placeholder="director@edupathway.pk" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none text-foreground" />
+                <input type="email" value={formData.adminEmail} onChange={(e) => updateField('adminEmail', e.target.value)} placeholder="director@unipathway.pk" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none text-foreground" />
               </div>
               <p className="text-xs text-muted-foreground">An invitation email will be sent to create their password and complete setup.</p>
             </div>
