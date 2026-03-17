@@ -30,7 +30,7 @@ export default function SuperadminPlatform() {
     <DashboardLayout title="Platform Management" subtitle="Features, subscriptions, and infrastructure">
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         <StatCard label="Active Tenants" value={loading ? '...' : String(stats.activeTenants)} icon={Globe} />
-        <StatCard label="Total MRR" value={loading ? '...' : `£${stats.totalMRR.toLocaleString()}`} icon={CreditCard} />
+        <StatCard label="Total MRR" value={loading ? '...' : `Rs.${stats.totalMRR.toLocaleString()}`} icon={CreditCard} />
         <StatCard label="Platform Users" value={loading ? '...' : String(stats.totalUsers)} icon={Users} />
       </div>
 
