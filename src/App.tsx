@@ -81,6 +81,50 @@ const P = ({ children }: { children: React.ReactNode }) => (
   <ProtectedRoute>{children}</ProtectedRoute>
 );
 
+// Role-specific wrappers
+const Landlord = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['superadmin']}>{children}</RoleGuard>
+);
+const Director = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['centre_director', 'superadmin']}>{children}</RoleGuard>
+);
+const Admissions = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['admissions_admin', 'centre_director', 'superadmin']}>{children}</RoleGuard>
+);
+const LecturerR = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['lecturer', 'programme_leader', 'centre_director', 'superadmin']}>{children}</RoleGuard>
+);
+const Programme = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['programme_leader', 'centre_director', 'superadmin']}>{children}</RoleGuard>
+);
+const QA = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['iqa_officer', 'centre_director', 'superadmin']}>{children}</RoleGuard>
+);
+const Exams = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['exams_officer', 'centre_director', 'superadmin']}>{children}</RoleGuard>
+);
+const Finance = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['finance_officer', 'centre_director', 'superadmin']}>{children}</RoleGuard>
+);
+const Marketing = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['marketing_officer', 'centre_director', 'superadmin']}>{children}</RoleGuard>
+);
+const AgentR = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['agent', 'centre_director', 'superadmin']}>{children}</RoleGuard>
+);
+const StudentR = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['student', 'centre_director', 'superadmin']}>{children}</RoleGuard>
+);
+const PartnerR = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['university_partner', 'superadmin']}>{children}</RoleGuard>
+);
+const EmployerR = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['employer_partner', 'superadmin']}>{children}</RoleGuard>
+);
+const ParentR = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['parent_guardian', 'centre_director', 'superadmin']}>{children}</RoleGuard>
+);
+
 function LoadingFallback() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">

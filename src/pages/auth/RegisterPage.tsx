@@ -24,9 +24,6 @@ export default function RegisterPage() {
 
   const updateField = (key: string, value: string) => setFormData(prev => ({ ...prev, [key]: value }));
 
-  const getRoleForType = () => {
-    return ACCOUNT_TYPES.find(t => t.key === accountType)?.role || 'student';
-  };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
