@@ -207,45 +207,44 @@ export default function LoginPage() {
             <Link to="/" className="hover:underline">← Back to EduCloud</Link>
           </p>
 
-          {/* Dev Login Panel */}
-          <div className="mt-6 border border-dashed border-destructive/30 rounded-lg overflow-hidden">
-            <button
-              onClick={() => setDevOpen(!devOpen)}
-              className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-mono text-destructive/70 hover:bg-destructive/5 transition-default"
-            >
-              <span className="flex items-center gap-1.5">
-                <Bug className="w-3.5 h-3.5" />
-                DEV LOGIN — Quick Role Switch
-              </span>
-              {devOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-            </button>
-            {devOpen && (
-              <div className="px-3 pb-3 pt-1">
-                <p className="text-[10px] text-muted-foreground font-mono mb-2">
-                  All accounts use password: <code className="bg-muted px-1 rounded">DevTest123!</code>
-                </p>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {DEV_ACCOUNTS.map((account) => (
-                    <button
-                      key={account.role}
-                      onClick={() => handleDevLogin(account)}
-                      disabled={!!devLoading}
-                      className={`text-left px-2.5 py-2 rounded-md border text-[11px] font-medium transition-default hover:opacity-80 disabled:opacity-50 ${account.color}`}
-                    >
-                      {devLoading === account.role ? (
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                      ) : (
-                        <>
+          {/* Dev Login Panel - Only in development */}
+          {import.meta.env.DEV && (
+            <div className="mt-6 border border-dashed border-destructive/30 rounded-lg overflow-hidden">
+              <button
+                onClick={() => setDevOpen(!devOpen)}
+                className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-mono text-destructive/70 hover:bg-destructive/5 transition-default"
+              >
+                <span className="flex items-center gap-1.5">
+                  <Bug className="w-3.5 h-3.5" />
+                  DEV LOGIN — Quick Role Switch
+                </span>
+                {devOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+              </button>
+              {devOpen && (
+                <div className="px-3 pb-3 pt-1">
+                  <p className="text-[10px] text-muted-foreground font-mono mb-2">
+                    Dev accounts — credentials managed server-side
+                  </p>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {DEV_ACCOUNTS.map((account) => (
+                      <button
+                        key={account.role}
+                        onClick={() => handleDevLogin(account)}
+                        disabled={!!devLoading}
+                        className={`text-left px-2.5 py-2 rounded-md border text-[11px] font-medium transition-default hover:opacity-80 disabled:opacity-50 ${account.color}`}
+                      >
+                        {devLoading === account.role ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
                           <span className="block truncate">{account.label}</span>
-                          <span className="block text-[9px] opacity-60 truncate">{account.email}</span>
-                        </>
-                      )}
-                    </button>
-                  ))}
+                        )}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

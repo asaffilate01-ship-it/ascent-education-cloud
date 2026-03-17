@@ -13,8 +13,8 @@ const DEFAULT_THEME: TenantTheme = {
   logoUrl: '',
   faviconUrl: '',
   fontFamily: 'Inter',
-  heroTitle: 'Your Gateway to UK Qualifications',
-  heroSubtitle: 'Study OTHM, QUALIFI & IAB accredited Level 3–5 diplomas 80% online.',
+  heroTitle: 'Your Gateway to Global Qualifications',
+  heroSubtitle: 'Study OTHM, QUALIFI & IAB accredited Level 3–5 diplomas 80% online. Progress to universities in the UK, USA, Australia, Canada & beyond.',
   heroImageUrl: '',
   customDomain: '',
   brandName: 'UniPathway',
@@ -41,8 +41,8 @@ export default function TenantLandingPage() {
           logoUrl: t.logo_url || '',
           faviconUrl: '',
           fontFamily: 'Inter',
-          heroTitle: `Your Gateway to UK Qualifications`,
-          heroSubtitle: 'Study internationally recognised diplomas from Pakistan. 80% online, 20% in-centre. Save 50–70% vs studying abroad.',
+          heroTitle: `Your Gateway to Global Qualifications`,
+          heroSubtitle: 'Study internationally recognised diplomas from Pakistan. 80% online, 20% in-centre. Progress to UK, USA, Australia & Canada. Save 50–70% vs studying abroad.',
           heroImageUrl: '',
           customDomain: t.custom_domain || '',
           brandName: t.brand_name || t.name,
@@ -124,7 +124,7 @@ export default function TenantLandingPage() {
                 {[
                   { icon: Video, title: 'HD Live Classes', desc: 'Join interactive lectures from anywhere with screen sharing and whiteboard' },
                   { icon: GraduationCap, title: 'UK Qualifications', desc: 'Earn internationally recognised Level 3–5 diplomas' },
-                  { icon: Globe, title: 'University Pathway', desc: 'Progress to top UK, Canadian & Australian universities' },
+                  { icon: Globe, title: 'Global University Pathway', desc: 'Progress to universities in UK, USA, Australia, Canada & more' },
                   { icon: Shield, title: 'Accredited Centre', desc: 'OTHM, QUALIFI & IAB approved with full QA compliance' },
                 ].map((f) => (
                   <div key={f.title} className="surface-card p-5 border border-border/50 hover:border-primary/15 transition-all hover:shadow-lg">
@@ -150,10 +150,10 @@ export default function TenantLandingPage() {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { icon: GraduationCap, title: 'UK Recognised Qualifications', desc: 'Study OTHM, QUALIFI, and IAB accredited courses — recognised by universities across the UK, Canada, Australia, and USA.' },
+              { icon: GraduationCap, title: 'Globally Recognised Qualifications', desc: 'Study OTHM, QUALIFI, and IAB accredited courses — recognised by universities across the UK, USA, Canada, Australia, and beyond.' },
               { icon: Video, title: '80% Online Learning', desc: 'Join HD live lectures from home. Interactive whiteboard, breakout rooms, and all sessions recorded for 24/7 playback.' },
               { icon: MapPin, title: '20% In-Centre Experience', desc: 'Attend 2 residential weeks per year for workshops, presentations, tutor meetings, and formal examinations.' },
-              { icon: Target, title: 'University Progression', desc: 'Clear academic pathways to top-up your diploma to a full bachelor\'s degree at partner universities worldwide.' },
+              { icon: Target, title: 'Global University Progression', desc: 'Clear academic pathways to top-up your diploma to a full bachelor\'s degree at partner universities in UK, USA, Australia & Canada.' },
               { icon: Shield, title: 'Full QA Compliance', desc: 'Every assignment is moderated, plagiarism-checked, and verified to meet awarding body standards.' },
               { icon: Users, title: 'Career Support', desc: 'Access job listings, CV builder, and employer partner internships through our integrated career portal.' },
             ].map((f) => (
@@ -227,14 +227,15 @@ export default function TenantLandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
             <span className="text-xs font-bold uppercase tracking-widest mb-3 block" style={{ color: pc }}>Academic Pathways</span>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground">Your Route to a UK Degree</h2>
-            <p className="text-muted-foreground mt-3 max-w-lg mx-auto">Complete Level 4 & 5 in Pakistan, then top-up to a full bachelor's degree at a UK university</p>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground">Your Route to a Global Degree</h2>
+            <p className="text-muted-foreground mt-3 max-w-lg mx-auto">Complete Level 4 & 5 in Pakistan, then top-up to a full bachelor's degree at universities in the UK, USA, Australia or Canada</p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { title: 'Business Management', body: 'OTHM', levels: ['Level 4 Diploma (Year 1)', 'Level 5 Diploma (Year 2)', 'BA Top-Up at UK University (Year 3)'], unis: ['Sunderland', 'Anglia Ruskin', 'Bolton'] },
-              { title: 'Computing & IT', body: 'QUALIFI', levels: ['Level 3 IT Foundation', 'Level 4 Computing', 'Level 5 Computing', 'BSc Top-Up at UK University'], unis: ['Portsmouth', 'Wolverhampton'] },
-              { title: 'Accounting & Finance', body: 'IAB', levels: ['Level 3 Accounting', 'Level 4 Accounting', 'Level 5 Accounting', 'BSc Top-Up'], unis: ['Bolton', 'Chichester'] },
+              { title: 'Business Management', body: 'OTHM', levels: ['Level 4 Diploma (Year 1)', 'Level 5 Diploma (Year 2)', 'BA Top-Up at Global University (Year 3)'], unis: ['🇬🇧 Sunderland', '🇬🇧 Anglia Ruskin', '🇬🇧 Bolton', '🇺🇸 Westcliff', '🇦🇺 Torrens'] },
+              { title: 'Computing & IT', body: 'QUALIFI', levels: ['Level 3 IT Foundation', 'Level 4 Computing', 'Level 5 Computing', 'BSc Top-Up at Global University'], unis: ['🇬🇧 Portsmouth', '🇬🇧 Wolverhampton', '🇺🇸 LSUS', '🇦🇺 ECU', '🇨🇦 Yorkville'] },
+              { title: 'Accounting & Finance', body: 'IAB', levels: ['Level 3 Accounting', 'Level 4 Accounting', 'Level 5 Accounting', 'BSc Top-Up'], unis: ['🇬🇧 Bolton', '🇬🇧 Chichester', '🇦🇺 Deakin'] },
+              { title: 'Health & Social Care', body: 'OTHM', levels: ['Level 4 Diploma (Year 1)', 'Level 5 Diploma (Year 2)', 'BSc Top-Up at Global University'], unis: ['🇬🇧 Sunderland', '🇺🇸 Westcliff', '🇦🇺 SCU'] },
             ].map((path) => (
               <motion.div key={path.title} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
                 className="surface-card p-7 border border-border/50 hover:shadow-xl transition-all"
@@ -271,7 +272,7 @@ export default function TenantLandingPage() {
       <section className="py-20 sm:py-28" style={{ background: `${pc}03` }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <span className="text-xs font-bold uppercase tracking-widest mb-3 block" style={{ color: pc }}>Accreditation</span>
-          <h2 className="text-2xl sm:text-4xl font-extrabold mb-10">Accredited & Recognised Globally</h2>
+          <h2 className="text-2xl sm:text-4xl font-extrabold mb-10">Accredited & Recognised in 100+ Countries</h2>
           <div className="flex flex-col sm:flex-row justify-center gap-6 max-w-3xl mx-auto">
             {[
               { name: 'OTHM Qualifications', desc: 'UK Ofqual regulated awarding body' },

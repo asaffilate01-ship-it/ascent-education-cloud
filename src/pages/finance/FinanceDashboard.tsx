@@ -1,7 +1,7 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
-import { CreditCard, FileText, TrendingUp, AlertTriangle, Handshake, Search, Filter } from 'lucide-react';
+import { CreditCard, FileText, TrendingUp, AlertTriangle, Handshake, Search, Filter, Download, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -10,6 +10,7 @@ import CreateInvoiceModal from '@/components/modals/CreateInvoiceModal';
 import { useToast } from '@/hooks/use-toast';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
+import { supabase } from '@/integrations/supabase/client';
 
 const statusVariant = (s: string): 'success' | 'warning' | 'danger' | 'info' | 'neutral' => {
   if (s === 'paid') return 'success';
@@ -24,10 +25,34 @@ export default function FinanceDashboard() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [exporting, setExporting] = useState(false);
   const { toast } = useToast();
   const { data: invoices, loading, refetch } = useSupabaseQuery('invoices', {
     orderBy: { column: 'created_at', ascending: false },
   });
+
+  const handleExportCSV = async () => {
+    setExporting(true);
+    try {
+      const resp = await supabase.functions.invoke('export-report', {
+        body: { reportType: 'invoices', filters: statusFilter !== 'all' ? { status: statusFilter } : undefined },
+      });
+      if (resp.error) throw resp.error;
+      const csvText = typeof resp.data === 'string' ? resp.data : new TextDecoder().decode(resp.data);
+      const blob = new Blob([csvText], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `invoices-export-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast({ title: 'Exported', description: `Invoices exported to CSV.` });
+    } catch (err: any) {
+      toast({ title: 'Export failed', description: err.message || 'Could not export invoices.' });
+    } finally {
+      setExporting(false);
+    }
+  };
 
   if (loading) return <DashboardSkeleton />;
 
@@ -90,7 +115,10 @@ export default function FinanceDashboard() {
             <SelectItem value="commission">Commission</SelectItem>
           </SelectContent>
         </Select>
-        <Button variant="outline" size="sm" className="text-xs ml-auto" onClick={() => toast({ title: 'Exported', description: 'CSV file downloaded successfully.' })}>Export CSV</Button>
+        <Button variant="outline" size="sm" className="text-xs ml-auto" onClick={handleExportCSV} disabled={exporting}>
+          {exporting ? <Loader2 className="w-3 h-3 mr-1.5 animate-spin" /> : <Download className="w-3 h-3 mr-1.5" />}
+          Export CSV
+        </Button>
       </div>
 
       {/* Invoice Table */}
