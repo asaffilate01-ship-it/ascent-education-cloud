@@ -85,6 +85,8 @@ import AuditLog from "./pages/audit/AuditLog";
 import ComplianceDashboard from "./pages/compliance/ComplianceDashboard";
 import ScheduleManager from "./pages/schedule/ScheduleManager";
 import AcademicTimeline from "./pages/schedule/AcademicTimeline";
+import ParentDashboard from "./pages/parent/ParentDashboard";
+import CloudCodingSandbox from "./pages/coding/CloudCodingSandbox";
 
 import NotFound from "./pages/NotFound";
 
