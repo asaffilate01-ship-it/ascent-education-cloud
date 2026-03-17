@@ -230,7 +230,7 @@ export default function TenantLandingPage() {
               <h3 className="text-lg font-bold text-muted-foreground mb-6 mt-4">3-Year Degree Abroad</h3>
               <div className="space-y-3 mb-6">
                 {[
-                  { label: 'Tuition (3 years)', value: '£27,000–£45,000' },
+                  { label: 'Tuition (3 years × £15,000+)', value: '£45,000–£60,000+' },
                   { label: 'Living costs (3 years)', value: '£36,000–£45,000' },
                   { label: 'Visa & flights', value: '£3,000–£5,000' },
                 ].map(item => (
@@ -242,7 +242,7 @@ export default function TenantLandingPage() {
               </div>
               <div className="border-t border-border/50 pt-4 flex justify-between items-center">
                 <span className="text-sm font-bold">Total Cost</span>
-                <span className="text-2xl font-extrabold text-destructive">Rs. 2.5–3+ Crore</span>
+                <span className="text-2xl font-extrabold text-destructive">Rs. 3–4+ Crore</span>
               </div>
             </motion.div>
 
@@ -270,8 +270,8 @@ export default function TenantLandingPage() {
               </div>
               <div className="mt-4 rounded-lg p-3 text-center" style={{ backgroundColor: `${pc}08` }}>
                 <p className="text-sm font-bold" style={{ color: pc }}>
-                  <TrendingDown className="w-4 h-4 inline mr-1" />
-                  You save Rs. 1.5–2+ Crore on a 3-year degree
+                   <TrendingDown className="w-4 h-4 inline mr-1" />
+                   You save Rs. 2–3+ Crore on a 3-year degree
                 </p>
               </div>
             </motion.div>
@@ -282,7 +282,7 @@ export default function TenantLandingPage() {
             {[
               { icon: Home, title: 'Study from Home', desc: 'Complete 2 years of your degree from the comfort of your own home. No relocation, no homesickness, no expensive rent abroad.' },
               { icon: BadgeCheck, title: 'Same Degree Certificate', desc: "Your final degree certificate is identical — it doesn't mention where you studied Years 1 & 2. Employers see the same prestigious university name." },
-              { icon: Banknote, title: 'Save Rs. 1.8+ Crore', desc: 'For a 3-year degree, save a minimum of Rs. 1.8 Crore in tuition and living costs. For 4-year degrees, savings exceed Rs. 2.5 Crore.' },
+              { icon: Banknote, title: 'Save Rs. 2+ Crore', desc: 'For a 3-year degree, save a minimum of Rs. 2 Crore in tuition and living costs. For 4-year degrees, savings exceed Rs. 3 Crore.' },
               { icon: Heart, title: 'Family & Support', desc: 'Stay close to family during the crucial first 2 years. Enjoy home-cooked meals, familiar surroundings, and zero culture shock while studying.' },
               { icon: Plane, title: 'Just 1 Year Abroad', desc: 'Fly out only for the final top-up year. Experience international campus life, build global networks, and graduate in person — all in 12 months.' },
               { icon: Globe, title: 'Global Career Options', desc: 'A UK/Australian/Canadian degree opens doors worldwide. Access post-study work visas (UK 2-year, Australia 2–4 year, Canada 3-year PGWP).' },
