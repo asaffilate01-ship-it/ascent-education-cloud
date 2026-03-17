@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { motion } from 'framer-motion';
 import TenantNav from '@/components/TenantNav';
+import tenantHero from '@/assets/tenant-hero.jpg';
 
 const DEFAULT_THEME: TenantTheme = {
   primaryColor: '#b91c1c',
