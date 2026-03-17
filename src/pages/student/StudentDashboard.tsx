@@ -165,7 +165,6 @@ export default function StudentDashboard() {
                     <p className="text-sm font-medium">{p.title}</p>
                     <p className="text-xs text-muted-foreground">{p.level} · {p.awarding_body}</p>
                   </div>
-                  <span className="text-sm font-bold text-primary">{p.enrolled || 0} enrolled</span>
                 </div>
               </div>
             ))}

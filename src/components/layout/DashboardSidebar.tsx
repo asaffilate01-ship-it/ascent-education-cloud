@@ -340,11 +340,11 @@ export default function DashboardSidebar() {
         ))}
       </nav>
 
-      {/* Role Switcher (Demo) */}
-      {!collapsed && (
+      {/* Role Switcher - Only in local development */}
+      {!collapsed && import.meta.env.DEV && window.location.hostname === 'localhost' && (
         <div className="px-3 py-2 border-t border-sidebar-border">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40 mb-1.5 px-1">
-            Demo: Switch Role
+            Dev: Switch Role
           </p>
           <select
             value={user.role}
