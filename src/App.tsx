@@ -300,6 +300,7 @@ function AppRoutes() {
         <Route path="/residential" element={<P><ResidentialWeeks /></P>} />
         <Route path="/audit" element={<Director><AuditLog /></Director>} />
         <Route path="/my-activity" element={<P><MyActivityLog /></P>} />
+        <Route path="/compliance" element={<QA><ComplianceDashboard /></QA>} />
 
         {/* ========== NEW FEATURE PAGES ========== */}
         <Route path="/calendar" element={<P><AcademicCalendar /></P>} />
