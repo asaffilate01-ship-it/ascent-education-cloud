@@ -285,10 +285,10 @@ export default function TenantLandingPage() {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { title: 'Business Management', body: 'OTHM', levels: ['Level 4 Diploma (Year 1)', 'Level 5 Diploma (Year 2)', 'BA Top-Up at Global University (Year 3)'], unis: ['🇬🇧 Sunderland', '🇬🇧 Anglia Ruskin', '🇬🇧 Bolton', '🇺🇸 Westcliff', '🇦🇺 Torrens'] },
-              { title: 'Computing & IT', body: 'QUALIFI', levels: ['Level 3 IT Foundation', 'Level 4 Computing', 'Level 5 Computing', 'BSc Top-Up at Global University'], unis: ['🇬🇧 Portsmouth', '🇬🇧 Wolverhampton', '🇺🇸 LSUS', '🇦🇺 ECU', '🇨🇦 Yorkville'] },
-              { title: 'Accounting & Finance', body: 'IAB', levels: ['Level 3 Accounting', 'Level 4 Accounting', 'Level 5 Accounting', 'BSc Top-Up'], unis: ['🇬🇧 Bolton', '🇬🇧 Chichester', '🇦🇺 Deakin'] },
-              { title: 'Health & Social Care', body: 'OTHM', levels: ['Level 4 Diploma (Year 1)', 'Level 5 Diploma (Year 2)', 'BSc Top-Up at Global University'], unis: ['🇬🇧 Sunderland', '🇺🇸 Westcliff', '🇦🇺 SCU'] },
+              { title: 'Business Management', body: 'OTHM', degree: 'BA (Hons) Business Management', levels: ['Level 4 Diploma (Year 1)', 'Level 5 Diploma (Year 2)', 'BA (Hons) Top-Up (Year 3)'], unis: ['🇬🇧 Sunderland', '🇬🇧 Anglia Ruskin', '🇬🇧 Bolton', '🇬🇧 Chichester', '🇺🇸 Westcliff', '🇦🇺 Torrens', '🇨🇦 Royal Roads', '🇨🇦 Yorkville'] },
+              { title: 'Childcare & Education', body: 'OTHM', degree: 'BA (Hons) Early Childhood Studies', levels: ['Level 3 Diploma (Foundation)', 'Level 4 Diploma (Year 1)', 'Level 5 Diploma (Year 2)', 'BA (Hons) Top-Up (Year 3)'], unis: ['🇬🇧 Sunderland', '🇬🇧 Wolverhampton', '🇬🇧 Open University', '🇦🇺 Charles Sturt', '🇨🇦 Athabasca'] },
+              { title: 'Accounting & Finance', body: 'IAB', degree: 'BSc (Hons) Accounting & Finance', levels: ['Level 3 Certificate (Foundation)', 'Level 4 Diploma (Year 1)', 'Level 5 Diploma (Year 2)', 'BSc (Hons) Top-Up (Year 3)'], unis: ['🇬🇧 Bolton', '🇬🇧 Chichester', '🇬🇧 Northampton', '🇦🇺 Deakin', '🇺🇸 LSUS'] },
+              { title: 'Computing & IT', body: 'QUALIFI', degree: 'BSc (Hons) Computer Science', levels: ['Level 4 Diploma (Year 1)', 'Level 5 Diploma (Year 2)', 'BSc (Hons) Top-Up (Year 3)'], unis: ['🇬🇧 Portsmouth', '🇬🇧 Wolverhampton', '🇬🇧 Sunderland', '🇺🇸 LSUS', '🇦🇺 ECU', '🇨🇦 Yorkville'] },
             ].map((path) => (
               <motion.div key={path.title} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
                 className="surface-card p-7 border border-border/50 hover:shadow-xl transition-all"
