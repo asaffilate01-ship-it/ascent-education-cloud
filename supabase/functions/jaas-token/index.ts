@@ -73,7 +73,7 @@ serve(async (req) => {
         },
       },
     })
-      .setProtectedHeader({ alg: "RS256", kid: `${JAAS_APP_ID}/default` })
+      .setProtectedHeader({ alg: "RS256", kid: `${JAAS_APP_ID}/${JAAS_KEY_ID}` })
       .setIssuedAt(now)
       .setExpirationTime(now + 3600) // 1 hour
       .setNotBefore(now)
