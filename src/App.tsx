@@ -224,7 +224,7 @@ function AppRoutes() {
       <Route path="/agent/applications" element={<P><AgentDashboard /></P>} />
       <Route path="/agent/commissions" element={<P><AgentDashboard /></P>} />
       <Route path="/agent/onboarding" element={<P><AgentDashboard /></P>} />
-      <Route path="/agent/resources" element={<P><StudentLibrary /></P>} />
+      <Route path="/agent/resources" element={<P><AgentResources /></P>} />
       <Route path="/agent/messages" element={<P><MessagingInbox /></P>} />
 
       {/* ========== EXTERNAL: Student ========== */}
