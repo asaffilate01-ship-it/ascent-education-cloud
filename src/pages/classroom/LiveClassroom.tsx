@@ -177,9 +177,32 @@ export default function LiveClassroom() {
     await new Promise(resolve => setTimeout(resolve, 100));
 
     try {
-      const api = new window.JitsiMeetExternalAPI('meet.jit.si', {
-        roomName: `EduCloud-${roomName}`,
+      // Get JaaS JWT token from edge function
+      const fullRoomName = `EduCloud-${roomName}`;
+      const { data: tokenData, error: tokenError } = await supabase.functions.invoke('jaas-token', {
+        body: {
+          roomName: fullRoomName,
+          displayName: displayName || 'Participant',
+          email: user?.email || '',
+          isModerator: isLecturer,
+          avatarUrl: user?.avatarUrl || '',
+        },
+      });
+
+      if (tokenError || !tokenData?.token) {
+        console.error('JaaS token error:', tokenError);
+        toast.error('Failed to authenticate video session');
+        setIsLoading(false);
+        setIsInSession(false);
+        return;
+      }
+
+      const jaasAppId = import.meta.env.VITE_JAAS_APP_ID || '';
+
+      const api = new window.JitsiMeetExternalAPI('8x8.vc', {
+        roomName: `${jaasAppId}/${fullRoomName}`,
         parentNode: jitsiContainerRef.current,
+        jwt: tokenData.token,
         width: '100%',
         height: '100%',
         userInfo: { displayName: displayName || 'Participant', email: user?.email || '' },
@@ -204,6 +227,8 @@ export default function LiveClassroom() {
         interfaceConfigOverwrite: {
           SHOW_JITSI_WATERMARK: false,
           SHOW_WATERMARK_FOR_GUESTS: false,
+          SHOW_BRAND_WATERMARK: false,
+          BRAND_WATERMARK_LINK: '',
           DEFAULT_BACKGROUND: '#111827',
           TOOLBAR_ALWAYS_VISIBLE: true,
           DISABLE_JOIN_LEAVE_NOTIFICATIONS: false,
