@@ -379,12 +379,29 @@ export default function DashboardSidebar() {
     </>
   );
 
+  // Swipe to close on mobile
+  useEffect(() => {
+    if (!mobileOpen) return;
+    let startX = 0;
+    const onTouchStart = (e: TouchEvent) => { startX = e.touches[0].clientX; };
+    const onTouchEnd = (e: TouchEvent) => {
+      const diff = startX - e.changedTouches[0].clientX;
+      if (diff > 60) setMobileOpen(false);
+    };
+    document.addEventListener('touchstart', onTouchStart, { passive: true });
+    document.addEventListener('touchend', onTouchEnd, { passive: true });
+    return () => {
+      document.removeEventListener('touchstart', onTouchStart);
+      document.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [mobileOpen]);
+
   return (
     <>
       {/* Mobile hamburger button */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-3 left-3 z-50 p-2 rounded-lg bg-background shadow-md border border-border"
+        className="lg:hidden fixed top-3 left-3 z-50 p-2 rounded-lg bg-card/90 backdrop-blur-sm shadow-surface-md border border-border/50 hover:bg-card transition-default"
       >
         <Menu className="w-5 h-5 text-foreground" />
       </button>
@@ -392,16 +409,16 @@ export default function DashboardSidebar() {
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-foreground/40 z-50"
+          className="lg:hidden fixed inset-0 bg-foreground/40 backdrop-blur-sm z-50 animate-fade-in"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 h-screen bg-sidebar text-sidebar-foreground flex flex-col z-50 transition-default
+        className={`fixed left-0 top-0 h-screen bg-sidebar text-sidebar-foreground flex flex-col z-50 transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)]
           ${collapsed ? 'w-16' : 'w-60'}
-          ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          ${mobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'}
         `}
       >
         {sidebarContent}
