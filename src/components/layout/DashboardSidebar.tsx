@@ -210,7 +210,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Messages', icon: MessageSquare, path: '/parent/messages' },
     ]},
   ],
-};
+export { NAV_CONFIG };
 
 export default function DashboardSidebar() {
   const { user, setRole, logout } = useAuth();
