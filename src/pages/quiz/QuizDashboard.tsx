@@ -115,9 +115,8 @@ export default function QuizDashboard() {
   };
 
   const loadQuestions = async (quizId: string) => {
-    // Staff see full questions; students see safe view without correct_answer
-    const table = isStaff ? 'quiz_questions' : 'quiz_questions_student';
-    const { data } = await supabase.from(table as any).select('*').eq('quiz_id', quizId).order('sort_order');
+    // Staff see full questions via safe view (correct_answer populated for staff, null for students)
+    const { data } = await supabase.from('quiz_questions_safe' as any).select('*').eq('quiz_id', quizId).order('sort_order');
     setQuestions((data as any) || []);
   };
 
