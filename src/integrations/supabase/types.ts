@@ -80,6 +80,60 @@ export type Database = {
           },
         ]
       }
+      accreditation_bodies: {
+        Row: {
+          country: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          logo_url: string | null
+          name: string
+          short_name: string
+          tenant_id: string | null
+          website_url: string | null
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name: string
+          short_name: string
+          tenant_id?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name?: string
+          short_name?: string
+          tenant_id?: string | null
+          website_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accreditation_bodies_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "accreditation_bodies_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       applications: {
         Row: {
           agent_id: string | null
@@ -328,6 +382,69 @@ export type Database = {
           },
           {
             foreignKeyName: "audit_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      certificate_verifications: {
+        Row: {
+          awarding_body: string
+          certificate_number: string
+          created_at: string
+          expiry_date: string | null
+          grade: string | null
+          id: string
+          issue_date: string
+          level: string
+          programme_title: string
+          status: string
+          student_name: string
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          awarding_body?: string
+          certificate_number: string
+          created_at?: string
+          expiry_date?: string | null
+          grade?: string | null
+          id?: string
+          issue_date: string
+          level: string
+          programme_title: string
+          status?: string
+          student_name: string
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          awarding_body?: string
+          certificate_number?: string
+          created_at?: string
+          expiry_date?: string | null
+          grade?: string | null
+          id?: string
+          issue_date?: string
+          level?: string
+          programme_title?: string
+          status?: string
+          student_name?: string
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certificate_verifications_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "certificate_verifications_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants_public"
@@ -1997,9 +2114,11 @@ export type Database = {
           credits: number | null
           duration: string | null
           enrolled: number | null
+          entry_requirements: Json | null
           id: string
           level: string
           modules_count: number | null
+          progression_pathway: Json | null
           status: Database["public"]["Enums"]["programme_status"]
           tenant_id: string
           title: string
@@ -2012,9 +2131,11 @@ export type Database = {
           credits?: number | null
           duration?: string | null
           enrolled?: number | null
+          entry_requirements?: Json | null
           id?: string
           level: string
           modules_count?: number | null
+          progression_pathway?: Json | null
           status?: Database["public"]["Enums"]["programme_status"]
           tenant_id: string
           title: string
@@ -2027,9 +2148,11 @@ export type Database = {
           credits?: number | null
           duration?: string | null
           enrolled?: number | null
+          entry_requirements?: Json | null
           id?: string
           level?: string
           modules_count?: number | null
+          progression_pathway?: Json | null
           status?: Database["public"]["Enums"]["programme_status"]
           tenant_id?: string
           title?: string
