@@ -170,7 +170,7 @@ export default function MyActivityLog() {
       // 5. Submissions (students)
       const { data: submissions } = await supabase
         .from('submissions')
-        .select('*')
+        .select('*, assignments(title)')
         .eq('student_id', user.id)
         .gte('created_at', cutoffStr)
         .order('created_at', { ascending: false })
@@ -178,10 +178,11 @@ export default function MyActivityLog() {
 
       if (submissions) {
         for (const s of submissions) {
+          const assignmentTitle = (s as any).assignments?.title || 'Assignment';
           allActivities.push({
             id: `sub-${s.id}`,
             type: 'submission',
-            title: `Submitted: ${s.title}`,
+            title: `Submitted: ${assignmentTitle}`,
             description: s.grade ? `Graded: ${s.grade}%` : `Status: ${s.status}`,
             timestamp: s.submitted_at || s.created_at,
           });
