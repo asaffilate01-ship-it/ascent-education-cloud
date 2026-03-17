@@ -10,6 +10,7 @@ export type UserRole =
   | 'marketing_officer'
   | 'agent'
   | 'student'
+  | 'parent_guardian'
   | 'university_partner'
   | 'employer_partner';
 

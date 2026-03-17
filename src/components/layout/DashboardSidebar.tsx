@@ -173,6 +173,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Attendance', icon: Calendar, path: '/student/attendance' },
       { label: 'Timeline', icon: Clock, path: '/student/timeline' },
       { label: 'Library', icon: Library, path: '/student/library' },
+      { label: 'Code Lab', icon: Monitor, path: '/coding' },
     ]},
     { title: 'Services', items: [
       { label: 'Finance', icon: CreditCard, path: '/student/finance' },
@@ -200,6 +201,13 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Candidates', icon: Users, path: '/employer/candidates' },
       { label: 'Internships', icon: GraduationCap, path: '/employer/internships' },
       { label: 'Messages', icon: MessageSquare, path: '/messaging' },
+    ]},
+  ],
+  parent_guardian: [
+    { items: [
+      { label: 'Dashboard', icon: LayoutDashboard, path: '/parent' },
+      { label: 'Progress', icon: BarChart3, path: '/parent/progress' },
+      { label: 'Messages', icon: MessageSquare, path: '/parent/messages' },
     ]},
   ],
 };
@@ -311,6 +319,7 @@ export default function DashboardSidebar() {
             <optgroup label="External">
               <option value="agent">Agent</option>
               <option value="student">Student</option>
+              <option value="parent_guardian">Parent / Guardian</option>
               <option value="university_partner">University Partner</option>
               <option value="employer_partner">Employer Partner</option>
             </optgroup>

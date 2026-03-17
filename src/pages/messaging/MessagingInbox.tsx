@@ -1,5 +1,5 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { Search, Send, Paperclip, Star, Archive, Plus, MessageSquare } from 'lucide-react';
+import { Search, Send, Paperclip, Star, Archive, Plus, MessageSquare, Check, CheckCheck, Circle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,6 +24,7 @@ interface Message {
   content: string;
   created_at: string;
   mine: boolean;
+  read: boolean;
 }
 
 export default function MessagingInbox() {
@@ -37,8 +38,61 @@ export default function MessagingInbox() {
   const [newConvoName, setNewConvoName] = useState('');
   const [newConvoOpen, setNewConvoOpen] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+
+  // Update own presence
+  useEffect(() => {
+    if (!user) return;
+    const updatePresence = async () => {
+      await supabase.from('user_presence').upsert({
+        user_id: user.id,
+        status: 'online',
+        last_seen: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      } as any, { onConflict: 'user_id' });
+    };
+    updatePresence();
+    const interval = setInterval(updatePresence, 30000);
+
+    // Go offline on unmount
+    return () => {
+      clearInterval(interval);
+      supabase.from('user_presence').upsert({
+        user_id: user.id,
+        status: 'offline',
+        last_seen: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      } as any, { onConflict: 'user_id' });
+    };
+  }, [user]);
+
+  // Subscribe to presence changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('presence-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'user_presence' }, (payload) => {
+        const p = payload.new as any;
+        if (p) {
+          setOnlineUsers(prev => {
+            const next = new Set(prev);
+            if (p.status === 'online') next.add(p.user_id);
+            else next.delete(p.user_id);
+            return next;
+          });
+          // Typing indicator
+          if (p.typing_in === selectedConvo && p.user_id !== user?.id) {
+            setTypingUsers(prev => prev.includes(p.user_id) ? prev : [...prev, p.user_id]);
+            setTimeout(() => setTypingUsers(prev => prev.filter(id => id !== p.user_id)), 3000);
+          }
+        }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [selectedConvo, user]);
 
   const fetchConversations = useCallback(async () => {
     if (!user) return;
@@ -47,11 +101,7 @@ export default function MessagingInbox() {
       .select('conversation_id')
       .eq('user_id', user.id);
 
-    if (!parts || parts.length === 0) {
-      setConversations([]);
-      setLoading(false);
-      return;
-    }
+    if (!parts || parts.length === 0) { setConversations([]); setLoading(false); return; }
 
     const convoIds = parts.map(p => p.conversation_id);
     const { data: convos } = await supabase
@@ -63,23 +113,16 @@ export default function MessagingInbox() {
     if (convos && convos.length > 0) {
       const mapped: Conversation[] = await Promise.all(convos.map(async (c: any) => {
         const { data: lastMsg } = await supabase
-          .from('messages')
-          .select('content, created_at')
+          .from('messages').select('content, created_at')
           .eq('conversation_id', c.id)
-          .order('created_at', { ascending: false })
-          .limit(1);
+          .order('created_at', { ascending: false }).limit(1);
 
         const { count } = await supabase
-          .from('messages')
-          .select('*', { count: 'exact', head: true })
-          .eq('conversation_id', c.id)
-          .eq('read', false)
-          .neq('sender_id', user.id);
+          .from('messages').select('*', { count: 'exact', head: true })
+          .eq('conversation_id', c.id).eq('read', false).neq('sender_id', user.id);
 
         return {
-          id: c.id,
-          name: c.name || 'Conversation',
-          type: c.type,
+          id: c.id, name: c.name || 'Conversation', type: c.type,
           lastMessage: lastMsg?.[0]?.content || '',
           lastTime: lastMsg?.[0]?.created_at
             ? new Date(lastMsg[0].created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
@@ -90,39 +133,35 @@ export default function MessagingInbox() {
       }));
       setConversations(mapped);
       if (!selectedConvo && mapped.length > 0) setSelectedConvo(mapped[0].id);
-    } else {
-      setConversations([]);
-    }
+    } else { setConversations([]); }
     setLoading(false);
   }, [user]);
 
-  useEffect(() => {
-    fetchConversations();
-  }, [fetchConversations]);
+  useEffect(() => { fetchConversations(); }, [fetchConversations]);
 
   useEffect(() => {
     async function fetchMessages() {
       if (!selectedConvo) return;
       const { data } = await supabase
-        .from('messages')
-        .select('*')
+        .from('messages').select('*')
         .eq('conversation_id', selectedConvo)
         .order('created_at', { ascending: true });
 
       if (data) {
         setMessages(data.map((m: any) => ({
-          id: m.id,
-          sender_name: m.sender_name,
-          content: m.content,
+          id: m.id, sender_name: m.sender_name, content: m.content,
           created_at: new Date(m.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
-          mine: m.sender_id === user?.id,
+          mine: m.sender_id === user?.id, read: m.read,
         })));
+        // Mark as read
+        await supabase.from('messages').update({ read: true })
+          .eq('conversation_id', selectedConvo).neq('sender_id', user?.id || '').eq('read', false);
       }
     }
     fetchMessages();
   }, [selectedConvo, user]);
 
-  // Real-time messages subscription
+  // Real-time messages
   useEffect(() => {
     if (!selectedConvo) return;
     const channel = supabase
@@ -132,71 +171,59 @@ export default function MessagingInbox() {
         setMessages((prev) => {
           if (prev.some(msg => msg.id === m.id)) return prev;
           return [...prev, {
-            id: m.id,
-            sender_name: m.sender_name,
-            content: m.content,
+            id: m.id, sender_name: m.sender_name, content: m.content,
             created_at: new Date(m.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
-            mine: m.sender_id === user?.id,
+            mine: m.sender_id === user?.id, read: m.read,
           }];
         });
+        // Auto mark as read if it's not mine
+        if (m.sender_id !== user?.id) {
+          supabase.from('messages').update({ read: true }).eq('id', m.id);
+        }
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [selectedConvo, user]);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+
+  const handleTyping = () => {
+    if (!user || !selectedConvo) return;
+    clearTimeout(typingTimeoutRef.current);
+    supabase.from('user_presence').upsert({
+      user_id: user.id, typing_in: selectedConvo, status: 'online',
+      last_seen: new Date().toISOString(), updated_at: new Date().toISOString(),
+    } as any, { onConflict: 'user_id' });
+    typingTimeoutRef.current = setTimeout(() => {
+      supabase.from('user_presence').upsert({
+        user_id: user.id, typing_in: null, status: 'online',
+        last_seen: new Date().toISOString(), updated_at: new Date().toISOString(),
+      } as any, { onConflict: 'user_id' });
+    }, 2000);
+  };
 
   const handleSend = async () => {
     if (!message.trim() || !user || !selectedConvo) return;
-    const { error } = await supabase.from('messages').insert({
-      conversation_id: selectedConvo,
-      sender_id: user.id,
-      sender_name: user.name,
-      content: message,
+    await supabase.from('messages').insert({
+      conversation_id: selectedConvo, sender_id: user.id, sender_name: user.name, content: message,
     });
-    if (error) {
-      toast.error('Failed to send message');
-      return;
-    }
     setMessage('');
+    // Clear typing
+    supabase.from('user_presence').upsert({
+      user_id: user.id, typing_in: null, status: 'online',
+      last_seen: new Date().toISOString(), updated_at: new Date().toISOString(),
+    } as any, { onConflict: 'user_id' });
   };
 
   const handleCreateConversation = async () => {
     if (!newConvoName.trim() || !user) return;
     setCreating(true);
-    const { data: convo, error } = await supabase
-      .from('conversations')
-      .insert({ name: newConvoName.trim(), type: 'direct' })
-      .select()
-      .single();
-
-    if (error || !convo) {
-      toast.error('Failed to create conversation');
-      setCreating(false);
-      return;
-    }
-
-    await supabase.from('conversation_participants').insert({
-      conversation_id: convo.id,
-      user_id: user.id,
-    });
-
-    const newConvo: Conversation = {
-      id: convo.id,
-      name: convo.name || 'Conversation',
-      type: convo.type,
-      lastMessage: '',
-      lastTime: 'Now',
-      unread: 0,
-      avatar: (convo.name || 'C').slice(0, 2).toUpperCase(),
-    };
-    setConversations(prev => [newConvo, ...prev]);
+    const { data: convo, error } = await supabase.from('conversations').insert({ name: newConvoName.trim(), type: 'direct' }).select().single();
+    if (error || !convo) { toast.error('Failed to create conversation'); setCreating(false); return; }
+    await supabase.from('conversation_participants').insert({ conversation_id: convo.id, user_id: user.id });
+    setConversations(prev => [{ id: convo.id, name: convo.name || 'Conversation', type: convo.type, lastMessage: '', lastTime: 'Now', unread: 0, avatar: (convo.name || 'C').slice(0, 2).toUpperCase() }, ...prev]);
     setSelectedConvo(convo.id);
-    setNewConvoName('');
-    setNewConvoOpen(false);
-    setCreating(false);
+    setNewConvoName(''); setNewConvoOpen(false); setCreating(false);
     toast.success('Conversation created');
   };
 
@@ -205,25 +232,17 @@ export default function MessagingInbox() {
     if (!file || !user || !selectedConvo) return;
     const path = `${user.id}/${Date.now()}_${file.name}`;
     const { error } = await supabase.storage.from('resources').upload(path, file);
-    if (error) {
-      toast.error('File upload failed');
-      return;
-    }
+    if (error) { toast.error('File upload failed'); return; }
     const { data: urlData } = supabase.storage.from('resources').getPublicUrl(path);
     await supabase.from('messages').insert({
-      conversation_id: selectedConvo,
-      sender_id: user.id,
-      sender_name: user.name,
+      conversation_id: selectedConvo, sender_id: user.id, sender_name: user.name,
       content: `📎 [${file.name}](${urlData.publicUrl})`,
     });
     toast.success('File shared');
   };
 
-  const filteredConvos = conversations.filter((c) =>
-    c.name.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const selectedConversation = conversations.find((c) => c.id === selectedConvo);
+  const filteredConvos = conversations.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
+  const selectedConversation = conversations.find(c => c.id === selectedConvo);
 
   if (loading) return <DashboardSkeleton />;
 
@@ -237,15 +256,8 @@ export default function MessagingInbox() {
           <DialogContent>
             <DialogHeader><DialogTitle>New Conversation</DialogTitle></DialogHeader>
             <div className="space-y-3 pt-2">
-              <input
-                value={newConvoName}
-                onChange={(e) => setNewConvoName(e.target.value)}
-                placeholder="Conversation name..."
-                className="w-full bg-secondary text-sm px-3 py-2 rounded-lg outline-none"
-              />
-              <Button onClick={handleCreateConversation} disabled={creating} className="w-full">
-                {creating ? 'Creating...' : 'Create Conversation'}
-              </Button>
+              <input value={newConvoName} onChange={(e) => setNewConvoName(e.target.value)} placeholder="Conversation name..." className="w-full bg-secondary text-sm px-3 py-2 rounded-lg outline-none" />
+              <Button onClick={handleCreateConversation} disabled={creating} className="w-full">{creating ? 'Creating...' : 'Create Conversation'}</Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -257,12 +269,8 @@ export default function MessagingInbox() {
             <MessageSquare className="w-8 h-8 text-primary" />
           </div>
           <h3 className="text-lg font-semibold mb-1">No conversations yet</h3>
-          <p className="text-sm text-muted-foreground mb-4 max-w-sm">
-            Start a new conversation to message lecturers, admissions, or classmates.
-          </p>
-          <Button onClick={() => setNewConvoOpen(true)} className="gap-1.5">
-            <Plus className="w-4 h-4" /> Start a Conversation
-          </Button>
+          <p className="text-sm text-muted-foreground mb-4 max-w-sm">Start a new conversation to message lecturers, admissions, or classmates.</p>
+          <Button onClick={() => setNewConvoOpen(true)} className="gap-1.5"><Plus className="w-4 h-4" /> Start a Conversation</Button>
         </div>
       ) : (
         <div className="flex gap-0 h-[calc(100vh-180px)] surface-card overflow-hidden rounded-xl">
@@ -271,25 +279,20 @@ export default function MessagingInbox() {
             <div className="p-3 border-b border-border">
               <div className="relative">
                 <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search messages..."
-                  className="w-full bg-secondary text-xs pl-9 pr-3 py-2 rounded-lg outline-none text-foreground placeholder:text-muted-foreground"
-                />
+                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search messages..." className="w-full bg-secondary text-xs pl-9 pr-3 py-2 rounded-lg outline-none text-foreground placeholder:text-muted-foreground" />
               </div>
             </div>
             <div className="flex-1 overflow-y-auto">
               {filteredConvos.map((c) => (
-                <div
-                  key={c.id}
-                  onClick={() => setSelectedConvo(c.id)}
-                  className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-default border-b border-border/30 ${
-                    selectedConvo === c.id ? 'bg-primary/5' : 'hover:bg-secondary/50'
-                  }`}
+                <div key={c.id} onClick={() => setSelectedConvo(c.id)}
+                  className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-default border-b border-border/30 ${selectedConvo === c.id ? 'bg-primary/5' : 'hover:bg-secondary/50'}`}
                 >
-                  <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <span className="text-[10px] font-bold text-primary">{c.avatar}</span>
+                  <div className="relative">
+                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <span className="text-[10px] font-bold text-primary">{c.avatar}</span>
+                    </div>
+                    {/* Online indicator */}
+                    <Circle className={`w-3 h-3 absolute -bottom-0.5 -right-0.5 fill-current ${onlineUsers.size > 0 ? 'text-emerald-500' : 'text-muted-foreground/30'}`} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
@@ -299,9 +302,7 @@ export default function MessagingInbox() {
                     <p className="text-[11px] text-muted-foreground truncate mt-0.5">{c.lastMessage}</p>
                   </div>
                   {c.unread > 0 && (
-                    <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center shrink-0">
-                      {c.unread}
-                    </span>
+                    <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center shrink-0">{c.unread}</span>
                   )}
                 </div>
               ))}
@@ -312,12 +313,20 @@ export default function MessagingInbox() {
           <div className="flex-1 flex flex-col">
             <div className="p-4 border-b border-border flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-[10px] font-bold text-primary">{selectedConversation?.avatar || '?'}</span>
+                <div className="relative">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span className="text-[10px] font-bold text-primary">{selectedConversation?.avatar || '?'}</span>
+                  </div>
                 </div>
                 <div>
                   <p className="text-sm font-semibold">{selectedConversation?.name || 'Select a conversation'}</p>
-                  <p className="text-[10px] text-muted-foreground capitalize">{selectedConversation?.type || ''}</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {typingUsers.length > 0 ? (
+                      <span className="text-primary animate-pulse">typing...</span>
+                    ) : (
+                      <span className="capitalize">{selectedConversation?.type || ''}</span>
+                    )}
+                  </p>
                 </div>
               </div>
               <div className="flex gap-1">
@@ -328,25 +337,37 @@ export default function MessagingInbox() {
 
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {messages.length === 0 && (
-                <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
-                  No messages yet. Send the first one!
-                </div>
+                <div className="flex items-center justify-center h-full text-sm text-muted-foreground">No messages yet. Send the first one!</div>
               )}
               {messages.map((m) => (
                 <div key={m.id} className={`flex ${m.mine ? 'justify-end' : 'justify-start'}`}>
                   <div className="max-w-[70%]">
-                    {!m.mine && (
-                      <p className="text-[10px] font-semibold text-primary mb-0.5 ml-1">{m.sender_name}</p>
-                    )}
-                    <div className={`p-3 rounded-xl text-xs leading-relaxed ${
-                      m.mine ? 'bg-primary text-primary-foreground rounded-br-sm' : 'bg-secondary rounded-bl-sm'
-                    }`}>
+                    {!m.mine && <p className="text-[10px] font-semibold text-primary mb-0.5 ml-1">{m.sender_name}</p>}
+                    <div className={`p-3 rounded-xl text-xs leading-relaxed ${m.mine ? 'bg-primary text-primary-foreground rounded-br-sm' : 'bg-secondary rounded-bl-sm'}`}>
                       {m.content}
                     </div>
-                    <p className={`text-[9px] text-muted-foreground mt-0.5 ${m.mine ? 'text-right mr-1' : 'ml-1'}`}>{m.created_at}</p>
+                    <div className={`flex items-center gap-1 mt-0.5 ${m.mine ? 'justify-end mr-1' : 'ml-1'}`}>
+                      <span className="text-[9px] text-muted-foreground">{m.created_at}</span>
+                      {m.mine && (
+                        m.read
+                          ? <CheckCheck className="w-3 h-3 text-blue-500" />
+                          : <Check className="w-3 h-3 text-muted-foreground" />
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
+              {typingUsers.length > 0 && (
+                <div className="flex justify-start">
+                  <div className="bg-secondary rounded-xl px-4 py-2">
+                    <div className="flex gap-1">
+                      <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
+                  </div>
+                </div>
+              )}
               <div ref={messagesEndRef} />
             </div>
 
@@ -358,7 +379,7 @@ export default function MessagingInbox() {
                 </Button>
                 <textarea
                   value={message}
-                  onChange={(e) => setMessage(e.target.value)}
+                  onChange={(e) => { setMessage(e.target.value); handleTyping(); }}
                   onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                   placeholder="Type a message..."
                   rows={1}
