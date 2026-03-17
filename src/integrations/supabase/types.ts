@@ -2749,6 +2749,47 @@ export type Database = {
         }
         Relationships: []
       }
+      quiz_questions_student: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          options: Json | null
+          points: number | null
+          question_text: string | null
+          question_type: Database["public"]["Enums"]["question_type"] | null
+          quiz_id: string | null
+          sort_order: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          options?: Json | null
+          points?: number | null
+          question_text?: string | null
+          question_type?: Database["public"]["Enums"]["question_type"] | null
+          quiz_id?: string | null
+          sort_order?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          options?: Json | null
+          points?: number | null
+          question_text?: string | null
+          question_type?: Database["public"]["Enums"]["question_type"] | null
+          quiz_id?: string | null
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_questions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenants_public: {
         Row: {
           accent_color: string | null
