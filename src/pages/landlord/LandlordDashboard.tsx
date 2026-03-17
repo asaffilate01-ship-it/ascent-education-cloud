@@ -65,7 +65,7 @@ export default function LandlordDashboard() {
     )},
     { key: 'status', label: 'Status', render: (t: any) => <StatusBadge status={t.status} variant={statusVariant(t.status)} /> },
     { key: 'students_count', label: 'Students', render: (t: any) => <span className="font-medium">{(t.students_count || 0).toLocaleString()}</span> },
-    { key: 'monthly_revenue', label: 'MRR', render: (t: any) => <span className="font-medium text-primary">£{Number(t.monthly_revenue || 0).toLocaleString()}</span> },
+    { key: 'monthly_revenue', label: 'MRR', render: (t: any) => <span className="font-medium text-primary">Rs.{Number(t.monthly_revenue || 0).toLocaleString()}</span> },
     { key: 'created_at', label: 'Joined', render: (t: any) => new Date(t.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) },
   ];
 
