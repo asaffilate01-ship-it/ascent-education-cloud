@@ -3165,6 +3165,53 @@ export type Database = {
         }
         Relationships: []
       }
+      quiz_questions_safe: {
+        Row: {
+          correct_answer: string | null
+          created_at: string | null
+          explanation: string | null
+          id: string | null
+          options: Json | null
+          points: number | null
+          question_text: string | null
+          question_type: Database["public"]["Enums"]["question_type"] | null
+          quiz_id: string | null
+          sort_order: number | null
+        }
+        Insert: {
+          correct_answer?: never
+          created_at?: string | null
+          explanation?: string | null
+          id?: string | null
+          options?: Json | null
+          points?: number | null
+          question_text?: string | null
+          question_type?: Database["public"]["Enums"]["question_type"] | null
+          quiz_id?: string | null
+          sort_order?: number | null
+        }
+        Update: {
+          correct_answer?: never
+          created_at?: string | null
+          explanation?: string | null
+          id?: string | null
+          options?: Json | null
+          points?: number | null
+          question_text?: string | null
+          question_type?: Database["public"]["Enums"]["question_type"] | null
+          quiz_id?: string | null
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_questions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quiz_questions_student: {
         Row: {
           created_at: string | null
