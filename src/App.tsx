@@ -26,6 +26,8 @@ const TenantCoursesPage = lazy(() => import("./pages/tenant/TenantCoursesPage"))
 const TenantContactPage = lazy(() => import("./pages/tenant/TenantContactPage"));
 const TenantAdminDashboard = lazy(() => import("./pages/tenant/TenantAdminDashboard"));
 const TenantBranding = lazy(() => import("./pages/tenant/TenantBranding"));
+const TenantPageBuilder = lazy(() => import("./pages/tenant/TenantPageBuilder"));
+const TenantDomainSettings = lazy(() => import("./pages/tenant/TenantDomainSettings"));
 const CentreDirectorDashboard = lazy(() => import("./pages/director/CentreDirectorDashboard"));
 const ProgrammeManagement = lazy(() => import("./pages/director/ProgrammeManagement"));
 const StaffManagement = lazy(() => import("./pages/director/StaffManagement"));
@@ -184,6 +186,8 @@ function AppRoutes() {
         <Route path="/director/agents" element={<Director><AgentDashboard /></Director>} />
         <Route path="/director/schedule" element={<Director><ScheduleManager /></Director>} />
         <Route path="/director/branding" element={<Director><TenantBranding /></Director>} />
+        <Route path="/director/page-builder" element={<Director><TenantPageBuilder /></Director>} />
+        <Route path="/director/domains" element={<Director><TenantDomainSettings /></Director>} />
         <Route path="/director/reports" element={<Director><AnalyticsDashboard /></Director>} />
         <Route path="/director/settings" element={<Director><SettingsPage /></Director>} />
 
