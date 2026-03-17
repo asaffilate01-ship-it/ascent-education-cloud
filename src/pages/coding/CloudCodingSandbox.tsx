@@ -138,11 +138,22 @@ export default function CloudCodingSandbox() {
             const printMatch = trimmed.match(/^print\((.+)\)$/);
             if (printMatch) {
               try {
-                let content = printMatch[1];
-                content = content.replace(/f"([^"]*)"/, (_, s) => {
-                  return '"' + s.replace(/\{([^}]+)\}/g, '" + $1 + "') + '"';
-                });
-                logs.push(String(eval(content)));
+                let content = printMatch[1].trim();
+                // Handle string literals safely without eval
+                if ((content.startsWith('"') && content.endsWith('"')) || (content.startsWith("'") && content.endsWith("'"))) {
+                  logs.push(content.slice(1, -1));
+                } else if (content.startsWith('f"') && content.endsWith('"')) {
+                  // Basic f-string: replace {var} with stored var values
+                  let fstr = content.slice(2, -1);
+                  fstr = fstr.replace(/\{([^}]+)\}/g, (_, varName) => {
+                    return vars[varName.trim()] !== undefined ? String(vars[varName.trim()]) : `{${varName}}`;
+                  });
+                  logs.push(fstr);
+                } else if (vars[content] !== undefined) {
+                  logs.push(String(vars[content]));
+                } else {
+                  logs.push(content);
+                }
               } catch {
                 logs.push(trimmed);
               }
