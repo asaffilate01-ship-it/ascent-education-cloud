@@ -14,10 +14,20 @@ Deno.serve(async (req) => {
 
     const JAAS_APP_ID = Deno.env.get("JAAS_APP_ID");
     const JAAS_API_KEY = Deno.env.get("JAAS_API_KEY");
-    const JAAS_KEY_ID = Deno.env.get("JAAS_KEY_ID");
+    const JAAS_KEY_ID_RAW = Deno.env.get("JAAS_KEY_ID");
 
-    if (!JAAS_APP_ID || !JAAS_API_KEY || !JAAS_KEY_ID) {
+    if (!JAAS_APP_ID || !JAAS_API_KEY || !JAAS_KEY_ID_RAW) {
       throw new Error("JaaS credentials not configured");
+    }
+
+    const normalizedKeyId = JAAS_KEY_ID_RAW
+      .trim()
+      .split("/")
+      .filter(Boolean)
+      .pop();
+
+    if (!normalizedKeyId) {
+      throw new Error("Invalid JaaS key id configuration");
     }
 
     const { roomName, displayName, email, isModerator, avatarUrl, userId } = await req.json();
@@ -67,7 +77,7 @@ Deno.serve(async (req) => {
         room: { regex: false },
       },
     })
-      .setProtectedHeader({ alg: "RS256", kid: `${JAAS_APP_ID}/${JAAS_KEY_ID}`, typ: "JWT" })
+      .setProtectedHeader({ alg: "RS256", kid: `${JAAS_APP_ID}/${normalizedKeyId}`, typ: "JWT" })
       .setIssuedAt(now)
       .setExpirationTime(now + 7200)
       .setNotBefore(nbf)
