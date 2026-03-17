@@ -8,7 +8,8 @@ import {
   Settings, Palette, Globe, FileCheck, LogOut,
   ChevronLeft, ChevronRight, UserCheck, Calendar,
   Award, Megaphone, FileText, AlertTriangle, FolderOpen,
-  Handshake, Monitor, Clock, Cloud, Menu, X
+  Handshake, Monitor, Clock, Cloud, Menu, X,
+  Bus, Heart, Sparkles, CalendarDays
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
@@ -56,7 +57,13 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Quality', icon: FileCheck, path: '/director/quality' },
       { label: 'Compliance', icon: Shield, path: '/compliance' },
       { label: 'Finance', icon: CreditCard, path: '/director/finance' },
+      { label: 'Calendar', icon: CalendarDays, path: '/calendar' },
       { label: 'Schedule', icon: Calendar, path: '/director/schedule' },
+      { label: 'Lesson Plans', icon: BookOpen, path: '/lesson-plans' },
+      { label: 'Leave', icon: Clock, path: '/leave' },
+      { label: 'Transport', icon: Bus, path: '/transport' },
+      { label: 'Health Records', icon: Heart, path: '/health' },
+      { label: 'AI Insights', icon: Sparkles, path: '/ai-recommendations' },
       { label: 'Residential', icon: Building2, path: '/residential' },
       { label: 'Agents', icon: Handshake, path: '/director/agents' },
       { label: 'Audit Logs', icon: FileText, path: '/audit' },
@@ -84,9 +91,12 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Dashboard', icon: LayoutDashboard, path: '/lecturer' },
       { label: 'Teaching', icon: BookOpen, path: '/lecturer/teaching' },
       { label: 'Classroom', icon: Video, path: '/lecturer/classroom' },
+      { label: 'Lesson Plans', icon: BookOpen, path: '/lesson-plans' },
       { label: 'Marking', icon: ClipboardList, path: '/lecturer/marking' },
       { label: 'Report Cards', icon: FileText, path: '/lecturer/report-cards' },
       { label: 'Attendance', icon: Calendar, path: '/lecturer/attendance' },
+      { label: 'Calendar', icon: CalendarDays, path: '/calendar' },
+      { label: 'Leave', icon: Clock, path: '/leave' },
       { label: 'Timeline', icon: Clock, path: '/lecturer/timeline' },
       { label: 'Students', icon: GraduationCap, path: '/lecturer/students' },
       { label: 'Onboarding', icon: UserCheck, path: '/onboarding/lecturer' },
@@ -173,6 +183,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Assignments', icon: ClipboardList, path: '/student/assignments' },
       { label: 'Grades', icon: BarChart3, path: '/student/grades' },
       { label: 'Attendance', icon: Calendar, path: '/student/attendance' },
+      { label: 'Calendar', icon: CalendarDays, path: '/calendar' },
       { label: 'Timeline', icon: Clock, path: '/student/timeline' },
       { label: 'Library', icon: Library, path: '/student/library' },
       { label: 'Code Lab', icon: Monitor, path: '/coding' },
@@ -181,6 +192,8 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Finance', icon: CreditCard, path: '/student/finance' },
       { label: 'Progression', icon: GraduationCap, path: '/student/progression' },
       { label: 'Career', icon: Briefcase, path: '/student/career' },
+      { label: 'Health', icon: Heart, path: '/health' },
+      { label: 'Transport', icon: Bus, path: '/transport' },
       { label: 'Residential', icon: Building2, path: '/residential' },
       { label: 'Onboarding', icon: UserCheck, path: '/onboarding' },
       { label: 'Messages', icon: MessageSquare, path: '/messaging' },

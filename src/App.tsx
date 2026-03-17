@@ -89,6 +89,14 @@ import ParentDashboard from "./pages/parent/ParentDashboard";
 import CloudCodingSandbox from "./pages/coding/CloudCodingSandbox";
 import ReportCardGenerator from "./pages/reports/ReportCardGenerator";
 
+// New Feature Pages
+import AcademicCalendar from "./pages/calendar/AcademicCalendar";
+import LessonPlanBuilder from "./pages/lessons/LessonPlanBuilder";
+import LeaveManagement from "./pages/leave/LeaveManagement";
+import HealthRecords from "./pages/health/HealthRecords";
+import TransportTracking from "./pages/transport/TransportTracking";
+import AIRecommendations from "./pages/ai/AIRecommendations";
+
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -251,6 +259,14 @@ function AppRoutes() {
       <Route path="/residential" element={<P><ResidentialWeeks /></P>} />
       <Route path="/audit" element={<P><AuditLog /></P>} />
       <Route path="/compliance" element={<P><ComplianceDashboard /></P>} />
+
+      {/* ========== NEW FEATURE PAGES ========== */}
+      <Route path="/calendar" element={<P><AcademicCalendar /></P>} />
+      <Route path="/lesson-plans" element={<P><LessonPlanBuilder /></P>} />
+      <Route path="/leave" element={<P><LeaveManagement /></P>} />
+      <Route path="/health" element={<P><HealthRecords /></P>} />
+      <Route path="/transport" element={<P><TransportTracking /></P>} />
+      <Route path="/ai-recommendations" element={<P><AIRecommendations /></P>} />
 
       {/* ========== PARENT/GUARDIAN ========== */}
       <Route path="/parent" element={<P><ParentDashboard /></P>} />
