@@ -213,6 +213,7 @@ function AppRoutes() {
         <Route path="/lecturer/timeline" element={<LecturerR><AcademicTimeline /></LecturerR>} />
         <Route path="/lecturer/analytics" element={<LecturerR><AnalyticsDashboard /></LecturerR>} />
         <Route path="/lecturer/messages" element={<LecturerR><MessagingInbox /></LecturerR>} />
+        <Route path="/lecturer/labs" element={<LecturerR><ITLabsDashboard /></LecturerR>} />
 
         {/* ========== TENANT: Programme Leader ========== */}
         <Route path="/programme" element={<Programme><ProgrammeManagement /></Programme>} />
