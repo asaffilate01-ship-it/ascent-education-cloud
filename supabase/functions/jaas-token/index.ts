@@ -61,7 +61,7 @@ serve(async (req) => {
       .setNotBefore(now)
       .sign(privateKey);
 
-    return new Response(JSON.stringify({ token: jwt }), {
+    return new Response(JSON.stringify({ token: jwt, appId: JAAS_APP_ID }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {

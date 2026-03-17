@@ -189,7 +189,7 @@ export default function LiveClassroom() {
         },
       });
 
-      if (tokenError || !tokenData?.token) {
+      if (tokenError || !tokenData?.token || !tokenData?.appId) {
         console.error('JaaS token error:', tokenError);
         toast.error('Failed to authenticate video session');
         setIsLoading(false);
@@ -197,10 +197,8 @@ export default function LiveClassroom() {
         return;
       }
 
-      const jaasAppId = import.meta.env.VITE_JAAS_APP_ID || '';
-
       const api = new window.JitsiMeetExternalAPI('8x8.vc', {
-        roomName: `${jaasAppId}/${fullRoomName}`,
+        roomName: `${tokenData.appId}/${fullRoomName}`,
         parentNode: jitsiContainerRef.current,
         jwt: tokenData.token,
         width: '100%',
