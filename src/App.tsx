@@ -8,6 +8,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import RoleGuard from "@/components/RoleGuard";
 import CookieConsent from "@/components/CookieConsent";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import { lazy, Suspense } from "react";
 
 // Lazy-loaded route components
