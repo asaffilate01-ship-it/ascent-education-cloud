@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { GraduationCap, Clock, Award, Video, ArrowRight, Shield } from 'lucide-react';
 import TenantNav from '@/components/TenantNav';
+import { useTenantBranding } from '@/hooks/useTenantBranding';
 
 const COURSES = [
   { id: '1', title: 'Level 5 Diploma in Business Management', body: 'OTHM', level: 'Level 5', duration: '12 months', credits: 120, fee: 'Rs.880,000', modules: ['Strategic Management', 'Financial Analysis', 'Marketing Strategy', 'Business Environment', 'Research Methods', 'Operations Management'], progression: 'BA (Hons) Top-Up at UK universities' },
