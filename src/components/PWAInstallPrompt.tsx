@@ -50,7 +50,7 @@ const PWAInstallPrompt = forwardRef<HTMLDivElement>(function PWAInstallPrompt(_p
   if (isStandalone || !showBanner) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-md animate-in slide-in-from-bottom-4">
+    <div ref={ref} className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-md animate-in slide-in-from-bottom-4">
       <div className="surface-card p-4 shadow-2xl border border-border rounded-2xl">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
