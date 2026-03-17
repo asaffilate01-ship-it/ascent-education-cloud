@@ -120,14 +120,14 @@ export default function LiveClassroom() {
     toast.success('Room link copied to clipboard');
   };
 
-  const persistSession = async (moduleId?: string) => {
+  const persistSession = async (sessionRoomName: string, moduleId?: string) => {
     if (!user) return null;
     try {
       const profile = await supabase.from('profiles').select('tenant_id').eq('user_id', user.id).single();
       const { data, error } = await supabase
         .from('classroom_sessions' as any)
         .insert({
-          room_name: roomName,
+          room_name: sessionRoomName,
           display_name: displayName || 'Participant',
           host_id: user.id,
           status: 'active',
@@ -163,14 +163,18 @@ export default function LiveClassroom() {
     } catch (err) { console.error('Session end error:', err); }
   };
 
-  const startJitsi = async (modId?: string) => {
-    if (!roomName.trim()) { toast.error('Please enter a room name'); return; }
+  const startJitsi = async (modId?: string, roomOverride?: string) => {
+    const effectiveRoomName = (roomOverride ?? roomName).trim();
+
+    if (!effectiveRoomName) { toast.error('Please enter a room name'); return; }
     if (!window.JitsiMeetExternalAPI) { toast.error('Video system is still loading. Please try again.'); return; }
+
+    setRoomName(effectiveRoomName);
     setIsLoading(true);
     setIsInSession(true);
 
     // Only lecturers persist the session (students just join)
-    const id = isLecturer ? await persistSession(modId) : null;
+    const id = isLecturer ? await persistSession(effectiveRoomName, modId) : null;
     setSessionId(id);
 
     // Wait one tick so the container div is rendered by React
@@ -178,7 +182,7 @@ export default function LiveClassroom() {
 
     try {
       // Get JaaS JWT token from edge function
-      const fullRoomName = `EduCloud-${roomName}`;
+      const fullRoomName = `EduCloud-${effectiveRoomName}`;
       const { data: tokenData, error: tokenError } = await supabase.functions.invoke('jaas-token', {
         body: {
           roomName: fullRoomName,
@@ -262,13 +266,12 @@ export default function LiveClassroom() {
   const handleStartLecturerSession = () => {
     if (!selectedModuleId) { toast.error('Please select a module'); return; }
     const mod = moduleMap[selectedModuleId];
-    if (mod && !roomName) setRoomName(generateRoomName(mod));
-    startJitsi(selectedModuleId);
+    const nextRoomName = roomName || (mod ? generateRoomName(mod) : '');
+    startJitsi(selectedModuleId, nextRoomName);
   };
 
   const handleJoinSession = (session: any) => {
-    setRoomName(session.room_name);
-    setTimeout(() => startJitsi(), 100);
+    startJitsi(undefined, session.room_name);
   };
 
   const formatDuration = (start: string, end: string | null) => {
