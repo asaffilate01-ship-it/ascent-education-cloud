@@ -298,8 +298,8 @@ function AppRoutes() {
         <Route path="/onboarding" element={<P><StudentOnboarding /></P>} />
         <Route path="/onboarding/lecturer" element={<LecturerR><LecturerOnboarding /></LecturerR>} />
         <Route path="/residential" element={<P><ResidentialWeeks /></P>} />
-        <Route path="/audit" element={<Landlord><AuditLog /></Landlord>} />
-        <Route path="/compliance" element={<QA><ComplianceDashboard /></QA>} />
+        <Route path="/audit" element={<Director><AuditLog /></Director>} />
+        <Route path="/my-activity" element={<P><MyActivityLog /></P>} />
 
         {/* ========== NEW FEATURE PAGES ========== */}
         <Route path="/calendar" element={<P><AcademicCalendar /></P>} />
