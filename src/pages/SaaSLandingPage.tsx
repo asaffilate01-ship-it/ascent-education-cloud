@@ -101,7 +101,7 @@ export default function SaaSLandingPage() {
                   Launch Your Centre <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
               </Link>
-              <Link to="/tenant/edupathway">
+              <Link to="/tenant/unipathway">
                 <Button variant="outline" size="lg" className="w-full sm:w-auto">See Live Demo</Button>
               </Link>
             </div>
