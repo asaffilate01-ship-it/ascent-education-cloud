@@ -104,6 +104,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Students', icon: GraduationCap, path: '/lecturer/students' },
       { label: 'Onboarding', icon: UserCheck, path: '/onboarding/lecturer' },
       { label: 'Analytics', icon: BarChart3, path: '/lecturer/analytics' },
+      { label: 'Activity Log', icon: Activity, path: '/my-activity' },
       { label: 'Messages', icon: MessageSquare, path: '/messaging' },
     ]},
   ],
