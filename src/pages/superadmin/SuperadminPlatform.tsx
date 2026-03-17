@@ -40,9 +40,9 @@ export default function SuperadminPlatform() {
           <h3 className="text-sm font-semibold mb-4">Subscription Plans</h3>
           <div className="space-y-3">
             {[
-              { name: 'Starter', price: '£200/mo', features: ['Up to 50 students', 'Basic LMS', '1 admin user', 'Email support'], tenants: planCounts.starter },
-              { name: 'Professional', price: '£500/mo', features: ['Up to 500 students', 'Full LMS + Video', '5 admin users', 'Priority support', 'Custom branding'], tenants: planCounts.professional },
-              { name: 'Enterprise', price: '£1,000/mo', features: ['Unlimited students', 'Full platform', 'Unlimited admins', 'Custom domain', 'API access', 'SLA guarantee'], tenants: planCounts.enterprise },
+              { name: 'Starter', price: 'Rs.75,000/mo', features: ['Up to 50 students', 'Basic LMS', '1 admin user', 'Email support'], tenants: planCounts.starter },
+              { name: 'Professional', price: 'Rs.150,000/mo', features: ['Up to 500 students', 'Full LMS + Video', '5 admin users', 'Priority support', 'Custom branding'], tenants: planCounts.professional },
+              { name: 'Enterprise', price: 'Rs.300,000/mo', features: ['Unlimited students', 'Full platform', 'Unlimited admins', 'Custom domain', 'API access', 'SLA guarantee'], tenants: planCounts.enterprise },
             ].map((plan) => (
               <div key={plan.name} className="surface-data p-4 rounded-lg">
                 <div className="flex items-center justify-between mb-2">

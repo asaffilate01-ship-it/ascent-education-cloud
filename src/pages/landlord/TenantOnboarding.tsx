@@ -138,9 +138,9 @@ export default function TenantOnboarding() {
             <h3 className="text-lg font-bold mb-4">Choose a Plan</h3>
             <div className="grid md:grid-cols-3 gap-4">
               {[
-                { id: 'starter' as const, name: 'Starter', price: '£200/mo', features: ['Up to 50 students', 'Basic LMS', '1 Admin', 'Email support'] },
-                { id: 'professional' as const, name: 'Professional', price: '£500/mo', features: ['Up to 500 students', 'Full LMS + Video + QA', '5 Admins', 'Agent portal', 'Custom branding'], popular: true },
-                { id: 'enterprise' as const, name: 'Enterprise', price: '£1,000/mo', features: ['Unlimited students', 'Full platform', 'Custom domain', 'API access', 'White-label', 'SLA'] },
+                { id: 'starter' as const, name: 'Starter', price: 'Rs.75,000/mo', features: ['Up to 50 students', 'Basic LMS', '1 Admin', 'Email support'] },
+                { id: 'professional' as const, name: 'Professional', price: 'Rs.150,000/mo', features: ['Up to 500 students', 'Full LMS + Video + QA', '5 Admins', 'Agent portal', 'Custom branding'], popular: true },
+                { id: 'enterprise' as const, name: 'Enterprise', price: 'Rs.300,000/mo', features: ['Unlimited students', 'Full platform', 'Custom domain', 'API access', 'White-label', 'SLA'] },
               ].map((plan) => (
                 <div
                   key={plan.id}

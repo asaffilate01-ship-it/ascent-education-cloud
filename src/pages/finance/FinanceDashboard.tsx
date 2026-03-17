@@ -120,11 +120,11 @@ export default function FinanceDashboard() {
                   <td className="px-4 py-3 hidden sm:table-cell">
                     <span className="text-xs capitalize bg-secondary px-2 py-0.5 rounded">{inv.type}</span>
                   </td>
-                  <td className="px-4 py-3 text-sm font-medium">£{Number(inv.amount).toLocaleString()}</td>
-                  <td className="px-4 py-3 text-sm text-success font-medium hidden md:table-cell">£{Number(inv.paid).toLocaleString()}</td>
+                  <td className="px-4 py-3 text-sm font-medium">Rs.{Number(inv.amount).toLocaleString()}</td>
+                  <td className="px-4 py-3 text-sm text-success font-medium hidden md:table-cell">Rs.{Number(inv.paid).toLocaleString()}</td>
                   <td className="px-4 py-3 text-sm font-medium hidden md:table-cell">
                     {Number(inv.amount) - Number(inv.paid) > 0 ? (
-                      <span className="text-destructive">£{(Number(inv.amount) - Number(inv.paid)).toLocaleString()}</span>
+                      <span className="text-destructive">Rs.{(Number(inv.amount) - Number(inv.paid)).toLocaleString()}</span>
                     ) : (
                       <span className="text-muted-foreground">—</span>
                     )}
