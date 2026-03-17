@@ -69,7 +69,7 @@ export default function UniversityPartnerPortal() {
         <StatCard label="Referred Students" value={referred.length} change="This cycle" icon={Users} />
         <StatCard label="Offers Issued" value={offersOut} changeType="positive" change="Active" icon={Award} />
         <StatCard label="Enrolled" value={enrolled} changeType="positive" change="Confirmed" icon={GraduationCap} />
-        <StatCard label="Commission Due" value={`£${commissionDue.toLocaleString()}`} change="Pending" changeType="positive" icon={CreditCard} />
+        <StatCard label="Commission Due" value={`Rs.${commissionDue.toLocaleString()}`} change="Pending" changeType="positive" icon={CreditCard} />
       </div>
 
       <div className="mb-4 flex items-center justify-between">
