@@ -60,6 +60,87 @@ const DEFAULT_SECTIONS: PageSection[] = [
     is_visible: true,
   },
   {
+    section_key: 'programme_careers',
+    content: {
+      heading: 'Programmes That Lead to Real Careers',
+      programmes: [
+        { title: 'Business Management', tagline: 'Build your business career and complete your degree abroad.', careers: ['Business Manager', 'Marketing Executive', 'Entrepreneur', 'Operations Manager'], internships: ['Corporate offices', 'Marketing agencies', 'Retail & logistics companies'], progression: ['UK degree (final year entry)', 'MBA pathway', 'Global business careers'] },
+        { title: 'Information Technology / Computing', tagline: 'Start your tech career in Pakistan and work globally.', careers: ['Software Developer', 'IT Engineer', 'Cybersecurity Analyst', 'Data Analyst'], internships: ['Software houses', 'IT companies', 'Startups'], progression: ['BSc Computer Science abroad', 'AI & Data Science pathways'] },
+        { title: 'Accounting & Finance', tagline: 'Start your accounting career and progress to ACCA or a UK degree.', careers: ['Accountant', 'Financial Analyst', 'Auditor', 'Finance Manager'], internships: ['Accounting firms', 'Audit firms', 'Corporate finance departments'], progression: ['UK finance degree', 'ACCA qualification pathway', 'Global accounting careers'], acca: true },
+        { title: 'Health & Social Care', tagline: 'Pathway to international healthcare careers.', careers: ['Care Assistant', 'Healthcare Support Worker', 'Care Coordinator'], internships: ['Care homes', 'Clinics', 'Healthcare organisations'], progression: ['Healthcare degrees abroad', 'Global care sector opportunities'] },
+      ],
+    },
+    sort_order: 5,
+    is_visible: true,
+  },
+  {
+    section_key: 'internships',
+    content: {
+      heading: 'Internships Across Pakistan',
+      sectors: ['Corporate Internships', 'IT Companies', 'Accounting Firms', 'Healthcare Providers', 'SMEs & Startups'],
+      cities: ['Lahore', 'Karachi', 'Islamabad', 'Faisalabad', 'Multan'],
+    },
+    sort_order: 6,
+    is_visible: true,
+  },
+  {
+    section_key: 'student_journey',
+    content: {
+      heading: 'The Student Journey',
+      steps: [
+        { title: 'Enrol in Pakistan', desc: 'Apply online, get accepted within 48 hours.' },
+        { title: 'Study Level 3 → Level 4 → Level 5', desc: '80% online + 20% in-centre.' },
+        { title: 'Gain Internship Experience', desc: 'Access corporate internships across Pakistan.' },
+        { title: 'Transfer to International University', desc: 'Progress to partner universities worldwide.' },
+        { title: 'Graduate Abroad', desc: 'Complete your final year on campus.' },
+        { title: 'Start Your Global Career', desc: 'Access post-study work visas globally.' },
+      ],
+    },
+    sort_order: 7,
+    is_visible: true,
+  },
+  {
+    section_key: 'career_support',
+    content: {
+      heading: 'Career & Employability Support',
+      services: ['CV Building Support', 'Interview Training', 'Career Workshops', 'Internship Placements', 'Job Readiness Training'],
+      tagline: 'Start your UK degree in Pakistan, gain real work experience, and complete your final year abroad.',
+    },
+    sort_order: 8,
+    is_visible: true,
+  },
+  {
+    section_key: 'global_pathways',
+    content: {
+      heading: 'Transfer to Universities Worldwide',
+      destinations: [
+        { flag: '🇬🇧', country: 'United Kingdom', visa: '2-Year Post-Study Work Visa' },
+        { flag: '🇨🇦', country: 'Canada', visa: '3-Year PGWP' },
+        { flag: '🇦🇺', country: 'Australia', visa: '2–4 Year Post-Study Visa' },
+        { flag: '🇦🇪', country: 'UAE', visa: 'Employment Opportunities' },
+      ],
+    },
+    sort_order: 9,
+    is_visible: true,
+  },
+  {
+    section_key: 'parents',
+    content: {
+      heading: 'Why Parents Trust Us',
+      features: [
+        { title: 'Your Child Stays Home', description: 'No need to send your child abroad at 16–18. They study from the safety of your home for 2 years.' },
+        { title: 'UK-Regulated & Accredited', description: 'All qualifications are Ofqual-regulated and recognised worldwide.' },
+        { title: 'Save Rs. 2.5+ Crore', description: 'Save 50–70% by studying the first 2 years at home.' },
+        { title: 'Real Internships & Jobs', description: 'Internship placements across Pakistan in corporate offices, IT firms, accounting practices.' },
+        { title: 'Global Degree, Global Career', description: 'A UK/Australian/Canadian degree with access to post-study work visas.' },
+        { title: 'Dedicated Support Team', description: 'Personal academic tutor, career counsellor, and parent liaison officer.' },
+      ],
+      value_props: ['Global degree pathway', 'Career outcomes', 'International mobility', 'Internships + experience'],
+    },
+    sort_order: 10,
+    is_visible: true,
+  },
+  {
     section_key: 'testimonials',
     content: {
       heading: 'What Our Students Say',
@@ -69,7 +150,7 @@ const DEFAULT_SECTIONS: PageSection[] = [
         { name: 'Hassan Ali', programme: 'Level 3 Accounting', quote: 'The residential week experience was fantastic. Meeting my classmates and lecturers in person really strengthened my understanding.' },
       ],
     },
-    sort_order: 5,
+    sort_order: 11,
     is_visible: true,
   },
   {
@@ -81,7 +162,7 @@ const DEFAULT_SECTIONS: PageSection[] = [
       email: 'admissions@unipathway.pk',
       enquiry_link: '/contact',
     },
-    sort_order: 6,
+    sort_order: 12,
     is_visible: true,
   },
   {
@@ -92,7 +173,7 @@ const DEFAULT_SECTIONS: PageSection[] = [
       cta_primary_text: 'Apply Now',
       cta_secondary_text: 'Request a Callback',
     },
-    sort_order: 7,
+    sort_order: 13,
     is_visible: true,
   },
   {
@@ -102,7 +183,7 @@ const DEFAULT_SECTIONS: PageSection[] = [
       badges: ['OTHM', 'QUALIFI', 'IAB'],
       copyright: '© 2026 {brandName}. Powered by EduCloud.',
     },
-    sort_order: 8,
+    sort_order: 14,
     is_visible: true,
   },
 ];
