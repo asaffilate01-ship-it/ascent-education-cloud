@@ -87,9 +87,9 @@ export default function OnboardTenantModal({ onSuccess, children }: Props) {
             <Select value={form.plan} onValueChange={(v: any) => setForm(f => ({ ...f, plan: v }))}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="starter">Starter — Rs.75,000/mo</SelectItem>
-                <SelectItem value="professional">Professional — Rs.150,000/mo</SelectItem>
-                <SelectItem value="enterprise">Enterprise — Rs.300,000/mo</SelectItem>
+                <SelectItem value="starter">Starter — Rs.80,000/mo</SelectItem>
+                <SelectItem value="professional">Professional — Rs.200,000/mo</SelectItem>
+                <SelectItem value="enterprise">Enterprise — Rs.400,000/mo</SelectItem>
               </SelectContent>
             </Select>
           </div>
