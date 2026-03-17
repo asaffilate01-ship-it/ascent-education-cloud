@@ -1,33 +1,16 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { corsHeaders, rateLimit, rateLimitResponse, getClientIp } from '../_shared/cors.ts'
+import { authenticateRequest } from '../_shared/auth.ts'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
 
-  try {
-    // Auth check
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
-    }
+  const ip = getClientIp(req)
+  if (!rateLimit(ip, 10, 60_000)) return rateLimitResponse()
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!
-    )
-    const token = authHeader.replace('Bearer ', '')
-    const { data: claims, error: authError } = await supabase.auth.getUser(token)
-    if (authError || !claims.user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
-    }
+  try {
+    const auth = await authenticateRequest(req)
+    if (auth instanceof Response) return auth
 
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
     if (!RESEND_API_KEY) {
@@ -44,6 +27,15 @@ Deno.serve(async (req) => {
       })
     }
 
+    // Validate email addresses
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const recipients = Array.isArray(to) ? to : [to]
+    if (recipients.length > 50 || !recipients.every((e: string) => emailRegex.test(e))) {
+      return new Response(JSON.stringify({ error: 'Invalid recipient email(s) or too many recipients (max 50)' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -52,10 +44,10 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         from: from || 'UniPathway <noreply@unipathway.pk>',
-        to: Array.isArray(to) ? to : [to],
-        subject,
-        html: html || undefined,
-        text: text || undefined,
+        to: recipients,
+        subject: String(subject).slice(0, 500),
+        html: html ? String(html).slice(0, 100_000) : undefined,
+        text: text ? String(text).slice(0, 50_000) : undefined,
         reply_to: replyTo || undefined,
       }),
     })
@@ -67,17 +59,16 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Log to audit
     const adminClient = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
     await adminClient.from('audit_logs').insert({
-      user_id: claims.user.id,
-      user_email: claims.user.email,
+      user_id: auth.userId,
+      user_email: auth.email,
       action: 'email_sent',
       entity_type: 'email',
-      details: { to, subject, resend_id: data.id },
+      details: { to: recipients, subject, resend_id: data.id },
     })
 
     return new Response(JSON.stringify({ success: true, id: data.id }), {

@@ -1,32 +1,16 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { corsHeaders, rateLimit, rateLimitResponse, getClientIp } from '../_shared/cors.ts'
+import { authenticateRequest } from '../_shared/auth.ts'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
 
-  try {
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
-    }
+  const ip = getClientIp(req)
+  if (!rateLimit(ip, 10, 60_000)) return rateLimitResponse()
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!
-    )
-    const token = authHeader.replace('Bearer ', '')
-    const { data: claims, error: authError } = await supabase.auth.getUser(token)
-    if (authError || !claims.user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
-    }
+  try {
+    const auth = await authenticateRequest(req)
+    if (auth instanceof Response) return auth
 
     const { studentName, programmeName, awardingBody, grade, completionDate, certificateType } = await req.json()
 
@@ -35,6 +19,12 @@ Deno.serve(async (req) => {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
+
+    // Sanitize inputs
+    const safeName = String(studentName).slice(0, 200).replace(/[<>&"']/g, '')
+    const safeProgramme = String(programmeName).slice(0, 300).replace(/[<>&"']/g, '')
+    const safeBody = String(awardingBody || 'OTHM').slice(0, 100).replace(/[<>&"']/g, '')
+    const safeGrade = grade ? String(grade).slice(0, 50).replace(/[<>&"']/g, '') : null
 
     const certDate = completionDate || new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
     const certType = certificateType || 'completion'
@@ -61,15 +51,15 @@ Deno.serve(async (req) => {
   .cert-id { position: absolute; bottom: 28px; right: 68px; font-size: 10px; color: #999; }
 </style></head>
 <body><div class="certificate"><div class="inner">
-  <div class="logo-row">${awardingBody || 'OTHM'} Accredited</div>
+  <div class="logo-row">${safeBody} Accredited</div>
   <h1>Certificate of ${certType === 'distinction' ? 'Distinction' : certType === 'merit' ? 'Merit' : 'Completion'}</h1>
   <div class="subtitle">This is to certify that</div>
-  <div class="name">${studentName}</div>
+  <div class="name">${safeName}</div>
   <div class="subtitle">has successfully completed the programme</div>
-  <div class="programme">${programmeName}</div>
-  ${grade ? `<div class="grade-badge">${grade}</div>` : ''}
+  <div class="programme">${safeProgramme}</div>
+  ${safeGrade ? `<div class="grade-badge">${safeGrade}</div>` : ''}
   <div class="details">Date of Completion: ${certDate}</div>
-  <div class="details">Awarding Body: ${awardingBody || 'OTHM'}</div>
+  <div class="details">Awarding Body: ${safeBody}</div>
   <div class="footer">
     <div class="sig"><div class="sig-line"></div>Centre Director</div>
     <div class="sig"><div class="sig-line"></div>External Verifier</div>
@@ -77,17 +67,16 @@ Deno.serve(async (req) => {
   <div class="cert-id">${certId}</div>
 </div></div></body></html>`
 
-    // Log certificate generation
     const adminClient = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
     await adminClient.from('audit_logs').insert({
-      user_id: claims.user.id,
-      user_email: claims.user.email,
+      user_id: auth.userId,
+      user_email: auth.email,
       action: 'certificate_generated',
       entity_type: 'certificate',
-      details: { certId, studentName, programmeName, grade, awardingBody },
+      details: { certId, studentName: safeName, programmeName: safeProgramme, grade: safeGrade, awardingBody: safeBody },
     })
 
     return new Response(JSON.stringify({ success: true, certificateId: certId, html }), {

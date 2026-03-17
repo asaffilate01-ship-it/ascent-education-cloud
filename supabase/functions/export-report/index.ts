@@ -1,9 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { corsHeaders, rateLimit, rateLimitResponse, getClientIp } from '../_shared/cors.ts'
+import { authenticateRequest } from '../_shared/auth.ts'
 
 function toCSV(rows: Record<string, unknown>[]): string {
   if (!rows.length) return ''
@@ -23,45 +20,33 @@ function toCSV(rows: Record<string, unknown>[]): string {
   return lines.join('\n')
 }
 
+const VALID_REPORT_TYPES = ['students', 'invoices', 'attendance', 'submissions', 'applications'] as const
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
 
-  try {
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
-    }
+  const ip = getClientIp(req)
+  if (!rateLimit(ip, 10, 60_000)) return rateLimitResponse()
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!
-    )
-    const token = authHeader.replace('Bearer ', '')
-    const { data: claims, error: authError } = await supabase.auth.getUser(token)
-    if (authError || !claims.user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
-    }
+  try {
+    const auth = await authenticateRequest(req)
+    if (auth instanceof Response) return auth
 
     const { reportType, tenantId, filters } = await req.json()
 
-    if (!reportType) {
-      return new Response(JSON.stringify({ error: 'reportType is required (students, invoices, attendance, submissions, applications)' }), {
+    if (!reportType || !VALID_REPORT_TYPES.includes(reportType)) {
+      return new Response(JSON.stringify({ error: `reportType must be one of: ${VALID_REPORT_TYPES.join(', ')}` }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
 
-    // Use service role for full data access
     const adminClient = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
     // Verify user has appropriate role
-    const { data: roles } = await adminClient.from('user_roles').select('role').eq('user_id', claims.user.id)
+    const { data: roles } = await adminClient.from('user_roles').select('role').eq('user_id', auth.userId)
     const userRoles = roles?.map(r => r.role) || []
     const allowedRoles = ['superadmin', 'centre_director', 'finance_officer', 'admissions_admin', 'exams_officer']
     if (!userRoles.some(r => allowedRoles.includes(r))) {
@@ -85,7 +70,7 @@ Deno.serve(async (req) => {
       case 'invoices': {
         let query = adminClient.from('invoices').select('student_name, type, amount, paid, status, issued_date, due_date')
         if (tenantId) query = query.eq('tenant_id', tenantId)
-        if (filters?.status) query = query.eq('status', filters.status)
+        if (filters?.status && typeof filters.status === 'string') query = query.eq('status', filters.status)
         const { data: rows } = await query.limit(5000)
         data = (rows || []) as Record<string, unknown>[]
         filename = 'invoices-export.csv'
@@ -94,8 +79,8 @@ Deno.serve(async (req) => {
       case 'attendance': {
         let query = adminClient.from('attendance_records').select('student_id, date, status, method, module_id')
         if (tenantId) query = query.eq('tenant_id', tenantId)
-        if (filters?.dateFrom) query = query.gte('date', filters.dateFrom)
-        if (filters?.dateTo) query = query.lte('date', filters.dateTo)
+        if (filters?.dateFrom && typeof filters.dateFrom === 'string') query = query.gte('date', filters.dateFrom)
+        if (filters?.dateTo && typeof filters.dateTo === 'string') query = query.lte('date', filters.dateTo)
         const { data: rows } = await query.limit(5000)
         data = (rows || []) as Record<string, unknown>[]
         filename = 'attendance-export.csv'
@@ -112,24 +97,19 @@ Deno.serve(async (req) => {
       case 'applications': {
         let query = adminClient.from('applications').select('student_name, email, phone, programme_name, stage, source, counsellor, created_at')
         if (tenantId) query = query.eq('tenant_id', tenantId)
-        if (filters?.stage) query = query.eq('stage', filters.stage)
+        if (filters?.stage && typeof filters.stage === 'string') query = query.eq('stage', filters.stage)
         const { data: rows } = await query.limit(5000)
         data = (rows || []) as Record<string, unknown>[]
         filename = 'applications-export.csv'
         break
       }
-      default:
-        return new Response(JSON.stringify({ error: `Unknown reportType: ${reportType}` }), {
-          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        })
     }
 
     const csv = toCSV(data)
 
-    // Audit log
     await adminClient.from('audit_logs').insert({
-      user_id: claims.user.id,
-      user_email: claims.user.email,
+      user_id: auth.userId,
+      user_email: auth.email,
       action: 'report_exported',
       entity_type: 'report',
       details: { reportType, tenantId, rowCount: data.length, filters },

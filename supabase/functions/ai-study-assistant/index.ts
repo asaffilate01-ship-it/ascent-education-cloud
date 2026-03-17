@@ -1,37 +1,21 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { corsHeaders, rateLimit, rateLimitResponse, getClientIp } from '../_shared/cors.ts'
+import { authenticateRequest } from '../_shared/auth.ts'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
 
-  try {
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
-    }
+  const ip = getClientIp(req)
+  if (!rateLimit(ip, 20, 60_000)) return rateLimitResponse()
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!
-    )
-    const token = authHeader.replace('Bearer ', '')
-    const { data: claims, error: authError } = await supabase.auth.getUser(token)
-    if (authError || !claims.user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
-    }
+  try {
+    const auth = await authenticateRequest(req)
+    if (auth instanceof Response) return auth
 
     const { question, moduleName, conversationHistory } = await req.json()
 
-    if (!question) {
-      return new Response(JSON.stringify({ error: 'question is required' }), {
+    if (!question || typeof question !== 'string' || question.length > 5000) {
+      return new Response(JSON.stringify({ error: 'Valid question is required (max 5000 chars)' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
@@ -53,10 +37,11 @@ ${moduleName ? `\nThe student is studying: ${moduleName}` : ''}`
       { role: 'system', content: systemPrompt },
     ]
 
-    // Add conversation history if provided
     if (conversationHistory && Array.isArray(conversationHistory)) {
       for (const msg of conversationHistory.slice(-10)) {
-        messages.push({ role: msg.role, content: msg.content })
+        if (msg.role && msg.content) {
+          messages.push({ role: msg.role, content: String(msg.content).slice(0, 2000) })
+        }
       }
     }
 
