@@ -843,6 +843,7 @@ export type Database = {
           credits: number | null
           id: string
           lecturer_id: string | null
+          module_number: string | null
           programme_id: string
           status: Database["public"]["Enums"]["programme_status"]
           tenant_id: string
@@ -855,6 +856,7 @@ export type Database = {
           credits?: number | null
           id?: string
           lecturer_id?: string | null
+          module_number?: string | null
           programme_id: string
           status?: Database["public"]["Enums"]["programme_status"]
           tenant_id: string
@@ -867,6 +869,7 @@ export type Database = {
           credits?: number | null
           id?: string
           lecturer_id?: string | null
+          module_number?: string | null
           programme_id?: string
           status?: Database["public"]["Enums"]["programme_status"]
           tenant_id?: string
@@ -1156,6 +1159,7 @@ export type Database = {
       programmes: {
         Row: {
           awarding_body: Database["public"]["Enums"]["awarding_body"]
+          course_number: string | null
           created_at: string
           credits: number | null
           duration: string | null
@@ -1170,6 +1174,7 @@ export type Database = {
         }
         Insert: {
           awarding_body: Database["public"]["Enums"]["awarding_body"]
+          course_number?: string | null
           created_at?: string
           credits?: number | null
           duration?: string | null
@@ -1184,6 +1189,7 @@ export type Database = {
         }
         Update: {
           awarding_body?: Database["public"]["Enums"]["awarding_body"]
+          course_number?: string | null
           created_at?: string
           credits?: number | null
           duration?: string | null
