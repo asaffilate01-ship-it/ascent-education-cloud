@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.send-notification]
 verify_jwt = false
+
+[functions.jaas-token]
+verify_jwt = false
