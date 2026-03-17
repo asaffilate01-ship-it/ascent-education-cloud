@@ -50,7 +50,7 @@ export default function TenantContactPage() {
               {[
                 { icon: MapPin, label: 'Address', value: '123 Education Street, Gulberg III, Lahore, Pakistan' },
                 { icon: Phone, label: 'Phone', value: '+92 42 3578 9012' },
-                { icon: MessageSquare, label: 'WhatsApp', value: '+92 300 1234567' },
+                { icon: MessageSquare, label: 'WhatsApp', value: '+92 300 1234567', isWhatsApp: true },
                 { icon: Mail, label: 'Email', value: 'admissions@unipathway.pk' },
                 { icon: Globe, label: 'Website', value: 'www.unipathway.pk' },
                 { icon: Clock, label: 'Office Hours', value: 'Mon-Fri: 9:00 AM - 6:00 PM (PKT)' },
@@ -65,6 +65,22 @@ export default function TenantContactPage() {
                   </div>
                 </div>
               ))}
+
+              {/* WhatsApp CTA */}
+              <a
+                href={`https://wa.me/923001234567?text=${encodeURIComponent('Hi, I would like to enquire about your programmes.')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 w-full px-4 py-3 rounded-xl bg-[#25D366]/10 border border-[#25D366]/20 hover:bg-[#25D366]/20 transition-all group mt-2"
+              >
+                <div className="w-10 h-10 rounded-full bg-[#25D366] flex items-center justify-center shrink-0">
+                  <MessageCircle className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-[#25D366] group-hover:underline">Chat on WhatsApp</p>
+                  <p className="text-[11px] text-muted-foreground">Get instant replies — tap to start</p>
+                </div>
+              </a>
             </div>
 
             {/* Form */}
