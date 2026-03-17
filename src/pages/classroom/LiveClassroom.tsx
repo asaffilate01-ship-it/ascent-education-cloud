@@ -53,14 +53,33 @@ export default function LiveClassroom() {
   const isLecturer = user?.role === 'lecturer' || user?.role === 'centre_director' || user?.role === 'programme_leader';
   const isStudent = user?.role === 'student';
 
-  useEffect(() => {
-    if (!document.getElementById('jitsi-script')) {
-      const script = document.createElement('script');
-      script.id = 'jitsi-script';
-      script.src = 'https://8x8.vc/external_api.js';
-      script.async = true;
-      document.head.appendChild(script);
+  const loadJitsiApi = async (appId: string) => {
+    const expectedSrc = getJitsiScriptSrc(appId);
+    const existingScript = document.getElementById(JITSI_SCRIPT_ID) as HTMLScriptElement | null;
+
+    if (window.JitsiMeetExternalAPI && existingScript?.getAttribute('src') === expectedSrc) {
+      return;
     }
+
+    if (existingScript) {
+      existingScript.remove();
+    }
+
+    window.JitsiMeetExternalAPI = undefined;
+
+    await new Promise<void>((resolve, reject) => {
+      const script = document.createElement('script');
+      script.id = JITSI_SCRIPT_ID;
+      script.src = expectedSrc;
+      script.async = true;
+      script.dataset.jaasAppId = appId;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('Failed to load video client'));
+      document.head.appendChild(script);
+    });
+  };
+
+  useEffect(() => {
     return () => {
       if (jitsiApiRef.current) {
         jitsiApiRef.current.dispose();
@@ -77,7 +96,7 @@ export default function LiveClassroom() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const room = params.get('room');
-    if (room) setRoomName(room);
+    if (room) setRoomName(normalizeRoomName(room));
   }, []);
 
   // Fetch modules, programmes, recordings, sessions
