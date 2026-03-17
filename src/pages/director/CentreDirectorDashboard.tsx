@@ -89,7 +89,7 @@ export default function CentreDirectorDashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Total Students" value={String(totalStudents)} icon={GraduationCap} />
         <StatCard label="Active Programmes" value={String(activeProgrammes.length)} icon={BookOpen} />
-        <StatCard label="Revenue Collected" value={`£${totalCollected.toLocaleString()}`} icon={CreditCard} />
+        <StatCard label="Revenue Collected" value={`Rs.${totalCollected.toLocaleString()}`} icon={CreditCard} />
         <StatCard label="Invoices" value={String(invoices.length)} icon={FileCheck} />
       </div>
 
