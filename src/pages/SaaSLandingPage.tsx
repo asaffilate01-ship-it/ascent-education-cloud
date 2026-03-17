@@ -26,6 +26,7 @@ const stagger = {
 
 export default function SaaSLandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <div className="min-h-screen bg-background">
