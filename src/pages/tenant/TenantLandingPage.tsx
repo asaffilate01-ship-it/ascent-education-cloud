@@ -84,7 +84,7 @@ export default function TenantLandingPage() {
             <Flame className="w-5 h-5 animate-pulse" />
           </div>
           <span className="text-sm sm:text-base font-medium opacity-95">
-            Limited to the first <span className="font-bold underline decoration-2 underline-offset-2">50 students</span> — Don't miss out!
+            Enrol by <span className="font-bold underline decoration-2 underline-offset-2">1st June 2026</span> to claim your discount!
           </span>
           <Link to="/apply">
             <Button size="sm" className="bg-white hover:bg-white/90 font-bold shadow-lg" style={{ color: pc }}>
