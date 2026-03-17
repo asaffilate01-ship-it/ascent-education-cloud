@@ -9,7 +9,7 @@ import {
   ChevronLeft, ChevronRight, UserCheck, Calendar,
   Award, Megaphone, FileText, AlertTriangle, FolderOpen,
   Handshake, Monitor, Clock, Cloud, Menu, X,
-  Bus, Heart, Sparkles, CalendarDays
+  Bus, Heart, Sparkles, CalendarDays, Activity
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
