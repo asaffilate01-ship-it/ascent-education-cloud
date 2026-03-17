@@ -206,6 +206,8 @@ export default function StudentManagement() {
       ) : (
         <DataTable columns={columns} data={filtered} />
       )}
+
+      <CertificateDownloadModal open={certOpen} onOpenChange={setCertOpen} studentName={certStudent.name} programmeName={certStudent.programme} />
     </DashboardLayout>
   );
 }
