@@ -137,12 +137,12 @@ export default function TenantLandingPage() {
           <p className="text-center text-muted-foreground mb-8 sm:mb-10">Internationally recognised qualifications</p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
-              { title: 'Level 4 Diploma in Business Management', body: 'OTHM', duration: '12 months', fee: 'Rs.520,000', credits: 120, modules: 6 },
-              { title: 'Level 5 Diploma in Business Management', body: 'OTHM', duration: '12 months', fee: 'Rs.640,000', credits: 120, modules: 6 },
-              { title: 'Level 4 Diploma in Computing', body: 'QUALIFI', duration: '12 months', fee: 'Rs.520,000', credits: 120, modules: 6 },
-              { title: 'Level 5 Diploma in Computing', body: 'QUALIFI', duration: '12 months', fee: 'Rs.640,000', credits: 120, modules: 6 },
-              { title: 'Level 3 Certificate in Accounting', body: 'IAB', duration: '9 months', fee: 'Rs.400,000', credits: 60, modules: 4 },
-              { title: 'Level 4 Diploma in Accounting', body: 'IAB', duration: '12 months', fee: 'Rs.520,000', credits: 120, modules: 6 },
+              { title: 'Level 4 Diploma in Business Management', body: 'OTHM', duration: '12 months', fee: 'Rs.720,000', credits: 120, modules: 6 },
+              { title: 'Level 5 Diploma in Business Management', body: 'OTHM', duration: '12 months', fee: 'Rs.880,000', credits: 120, modules: 6 },
+              { title: 'Level 4 Diploma in Computing', body: 'QUALIFI', duration: '12 months', fee: 'Rs.720,000', credits: 120, modules: 6 },
+              { title: 'Level 5 Diploma in Computing', body: 'QUALIFI', duration: '12 months', fee: 'Rs.880,000', credits: 120, modules: 6 },
+              { title: 'Level 3 Certificate in Accounting', body: 'IAB', duration: '9 months', fee: 'Rs.560,000', credits: 60, modules: 4 },
+              { title: 'Level 4 Diploma in Accounting', body: 'IAB', duration: '12 months', fee: 'Rs.720,000', credits: 120, modules: 6 },
             ].map((course) => (
               <div key={course.title} className="surface-card p-4 sm:p-5 hover:shadow-surface-lg transition-default cursor-pointer group">
                 <div className="flex items-center justify-between mb-3">

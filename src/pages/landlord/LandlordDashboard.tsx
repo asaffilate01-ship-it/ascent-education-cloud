@@ -199,9 +199,9 @@ export default function LandlordDashboard() {
           </h3>
           <div className="space-y-3">
             {[
-              { name: 'Starter', price: 'Rs.75,000/mo', features: 'Up to 50 students · Basic LMS · 1 Admin · Email support' },
-              { name: 'Professional', price: 'Rs.150,000/mo', features: 'Up to 500 students · Full LMS + Video + QA · 5 Admins · Agent portal · Custom branding' },
-              { name: 'Enterprise', price: 'Rs.300,000/mo', features: 'Unlimited · Full platform · Custom domain · API access · White-label · SLA' },
+              { name: 'Starter', price: 'Rs.80,000/mo', features: 'Up to 50 students · Basic LMS · 1 Admin · Email support' },
+              { name: 'Professional', price: 'Rs.200,000/mo', features: 'Up to 500 students · Full LMS + Video + QA · 5 Admins · Agent portal · Custom branding' },
+              { name: 'Enterprise', price: 'Rs.400,000/mo', features: 'Unlimited · Full platform · Custom domain · API access · White-label · SLA' },
             ].map((plan) => (
               <div key={plan.name} className="surface-data p-3 rounded-lg">
                 <div className="flex items-center justify-between mb-1">

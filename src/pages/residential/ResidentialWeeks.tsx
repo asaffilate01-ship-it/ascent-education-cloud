@@ -370,8 +370,8 @@ export default function ResidentialWeeks() {
             <TabsContent value="meals" className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[
-                  { plan: 'Full Board', meals: 'Breakfast, Lunch & Dinner', price: 'Rs.9,500/day', features: ['Hot buffet breakfast', 'Lunch with salad bar', 'Three-course dinner', 'Tea/coffee all day'] },
-                  { plan: 'Half Board', meals: 'Breakfast & Dinner', price: 'Rs.6,500/day', features: ['Hot buffet breakfast', 'Three-course dinner', 'Tea/coffee all day'] },
+                  { plan: 'Full Board', meals: 'Breakfast, Lunch & Dinner', price: 'Rs.14,000/day', features: ['Hot buffet breakfast', 'Lunch with salad bar', 'Three-course dinner', 'Tea/coffee all day'] },
+                  { plan: 'Half Board', meals: 'Breakfast & Dinner', price: 'Rs.10,000/day', features: ['Hot buffet breakfast', 'Three-course dinner', 'Tea/coffee all day'] },
                   { plan: 'Self Catering', meals: 'Kitchen Access Only', price: 'Rs.0/day', features: ['Shared kitchen facilities', 'Fridge/microwave access', 'Nearby shops within walking distance'] },
                 ].map(meal => (
                   <Card key={meal.plan}>

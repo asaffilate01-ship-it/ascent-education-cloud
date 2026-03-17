@@ -43,9 +43,9 @@ export default function TermsOfServicePage() {
             <h2 className="text-lg font-semibold text-foreground">3. Subscription Plans (Centres)</h2>
             <p>Education centres subscribe to EduCloud on a monthly basis:</p>
             <ul className="list-disc pl-5 space-y-1">
-              <li><strong>Starter (Rs.75,000/mo):</strong> Up to 50 students, basic LMS, 1 admin.</li>
-              <li><strong>Professional (Rs.150,000/mo):</strong> Up to 500 students, full platform, 5 admins.</li>
-              <li><strong>Enterprise (Rs.300,000/mo):</strong> Unlimited students, full platform, custom domain, SLA.</li>
+              <li><strong>Starter (Rs.80,000/mo):</strong> Up to 50 students, basic LMS, 1 admin.</li>
+              <li><strong>Professional (Rs.200,000/mo):</strong> Up to 500 students, full platform, 5 admins.</li>
+              <li><strong>Enterprise (Rs.400,000/mo):</strong> Unlimited students, full platform, custom domain, SLA.</li>
             </ul>
             <p>Subscriptions auto-renew unless cancelled 30 days before the billing date.</p>
           </section>
