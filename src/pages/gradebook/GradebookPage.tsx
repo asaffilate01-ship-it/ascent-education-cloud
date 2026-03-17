@@ -54,19 +54,19 @@ export default function GradebookPage() {
   const fetchData = async () => {
     if (!user) return;
     setLoading(true);
-    const queries = [
+    const [gRes, mRes, pRes] = await Promise.all([
       supabase.from('gradebook_entries').select('*').order('created_at', { ascending: false }),
       supabase.from('modules').select('*').order('title'),
       supabase.from('programmes').select('*'),
-    ];
+    ]);
+    if (gRes.data) setEntries(gRes.data as any);
+    if (mRes.data) setModules(mRes.data);
+    if (pRes.data) setProgrammes(pRes.data);
+
     if (isStaff) {
-      queries.push(supabase.from('profiles').select('user_id, full_name, email').limit(500));
+      const { data: profileData } = await supabase.from('profiles').select('user_id, full_name, email').limit(500);
+      if (profileData) setProfiles(profileData);
     }
-    const results = await Promise.all(queries);
-    if (results[0].data) setEntries(results[0].data as any);
-    if (results[1].data) setModules(results[1].data);
-    if (results[2].data) setProgrammes(results[2].data);
-    if (results[3]?.data) setProfiles(results[3].data);
     setLoading(false);
   };
 
