@@ -282,7 +282,7 @@ export default function TenantLandingPage() {
             {[
               { icon: Home, title: 'Study from Home', desc: 'Complete 2 years of your degree from the comfort of your own home. No relocation, no homesickness, no expensive rent abroad.' },
               { icon: BadgeCheck, title: 'Same Degree Certificate', desc: "Your final degree certificate is identical — it doesn't mention where you studied Years 1 & 2. Employers see the same prestigious university name." },
-              { icon: Banknote, title: 'Save Rs. 1.8+ Crore', desc: 'For a 3-year degree, save a minimum of Rs. 1.8 Crore in tuition and living costs. For 4-year degrees, savings exceed Rs. 2.5 Crore.' },
+              { icon: Banknote, title: 'Save Rs. 2+ Crore', desc: 'For a 3-year degree, save a minimum of Rs. 2 Crore in tuition and living costs. For 4-year degrees, savings exceed Rs. 3 Crore.' },
               { icon: Heart, title: 'Family & Support', desc: 'Stay close to family during the crucial first 2 years. Enjoy home-cooked meals, familiar surroundings, and zero culture shock while studying.' },
               { icon: Plane, title: 'Just 1 Year Abroad', desc: 'Fly out only for the final top-up year. Experience international campus life, build global networks, and graduate in person — all in 12 months.' },
               { icon: Globe, title: 'Global Career Options', desc: 'A UK/Australian/Canadian degree opens doors worldwide. Access post-study work visas (UK 2-year, Australia 2–4 year, Canada 3-year PGWP).' },
