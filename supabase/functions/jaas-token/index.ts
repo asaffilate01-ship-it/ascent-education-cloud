@@ -29,14 +29,23 @@ serve(async (req) => {
       });
     }
 
-    // Normalize the PEM key - handle escaped newlines or missing formatting
-    let pemKey = JAAS_API_KEY;
+    // Normalize the PEM key - handle various input formats
+    let pemKey = JAAS_API_KEY.trim();
     // Replace literal \n with actual newlines
     pemKey = pemKey.replace(/\\n/g, '\n');
-    // If the key doesn't have PEM headers, add them
-    if (!pemKey.includes('-----BEGIN')) {
-      pemKey = `-----BEGIN PRIVATE KEY-----\n${pemKey.trim()}\n-----END PRIVATE KEY-----`;
-    }
+    
+    // Extract just the base64 content and rebuild proper PEM
+    const base64Content = pemKey
+      .replace(/-----BEGIN (RSA )?PRIVATE KEY-----/g, '')
+      .replace(/-----END (RSA )?PRIVATE KEY-----/g, '')
+      .replace(/\s+/g, ''); // Remove ALL whitespace
+    
+    // Rebuild with proper PEM format (64-char lines)
+    const lines = base64Content.match(/.{1,64}/g) || [];
+    pemKey = `-----BEGIN PRIVATE KEY-----\n${lines.join('\n')}\n-----END PRIVATE KEY-----`;
+
+    console.log('PEM key first 50 chars:', pemKey.substring(0, 50));
+    console.log('PEM key length:', pemKey.length);
 
     // Import the RSA private key
     const privateKey = await jose.importPKCS8(pemKey, "RS256");
