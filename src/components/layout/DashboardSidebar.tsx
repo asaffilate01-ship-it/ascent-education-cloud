@@ -8,7 +8,8 @@ import {
   Settings, Palette, Globe, FileCheck, LogOut,
   ChevronLeft, ChevronRight, UserCheck, Calendar,
   Award, Megaphone, FileText, AlertTriangle, FolderOpen,
-  Handshake, Monitor, Clock, Cloud, Menu, X
+  Handshake, Monitor, Clock, Cloud, Menu, X,
+  Bus, Heart, Sparkles, CalendarDays
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
