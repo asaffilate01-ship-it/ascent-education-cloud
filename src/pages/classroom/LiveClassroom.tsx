@@ -210,25 +210,19 @@ export default function LiveClassroom() {
   };
 
   const startJitsi = async (modId?: string, roomOverride?: string) => {
-    const effectiveRoomName = (roomOverride ?? roomName).trim();
+    const effectiveRoomName = normalizeRoomName(roomOverride ?? roomName);
 
     if (!effectiveRoomName) { toast.error('Please enter a room name'); return; }
-    if (!window.JitsiMeetExternalAPI) { toast.error('Video system is still loading. Please try again.'); return; }
 
     setRoomName(effectiveRoomName);
     setIsLoading(true);
     setIsInSession(true);
 
-    // Only lecturers persist the session (students just join)
     const id = isLecturer ? await persistSession(effectiveRoomName, modId) : null;
     setSessionId(id);
 
-    // Wait one tick so the container div is rendered by React
-    await new Promise(resolve => setTimeout(resolve, 100));
-
     try {
-      // Get JaaS JWT token from edge function
-      const fullRoomName = `EduCloud-${effectiveRoomName}`;
+      const fullRoomName = buildJaasRoomName(effectiveRoomName);
       const { data: tokenData, error: tokenError } = await supabase.functions.invoke('jaas-token', {
         body: {
           roomName: fullRoomName,
@@ -236,15 +230,26 @@ export default function LiveClassroom() {
           email: user?.email || '',
           isModerator: isLecturer,
           avatarUrl: user?.avatarUrl || '',
+          userId: user?.id || '',
         },
       });
 
       if (tokenError || !tokenData?.token || !tokenData?.appId) {
         console.error('JaaS token error:', tokenError);
+        await abandonSession(id);
         toast.error('Failed to authenticate video session');
         setIsLoading(false);
         setIsInSession(false);
+        setSessionId(null);
         return;
+      }
+
+      await loadJitsiApi(tokenData.appId);
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      if (!jitsiContainerRef.current || !window.JitsiMeetExternalAPI) {
+        throw new Error('Video container unavailable');
       }
 
       const api = new window.JitsiMeetExternalAPI('8x8.vc', {
@@ -283,10 +288,36 @@ export default function LiveClassroom() {
           MOBILE_APP_PROMO: false,
         },
       });
+
+      let joinedConference = false;
+      const handleJoinFailure = async (event: unknown) => {
+        if (joinedConference) return;
+
+        console.error('Jitsi join error:', event);
+        api.dispose();
+        jitsiApiRef.current = null;
+        await abandonSession(id);
+        setIsLoading(false);
+        setIsInSession(false);
+        setSessionId(null);
+        toast.error('Meeting authentication failed. Please retry joining the classroom.');
+      };
+
       api.addEventListener('participantJoined', () => setParticipantCount(c => c + 1));
       api.addEventListener('participantLeft', () => setParticipantCount(c => Math.max(0, c - 1)));
-      api.addEventListener('videoConferenceJoined', () => { setIsInSession(true); setIsLoading(false); setParticipantCount(1); });
-      api.addEventListener('readyToClose', () => endSession());
+      api.addEventListener('videoConferenceJoined', () => {
+        joinedConference = true;
+        setIsInSession(true);
+        setIsLoading(false);
+        setParticipantCount(1);
+      });
+      api.addEventListener('errorOccurred', (event: any) => {
+        const details = JSON.stringify(event).toLowerCase();
+        if (/notallowed|authentication|token|conference\.connectionerror\.notallowed/.test(details)) {
+          void handleJoinFailure(event);
+        }
+      });
+      api.addEventListener('readyToClose', () => { void endSession(); });
       api.addEventListener('recordingStatusChanged', (event: any) => {
         if (event.on) toast.success('Recording started');
         else toast.info('Recording stopped');
@@ -294,9 +325,11 @@ export default function LiveClassroom() {
       jitsiApiRef.current = api;
     } catch (err) {
       console.error('Jitsi error:', err);
+      await abandonSession(id);
       toast.error('Failed to start video session');
       setIsLoading(false);
       setIsInSession(false);
+      setSessionId(null);
     }
   };
 

@@ -59,6 +59,7 @@ serve(async (req) => {
       room: roomName,
       context: {
         user: {
+          id: userId || crypto.randomUUID(),
           name: displayName,
           email: email || "",
           avatar: avatarUrl || "",
@@ -71,9 +72,12 @@ serve(async (req) => {
           "outbound-call": "false",
           "sip-outbound-call": "false",
         },
+        room: {
+          regex: false,
+        },
       },
     })
-      .setProtectedHeader({ alg: "RS256", kid: `${JAAS_APP_ID}/${JAAS_KEY_ID}` })
+      .setProtectedHeader({ alg: "RS256", kid: `${JAAS_APP_ID}/${JAAS_KEY_ID}`, typ: "JWT" })
       .setIssuedAt(now)
       .setExpirationTime(now + 3600) // 1 hour
       .setNotBefore(now)
