@@ -90,7 +90,7 @@ export default function LandlordDashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Total Centres" value={tenants.length} change={`${activeTenants} active`} changeType="positive" icon={Building2} />
         <StatCard label="Total Students" value={totalStudents.toLocaleString()} icon={GraduationCap} />
-        <StatCard label="Platform MRR" value={`£${totalMRR.toLocaleString()}`} changeType="positive" icon={CreditCard} />
+        <StatCard label="Platform MRR" value={`Rs.${totalMRR.toLocaleString()}`} changeType="positive" icon={CreditCard} />
         <StatCard label="Platform Health" value="99.8%" change="Uptime (30d)" changeType="positive" icon={Shield} />
       </div>
 
