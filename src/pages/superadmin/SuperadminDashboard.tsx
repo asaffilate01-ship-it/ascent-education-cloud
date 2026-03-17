@@ -42,7 +42,7 @@ export default function SuperadminDashboard() {
     { key: 'plan' as const, label: 'Plan', render: (t: any) => <span className="capitalize text-sm">{t.plan}</span> },
     { key: 'status' as const, label: 'Status', render: (t: any) => <StatusBadge status={t.status} variant={statusVariant(t.status)} /> },
     { key: 'students_count' as const, label: 'Students', render: (t: any) => <span className="font-medium">{(t.students_count || 0).toLocaleString()}</span> },
-    { key: 'monthly_revenue' as const, label: 'MRR', render: (t: any) => <span className="font-medium">£{(Number(t.monthly_revenue) || 0).toLocaleString()}</span> },
+    { key: 'monthly_revenue' as const, label: 'MRR', render: (t: any) => <span className="font-medium">Rs.{(Number(t.monthly_revenue) || 0).toLocaleString()}</span> },
     { key: 'created_at' as const, label: 'Joined', render: (t: any) => new Date(t.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) },
   ];
 
