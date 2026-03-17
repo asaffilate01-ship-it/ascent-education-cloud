@@ -128,7 +128,7 @@ export default function AnalyticsDashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Total Enrolled" value={String(stats.totalEnrolled)} icon={GraduationCap} />
         <StatCard label="Avg Attendance" value={`${stats.avgAttendance}%`} icon={Calendar} />
-        <StatCard label="Revenue Collected" value={`£${stats.totalRevenue.toLocaleString()}`} icon={CreditCard} />
+        <StatCard label="Revenue Collected" value={`Rs.${stats.totalRevenue.toLocaleString()}`} icon={CreditCard} />
         <StatCard label="Conversion Rate" value={`${stats.conversionRate}%`} change="Lead → Enrolled" changeType="positive" icon={Target} />
       </div>
 
@@ -158,8 +158,8 @@ export default function AnalyticsDashboard() {
             <AreaChart data={revenueData}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(0, 8%, 90%)" />
               <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="hsl(0, 5%, 45%)" />
-              <YAxis tick={{ fontSize: 11 }} stroke="hsl(0, 5%, 45%)" tickFormatter={(v) => `£${(v/1000).toFixed(0)}k`} />
-              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} formatter={(value: number) => [`£${value.toLocaleString()}`, '']} />
+              <YAxis tick={{ fontSize: 11 }} stroke="hsl(0, 5%, 45%)" tickFormatter={(v) => `Rs.${(v/1000).toFixed(0)}k`} />
+              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} formatter={(value: number) => [`Rs.${value.toLocaleString()}`, '']} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
               <Area type="monotone" dataKey="tuition" name="Tuition" stackId="1" fill="hsl(0, 72%, 45%)" stroke="hsl(0, 72%, 45%)" fillOpacity={0.6} />
               <Area type="monotone" dataKey="commissions" name="Commissions" stackId="1" fill="hsl(0, 60%, 65%)" stroke="hsl(0, 60%, 65%)" fillOpacity={0.6} />

@@ -16,11 +16,11 @@ const STEPS = [
 ];
 
 const PROGRAMMES = [
-  { id: '1', title: 'Level 5 Diploma in Business Management', body: 'OTHM', fee: '£1,200', duration: '12 months', level: 'Level 5' },
-  { id: '2', title: 'Level 4 Diploma in Business Management', body: 'OTHM', fee: '£1,200', duration: '12 months', level: 'Level 4' },
-  { id: '3', title: 'Level 5 Diploma in Computing', body: 'QUALIFI', fee: '£1,200', duration: '12 months', level: 'Level 5' },
-  { id: '4', title: 'Level 4 Diploma in Computing', body: 'QUALIFI', fee: '£1,200', duration: '12 months', level: 'Level 4' },
-  { id: '5', title: 'Level 3 Diploma in Accounting', body: 'IAB', fee: '£800', duration: '6 months', level: 'Level 3' },
+  { id: '1', title: 'Level 5 Diploma in Business Management', body: 'OTHM', fee: 'Rs.350,000', duration: '12 months', level: 'Level 5' },
+  { id: '2', title: 'Level 4 Diploma in Business Management', body: 'OTHM', fee: 'Rs.350,000', duration: '12 months', level: 'Level 4' },
+  { id: '3', title: 'Level 5 Diploma in Computing', body: 'QUALIFI', fee: 'Rs.350,000', duration: '12 months', level: 'Level 5' },
+  { id: '4', title: 'Level 4 Diploma in Computing', body: 'QUALIFI', fee: 'Rs.350,000', duration: '12 months', level: 'Level 4' },
+  { id: '5', title: 'Level 3 Diploma in Accounting', body: 'IAB', fee: 'Rs.250,000', duration: '6 months', level: 'Level 3' },
 ];
 
 const REQUIRED_DOCS = [
@@ -474,12 +474,12 @@ export default function StudentApplication() {
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="surface-data p-4 rounded-lg">
                     <p className="text-[10px] text-muted-foreground uppercase">Application Fee</p>
-                    <p className="text-xl font-bold text-primary">£50</p>
+                    <p className="text-xl font-bold text-primary">Rs.15,000</p>
                     <p className="text-xs text-muted-foreground mt-1">Non-refundable</p>
                   </div>
                   <div className="surface-data p-4 rounded-lg">
                     <p className="text-[10px] text-muted-foreground uppercase">Deposit</p>
-                    <p className="text-xl font-bold text-primary">£200</p>
+                    <p className="text-xl font-bold text-primary">Rs.50,000</p>
                     <p className="text-xs text-muted-foreground mt-1">Deducted from tuition</p>
                   </div>
                 </div>

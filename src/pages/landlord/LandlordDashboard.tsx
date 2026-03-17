@@ -65,7 +65,7 @@ export default function LandlordDashboard() {
     )},
     { key: 'status', label: 'Status', render: (t: any) => <StatusBadge status={t.status} variant={statusVariant(t.status)} /> },
     { key: 'students_count', label: 'Students', render: (t: any) => <span className="font-medium">{(t.students_count || 0).toLocaleString()}</span> },
-    { key: 'monthly_revenue', label: 'MRR', render: (t: any) => <span className="font-medium text-primary">£{Number(t.monthly_revenue || 0).toLocaleString()}</span> },
+    { key: 'monthly_revenue', label: 'MRR', render: (t: any) => <span className="font-medium text-primary">Rs.{Number(t.monthly_revenue || 0).toLocaleString()}</span> },
     { key: 'created_at', label: 'Joined', render: (t: any) => new Date(t.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) },
   ];
 
@@ -90,7 +90,7 @@ export default function LandlordDashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Total Centres" value={tenants.length} change={`${activeTenants} active`} changeType="positive" icon={Building2} />
         <StatCard label="Total Students" value={totalStudents.toLocaleString()} icon={GraduationCap} />
-        <StatCard label="Platform MRR" value={`£${totalMRR.toLocaleString()}`} changeType="positive" icon={CreditCard} />
+        <StatCard label="Platform MRR" value={`Rs.${totalMRR.toLocaleString()}`} changeType="positive" icon={CreditCard} />
         <StatCard label="Platform Health" value="99.8%" change="Uptime (30d)" changeType="positive" icon={Shield} />
       </div>
 
@@ -102,7 +102,7 @@ export default function LandlordDashboard() {
               <div key={p.plan}>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="font-medium capitalize">{p.plan}</span>
-                  <span className="text-muted-foreground">{p.tenants} centres · £{p.mrr.toLocaleString()}/mo</span>
+                  <span className="text-muted-foreground">{p.tenants} centres · Rs.{p.mrr.toLocaleString()}/mo</span>
                 </div>
                 <div className="w-full h-2 bg-border rounded-full">
                   <div className="h-full bg-primary rounded-full transition-default" style={{ width: `${p.pct}%` }} />
@@ -161,8 +161,8 @@ export default function LandlordDashboard() {
             <LineChart data={mrrTrend}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-              <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `£${(v/1000).toFixed(0)}k`} />
-              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} formatter={(v: number) => [`£${v.toLocaleString()}`, 'MRR']} />
+              <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `Rs.${(v/1000).toFixed(0)}k`} />
+              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} formatter={(v: number) => [`Rs.${v.toLocaleString()}`, 'MRR']} />
               <Line type="monotone" dataKey="mrr" name="MRR" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ r: 3, fill: 'hsl(var(--primary))' }} />
             </LineChart>
           </ResponsiveContainer>
@@ -199,9 +199,9 @@ export default function LandlordDashboard() {
           </h3>
           <div className="space-y-3">
             {[
-              { name: 'Starter', price: '£200/mo', features: 'Up to 50 students · Basic LMS · 1 Admin · Email support' },
-              { name: 'Professional', price: '£500/mo', features: 'Up to 500 students · Full LMS + Video + QA · 5 Admins · Agent portal · Custom branding' },
-              { name: 'Enterprise', price: '£1,000/mo', features: 'Unlimited · Full platform · Custom domain · API access · White-label · SLA' },
+              { name: 'Starter', price: 'Rs.75,000/mo', features: 'Up to 50 students · Basic LMS · 1 Admin · Email support' },
+              { name: 'Professional', price: 'Rs.150,000/mo', features: 'Up to 500 students · Full LMS + Video + QA · 5 Admins · Agent portal · Custom branding' },
+              { name: 'Enterprise', price: 'Rs.300,000/mo', features: 'Unlimited · Full platform · Custom domain · API access · White-label · SLA' },
             ].map((plan) => (
               <div key={plan.name} className="surface-data p-3 rounded-lg">
                 <div className="flex items-center justify-between mb-1">

@@ -89,7 +89,7 @@ export default function CentreDirectorDashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Total Students" value={String(totalStudents)} icon={GraduationCap} />
         <StatCard label="Active Programmes" value={String(activeProgrammes.length)} icon={BookOpen} />
-        <StatCard label="Revenue Collected" value={`£${totalCollected.toLocaleString()}`} icon={CreditCard} />
+        <StatCard label="Revenue Collected" value={`Rs.${totalCollected.toLocaleString()}`} icon={CreditCard} />
         <StatCard label="Invoices" value={String(invoices.length)} icon={FileCheck} />
       </div>
 
@@ -137,10 +137,10 @@ export default function CentreDirectorDashboard() {
           </h3>
           <div className="space-y-3">
             {[
-              { label: 'Total Billed', value: `£${totalBilled.toLocaleString()}` },
-              { label: 'Collected', value: `£${totalCollected.toLocaleString()}` },
-              { label: 'Outstanding', value: `£${outstanding.toLocaleString()}`, sub: `${overdueCount} overdue` },
-              { label: 'Commissions', value: `£${commissions.toLocaleString()}` },
+              { label: 'Total Billed', value: `Rs.${totalBilled.toLocaleString()}` },
+              { label: 'Collected', value: `Rs.${totalCollected.toLocaleString()}` },
+              { label: 'Outstanding', value: `Rs.${outstanding.toLocaleString()}`, sub: `${overdueCount} overdue` },
+              { label: 'Commissions', value: `Rs.${commissions.toLocaleString()}` },
             ].map((f) => (
               <div key={f.label} className="flex items-center justify-between py-1">
                 <div>
@@ -164,8 +164,8 @@ export default function CentreDirectorDashboard() {
             <AreaChart data={revenueTrend}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-              <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `£${(v/1000).toFixed(0)}k`} />
-              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} formatter={(v: number) => [`£${v.toLocaleString()}`, '']} />
+              <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `Rs.${(v/1000).toFixed(0)}k`} />
+              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} formatter={(v: number) => [`Rs.${v.toLocaleString()}`, '']} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
               <Area type="monotone" dataKey="billed" name="Billed" fill="hsl(var(--muted-foreground))" stroke="hsl(var(--muted-foreground))" fillOpacity={0.2} />
               <Area type="monotone" dataKey="collected" name="Collected" fill="hsl(var(--primary))" stroke="hsl(var(--primary))" fillOpacity={0.4} />

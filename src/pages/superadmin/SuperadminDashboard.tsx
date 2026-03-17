@@ -42,7 +42,7 @@ export default function SuperadminDashboard() {
     { key: 'plan' as const, label: 'Plan', render: (t: any) => <span className="capitalize text-sm">{t.plan}</span> },
     { key: 'status' as const, label: 'Status', render: (t: any) => <StatusBadge status={t.status} variant={statusVariant(t.status)} /> },
     { key: 'students_count' as const, label: 'Students', render: (t: any) => <span className="font-medium">{(t.students_count || 0).toLocaleString()}</span> },
-    { key: 'monthly_revenue' as const, label: 'MRR', render: (t: any) => <span className="font-medium">£{(Number(t.monthly_revenue) || 0).toLocaleString()}</span> },
+    { key: 'monthly_revenue' as const, label: 'MRR', render: (t: any) => <span className="font-medium">Rs.{(Number(t.monthly_revenue) || 0).toLocaleString()}</span> },
     { key: 'created_at' as const, label: 'Joined', render: (t: any) => new Date(t.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) },
   ];
 
@@ -56,7 +56,7 @@ export default function SuperadminDashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Total Tenants" value={loading ? '...' : String(stats.totalTenants)} change={`${stats.activeTenants} active`} changeType="positive" icon={Building2} />
         <StatCard label="Total Students" value={loading ? '...' : stats.totalStudents.toLocaleString()} icon={GraduationCap} />
-        <StatCard label="Monthly Revenue" value={loading ? '...' : `£${stats.totalMRR.toLocaleString()}`} icon={CreditCard} />
+        <StatCard label="Monthly Revenue" value={loading ? '...' : `Rs.${stats.totalMRR.toLocaleString()}`} icon={CreditCard} />
         <StatCard label="Platform Users" value={loading ? '...' : String(stats.totalUsers)} icon={Users} />
       </div>
 

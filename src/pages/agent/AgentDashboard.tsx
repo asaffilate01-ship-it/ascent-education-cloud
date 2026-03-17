@@ -57,10 +57,10 @@ export default function AgentDashboard() {
       }
     >
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard label="Pipeline Value" value={`£${pipelineValue.toLocaleString()}`} icon={TrendingUp} />
+        <StatCard label="Pipeline Value" value={`Rs.${pipelineValue.toLocaleString()}`} icon={TrendingUp} />
         <StatCard label="Active Leads" value={myApps.filter(a => a.stage !== 'enrolled' && a.stage !== 'lost').length} icon={Users} />
         <StatCard label="Enrolled" value={enrolledCount} change="confirmed" changeType="positive" icon={UserPlus} />
-        <StatCard label="Earned Commission" value={`£${totalEarned.toLocaleString()}`} change="Paid" changeType="positive" icon={CreditCard} />
+        <StatCard label="Earned Commission" value={`Rs.${totalEarned.toLocaleString()}`} change="Paid" changeType="positive" icon={CreditCard} />
       </div>
 
       {/* Search */}
@@ -116,7 +116,7 @@ export default function AgentDashboard() {
             <div key={inv.id} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
               <div>
                 <p className="text-sm font-medium">{inv.student_name}</p>
-                <p className="text-xs text-muted-foreground">£{Number(inv.amount).toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground">Rs.{Number(inv.amount).toLocaleString()}</p>
               </div>
               <div className="flex items-center gap-2">
                 <StatusBadge status={inv.status} variant={inv.status === 'overdue' ? 'danger' : 'warning'} />

@@ -338,9 +338,9 @@ export default function ResidentialWeeks() {
             <TabsContent value="accommodation" className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[
-                  { type: 'Single Room', desc: 'Private en-suite room with study desk, Wi-Fi, and daily housekeeping', icon: BedDouble, price: '£45/night' },
-                  { type: 'Shared Dormitory (Male)', desc: '4-bed male-only dormitory with shared bathroom facilities', icon: Users, price: '£25/night' },
-                  { type: 'Shared Dormitory (Female)', desc: '4-bed female-only dormitory with shared bathroom facilities', icon: Users, price: '£25/night' },
+                  { type: 'Single Room', desc: 'Private en-suite room with study desk, Wi-Fi, and daily housekeeping', icon: BedDouble, price: 'Rs.12,000/night' },
+                  { type: 'Shared Dormitory (Male)', desc: '4-bed male-only dormitory with shared bathroom facilities', icon: Users, price: 'Rs.7,000/night' },
+                  { type: 'Shared Dormitory (Female)', desc: '4-bed female-only dormitory with shared bathroom facilities', icon: Users, price: 'Rs.7,000/night' },
                 ].map(room => (
                   <Card key={room.type} className="hover:shadow-md transition-shadow">
                     <CardContent className="pt-6 text-center space-y-3">
@@ -370,9 +370,9 @@ export default function ResidentialWeeks() {
             <TabsContent value="meals" className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[
-                  { plan: 'Full Board', meals: 'Breakfast, Lunch & Dinner', price: '£35/day', features: ['Hot buffet breakfast', 'Lunch with salad bar', 'Three-course dinner', 'Tea/coffee all day'] },
-                  { plan: 'Half Board', meals: 'Breakfast & Dinner', price: '£25/day', features: ['Hot buffet breakfast', 'Three-course dinner', 'Tea/coffee all day'] },
-                  { plan: 'Self Catering', meals: 'Kitchen Access Only', price: '£0/day', features: ['Shared kitchen facilities', 'Fridge/microwave access', 'Nearby shops within walking distance'] },
+                  { plan: 'Full Board', meals: 'Breakfast, Lunch & Dinner', price: 'Rs.9,500/day', features: ['Hot buffet breakfast', 'Lunch with salad bar', 'Three-course dinner', 'Tea/coffee all day'] },
+                  { plan: 'Half Board', meals: 'Breakfast & Dinner', price: 'Rs.6,500/day', features: ['Hot buffet breakfast', 'Three-course dinner', 'Tea/coffee all day'] },
+                  { plan: 'Self Catering', meals: 'Kitchen Access Only', price: 'Rs.0/day', features: ['Shared kitchen facilities', 'Fridge/microwave access', 'Nearby shops within walking distance'] },
                 ].map(meal => (
                   <Card key={meal.plan}>
                     <CardContent className="pt-6 space-y-3">
