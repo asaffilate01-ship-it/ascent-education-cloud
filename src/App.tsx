@@ -70,6 +70,7 @@ import SettingsPage from "./pages/settings/SettingsPage";
 
 // External portals
 import AgentDashboard from "./pages/agent/AgentDashboard";
+import AgentResources from "./pages/agent/AgentResources";
 import UniversityPartnerPortal from "./pages/partner/UniversityPartnerPortal";
 import EmployerPortal from "./pages/employer/EmployerPortal";
 
@@ -223,7 +224,7 @@ function AppRoutes() {
       <Route path="/agent/applications" element={<P><AgentDashboard /></P>} />
       <Route path="/agent/commissions" element={<P><AgentDashboard /></P>} />
       <Route path="/agent/onboarding" element={<P><AgentDashboard /></P>} />
-      <Route path="/agent/resources" element={<P><StudentLibrary /></P>} />
+      <Route path="/agent/resources" element={<P><AgentResources /></P>} />
       <Route path="/agent/messages" element={<P><MessagingInbox /></P>} />
 
       {/* ========== EXTERNAL: Student ========== */}
