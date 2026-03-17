@@ -71,7 +71,7 @@ export default function TenantAdminDashboard() {
                   <div>
                     <p className="text-sm font-medium">{inv.student_name}</p>
                     <p className="text-xs text-muted-foreground">
-                      £{Number(inv.amount).toLocaleString()} · Due {inv.due_date ? new Date(inv.due_date).toLocaleDateString() : 'N/A'}
+                      Rs.{Number(inv.amount).toLocaleString()} · Due {inv.due_date ? new Date(inv.due_date).toLocaleDateString() : 'N/A'}
                     </p>
                   </div>
                   <StatusBadge

@@ -116,7 +116,7 @@ export default function AgentDashboard() {
             <div key={inv.id} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
               <div>
                 <p className="text-sm font-medium">{inv.student_name}</p>
-                <p className="text-xs text-muted-foreground">£{Number(inv.amount).toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground">Rs.{Number(inv.amount).toLocaleString()}</p>
               </div>
               <div className="flex items-center gap-2">
                 <StatusBadge status={inv.status} variant={inv.status === 'overdue' ? 'danger' : 'warning'} />

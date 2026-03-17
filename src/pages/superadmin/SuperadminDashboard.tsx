@@ -56,7 +56,7 @@ export default function SuperadminDashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Total Tenants" value={loading ? '...' : String(stats.totalTenants)} change={`${stats.activeTenants} active`} changeType="positive" icon={Building2} />
         <StatCard label="Total Students" value={loading ? '...' : stats.totalStudents.toLocaleString()} icon={GraduationCap} />
-        <StatCard label="Monthly Revenue" value={loading ? '...' : `£${stats.totalMRR.toLocaleString()}`} icon={CreditCard} />
+        <StatCard label="Monthly Revenue" value={loading ? '...' : `Rs.${stats.totalMRR.toLocaleString()}`} icon={CreditCard} />
         <StatCard label="Platform Users" value={loading ? '...' : String(stats.totalUsers)} icon={Users} />
       </div>
 

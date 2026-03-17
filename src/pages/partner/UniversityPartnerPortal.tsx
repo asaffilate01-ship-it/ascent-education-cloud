@@ -92,7 +92,7 @@ export default function UniversityPartnerPortal() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-bold text-primary">£{Number(c.amount).toLocaleString()}</p>
+                  <p className="text-sm font-bold text-primary">Rs.{Number(c.amount).toLocaleString()}</p>
                   <StatusBadge status={c.status === 'paid' ? 'Paid' : 'Pending'} variant={c.status === 'paid' ? 'success' : 'warning'} />
                 </div>
               </div>
