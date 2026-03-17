@@ -165,7 +165,7 @@ export default function LessonPlanBuilder() {
             return (
               <div key={plan.id} className="surface-card p-5 hover:shadow-lg transition-all group">
                 <div className="flex items-start justify-between mb-3">
-                  <StatusBadge status={plan.status} variant={plan.status === 'published' ? 'success' : plan.status === 'completed' ? 'default' : 'warning'} />
+                  <StatusBadge status={plan.status} variant={plan.status === 'published' ? 'success' : plan.status === 'completed' ? 'neutral' : 'warning'} />
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
                     <button onClick={() => setViewPlan(plan)} className="p-1 rounded hover:bg-secondary"><Eye className="w-3.5 h-3.5" /></button>
                     {isLecturer && <button onClick={() => handleEdit(plan)} className="p-1 rounded hover:bg-secondary"><Edit className="w-3.5 h-3.5" /></button>}

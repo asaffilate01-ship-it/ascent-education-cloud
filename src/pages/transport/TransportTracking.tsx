@@ -132,7 +132,7 @@ export default function TransportTracking() {
                       <Bus className="w-5 h-5 text-primary" />
                       <span className="font-bold text-sm">{v.vehicle_number}</span>
                     </div>
-                    <StatusBadge status={v.status} variant={v.status === 'active' ? 'success' : v.status === 'maintenance' ? 'warning' : 'default'} />
+                    <StatusBadge status={v.status} variant={v.status === 'active' ? 'success' : v.status === 'maintenance' ? 'warning' : 'neutral'} />
                   </div>
                   <div className="space-y-1 text-xs text-muted-foreground">
                     <p>Type: <span className="capitalize text-foreground">{v.vehicle_type}</span> · Capacity: <span className="text-foreground">{v.capacity}</span></p>

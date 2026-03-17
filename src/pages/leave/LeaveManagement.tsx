@@ -150,7 +150,7 @@ export default function LeaveManagement() {
                   <td className="px-4 py-3 text-xs text-muted-foreground">{new Date(leave.start_date).toLocaleDateString()}</td>
                   <td className="px-4 py-3 text-xs text-muted-foreground">{new Date(leave.end_date).toLocaleDateString()}</td>
                   <td className="px-4 py-3 text-sm font-semibold">{leave.days_count}</td>
-                  <td className="px-4 py-3"><StatusBadge status={leave.status} variant={leave.status === 'approved' ? 'success' : leave.status === 'rejected' ? 'destructive' : 'warning'} /></td>
+                  <td className="px-4 py-3"><StatusBadge status={leave.status} variant={leave.status === 'approved' ? 'success' : leave.status === 'rejected' ? 'danger' : 'warning'} /></td>
                   {isDirector && (
                     <td className="px-4 py-3">
                       {leave.status === 'pending' && (

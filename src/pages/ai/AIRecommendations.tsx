@@ -142,10 +142,10 @@ export default function AIRecommendations() {
       }
     >
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <StatCard title="At-Risk Students" value={analytics.atRisk.length} icon={AlertTriangle} trend={analytics.atRisk.length > 0 ? 'down' : 'up'} />
-        <StatCard title="Need Study Help" value={analytics.studyRecs.length} icon={BookOpen} trend="neutral" />
-        <StatCard title="University Ready" value={analytics.careerPaths.length} icon={GraduationCap} trend="up" />
-        <StatCard title="Staff Tracked" value={analytics.lecturerWorkload.length} icon={Users} trend="neutral" />
+        <StatCard label="At-Risk Students" value={analytics.atRisk.length} icon={AlertTriangle} change={analytics.atRisk.length > 0 ? '↓ needs attention' : '✓ all clear'} changeType={analytics.atRisk.length > 0 ? 'negative' : 'positive'} />
+        <StatCard label="Need Study Help" value={analytics.studyRecs.length} icon={BookOpen} />
+        <StatCard label="University Ready" value={analytics.careerPaths.length} icon={GraduationCap} change="↑" changeType="positive" />
+        <StatCard label="Staff Tracked" value={analytics.lecturerWorkload.length} icon={Users} />
       </div>
 
       <Tabs defaultValue="at-risk">

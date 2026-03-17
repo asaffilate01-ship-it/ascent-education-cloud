@@ -260,6 +260,14 @@ function AppRoutes() {
       <Route path="/audit" element={<P><AuditLog /></P>} />
       <Route path="/compliance" element={<P><ComplianceDashboard /></P>} />
 
+      {/* ========== NEW FEATURE PAGES ========== */}
+      <Route path="/calendar" element={<P><AcademicCalendar /></P>} />
+      <Route path="/lesson-plans" element={<P><LessonPlanBuilder /></P>} />
+      <Route path="/leave" element={<P><LeaveManagement /></P>} />
+      <Route path="/health" element={<P><HealthRecords /></P>} />
+      <Route path="/transport" element={<P><TransportTracking /></P>} />
+      <Route path="/ai-recommendations" element={<P><AIRecommendations /></P>} />
+
       {/* ========== PARENT/GUARDIAN ========== */}
       <Route path="/parent" element={<P><ParentDashboard /></P>} />
       <Route path="/parent/progress" element={<P><ParentDashboard /></P>} />
