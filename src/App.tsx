@@ -64,6 +64,7 @@ const StudentOnboarding = lazy(() => import("./pages/onboarding/StudentOnboardin
 const LecturerOnboarding = lazy(() => import("./pages/onboarding/LecturerOnboarding"));
 const ResidentialWeeks = lazy(() => import("./pages/residential/ResidentialWeeks"));
 const AuditLog = lazy(() => import("./pages/audit/AuditLog"));
+const MyActivityLog = lazy(() => import("./pages/audit/MyActivityLog"));
 const ComplianceDashboard = lazy(() => import("./pages/compliance/ComplianceDashboard"));
 const ScheduleManager = lazy(() => import("./pages/schedule/ScheduleManager"));
 const AcademicTimeline = lazy(() => import("./pages/schedule/AcademicTimeline"));
@@ -297,7 +298,8 @@ function AppRoutes() {
         <Route path="/onboarding" element={<P><StudentOnboarding /></P>} />
         <Route path="/onboarding/lecturer" element={<LecturerR><LecturerOnboarding /></LecturerR>} />
         <Route path="/residential" element={<P><ResidentialWeeks /></P>} />
-        <Route path="/audit" element={<Landlord><AuditLog /></Landlord>} />
+        <Route path="/audit" element={<Director><AuditLog /></Director>} />
+        <Route path="/my-activity" element={<P><MyActivityLog /></P>} />
         <Route path="/compliance" element={<QA><ComplianceDashboard /></QA>} />
 
         {/* ========== NEW FEATURE PAGES ========== */}
