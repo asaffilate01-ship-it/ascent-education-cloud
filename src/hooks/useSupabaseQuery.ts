@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 
-type TableName = 'applications' | 'invoices' | 'programmes' | 'modules' | 'profiles' | 'tenants' | 'attendance_records' | 'user_roles' | 'assignments' | 'submissions' | 'notifications' | 'conversations' | 'conversation_participants' | 'messages' | 'leave_requests' | 'lesson_plans' | 'transport_vehicles' | 'transport_routes' | 'transport_assignments' | 'health_records' | 'academic_events' | 'resource_view_logs';
+type TableName = 'applications' | 'invoices' | 'programmes' | 'modules' | 'profiles' | 'tenants' | 'attendance_records' | 'user_roles' | 'assignments' | 'submissions' | 'notifications' | 'conversations' | 'conversation_participants' | 'messages' | 'leave_requests' | 'lesson_plans' | 'transport_vehicles' | 'transport_routes' | 'transport_assignments' | 'health_records' | 'academic_events' | 'resource_view_logs' | 'scheduled_lectures' | 'lecture_reminders' | 'student_enrolments';
 
 export function useSupabaseQuery<T extends TableName>(
   table: T,
