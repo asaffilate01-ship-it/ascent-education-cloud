@@ -302,6 +302,19 @@ function AppRoutes() {
         <Route path="/health" element={<P><HealthRecords /></P>} />
         <Route path="/transport" element={<P><TransportTracking /></P>} />
         <Route path="/ai-recommendations" element={<P><AIRecommendations /></P>} />
+        <Route path="/quizzes" element={<P><QuizDashboard /></P>} />
+        <Route path="/forums" element={<P><ForumPage /></P>} />
+        <Route path="/gradebook" element={<P><GradebookPage /></P>} />
+
+        {/* Lecturer-specific routes for new features */}
+        <Route path="/lecturer/quizzes" element={<LecturerR><QuizDashboard /></LecturerR>} />
+        <Route path="/lecturer/forums" element={<LecturerR><ForumPage /></LecturerR>} />
+        <Route path="/lecturer/gradebook" element={<LecturerR><GradebookPage /></LecturerR>} />
+
+        {/* Student-specific routes for new features */}
+        <Route path="/student/quizzes" element={<StudentR><QuizDashboard /></StudentR>} />
+        <Route path="/student/forums" element={<StudentR><ForumPage /></StudentR>} />
+        <Route path="/student/gradebook" element={<StudentR><GradebookPage /></StudentR>} />
 
         {/* ========== PARENT/GUARDIAN ========== */}
         <Route path="/parent" element={<ParentR><ParentDashboard /></ParentR>} />
