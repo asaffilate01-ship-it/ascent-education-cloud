@@ -39,7 +39,7 @@ export default function ParentDashboard() {
 
       const enriched: LinkedStudent[] = await Promise.all(links.map(async (link: any) => {
         const { data: profile } = await supabase.from('profiles').select('full_name, email').eq('user_id', link.student_id).single();
-        const { data: subs } = await supabase.from('submissions').select('grade').eq('student_id', link.student_id).not('grade', 'is', null);
+        const { data: subs } = await supabase.from('submissions').select('grade, assignment_id').eq('student_id', link.student_id).not('grade', 'is', null);
         const { data: attendance } = await supabase.from('attendance_records').select('status').eq('student_id', link.student_id);
         const { count: pendingInvoices } = await supabase.from('invoices').select('*', { count: 'exact', head: true }).eq('student_id', link.student_id).eq('status', 'pending');
 
@@ -51,7 +51,7 @@ export default function ParentDashboard() {
           relationship: link.relationship,
           verified: link.verified,
           profile: profile || { full_name: 'Unknown', email: '' },
-          grades: subs || [],
+          grades: (subs || []).map((s: any) => ({ assignment_title: s.assignment_id || 'Assignment', grade: s.grade })),
           attendance_rate: Math.round((presentCount / totalCount) * 100),
           invoices_pending: pendingInvoices || 0,
         };
