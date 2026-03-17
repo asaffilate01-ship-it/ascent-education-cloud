@@ -2,11 +2,12 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatusBadge from '@/components/ui/StatusBadge';
 import DataTable from '@/components/ui/DataTable';
 import StatCard from '@/components/ui/StatCard';
-import { GraduationCap, UserPlus, Search, BookOpen, CreditCard, BarChart3 } from 'lucide-react';
+import { GraduationCap, UserPlus, Search, BookOpen, CreditCard, BarChart3, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
+import CertificateDownloadModal from '@/components/modals/CertificateDownloadModal';
 
 interface StudentRow {
   id: string;
@@ -24,6 +25,8 @@ export default function StudentManagement() {
   const [search, setSearch] = useState('');
   const [students, setStudents] = useState<StudentRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [certOpen, setCertOpen] = useState(false);
+  const [certStudent, setCertStudent] = useState<{ name: string; programme: string }>({ name: '', programme: '' });
 
   useEffect(() => {
     async function load() {
@@ -162,6 +165,13 @@ export default function StudentManagement() {
         variant={s.status === 'active' ? 'success' : s.status === 'completed' ? 'info' : 'neutral'}
       />
     )},
+    { key: 'actions', label: '', render: (s: StudentRow) => (
+      s.status === 'completed' ? (
+        <Button size="sm" variant="ghost" className="text-xs h-7" onClick={() => { setCertStudent({ name: s.name, programme: s.programme }); setCertOpen(true); }}>
+          <Award className="w-3 h-3 mr-1" /> Certificate
+        </Button>
+      ) : null
+    )},
   ];
 
   return (
@@ -196,6 +206,8 @@ export default function StudentManagement() {
       ) : (
         <DataTable columns={columns} data={filtered} />
       )}
+
+      <CertificateDownloadModal open={certOpen} onOpenChange={setCertOpen} studentName={certStudent.name} programmeName={certStudent.programme} />
     </DashboardLayout>
   );
 }
