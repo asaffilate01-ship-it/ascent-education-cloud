@@ -68,6 +68,32 @@ export default function TenantLandingPage() {
     <div className="min-h-screen bg-background" style={{ fontFamily: theme.fontFamily }}>
       <TenantNav brandName={theme.brandName} primaryColor={pc} activePage="home" />
 
+      {/* ─── PROMO BANNER ─── */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="relative overflow-hidden"
+        style={{ background: `linear-gradient(135deg, ${pc}, ${pc}dd, ${theme.accentColor})` }}
+      >
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.1) 10px, rgba(255,255,255,0.1) 20px)' }} />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-white">
+          <div className="flex items-center gap-2">
+            <Flame className="w-5 h-5 animate-pulse" />
+            <span className="font-extrabold text-lg sm:text-xl tracking-tight">30% OFF ALL COURSES</span>
+            <Flame className="w-5 h-5 animate-pulse" />
+          </div>
+          <span className="text-sm sm:text-base font-medium opacity-95">
+            Limited to the first <span className="font-bold underline decoration-2 underline-offset-2">50 students</span> — Don't miss out!
+          </span>
+          <Link to="/apply">
+            <Button size="sm" className="bg-white hover:bg-white/90 font-bold shadow-lg" style={{ color: pc }}>
+              <Zap className="w-4 h-4 mr-1" /> Claim Offer
+            </Button>
+          </Link>
+        </div>
+      </motion.div>
+
       {/* ─── HERO ─── */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0" style={{ background: `linear-gradient(160deg, ${pc}06 0%, transparent 40%), linear-gradient(200deg, transparent 60%, ${theme.accentColor}04 100%)` }} />
