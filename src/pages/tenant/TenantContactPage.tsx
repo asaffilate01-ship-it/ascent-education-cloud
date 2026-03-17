@@ -10,6 +10,7 @@ export default function TenantContactPage() {
   const { slug } = useParams();
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
   const [sending, setSending] = useState(false);
+  const { brandName, primaryColor } = useTenantBranding();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
