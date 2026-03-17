@@ -1484,6 +1484,7 @@ export type Database = {
         | "student"
         | "university_partner"
         | "employer_partner"
+        | "parent_guardian"
       application_stage:
         | "lead"
         | "contacted"
@@ -1644,6 +1645,7 @@ export const Constants = {
         "student",
         "university_partner",
         "employer_partner",
+        "parent_guardian",
       ],
       application_stage: [
         "lead",
