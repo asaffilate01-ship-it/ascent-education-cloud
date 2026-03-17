@@ -25,6 +25,8 @@ export default function StudentManagement() {
   const [search, setSearch] = useState('');
   const [students, setStudents] = useState<StudentRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [certOpen, setCertOpen] = useState(false);
+  const [certStudent, setCertStudent] = useState<{ name: string; programme: string }>({ name: '', programme: '' });
 
   useEffect(() => {
     async function load() {
