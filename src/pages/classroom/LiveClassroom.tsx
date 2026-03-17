@@ -223,6 +223,7 @@ export default function LiveClassroom() {
       console.error('Jitsi error:', err);
       toast.error('Failed to start video session');
       setIsLoading(false);
+      setIsInSession(false);
     }
   };
 
