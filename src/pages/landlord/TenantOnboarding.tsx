@@ -188,7 +188,7 @@ export default function TenantOnboarding() {
             <div className="space-y-4">
               <div>
                 <label className="text-label mb-1.5 block">Brand Name</label>
-                <input value={formData.brandName} onChange={(e) => updateField('brandName', e.target.value)} placeholder="EduPathway" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none text-foreground" />
+                <input value={formData.brandName} onChange={(e) => updateField('brandName', e.target.value)} placeholder="UniPathway" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none text-foreground" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
