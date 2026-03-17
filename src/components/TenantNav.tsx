@@ -13,6 +13,7 @@ interface TenantNavProps {
 export default function TenantNav({ brandName = 'EduPathway', primaryColor, activePage }: TenantNavProps) {
   const { slug } = useParams();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   const links = [
     { label: 'Home', path: `/tenant/${slug}`, key: 'home' },
