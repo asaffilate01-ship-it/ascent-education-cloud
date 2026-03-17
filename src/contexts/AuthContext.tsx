@@ -36,6 +36,7 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   marketing_officer: 'Marketing Officer',
   agent: 'Agent',
   student: 'Student',
+  parent_guardian: 'Parent / Guardian',
   university_partner: 'University Partner',
   employer_partner: 'Employer Partner',
 };
