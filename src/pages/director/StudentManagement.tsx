@@ -2,11 +2,12 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatusBadge from '@/components/ui/StatusBadge';
 import DataTable from '@/components/ui/DataTable';
 import StatCard from '@/components/ui/StatCard';
-import { GraduationCap, UserPlus, Search, BookOpen, CreditCard, BarChart3 } from 'lucide-react';
+import { GraduationCap, UserPlus, Search, BookOpen, CreditCard, BarChart3, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
+import CertificateDownloadModal from '@/components/modals/CertificateDownloadModal';
 
 interface StudentRow {
   id: string;
