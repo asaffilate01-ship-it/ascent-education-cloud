@@ -167,10 +167,14 @@ export default function LiveClassroom() {
     if (!roomName.trim()) { toast.error('Please enter a room name'); return; }
     if (!window.JitsiMeetExternalAPI) { toast.error('Video system is still loading. Please try again.'); return; }
     setIsLoading(true);
+    setIsInSession(true);
 
     // Only lecturers persist the session (students just join)
     const id = isLecturer ? await persistSession(modId) : null;
     setSessionId(id);
+
+    // Wait one tick so the container div is rendered by React
+    await new Promise(resolve => setTimeout(resolve, 100));
 
     try {
       const api = new window.JitsiMeetExternalAPI('meet.jit.si', {
