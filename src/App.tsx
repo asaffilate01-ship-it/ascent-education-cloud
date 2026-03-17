@@ -250,12 +250,18 @@ function AppRoutes() {
       <Route path="/audit" element={<P><AuditLog /></P>} />
       <Route path="/compliance" element={<P><ComplianceDashboard /></P>} />
 
+      {/* ========== PARENT/GUARDIAN ========== */}
+      <Route path="/parent" element={<P><ParentDashboard /></P>} />
+      <Route path="/parent/progress" element={<P><ParentDashboard /></P>} />
+      <Route path="/parent/messages" element={<P><MessagingInbox /></P>} />
+
       {/* ========== SHARED ========== */}
       <Route path="/messaging" element={<P><MessagingInbox /></P>} />
       <Route path="/notifications" element={<P><NotificationCentre /></P>} />
       <Route path="/settings" element={<P><SettingsPage /></P>} />
       <Route path="/schedule" element={<P><ScheduleManager /></P>} />
       <Route path="/timeline" element={<P><AcademicTimeline /></P>} />
+      <Route path="/coding" element={<P><CloudCodingSandbox /></P>} />
 
       <Route path="*" element={<NotFound />} />
     </Routes>
