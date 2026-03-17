@@ -57,10 +57,10 @@ export default function AgentDashboard() {
       }
     >
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard label="Pipeline Value" value={`£${pipelineValue.toLocaleString()}`} icon={TrendingUp} />
+        <StatCard label="Pipeline Value" value={`Rs.${pipelineValue.toLocaleString()}`} icon={TrendingUp} />
         <StatCard label="Active Leads" value={myApps.filter(a => a.stage !== 'enrolled' && a.stage !== 'lost').length} icon={Users} />
         <StatCard label="Enrolled" value={enrolledCount} change="confirmed" changeType="positive" icon={UserPlus} />
-        <StatCard label="Earned Commission" value={`£${totalEarned.toLocaleString()}`} change="Paid" changeType="positive" icon={CreditCard} />
+        <StatCard label="Earned Commission" value={`Rs.${totalEarned.toLocaleString()}`} change="Paid" changeType="positive" icon={CreditCard} />
       </div>
 
       {/* Search */}
