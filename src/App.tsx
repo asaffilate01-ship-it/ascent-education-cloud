@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import RoleGuard from "@/components/RoleGuard";
 import CookieConsent from "@/components/CookieConsent";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import { lazy, Suspense } from "react";
@@ -80,6 +81,50 @@ const P = ({ children }: { children: React.ReactNode }) => (
   <ProtectedRoute>{children}</ProtectedRoute>
 );
 
+// Role-specific wrappers
+const Landlord = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['superadmin']}>{children}</RoleGuard>
+);
+const Director = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['centre_director', 'superadmin']}>{children}</RoleGuard>
+);
+const Admissions = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['admissions_admin', 'centre_director', 'superadmin']}>{children}</RoleGuard>
+);
+const LecturerR = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['lecturer', 'programme_leader', 'centre_director', 'superadmin']}>{children}</RoleGuard>
+);
+const Programme = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['programme_leader', 'centre_director', 'superadmin']}>{children}</RoleGuard>
+);
+const QA = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['iqa_officer', 'centre_director', 'superadmin']}>{children}</RoleGuard>
+);
+const Exams = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['exams_officer', 'centre_director', 'superadmin']}>{children}</RoleGuard>
+);
+const Finance = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['finance_officer', 'centre_director', 'superadmin']}>{children}</RoleGuard>
+);
+const Marketing = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['marketing_officer', 'centre_director', 'superadmin']}>{children}</RoleGuard>
+);
+const AgentR = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['agent', 'centre_director', 'superadmin']}>{children}</RoleGuard>
+);
+const StudentR = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['student', 'centre_director', 'superadmin']}>{children}</RoleGuard>
+);
+const PartnerR = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['university_partner', 'superadmin']}>{children}</RoleGuard>
+);
+const EmployerR = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['employer_partner', 'superadmin']}>{children}</RoleGuard>
+);
+const ParentR = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['parent_guardian', 'centre_director', 'superadmin']}>{children}</RoleGuard>
+);
+
 function LoadingFallback() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
@@ -113,152 +158,152 @@ function AppRoutes() {
         <Route path="/tenant/:slug/contact" element={<TenantContactPage />} />
 
         {/* ========== LANDLORD (SaaS Owner) ========== */}
-        <Route path="/landlord" element={<P><LandlordDashboard /></P>} />
-        <Route path="/landlord/centres" element={<P><LandlordDashboard /></P>} />
-        <Route path="/landlord/users" element={<P><StaffManagement /></P>} />
-        <Route path="/landlord/finance" element={<P><FinanceDashboard /></P>} />
-        <Route path="/landlord/subscriptions" element={<P><SuperadminPlatform /></P>} />
-        <Route path="/landlord/compliance" element={<P><ComplianceDashboard /></P>} />
-        <Route path="/landlord/onboarding" element={<P><TenantOnboarding /></P>} />
-        <Route path="/landlord/audit" element={<P><AuditLog /></P>} />
-        <Route path="/landlord/infrastructure" element={<P><SuperadminPlatform /></P>} />
-        <Route path="/landlord/settings" element={<P><SettingsPage /></P>} />
+        <Route path="/landlord" element={<Landlord><LandlordDashboard /></Landlord>} />
+        <Route path="/landlord/centres" element={<Landlord><LandlordDashboard /></Landlord>} />
+        <Route path="/landlord/users" element={<Landlord><StaffManagement /></Landlord>} />
+        <Route path="/landlord/finance" element={<Landlord><FinanceDashboard /></Landlord>} />
+        <Route path="/landlord/subscriptions" element={<Landlord><SuperadminPlatform /></Landlord>} />
+        <Route path="/landlord/compliance" element={<Landlord><ComplianceDashboard /></Landlord>} />
+        <Route path="/landlord/onboarding" element={<Landlord><TenantOnboarding /></Landlord>} />
+        <Route path="/landlord/audit" element={<Landlord><AuditLog /></Landlord>} />
+        <Route path="/landlord/infrastructure" element={<Landlord><SuperadminPlatform /></Landlord>} />
+        <Route path="/landlord/settings" element={<Landlord><SettingsPage /></Landlord>} />
 
         {/* ========== TENANT: Centre Director ========== */}
-        <Route path="/director" element={<P><CentreDirectorDashboard /></P>} />
-        <Route path="/director/admissions" element={<P><AdmissionsCRM /></P>} />
-        <Route path="/director/programmes" element={<P><ProgrammeManagement /></P>} />
-        <Route path="/director/staff" element={<P><StaffManagement /></P>} />
-        <Route path="/director/students" element={<P><StudentManagement /></P>} />
-        <Route path="/director/quality" element={<P><QADashboard /></P>} />
-        <Route path="/director/finance" element={<P><FinanceDashboard /></P>} />
-        <Route path="/director/agents" element={<P><AgentDashboard /></P>} />
-        <Route path="/director/schedule" element={<P><ScheduleManager /></P>} />
-        <Route path="/director/branding" element={<P><TenantBranding /></P>} />
-        <Route path="/director/reports" element={<P><AnalyticsDashboard /></P>} />
-        <Route path="/director/settings" element={<P><SettingsPage /></P>} />
+        <Route path="/director" element={<Director><CentreDirectorDashboard /></Director>} />
+        <Route path="/director/admissions" element={<Director><AdmissionsCRM /></Director>} />
+        <Route path="/director/programmes" element={<Director><ProgrammeManagement /></Director>} />
+        <Route path="/director/staff" element={<Director><StaffManagement /></Director>} />
+        <Route path="/director/students" element={<Director><StudentManagement /></Director>} />
+        <Route path="/director/quality" element={<Director><QADashboard /></Director>} />
+        <Route path="/director/finance" element={<Director><FinanceDashboard /></Director>} />
+        <Route path="/director/agents" element={<Director><AgentDashboard /></Director>} />
+        <Route path="/director/schedule" element={<Director><ScheduleManager /></Director>} />
+        <Route path="/director/branding" element={<Director><TenantBranding /></Director>} />
+        <Route path="/director/reports" element={<Director><AnalyticsDashboard /></Director>} />
+        <Route path="/director/settings" element={<Director><SettingsPage /></Director>} />
 
         {/* ========== TENANT: Admissions Admin ========== */}
-        <Route path="/admissions" element={<P><AdmissionsCRM /></P>} />
-        <Route path="/admissions/applications" element={<P><AdmissionsCRM /></P>} />
-        <Route path="/admissions/documents" element={<P><AdmissionsCRM /></P>} />
-        <Route path="/admissions/eligibility" element={<P><AdmissionsCRM /></P>} />
-        <Route path="/admissions/offers" element={<P><AdmissionsCRM /></P>} />
-        <Route path="/admissions/counselling" element={<P><MessagingInbox /></P>} />
-        <Route path="/admissions/reports" element={<P><AnalyticsDashboard /></P>} />
+        <Route path="/admissions" element={<Admissions><AdmissionsCRM /></Admissions>} />
+        <Route path="/admissions/applications" element={<Admissions><AdmissionsCRM /></Admissions>} />
+        <Route path="/admissions/documents" element={<Admissions><AdmissionsCRM /></Admissions>} />
+        <Route path="/admissions/eligibility" element={<Admissions><AdmissionsCRM /></Admissions>} />
+        <Route path="/admissions/offers" element={<Admissions><AdmissionsCRM /></Admissions>} />
+        <Route path="/admissions/counselling" element={<Admissions><MessagingInbox /></Admissions>} />
+        <Route path="/admissions/reports" element={<Admissions><AnalyticsDashboard /></Admissions>} />
 
         {/* ========== TENANT: Lecturer ========== */}
-        <Route path="/lecturer" element={<P><LecturerDashboard /></P>} />
-        <Route path="/lecturer/teaching" element={<P><LecturerTeaching /></P>} />
-        <Route path="/lecturer/classroom" element={<P><LiveClassroom /></P>} />
-        <Route path="/lecturer/report-cards" element={<P><ReportCardGenerator /></P>} />
-        <Route path="/lecturer/marking" element={<P><LecturerMarking /></P>} />
-        <Route path="/lecturer/attendance" element={<P><LecturerAttendance /></P>} />
-        <Route path="/lecturer/students" element={<P><StudentManagement /></P>} />
-        <Route path="/lecturer/timeline" element={<P><AcademicTimeline /></P>} />
-        <Route path="/lecturer/analytics" element={<P><AnalyticsDashboard /></P>} />
-        <Route path="/lecturer/messages" element={<P><MessagingInbox /></P>} />
+        <Route path="/lecturer" element={<LecturerR><LecturerDashboard /></LecturerR>} />
+        <Route path="/lecturer/teaching" element={<LecturerR><LecturerTeaching /></LecturerR>} />
+        <Route path="/lecturer/classroom" element={<LecturerR><LiveClassroom /></LecturerR>} />
+        <Route path="/lecturer/report-cards" element={<LecturerR><ReportCardGenerator /></LecturerR>} />
+        <Route path="/lecturer/marking" element={<LecturerR><LecturerMarking /></LecturerR>} />
+        <Route path="/lecturer/attendance" element={<LecturerR><LecturerAttendance /></LecturerR>} />
+        <Route path="/lecturer/students" element={<LecturerR><StudentManagement /></LecturerR>} />
+        <Route path="/lecturer/timeline" element={<LecturerR><AcademicTimeline /></LecturerR>} />
+        <Route path="/lecturer/analytics" element={<LecturerR><AnalyticsDashboard /></LecturerR>} />
+        <Route path="/lecturer/messages" element={<LecturerR><MessagingInbox /></LecturerR>} />
 
         {/* ========== TENANT: Programme Leader ========== */}
-        <Route path="/programme" element={<P><ProgrammeManagement /></P>} />
-        <Route path="/programme/modules" element={<P><LecturerTeaching /></P>} />
-        <Route path="/programme/lecturers" element={<P><StaffManagement /></P>} />
-        <Route path="/programme/students" element={<P><StudentManagement /></P>} />
-        <Route path="/programme/assessments" element={<P><LecturerMarking /></P>} />
-        <Route path="/programme/schedule" element={<P><ScheduleManager /></P>} />
-        <Route path="/programme/moderation" element={<P><QADashboard /></P>} />
-        <Route path="/programme/analytics" element={<P><AnalyticsDashboard /></P>} />
+        <Route path="/programme" element={<Programme><ProgrammeManagement /></Programme>} />
+        <Route path="/programme/modules" element={<Programme><LecturerTeaching /></Programme>} />
+        <Route path="/programme/lecturers" element={<Programme><StaffManagement /></Programme>} />
+        <Route path="/programme/students" element={<Programme><StudentManagement /></Programme>} />
+        <Route path="/programme/assessments" element={<Programme><LecturerMarking /></Programme>} />
+        <Route path="/programme/schedule" element={<Programme><ScheduleManager /></Programme>} />
+        <Route path="/programme/moderation" element={<Programme><QADashboard /></Programme>} />
+        <Route path="/programme/analytics" element={<Programme><AnalyticsDashboard /></Programme>} />
 
         {/* ========== TENANT: IQA / QA Officer ========== */}
-        <Route path="/qa" element={<P><QADashboard /></P>} />
-        <Route path="/qa/moderation" element={<P><QADashboard /></P>} />
-        <Route path="/qa/sampling" element={<P><QADashboard /></P>} />
-        <Route path="/qa/plagiarism" element={<P><QADashboard /></P>} />
-        <Route path="/qa/malpractice" element={<P><QADashboard /></P>} />
-        <Route path="/qa/appeals" element={<P><QADashboard /></P>} />
-        <Route path="/qa/audit" element={<P><QADashboard /></P>} />
-        <Route path="/qa/evidence" element={<P><QADashboard /></P>} />
+        <Route path="/qa" element={<QA><QADashboard /></QA>} />
+        <Route path="/qa/moderation" element={<QA><QADashboard /></QA>} />
+        <Route path="/qa/sampling" element={<QA><QADashboard /></QA>} />
+        <Route path="/qa/plagiarism" element={<QA><QADashboard /></QA>} />
+        <Route path="/qa/malpractice" element={<QA><QADashboard /></QA>} />
+        <Route path="/qa/appeals" element={<QA><QADashboard /></QA>} />
+        <Route path="/qa/audit" element={<QA><QADashboard /></QA>} />
+        <Route path="/qa/evidence" element={<QA><QADashboard /></QA>} />
 
         {/* ========== TENANT: Exams Officer ========== */}
-        <Route path="/exams" element={<P><ExamsDashboard /></P>} />
-        <Route path="/exams/schedule" element={<P><ExamsDashboard /></P>} />
-        <Route path="/exams/rooms" element={<P><ExamsDashboard /></P>} />
-        <Route path="/exams/seating" element={<P><ExamsDashboard /></P>} />
-        <Route path="/exams/entry" element={<P><ExamsDashboard /></P>} />
-        <Route path="/exams/incidents" element={<P><ExamsDashboard /></P>} />
-        <Route path="/exams/results" element={<P><ExamsDashboard /></P>} />
+        <Route path="/exams" element={<Exams><ExamsDashboard /></Exams>} />
+        <Route path="/exams/schedule" element={<Exams><ExamsDashboard /></Exams>} />
+        <Route path="/exams/rooms" element={<Exams><ExamsDashboard /></Exams>} />
+        <Route path="/exams/seating" element={<Exams><ExamsDashboard /></Exams>} />
+        <Route path="/exams/entry" element={<Exams><ExamsDashboard /></Exams>} />
+        <Route path="/exams/incidents" element={<Exams><ExamsDashboard /></Exams>} />
+        <Route path="/exams/results" element={<Exams><ExamsDashboard /></Exams>} />
 
         {/* ========== TENANT: Finance Officer ========== */}
-        <Route path="/finance" element={<P><FinanceDashboard /></P>} />
-        <Route path="/finance/invoices" element={<P><FinanceDashboard /></P>} />
-        <Route path="/finance/payments" element={<P><FinanceDashboard /></P>} />
-        <Route path="/finance/instalments" element={<P><FinanceDashboard /></P>} />
-        <Route path="/finance/commissions" element={<P><FinanceDashboard /></P>} />
-        <Route path="/finance/scholarships" element={<P><FinanceDashboard /></P>} />
-        <Route path="/finance/reports" element={<P><AnalyticsDashboard /></P>} />
+        <Route path="/finance" element={<Finance><FinanceDashboard /></Finance>} />
+        <Route path="/finance/invoices" element={<Finance><FinanceDashboard /></Finance>} />
+        <Route path="/finance/payments" element={<Finance><FinanceDashboard /></Finance>} />
+        <Route path="/finance/instalments" element={<Finance><FinanceDashboard /></Finance>} />
+        <Route path="/finance/commissions" element={<Finance><FinanceDashboard /></Finance>} />
+        <Route path="/finance/scholarships" element={<Finance><FinanceDashboard /></Finance>} />
+        <Route path="/finance/reports" element={<Finance><AnalyticsDashboard /></Finance>} />
 
         {/* ========== TENANT: Marketing Officer ========== */}
-        <Route path="/marketing" element={<P><MarketingDashboard /></P>} />
-        <Route path="/marketing/campaigns" element={<P><MarketingDashboard /></P>} />
-        <Route path="/marketing/leads" element={<P><AdmissionsCRM /></P>} />
-        <Route path="/marketing/webinars" element={<P><MarketingDashboard /></P>} />
-        <Route path="/marketing/analytics" element={<P><AnalyticsDashboard /></P>} />
+        <Route path="/marketing" element={<Marketing><MarketingDashboard /></Marketing>} />
+        <Route path="/marketing/campaigns" element={<Marketing><MarketingDashboard /></Marketing>} />
+        <Route path="/marketing/leads" element={<Marketing><AdmissionsCRM /></Marketing>} />
+        <Route path="/marketing/webinars" element={<Marketing><MarketingDashboard /></Marketing>} />
+        <Route path="/marketing/analytics" element={<Marketing><AnalyticsDashboard /></Marketing>} />
 
         {/* ========== EXTERNAL: Agent ========== */}
-        <Route path="/agent" element={<P><AgentDashboard /></P>} />
-        <Route path="/agent/leads" element={<P><AgentDashboard /></P>} />
-        <Route path="/agent/applications" element={<P><AgentDashboard /></P>} />
-        <Route path="/agent/commissions" element={<P><AgentDashboard /></P>} />
-        <Route path="/agent/onboarding" element={<P><AgentDashboard /></P>} />
-        <Route path="/agent/resources" element={<P><AgentResources /></P>} />
-        <Route path="/agent/messages" element={<P><MessagingInbox /></P>} />
+        <Route path="/agent" element={<AgentR><AgentDashboard /></AgentR>} />
+        <Route path="/agent/leads" element={<AgentR><AgentDashboard /></AgentR>} />
+        <Route path="/agent/applications" element={<AgentR><AgentDashboard /></AgentR>} />
+        <Route path="/agent/commissions" element={<AgentR><AgentDashboard /></AgentR>} />
+        <Route path="/agent/onboarding" element={<AgentR><AgentDashboard /></AgentR>} />
+        <Route path="/agent/resources" element={<AgentR><AgentResources /></AgentR>} />
+        <Route path="/agent/messages" element={<AgentR><MessagingInbox /></AgentR>} />
 
         {/* ========== EXTERNAL: Student ========== */}
-        <Route path="/student" element={<P><StudentDashboard /></P>} />
-        <Route path="/student/courses" element={<P><StudentCourses /></P>} />
-        <Route path="/student/classroom" element={<P><LiveClassroom /></P>} />
-        <Route path="/student/assignments" element={<P><StudentAssignments /></P>} />
-        <Route path="/student/grades" element={<P><StudentGrades /></P>} />
-        <Route path="/student/attendance" element={<P><AttendanceDashboard /></P>} />
-        <Route path="/student/library" element={<P><StudentLibrary /></P>} />
-        <Route path="/student/finance" element={<P><FinanceDashboard /></P>} />
-        <Route path="/student/progression" element={<P><ProgressionDashboard /></P>} />
-        <Route path="/student/timeline" element={<P><AcademicTimeline /></P>} />
-        <Route path="/student/career" element={<P><StudentCareer /></P>} />
-        <Route path="/student/support" element={<P><MessagingInbox /></P>} />
+        <Route path="/student" element={<StudentR><StudentDashboard /></StudentR>} />
+        <Route path="/student/courses" element={<StudentR><StudentCourses /></StudentR>} />
+        <Route path="/student/classroom" element={<StudentR><LiveClassroom /></StudentR>} />
+        <Route path="/student/assignments" element={<StudentR><StudentAssignments /></StudentR>} />
+        <Route path="/student/grades" element={<StudentR><StudentGrades /></StudentR>} />
+        <Route path="/student/attendance" element={<StudentR><AttendanceDashboard /></StudentR>} />
+        <Route path="/student/library" element={<StudentR><StudentLibrary /></StudentR>} />
+        <Route path="/student/finance" element={<StudentR><FinanceDashboard /></StudentR>} />
+        <Route path="/student/progression" element={<StudentR><ProgressionDashboard /></StudentR>} />
+        <Route path="/student/timeline" element={<StudentR><AcademicTimeline /></StudentR>} />
+        <Route path="/student/career" element={<StudentR><StudentCareer /></StudentR>} />
+        <Route path="/student/support" element={<StudentR><MessagingInbox /></StudentR>} />
 
         {/* ========== EXTERNAL: University Partner ========== */}
-        <Route path="/partner" element={<P><UniversityPartnerPortal /></P>} />
-        <Route path="/partner/referrals" element={<P><UniversityPartnerPortal /></P>} />
-        <Route path="/partner/applications" element={<P><UniversityPartnerPortal /></P>} />
-        <Route path="/partner/offers" element={<P><UniversityPartnerPortal /></P>} />
-        <Route path="/partner/commissions" element={<P><AnalyticsDashboard /></P>} />
+        <Route path="/partner" element={<PartnerR><UniversityPartnerPortal /></PartnerR>} />
+        <Route path="/partner/referrals" element={<PartnerR><UniversityPartnerPortal /></PartnerR>} />
+        <Route path="/partner/applications" element={<PartnerR><UniversityPartnerPortal /></PartnerR>} />
+        <Route path="/partner/offers" element={<PartnerR><UniversityPartnerPortal /></PartnerR>} />
+        <Route path="/partner/commissions" element={<PartnerR><AnalyticsDashboard /></PartnerR>} />
 
         {/* ========== EXTERNAL: Employer Partner ========== */}
-        <Route path="/employer" element={<P><EmployerPortal /></P>} />
-        <Route path="/employer/jobs" element={<P><EmployerPortal /></P>} />
-        <Route path="/employer/candidates" element={<P><EmployerPortal /></P>} />
-        <Route path="/employer/internships" element={<P><EmployerPortal /></P>} />
+        <Route path="/employer" element={<EmployerR><EmployerPortal /></EmployerR>} />
+        <Route path="/employer/jobs" element={<EmployerR><EmployerPortal /></EmployerR>} />
+        <Route path="/employer/candidates" element={<EmployerR><EmployerPortal /></EmployerR>} />
+        <Route path="/employer/internships" element={<EmployerR><EmployerPortal /></EmployerR>} />
 
         {/* ========== NEW MODULES ========== */}
         <Route path="/onboarding" element={<P><StudentOnboarding /></P>} />
-        <Route path="/onboarding/lecturer" element={<P><LecturerOnboarding /></P>} />
+        <Route path="/onboarding/lecturer" element={<LecturerR><LecturerOnboarding /></LecturerR>} />
         <Route path="/residential" element={<P><ResidentialWeeks /></P>} />
-        <Route path="/audit" element={<P><AuditLog /></P>} />
-        <Route path="/compliance" element={<P><ComplianceDashboard /></P>} />
+        <Route path="/audit" element={<Landlord><AuditLog /></Landlord>} />
+        <Route path="/compliance" element={<QA><ComplianceDashboard /></QA>} />
 
         {/* ========== NEW FEATURE PAGES ========== */}
         <Route path="/calendar" element={<P><AcademicCalendar /></P>} />
-        <Route path="/lesson-plans" element={<P><LessonPlanBuilder /></P>} />
+        <Route path="/lesson-plans" element={<LecturerR><LessonPlanBuilder /></LecturerR>} />
         <Route path="/leave" element={<P><LeaveManagement /></P>} />
         <Route path="/health" element={<P><HealthRecords /></P>} />
         <Route path="/transport" element={<P><TransportTracking /></P>} />
         <Route path="/ai-recommendations" element={<P><AIRecommendations /></P>} />
 
         {/* ========== PARENT/GUARDIAN ========== */}
-        <Route path="/parent" element={<P><ParentDashboard /></P>} />
-        <Route path="/parent/progress" element={<P><ParentDashboard /></P>} />
-        <Route path="/parent/messages" element={<P><MessagingInbox /></P>} />
+        <Route path="/parent" element={<ParentR><ParentDashboard /></ParentR>} />
+        <Route path="/parent/progress" element={<ParentR><ParentDashboard /></ParentR>} />
+        <Route path="/parent/messages" element={<ParentR><MessagingInbox /></ParentR>} />
 
         {/* ========== SHARED ========== */}
         <Route path="/messaging" element={<P><MessagingInbox /></P>} />

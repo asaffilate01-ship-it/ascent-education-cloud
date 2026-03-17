@@ -547,6 +547,36 @@ export type Database = {
           },
         ]
       }
+      consent_records: {
+        Row: {
+          consent_type: string
+          created_at: string
+          granted: boolean
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          consent_type: string
+          created_at?: string
+          granted?: boolean
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          consent_type?: string
+          created_at?: string
+          granted?: boolean
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       conversation_participants: {
         Row: {
           conversation_id: string

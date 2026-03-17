@@ -24,9 +24,6 @@ export default function RegisterPage() {
 
   const updateField = (key: string, value: string) => setFormData(prev => ({ ...prev, [key]: value }));
 
-  const getRoleForType = () => {
-    return ACCOUNT_TYPES.find(t => t.key === accountType)?.role || 'student';
-  };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,14 +64,7 @@ export default function RegisterPage() {
       return;
     }
 
-    // Assign role after signup
-    if (data.user) {
-      const role = getRoleForType();
-      await supabase.from('user_roles').insert({
-        user_id: data.user.id,
-        role: role as any,
-      });
-    }
+    // Role is auto-assigned server-side via database trigger based on account_type metadata
 
     toast.success('Account created! Please check your email to verify your account.');
     navigate('/login');
