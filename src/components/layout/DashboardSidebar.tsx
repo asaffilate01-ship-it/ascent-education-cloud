@@ -209,6 +209,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Progress', icon: BarChart3, path: '/parent/progress' },
       { label: 'Messages', icon: MessageSquare, path: '/parent/messages' },
     ]},
+  ],
 };
 
 export { NAV_CONFIG };
