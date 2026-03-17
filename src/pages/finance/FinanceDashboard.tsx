@@ -1,12 +1,13 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
-import { CreditCard, FileText, TrendingUp, AlertTriangle, Handshake, Search, Filter, Download, Loader2 } from 'lucide-react';
+import { CreditCard, FileText, TrendingUp, AlertTriangle, Handshake, Search, Filter, Download, Loader2, Banknote } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState } from 'react';
 import CreateInvoiceModal from '@/components/modals/CreateInvoiceModal';
+import RecordPaymentModal from '@/components/modals/RecordPaymentModal';
 import { useToast } from '@/hooks/use-toast';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
