@@ -702,6 +702,206 @@ export type Database = {
           },
         ]
       }
+      forum_replies: {
+        Row: {
+          author_id: string
+          author_name: string
+          content: string
+          created_at: string | null
+          id: string
+          is_solution: boolean | null
+          thread_id: string
+          updated_at: string | null
+          upvotes: number | null
+        }
+        Insert: {
+          author_id: string
+          author_name: string
+          content: string
+          created_at?: string | null
+          id?: string
+          is_solution?: boolean | null
+          thread_id: string
+          updated_at?: string | null
+          upvotes?: number | null
+        }
+        Update: {
+          author_id?: string
+          author_name?: string
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_solution?: boolean | null
+          thread_id?: string
+          updated_at?: string | null
+          upvotes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_replies_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "forum_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forum_threads: {
+        Row: {
+          author_id: string
+          author_name: string
+          content: string
+          created_at: string | null
+          id: string
+          is_locked: boolean | null
+          is_pinned: boolean | null
+          last_activity_at: string | null
+          module_id: string | null
+          reply_count: number | null
+          tenant_id: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          author_id: string
+          author_name: string
+          content: string
+          created_at?: string | null
+          id?: string
+          is_locked?: boolean | null
+          is_pinned?: boolean | null
+          last_activity_at?: string | null
+          module_id?: string | null
+          reply_count?: number | null
+          tenant_id: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          author_id?: string
+          author_name?: string
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_locked?: boolean | null
+          is_pinned?: boolean | null
+          last_activity_at?: string | null
+          module_id?: string | null
+          reply_count?: number | null
+          tenant_id?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_threads_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_threads_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_threads_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gradebook_entries: {
+        Row: {
+          assessment_title: string
+          assessment_type: string | null
+          created_at: string | null
+          feedback: string | null
+          grade: number | null
+          graded_at: string | null
+          graded_by: string | null
+          id: string
+          max_grade: number | null
+          module_id: string
+          programme_id: string
+          status: string | null
+          student_id: string
+          tenant_id: string
+          updated_at: string | null
+          weight: number | null
+        }
+        Insert: {
+          assessment_title: string
+          assessment_type?: string | null
+          created_at?: string | null
+          feedback?: string | null
+          grade?: number | null
+          graded_at?: string | null
+          graded_by?: string | null
+          id?: string
+          max_grade?: number | null
+          module_id: string
+          programme_id: string
+          status?: string | null
+          student_id: string
+          tenant_id: string
+          updated_at?: string | null
+          weight?: number | null
+        }
+        Update: {
+          assessment_title?: string
+          assessment_type?: string | null
+          created_at?: string | null
+          feedback?: string | null
+          grade?: number | null
+          graded_at?: string | null
+          graded_by?: string | null
+          id?: string
+          max_grade?: number | null
+          module_id?: string
+          programme_id?: string
+          status?: string | null
+          student_id?: string
+          tenant_id?: string
+          updated_at?: string | null
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gradebook_entries_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gradebook_entries_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gradebook_entries_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gradebook_entries_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       health_records: {
         Row: {
           allergies: string[] | null
@@ -1620,6 +1820,193 @@ export type Database = {
           },
         ]
       }
+      quiz_attempts: {
+        Row: {
+          answers: Json | null
+          completed_at: string | null
+          id: string
+          passed: boolean | null
+          percentage: number | null
+          quiz_id: string
+          score: number | null
+          started_at: string | null
+          student_id: string
+          tenant_id: string
+          time_spent_seconds: number | null
+          total_points: number | null
+        }
+        Insert: {
+          answers?: Json | null
+          completed_at?: string | null
+          id?: string
+          passed?: boolean | null
+          percentage?: number | null
+          quiz_id: string
+          score?: number | null
+          started_at?: string | null
+          student_id: string
+          tenant_id: string
+          time_spent_seconds?: number | null
+          total_points?: number | null
+        }
+        Update: {
+          answers?: Json | null
+          completed_at?: string | null
+          id?: string
+          passed?: boolean | null
+          percentage?: number | null
+          quiz_id?: string
+          score?: number | null
+          started_at?: string | null
+          student_id?: string
+          tenant_id?: string
+          time_spent_seconds?: number | null
+          total_points?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_attempts_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_questions: {
+        Row: {
+          correct_answer: string
+          created_at: string | null
+          explanation: string | null
+          id: string
+          options: Json | null
+          points: number | null
+          question_text: string
+          question_type: Database["public"]["Enums"]["question_type"] | null
+          quiz_id: string
+          sort_order: number | null
+        }
+        Insert: {
+          correct_answer: string
+          created_at?: string | null
+          explanation?: string | null
+          id?: string
+          options?: Json | null
+          points?: number | null
+          question_text: string
+          question_type?: Database["public"]["Enums"]["question_type"] | null
+          quiz_id: string
+          sort_order?: number | null
+        }
+        Update: {
+          correct_answer?: string
+          created_at?: string | null
+          explanation?: string | null
+          id?: string
+          options?: Json | null
+          points?: number | null
+          question_text?: string
+          question_type?: Database["public"]["Enums"]["question_type"] | null
+          quiz_id?: string
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_questions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quizzes: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          description: string | null
+          id: string
+          max_attempts: number | null
+          module_id: string | null
+          pass_percentage: number | null
+          show_results: boolean | null
+          shuffle_questions: boolean | null
+          status: Database["public"]["Enums"]["quiz_status"] | null
+          tenant_id: string
+          time_limit_minutes: number | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          description?: string | null
+          id?: string
+          max_attempts?: number | null
+          module_id?: string | null
+          pass_percentage?: number | null
+          show_results?: boolean | null
+          shuffle_questions?: boolean | null
+          status?: Database["public"]["Enums"]["quiz_status"] | null
+          tenant_id: string
+          time_limit_minutes?: number | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          description?: string | null
+          id?: string
+          max_attempts?: number | null
+          module_id?: string | null
+          pass_percentage?: number | null
+          show_results?: boolean | null
+          shuffle_questions?: boolean | null
+          status?: Database["public"]["Enums"]["quiz_status"] | null
+          tenant_id?: string
+          time_limit_minutes?: number | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quizzes_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quizzes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quizzes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       residential_bookings: {
         Row: {
           check_in_at: string | null
@@ -2323,6 +2710,45 @@ export type Database = {
       }
     }
     Views: {
+      partner_universities_public: {
+        Row: {
+          country: string | null
+          fee: string | null
+          flag: string | null
+          id: string | null
+          ielts: string | null
+          intake: string | null
+          name: string | null
+          programme: string | null
+          status: string | null
+          url: string | null
+        }
+        Insert: {
+          country?: string | null
+          fee?: string | null
+          flag?: string | null
+          id?: string | null
+          ielts?: string | null
+          intake?: string | null
+          name?: string | null
+          programme?: string | null
+          status?: string | null
+          url?: string | null
+        }
+        Update: {
+          country?: string | null
+          fee?: string | null
+          flag?: string | null
+          id?: string | null
+          ielts?: string | null
+          intake?: string | null
+          name?: string | null
+          programme?: string | null
+          status?: string | null
+          url?: string | null
+        }
+        Relationships: []
+      }
       tenants_public: {
         Row: {
           accent_color: string | null
@@ -2410,6 +2836,8 @@ export type Database = {
         | "stripe"
         | "other"
       programme_status: "active" | "draft" | "archived"
+      question_type: "mcq" | "true_false" | "short_answer"
+      quiz_status: "draft" | "published" | "archived"
       tenant_plan: "starter" | "professional" | "enterprise"
       tenant_status: "active" | "suspended" | "onboarding"
     }
@@ -2582,6 +3010,8 @@ export const Constants = {
         "other",
       ],
       programme_status: ["active", "draft", "archived"],
+      question_type: ["mcq", "true_false", "short_answer"],
+      quiz_status: ["draft", "published", "archived"],
       tenant_plan: ["starter", "professional", "enterprise"],
       tenant_status: ["active", "suspended", "onboarding"],
     },
