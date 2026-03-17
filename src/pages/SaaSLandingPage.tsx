@@ -414,7 +414,7 @@ export default function SaaSLandingPage() {
                 Start Free Trial <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             </Link>
-            <a href="mailto:sales@educloud.com?subject=Book%20a%20Demo">
+            <a href="mailto:sales@educloud.pk?subject=Book%20a%20Demo">
               <Button variant="outline" size="lg" className="w-full sm:w-auto">Book a Demo</Button>
             </a>
           </div>
