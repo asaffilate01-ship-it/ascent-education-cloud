@@ -70,6 +70,7 @@ import SettingsPage from "./pages/settings/SettingsPage";
 
 // External portals
 import AgentDashboard from "./pages/agent/AgentDashboard";
+import AgentResources from "./pages/agent/AgentResources";
 import UniversityPartnerPortal from "./pages/partner/UniversityPartnerPortal";
 import EmployerPortal from "./pages/employer/EmployerPortal";
 
