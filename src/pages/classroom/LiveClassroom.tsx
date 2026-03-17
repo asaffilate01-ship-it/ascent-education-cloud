@@ -225,7 +225,7 @@ export default function LiveClassroom() {
       const fullRoomName = buildJaasRoomName(effectiveRoomName);
       const { data: tokenData, error: tokenError } = await supabase.functions.invoke('jaas-token', {
         body: {
-          roomName: fullRoomName,
+          roomName: fullRoomName,  // Just the room name with prefix, no AppID
           displayName: displayName || 'Participant',
           email: user?.email || '',
           isModerator: isLecturer,
