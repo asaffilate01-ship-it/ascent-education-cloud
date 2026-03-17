@@ -44,8 +44,7 @@ serve(async (req) => {
     const lines = base64Content.match(/.{1,64}/g) || [];
     pemKey = `-----BEGIN PRIVATE KEY-----\n${lines.join('\n')}\n-----END PRIVATE KEY-----`;
 
-    console.log('PEM key first 50 chars:', pemKey.substring(0, 50));
-    console.log('PEM key length:', pemKey.length);
+
 
     // Import the RSA private key
     const privateKey = await jose.importPKCS8(pemKey, "RS256");
