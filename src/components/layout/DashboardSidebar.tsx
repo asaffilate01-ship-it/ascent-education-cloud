@@ -227,6 +227,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Job Posts', icon: Briefcase, path: '/employer/jobs' },
       { label: 'Candidates', icon: Users, path: '/employer/candidates' },
       { label: 'Internships', icon: GraduationCap, path: '/employer/internships' },
+      { label: 'Activity Log', icon: Activity, path: '/my-activity' },
       { label: 'Messages', icon: MessageSquare, path: '/messaging' },
     ]},
   ],
