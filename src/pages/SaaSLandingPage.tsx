@@ -3,12 +3,13 @@ import {
   Briefcase, CreditCard, FileCheck, UserPlus, BarChart3, Building2,
   Zap, CheckCircle, Server, Lock, Cloud, Smartphone, Layers, Menu, X,
   Star, Quote, ChevronRight, Sparkles, TrendingUp, Award, MessageSquare,
-  Clock, Eye, Target, Headphones
+  Clock, Eye, Target, Headphones, Moon, Sun
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import { useTheme } from '@/hooks/useTheme';
 import heroDashboard from '@/assets/hero-dashboard.png';
 
 const fadeUp = {
@@ -25,6 +26,7 @@ const stagger = {
 
 export default function SaaSLandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <div className="min-h-screen bg-background">
@@ -47,6 +49,13 @@ export default function SaaSLandingPage() {
             <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-all font-medium">Pricing</a>
             <a href="#security" className="text-muted-foreground hover:text-foreground transition-all font-medium">Security</a>
             <div className="flex items-center gap-3 ml-4">
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-lg border border-border/50 bg-background hover:bg-accent transition-all"
+                title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              >
+                {theme === 'dark' ? <Sun className="w-4 h-4 text-muted-foreground" /> : <Moon className="w-4 h-4 text-muted-foreground" />}
+              </button>
               <Link to="/login">
                 <Button variant="ghost" size="sm" className="text-muted-foreground">Sign In</Button>
               </Link>

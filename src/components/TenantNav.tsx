@@ -1,7 +1,8 @@
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { GraduationCap, Menu, X } from 'lucide-react';
+import { GraduationCap, Menu, X, Moon, Sun } from 'lucide-react';
 import { useState } from 'react';
+import { useTheme } from '@/hooks/useTheme';
 
 interface TenantNavProps {
   brandName?: string;
@@ -12,6 +13,7 @@ interface TenantNavProps {
 export default function TenantNav({ brandName = 'EduPathway', primaryColor, activePage }: TenantNavProps) {
   const { slug } = useParams();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   const links = [
     { label: 'Home', path: `/tenant/${slug}`, key: 'home' },
@@ -44,6 +46,13 @@ export default function TenantNav({ brandName = 'EduPathway', primaryColor, acti
               {l.label}
             </Link>
           ))}
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-lg border border-border/50 bg-background hover:bg-accent transition-all"
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {theme === 'dark' ? <Sun className="w-4 h-4 text-muted-foreground" /> : <Moon className="w-4 h-4 text-muted-foreground" />}
+          </button>
           <Link to="/login"><Button variant="outline" size="sm">Login</Button></Link>
           <Link to="/apply">
             <Button size="sm" style={primaryColor ? { backgroundColor: primaryColor } : undefined}>Apply Now</Button>

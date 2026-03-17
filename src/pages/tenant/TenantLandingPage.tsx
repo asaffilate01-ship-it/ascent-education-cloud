@@ -373,7 +373,7 @@ export default function TenantLandingPage() {
               </Button>
             </Link>
             <Link to={`/tenant/${slug}/contact`}>
-              <Button size="lg" variant="outline" className="text-primary-foreground border-primary-foreground/30 hover:bg-primary-foreground/10 h-13 px-10 text-base w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="bg-background/15 text-background border-background/40 hover:bg-background/25 h-13 px-10 text-base w-full sm:w-auto font-semibold">
                 Request a Callback
               </Button>
             </Link>
