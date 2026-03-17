@@ -105,8 +105,8 @@ export default function TenantOnboarding() {
               <div>
                 <label className="text-label mb-1.5 block">URL Slug</label>
                 <div className="flex items-center bg-secondary rounded-lg">
-                  <span className="text-xs text-muted-foreground pl-3">educloud.com/</span>
-                  <input value={formData.slug} onChange={(e) => updateField('slug', e.target.value)} placeholder="edupathway" className="flex-1 bg-transparent text-sm px-1 py-2.5 outline-none text-foreground" />
+                  <span className="text-xs text-muted-foreground pl-3">educloud.pk/</span>
+                  <input value={formData.slug} onChange={(e) => updateField('slug', e.target.value)} placeholder="unipathway" className="flex-1 bg-transparent text-sm px-1 py-2.5 outline-none text-foreground" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
