@@ -110,10 +110,10 @@ export default function LeaveManagement() {
       }
     >
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <StatCard title="Pending" value={stats.pending} icon={Clock} trend="neutral" />
-        <StatCard title="Approved" value={stats.approved} icon={CheckCircle} trend="up" />
-        <StatCard title="Rejected" value={stats.rejected} icon={XCircle} trend="down" />
-        <StatCard title="Days Taken" value={stats.totalDays} icon={Calendar} trend="neutral" />
+        <StatCard label="Pending" value={stats.pending} icon={Clock} />
+        <StatCard label="Approved" value={stats.approved} icon={CheckCircle} change="↑" changeType="positive" />
+        <StatCard label="Rejected" value={stats.rejected} icon={XCircle} change="↓" changeType="negative" />
+        <StatCard label="Days Taken" value={stats.totalDays} icon={Calendar} />
       </div>
 
       <div className="flex items-center gap-3 mb-4">
