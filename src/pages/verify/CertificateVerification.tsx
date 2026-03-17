@@ -32,12 +32,9 @@ export default function CertificateVerification() {
     setSearched(true);
 
     const { data } = await supabase
-      .from('certificate_verifications' as any)
-      .select('certificate_number, student_name, programme_title, awarding_body, level, grade, issue_date, expiry_date, status')
-      .eq('certificate_number', query.trim().toUpperCase())
-      .maybeSingle();
+      .rpc('verify_certificate', { _cert_number: query.trim().toUpperCase() });
 
-    setResult((data as unknown as CertResult) || null);
+    setResult((data as unknown as CertResult[])?.[0] || null);
     setLoading(false);
   };
 

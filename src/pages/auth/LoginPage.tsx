@@ -207,8 +207,8 @@ export default function LoginPage() {
             <Link to="/" className="hover:underline">← Back to EduCloud</Link>
           </p>
 
-          {/* Dev Login Panel - Only in development */}
-          {import.meta.env.DEV && (
+          {/* Dev Login Panel - Only visible in local development */}
+          {import.meta.env.DEV && window.location.hostname === 'localhost' && (
             <div className="mt-6 border border-dashed border-destructive/30 rounded-lg overflow-hidden">
               <button
                 onClick={() => setDevOpen(!devOpen)}

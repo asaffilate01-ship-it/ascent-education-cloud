@@ -3432,6 +3432,30 @@ export type Database = {
         }
         Returns: boolean
       }
+      verify_certificate: {
+        Args: { _cert_number: string }
+        Returns: {
+          awarding_body: string
+          certificate_number: string
+          created_at: string
+          expiry_date: string | null
+          grade: string | null
+          id: string
+          issue_date: string
+          level: string
+          programme_title: string
+          status: string
+          student_name: string
+          tenant_id: string | null
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "certificate_verifications"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
     }
     Enums: {
       app_role:
