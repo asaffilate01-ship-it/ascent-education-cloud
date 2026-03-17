@@ -100,7 +100,7 @@ export default function TenantOnboarding() {
             <div className="space-y-4">
               <div>
                 <label className="text-label mb-1.5 block">Centre Name</label>
-                <input value={formData.centreName} onChange={(e) => updateField('centreName', e.target.value)} placeholder="e.g. EduPathway Lahore" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none text-foreground" />
+                <input value={formData.centreName} onChange={(e) => updateField('centreName', e.target.value)} placeholder="e.g. UniPathway Lahore" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none text-foreground" />
               </div>
               <div>
                 <label className="text-label mb-1.5 block">URL Slug</label>
