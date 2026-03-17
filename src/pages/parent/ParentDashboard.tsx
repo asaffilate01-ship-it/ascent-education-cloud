@@ -117,16 +117,16 @@ export default function ParentDashboard() {
               </div>
 
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <StatCard title="Average Grade" value={`${avgGrade}%`} icon={BarChart3}
-                  trend={avgGrade >= 60 ? 'up' : avgGrade >= 40 ? undefined : 'down'}
-                  trendText={avgGrade >= 70 ? 'Distinction' : avgGrade >= 60 ? 'Merit' : avgGrade >= 40 ? 'Pass' : 'At Risk'} />
-                <StatCard title="Attendance" value={`${current.attendance_rate}%`} icon={Calendar}
-                  trend={current.attendance_rate! >= 80 ? 'up' : 'down'}
-                  trendText={current.attendance_rate! >= 80 ? 'Good' : 'Needs Attention'} />
-                <StatCard title="Assignments Graded" value={String(current.grades?.length || 0)} icon={BookOpen} />
-                <StatCard title="Pending Invoices" value={String(current.invoices_pending)} icon={CreditCard}
-                  trend={current.invoices_pending! > 0 ? 'down' : 'up'}
-                  trendText={current.invoices_pending! > 0 ? 'Outstanding' : 'All Clear'} />
+                <StatCard label="Average Grade" value={`${avgGrade}%`} icon={BarChart3}
+                  change={avgGrade >= 70 ? 'Distinction' : avgGrade >= 60 ? 'Merit' : avgGrade >= 40 ? 'Pass' : 'At Risk'}
+                  changeType={avgGrade >= 60 ? 'positive' : avgGrade >= 40 ? 'neutral' : 'negative'} />
+                <StatCard label="Attendance" value={`${current.attendance_rate}%`} icon={Calendar}
+                  change={current.attendance_rate! >= 80 ? 'Good' : 'Needs Attention'}
+                  changeType={current.attendance_rate! >= 80 ? 'positive' : 'negative'} />
+                <StatCard label="Assignments Graded" value={String(current.grades?.length || 0)} icon={BookOpen} />
+                <StatCard label="Pending Invoices" value={String(current.invoices_pending)} icon={CreditCard}
+                  change={current.invoices_pending! > 0 ? 'Outstanding' : 'All Clear'}
+                  changeType={current.invoices_pending! > 0 ? 'negative' : 'positive'} />
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
