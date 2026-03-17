@@ -14,6 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      academic_events: {
+        Row: {
+          all_day: boolean
+          color: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          end_date: string | null
+          event_type: string
+          id: string
+          location: string | null
+          start_date: string
+          tenant_id: string
+          title: string
+          updated_at: string
+          visible_to: string[] | null
+        }
+        Insert: {
+          all_day?: boolean
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          event_type?: string
+          id?: string
+          location?: string | null
+          start_date: string
+          tenant_id: string
+          title: string
+          updated_at?: string
+          visible_to?: string[] | null
+        }
+        Update: {
+          all_day?: boolean
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          event_type?: string
+          id?: string
+          location?: string | null
+          start_date?: string
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+          visible_to?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academic_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "academic_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       applications: {
         Row: {
           agent_id: string | null
@@ -606,6 +672,84 @@ export type Database = {
           },
         ]
       }
+      health_records: {
+        Row: {
+          allergies: string[] | null
+          blood_group: string | null
+          created_at: string
+          doctor_name: string | null
+          doctor_phone: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          emergency_contact_relationship: string | null
+          id: string
+          insurance_number: string | null
+          insurance_provider: string | null
+          last_checkup_date: string | null
+          medical_conditions: string[] | null
+          medications: string[] | null
+          notes: string | null
+          student_id: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          allergies?: string[] | null
+          blood_group?: string | null
+          created_at?: string
+          doctor_name?: string | null
+          doctor_phone?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
+          id?: string
+          insurance_number?: string | null
+          insurance_provider?: string | null
+          last_checkup_date?: string | null
+          medical_conditions?: string[] | null
+          medications?: string[] | null
+          notes?: string | null
+          student_id: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          allergies?: string[] | null
+          blood_group?: string | null
+          created_at?: string
+          doctor_name?: string | null
+          doctor_phone?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
+          id?: string
+          insurance_number?: string | null
+          insurance_provider?: string | null
+          last_checkup_date?: string | null
+          medical_conditions?: string[] | null
+          medications?: string[] | null
+          notes?: string | null
+          student_id?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_records_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "health_records_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoices: {
         Row: {
           amount: number
@@ -791,6 +935,157 @@ export type Database = {
           },
           {
             foreignKeyName: "kyc_documents_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leave_requests: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          days_count: number
+          end_date: string
+          id: string
+          leave_type: string
+          reason: string | null
+          rejection_reason: string | null
+          start_date: string
+          status: string
+          tenant_id: string
+          updated_at: string
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          days_count?: number
+          end_date: string
+          id?: string
+          leave_type?: string
+          reason?: string | null
+          rejection_reason?: string | null
+          start_date: string
+          status?: string
+          tenant_id: string
+          updated_at?: string
+          user_id: string
+          user_name: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          days_count?: number
+          end_date?: string
+          id?: string
+          leave_type?: string
+          reason?: string | null
+          rejection_reason?: string | null
+          start_date?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+          user_id?: string
+          user_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_requests_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_requests_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_plans: {
+        Row: {
+          activities: string | null
+          assessment_method: string | null
+          created_at: string
+          duration_minutes: number
+          homework: string | null
+          id: string
+          lecturer_id: string
+          module_id: string | null
+          notes: string | null
+          objectives: string[] | null
+          resources: string | null
+          session_date: string
+          status: string
+          tenant_id: string
+          title: string
+          topics: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          activities?: string | null
+          assessment_method?: string | null
+          created_at?: string
+          duration_minutes?: number
+          homework?: string | null
+          id?: string
+          lecturer_id: string
+          module_id?: string | null
+          notes?: string | null
+          objectives?: string[] | null
+          resources?: string | null
+          session_date: string
+          status?: string
+          tenant_id: string
+          title: string
+          topics?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          activities?: string | null
+          assessment_method?: string | null
+          created_at?: string
+          duration_minutes?: number
+          homework?: string | null
+          id?: string
+          lecturer_id?: string
+          module_id?: string | null
+          notes?: string | null
+          objectives?: string[] | null
+          resources?: string | null
+          session_date?: string
+          status?: string
+          tenant_id?: string
+          title?: string
+          topics?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_plans_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_plans_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_plans_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants_public"
@@ -1626,6 +1921,179 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      transport_assignments: {
+        Row: {
+          created_at: string
+          dropoff_stop: string | null
+          id: string
+          pickup_stop: string | null
+          route_id: string
+          status: string
+          student_id: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          dropoff_stop?: string | null
+          id?: string
+          pickup_stop?: string | null
+          route_id: string
+          status?: string
+          student_id: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          dropoff_stop?: string | null
+          id?: string
+          pickup_stop?: string | null
+          route_id?: string
+          status?: string
+          student_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transport_assignments_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "transport_routes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_assignments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_assignments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transport_routes: {
+        Row: {
+          created_at: string
+          id: string
+          route_name: string
+          status: string
+          stops: Json | null
+          tenant_id: string
+          updated_at: string
+          vehicle_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          route_name: string
+          status?: string
+          stops?: Json | null
+          tenant_id: string
+          updated_at?: string
+          vehicle_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          route_name?: string
+          status?: string
+          stops?: Json | null
+          tenant_id?: string
+          updated_at?: string
+          vehicle_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transport_routes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_routes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_routes_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "transport_vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transport_vehicles: {
+        Row: {
+          capacity: number
+          created_at: string
+          current_lat: number | null
+          current_lng: number | null
+          driver_name: string | null
+          driver_phone: string | null
+          id: string
+          last_location_update: string | null
+          status: string
+          tenant_id: string
+          updated_at: string
+          vehicle_number: string
+          vehicle_type: string
+        }
+        Insert: {
+          capacity?: number
+          created_at?: string
+          current_lat?: number | null
+          current_lng?: number | null
+          driver_name?: string | null
+          driver_phone?: string | null
+          id?: string
+          last_location_update?: string | null
+          status?: string
+          tenant_id: string
+          updated_at?: string
+          vehicle_number: string
+          vehicle_type?: string
+        }
+        Update: {
+          capacity?: number
+          created_at?: string
+          current_lat?: number | null
+          current_lng?: number | null
+          driver_name?: string | null
+          driver_phone?: string | null
+          id?: string
+          last_location_update?: string | null
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+          vehicle_number?: string
+          vehicle_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transport_vehicles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_vehicles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_presence: {
         Row: {
