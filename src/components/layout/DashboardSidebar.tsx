@@ -158,6 +158,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Commissions', icon: Handshake, path: '/finance/commissions' },
       { label: 'Scholarships', icon: Award, path: '/finance/scholarships' },
       { label: 'Reports', icon: BarChart3, path: '/finance/reports' },
+      { label: 'Activity Log', icon: Activity, path: '/my-activity' },
       { label: 'Messages', icon: MessageSquare, path: '/messaging' },
     ]},
   ],
