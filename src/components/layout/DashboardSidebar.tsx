@@ -235,6 +235,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
     { items: [
       { label: 'Dashboard', icon: LayoutDashboard, path: '/parent' },
       { label: 'Progress', icon: BarChart3, path: '/parent/progress' },
+      { label: 'Activity Log', icon: Activity, path: '/my-activity' },
       { label: 'Messages', icon: MessageSquare, path: '/parent/messages' },
     ]},
   ],
