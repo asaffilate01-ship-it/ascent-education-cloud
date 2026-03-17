@@ -145,6 +145,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Entry Log', icon: UserCheck, path: '/exams/entry' },
       { label: 'Incidents', icon: AlertTriangle, path: '/exams/incidents' },
       { label: 'Results', icon: BarChart3, path: '/exams/results' },
+      { label: 'Activity Log', icon: Activity, path: '/my-activity' },
       { label: 'Messages', icon: MessageSquare, path: '/messaging' },
     ]},
   ],
