@@ -4,11 +4,11 @@ import { GraduationCap, Clock, Award, Video, ArrowRight, Shield } from 'lucide-r
 import TenantNav from '@/components/TenantNav';
 
 const COURSES = [
-  { id: '1', title: 'Level 5 Diploma in Business Management', body: 'OTHM', level: 'Level 5', duration: '12 months', credits: 120, fee: 'Rs.350,000', modules: ['Strategic Management', 'Financial Analysis', 'Marketing Strategy', 'Business Environment', 'Research Methods', 'Operations Management'], progression: 'BA (Hons) Top-Up at UK universities' },
-  { id: '2', title: 'Level 4 Diploma in Business Management', body: 'OTHM', level: 'Level 4', duration: '12 months', credits: 120, fee: 'Rs.350,000', modules: ['Business Environment', 'Communication Skills', 'Financial Accounting', 'Management Accounting', 'People Management', 'Business Law'], progression: 'Level 5 Diploma' },
-  { id: '3', title: 'Level 5 Diploma in Computing', body: 'QUALIFI', level: 'Level 5', duration: '12 months', credits: 120, fee: 'Rs.350,000', modules: ['Software Engineering', 'Database Design', 'Networking', 'Cyber Security', 'Web Development', 'Project Management'], progression: 'BSc (Hons) Top-Up at UK universities' },
-  { id: '4', title: 'Level 4 Diploma in Computing', body: 'QUALIFI', level: 'Level 4', duration: '12 months', credits: 120, fee: 'Rs.350,000', modules: ['Computer Systems', 'Programming Fundamentals', 'Web Technologies', 'Database Systems', 'Networking Basics', 'IT Project'], progression: 'Level 5 Diploma' },
-  { id: '5', title: 'Level 3 Diploma in Accounting', body: 'IAB', level: 'Level 3', duration: '6 months', credits: 60, fee: 'Rs.250,000', modules: ['Bookkeeping', 'Financial Statements', 'VAT Returns', 'Payroll'], progression: 'Level 4 Diploma in Accounting' },
+  { id: '1', title: 'Level 5 Diploma in Business Management', body: 'OTHM', level: 'Level 5', duration: '12 months', credits: 120, fee: 'Rs.640,000', modules: ['Strategic Management', 'Financial Analysis', 'Marketing Strategy', 'Business Environment', 'Research Methods', 'Operations Management'], progression: 'BA (Hons) Top-Up at UK universities' },
+  { id: '2', title: 'Level 4 Diploma in Business Management', body: 'OTHM', level: 'Level 4', duration: '12 months', credits: 120, fee: 'Rs.520,000', modules: ['Business Environment', 'Communication Skills', 'Financial Accounting', 'Management Accounting', 'People Management', 'Business Law'], progression: 'Level 5 Diploma' },
+  { id: '3', title: 'Level 5 Diploma in Computing', body: 'QUALIFI', level: 'Level 5', duration: '12 months', credits: 120, fee: 'Rs.640,000', modules: ['Software Engineering', 'Database Design', 'Networking', 'Cyber Security', 'Web Development', 'Project Management'], progression: 'BSc (Hons) Top-Up at UK universities' },
+  { id: '4', title: 'Level 4 Diploma in Computing', body: 'QUALIFI', level: 'Level 4', duration: '12 months', credits: 120, fee: 'Rs.520,000', modules: ['Computer Systems', 'Programming Fundamentals', 'Web Technologies', 'Database Systems', 'Networking Basics', 'IT Project'], progression: 'Level 5 Diploma' },
+  { id: '5', title: 'Level 3 Diploma in Accounting', body: 'IAB', level: 'Level 3', duration: '6 months', credits: 60, fee: 'Rs.400,000', modules: ['Bookkeeping', 'Financial Statements', 'VAT Returns', 'Payroll'], progression: 'Level 4 Diploma in Accounting' },
 ];
 
 export default function TenantCoursesPage() {

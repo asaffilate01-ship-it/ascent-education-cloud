@@ -16,11 +16,11 @@ const STEPS = [
 ];
 
 const PROGRAMMES = [
-  { id: '1', title: 'Level 5 Diploma in Business Management', body: 'OTHM', fee: 'Rs.350,000', duration: '12 months', level: 'Level 5' },
-  { id: '2', title: 'Level 4 Diploma in Business Management', body: 'OTHM', fee: 'Rs.350,000', duration: '12 months', level: 'Level 4' },
-  { id: '3', title: 'Level 5 Diploma in Computing', body: 'QUALIFI', fee: 'Rs.350,000', duration: '12 months', level: 'Level 5' },
-  { id: '4', title: 'Level 4 Diploma in Computing', body: 'QUALIFI', fee: 'Rs.350,000', duration: '12 months', level: 'Level 4' },
-  { id: '5', title: 'Level 3 Diploma in Accounting', body: 'IAB', fee: 'Rs.250,000', duration: '6 months', level: 'Level 3' },
+  { id: '1', title: 'Level 5 Diploma in Business Management', body: 'OTHM', fee: 'Rs.640,000', duration: '12 months', level: 'Level 5' },
+  { id: '2', title: 'Level 4 Diploma in Business Management', body: 'OTHM', fee: 'Rs.520,000', duration: '12 months', level: 'Level 4' },
+  { id: '3', title: 'Level 5 Diploma in Computing', body: 'QUALIFI', fee: 'Rs.640,000', duration: '12 months', level: 'Level 5' },
+  { id: '4', title: 'Level 4 Diploma in Computing', body: 'QUALIFI', fee: 'Rs.520,000', duration: '12 months', level: 'Level 4' },
+  { id: '5', title: 'Level 3 Diploma in Accounting', body: 'IAB', fee: 'Rs.400,000', duration: '6 months', level: 'Level 3' },
 ];
 
 const REQUIRED_DOCS = [
