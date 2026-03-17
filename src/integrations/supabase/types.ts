@@ -1724,6 +1724,63 @@ export type Database = {
           },
         ]
       }
+      resource_view_logs: {
+        Row: {
+          completed: boolean | null
+          created_at: string
+          duration_seconds: number | null
+          ended_at: string | null
+          id: string
+          module_name: string | null
+          resource_title: string
+          resource_type: string
+          started_at: string
+          student_id: string
+          tenant_id: string | null
+        }
+        Insert: {
+          completed?: boolean | null
+          created_at?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          module_name?: string | null
+          resource_title: string
+          resource_type?: string
+          started_at?: string
+          student_id: string
+          tenant_id?: string | null
+        }
+        Update: {
+          completed?: boolean | null
+          created_at?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          module_name?: string | null
+          resource_title?: string
+          resource_type?: string
+          started_at?: string
+          student_id?: string
+          tenant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resource_view_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resource_view_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       student_enrolments: {
         Row: {
           application_id: string | null
