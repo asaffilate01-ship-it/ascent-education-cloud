@@ -210,6 +210,109 @@ export default function TenantLandingPage() {
         </div>
       </section>
 
+      {/* ─── STUDY FROM HOME & SAVE ─── */}
+      <section className="py-20 sm:py-28" style={{ background: `linear-gradient(180deg, ${pc}04 0%, transparent 100%)` }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-14">
+            <span className="text-xs font-bold uppercase tracking-widest mb-3 block" style={{ color: pc }}>The Smart Way to a Global Degree</span>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground">Study 2 Years from Home. <br className="hidden sm:block" /><span style={{ color: pc }}>Final Year Abroad.</span> Same Degree.</h2>
+            <p className="text-muted-foreground mt-4 max-w-2xl mx-auto text-base leading-relaxed">
+              Complete your Level 4 &amp; 5 diplomas from the comfort of home in Pakistan, then fly out for just the final top-up year at a partner university in the UK, USA, Australia or Canada. You graduate with the <strong>exact same degree</strong> as students who studied all 3 years on campus.
+            </p>
+          </div>
+
+          {/* Savings comparison */}
+          <div className="grid md:grid-cols-2 gap-6 mb-14">
+            <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
+              className="surface-card p-8 border-2 border-border/50 relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider bg-muted text-muted-foreground rounded-bl-lg">Traditional Route</div>
+              <h3 className="text-lg font-bold text-muted-foreground mb-6 mt-4">3-Year Degree Abroad</h3>
+              <div className="space-y-3 mb-6">
+                {[
+                  { label: 'Tuition (3 years)', value: '£27,000–£45,000' },
+                  { label: 'Living costs (3 years)', value: '£36,000–£45,000' },
+                  { label: 'Visa & flights', value: '£3,000–£5,000' },
+                ].map(item => (
+                  <div key={item.label} className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">{item.label}</span>
+                    <span className="font-semibold">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="border-t border-border/50 pt-4 flex justify-between items-center">
+                <span className="text-sm font-bold">Total Cost</span>
+                <span className="text-2xl font-extrabold text-destructive">Rs. 2.5–3+ Crore</span>
+              </div>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
+              className="surface-card p-8 border-2 relative overflow-hidden" style={{ borderColor: pc }}
+            >
+              <div className="absolute top-0 right-0 px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-bl-lg text-white" style={{ backgroundColor: pc }}>{theme.brandName} Route</div>
+              <h3 className="text-lg font-bold mb-6 mt-4" style={{ color: pc }}>2 Years Home + 1 Year Abroad</h3>
+              <div className="space-y-3 mb-6">
+                {[
+                  { label: 'Level 4 & 5 at home (2 years)', value: 'Rs. 16–18 Lakh' },
+                  { label: 'Final year top-up abroad', value: '£9,000–£15,000' },
+                  { label: 'Living costs (1 year only)', value: '£12,000–£15,000' },
+                  { label: 'Visa & flights', value: '£2,000–£3,000' },
+                ].map(item => (
+                  <div key={item.label} className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">{item.label}</span>
+                    <span className="font-semibold">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="border-t pt-4 flex justify-between items-center" style={{ borderColor: `${pc}30` }}>
+                <span className="text-sm font-bold">Total Cost</span>
+                <span className="text-2xl font-extrabold" style={{ color: pc }}>Rs. 70–95 Lakh</span>
+              </div>
+              <div className="mt-4 rounded-lg p-3 text-center" style={{ backgroundColor: `${pc}08` }}>
+                <p className="text-sm font-bold" style={{ color: pc }}>
+                  <TrendingDown className="w-4 h-4 inline mr-1" />
+                  You save Rs. 1.5–2+ Crore on a 3-year degree
+                </p>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Benefits grid */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {[
+              { icon: Home, title: 'Study from Home', desc: 'Complete 2 years of your degree from the comfort of your own home. No relocation, no homesickness, no expensive rent abroad.' },
+              { icon: BadgeCheck, title: 'Same Degree Certificate', desc: "Your final degree certificate is identical — it doesn't mention where you studied Years 1 & 2. Employers see the same prestigious university name." },
+              { icon: Banknote, title: 'Save Rs. 1.8+ Crore', desc: 'For a 3-year degree, save a minimum of Rs. 1.8 Crore in tuition and living costs. For 4-year degrees, savings exceed Rs. 2.5 Crore.' },
+              { icon: Heart, title: 'Family & Support', desc: 'Stay close to family during the crucial first 2 years. Enjoy home-cooked meals, familiar surroundings, and zero culture shock while studying.' },
+              { icon: Plane, title: 'Just 1 Year Abroad', desc: 'Fly out only for the final top-up year. Experience international campus life, build global networks, and graduate in person — all in 12 months.' },
+              { icon: Globe, title: 'Global Career Options', desc: 'A UK/Australian/Canadian degree opens doors worldwide. Access post-study work visas (UK 2-year, Australia 2–4 year, Canada 3-year PGWP).' },
+              { icon: Shield, title: 'UK-Regulated Quality', desc: 'Your Level 4 & 5 qualifications are regulated by Ofqual and recognised by OTHM, QUALIFI & IAB — the same standards as studying in the UK.' },
+              { icon: Star, title: 'No Compromise on Learning', desc: 'HD live lectures, recorded sessions, virtual classrooms, e-library access, dedicated tutors, and 2 residential weeks per year for in-person experience.' },
+            ].map((b) => (
+              <motion.div key={b.title} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                className="surface-card p-6 border border-border/50 hover:shadow-lg transition-all"
+              >
+                <div className="p-2.5 rounded-xl w-fit mb-4" style={{ backgroundColor: `${pc}08` }}>
+                  <b.icon className="w-5 h-5" style={{ color: pc }} />
+                </div>
+                <h3 className="text-sm font-bold mb-1.5">{b.title}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">{b.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <div className="text-center mt-12">
+            <Link to="/apply">
+              <Button size="lg" className="h-13 px-12 text-base shadow-lg" style={{ backgroundColor: pc }}>
+                Start Your Journey — Apply Now <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Link>
+            <p className="text-xs text-muted-foreground mt-3">No application fee · Decision within 48 hours</p>
+          </div>
+        </div>
+      </section>
+
       {/* ─── COURSES ─── */}
       <section id="courses" className="py-20 sm:py-28" style={{ background: `${pc}03` }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
