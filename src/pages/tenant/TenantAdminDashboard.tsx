@@ -54,7 +54,7 @@ export default function TenantAdminDashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Students Enrolled" value={stats.enrolled} icon={GraduationCap} />
         <StatCard label="Active Programmes" value={stats.activeProgrammes} icon={BookOpen} />
-        <StatCard label="Revenue Collected" value={`£${stats.revenue.toLocaleString()}`} icon={CreditCard} />
+        <StatCard label="Revenue Collected" value={`Rs.${stats.revenue.toLocaleString()}`} icon={CreditCard} />
         <StatCard label="Modules" value={(modules || []).length} icon={Video} />
       </div>
 
