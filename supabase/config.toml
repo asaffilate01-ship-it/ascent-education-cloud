@@ -1,1 +1,31 @@
 project_id = "hefqywelpagyqvadjwvh"
+
+[functions.send-email]
+verify_jwt = false
+
+[functions.generate-certificate]
+verify_jwt = false
+
+[functions.ai-study-assistant]
+verify_jwt = false
+
+[functions.webhook-stripe]
+verify_jwt = false
+
+[functions.export-report]
+verify_jwt = false
+
+[functions.ai-grading-assistant]
+verify_jwt = false
+
+[functions.ai-plagiarism-check]
+verify_jwt = false
+
+[functions.send-sms]
+verify_jwt = false
+
+[functions.contact-form]
+verify_jwt = false
+
+[functions.send-notification]
+verify_jwt = false
