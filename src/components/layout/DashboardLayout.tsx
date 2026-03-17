@@ -4,7 +4,7 @@ import { Search, Moon, Sun } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation, Link } from 'react-router-dom';
 import { useTheme } from '@/hooks/useTheme';
-import CommandPalette from '@/components/CommandPalette';
+import AdvancedSearch from '@/components/AdvancedSearch';
 import NotificationBell from '@/components/NotificationBell';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
@@ -103,7 +103,7 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
         </motion.main>
       </div>
 
-      <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
+      <AdvancedSearch open={cmdOpen} onOpenChange={setCmdOpen} />
     </div>
   );
 }
