@@ -158,8 +158,8 @@ export default function AnalyticsDashboard() {
             <AreaChart data={revenueData}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(0, 8%, 90%)" />
               <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="hsl(0, 5%, 45%)" />
-              <YAxis tick={{ fontSize: 11 }} stroke="hsl(0, 5%, 45%)" tickFormatter={(v) => `£${(v/1000).toFixed(0)}k`} />
-              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} formatter={(value: number) => [`£${value.toLocaleString()}`, '']} />
+              <YAxis tick={{ fontSize: 11 }} stroke="hsl(0, 5%, 45%)" tickFormatter={(v) => `Rs.${(v/1000).toFixed(0)}k`} />
+              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} formatter={(value: number) => [`Rs.${value.toLocaleString()}`, '']} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
               <Area type="monotone" dataKey="tuition" name="Tuition" stackId="1" fill="hsl(0, 72%, 45%)" stroke="hsl(0, 72%, 45%)" fillOpacity={0.6} />
               <Area type="monotone" dataKey="commissions" name="Commissions" stackId="1" fill="hsl(0, 60%, 65%)" stroke="hsl(0, 60%, 65%)" fillOpacity={0.6} />

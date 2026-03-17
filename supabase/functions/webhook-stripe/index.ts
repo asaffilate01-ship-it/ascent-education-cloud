@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
               user_id: invoice.student_id,
               tenant_id: tenantId,
               title: 'Payment Received',
-              message: `Your payment of £${(pi.amount / 100).toFixed(2)} has been confirmed.`,
+              message: `Your payment of Rs.${(pi.amount / 100).toFixed(2)} has been confirmed.`,
               type: 'finance',
               severity: 'success',
             })

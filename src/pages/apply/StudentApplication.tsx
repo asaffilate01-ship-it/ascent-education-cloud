@@ -474,12 +474,12 @@ export default function StudentApplication() {
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="surface-data p-4 rounded-lg">
                     <p className="text-[10px] text-muted-foreground uppercase">Application Fee</p>
-                    <p className="text-xl font-bold text-primary">£50</p>
+                    <p className="text-xl font-bold text-primary">Rs.15,000</p>
                     <p className="text-xs text-muted-foreground mt-1">Non-refundable</p>
                   </div>
                   <div className="surface-data p-4 rounded-lg">
                     <p className="text-[10px] text-muted-foreground uppercase">Deposit</p>
-                    <p className="text-xl font-bold text-primary">£200</p>
+                    <p className="text-xl font-bold text-primary">Rs.50,000</p>
                     <p className="text-xs text-muted-foreground mt-1">Deducted from tuition</p>
                   </div>
                 </div>

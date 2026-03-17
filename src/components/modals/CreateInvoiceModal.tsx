@@ -79,7 +79,7 @@ export default function CreateInvoiceModal({ open, onOpenChange, onCreated }: Cr
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="text-xs">Amount (£)</Label>
+              <Label className="text-xs">Amount (Rs.)</Label>
               <Input type="number" placeholder="1200" className="mt-1" required value={form.amount} onChange={(e) => handleChange('amount', e.target.value)} />
             </div>
             <div>
