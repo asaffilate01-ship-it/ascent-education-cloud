@@ -71,6 +71,8 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Reports', icon: BarChart3, path: '/director/reports' },
       { label: 'Messages', icon: MessageSquare, path: '/messaging' },
       { label: 'Branding', icon: Palette, path: '/director/branding' },
+      { label: 'Page Builder', icon: Monitor, path: '/director/page-builder' },
+      { label: 'Domains & Email', icon: Globe, path: '/director/domains' },
       { label: 'Settings', icon: Settings, path: '/director/settings' },
     ]},
   ],

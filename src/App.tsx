@@ -186,6 +186,8 @@ function AppRoutes() {
         <Route path="/director/agents" element={<Director><AgentDashboard /></Director>} />
         <Route path="/director/schedule" element={<Director><ScheduleManager /></Director>} />
         <Route path="/director/branding" element={<Director><TenantBranding /></Director>} />
+        <Route path="/director/page-builder" element={<Director><TenantPageBuilder /></Director>} />
+        <Route path="/director/domains" element={<Director><TenantDomainSettings /></Director>} />
         <Route path="/director/reports" element={<Director><AnalyticsDashboard /></Director>} />
         <Route path="/director/settings" element={<Director><SettingsPage /></Director>} />
 
