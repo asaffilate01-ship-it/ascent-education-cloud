@@ -83,6 +83,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Documents', icon: FileText, path: '/admissions/documents' },
       { label: 'Eligibility', icon: UserCheck, path: '/admissions/eligibility' },
       { label: 'Offers', icon: Award, path: '/admissions/offers' },
+      { label: 'Activity Log', icon: Activity, path: '/my-activity' },
       { label: 'Counselling', icon: MessageSquare, path: '/admissions/counselling' },
       { label: 'Messages', icon: MessageSquare, path: '/messaging' },
       { label: 'Reports', icon: BarChart3, path: '/admissions/reports' },
