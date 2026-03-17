@@ -150,10 +150,10 @@ export default function TenantLandingPage() {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { icon: GraduationCap, title: 'UK Recognised Qualifications', desc: 'Study OTHM, QUALIFI, and IAB accredited courses — recognised by universities across the UK, Canada, Australia, and USA.' },
+              { icon: GraduationCap, title: 'Globally Recognised Qualifications', desc: 'Study OTHM, QUALIFI, and IAB accredited courses — recognised by universities across the UK, USA, Canada, Australia, and beyond.' },
               { icon: Video, title: '80% Online Learning', desc: 'Join HD live lectures from home. Interactive whiteboard, breakout rooms, and all sessions recorded for 24/7 playback.' },
               { icon: MapPin, title: '20% In-Centre Experience', desc: 'Attend 2 residential weeks per year for workshops, presentations, tutor meetings, and formal examinations.' },
-              { icon: Target, title: 'University Progression', desc: 'Clear academic pathways to top-up your diploma to a full bachelor\'s degree at partner universities worldwide.' },
+              { icon: Target, title: 'Global University Progression', desc: 'Clear academic pathways to top-up your diploma to a full bachelor\'s degree at partner universities in UK, USA, Australia & Canada.' },
               { icon: Shield, title: 'Full QA Compliance', desc: 'Every assignment is moderated, plagiarism-checked, and verified to meet awarding body standards.' },
               { icon: Users, title: 'Career Support', desc: 'Access job listings, CV builder, and employer partner internships through our integrated career portal.' },
             ].map((f) => (
