@@ -1,7 +1,7 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
-import { CreditCard, FileText, TrendingUp, AlertTriangle, Handshake, Search, Filter, Download, Loader2, Banknote } from 'lucide-react';
+import { CreditCard, FileText, TrendingUp, AlertTriangle, Handshake, Search, Download, Loader2, Banknote } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -23,6 +23,8 @@ const statusVariant = (s: string): 'success' | 'warning' | 'danger' | 'info' | '
 
 export default function FinanceDashboard() {
   const [invoiceOpen, setInvoiceOpen] = useState(false);
+  const [paymentOpen, setPaymentOpen] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -53,6 +55,17 @@ export default function FinanceDashboard() {
     } finally {
       setExporting(false);
     }
+  };
+
+  const openPayment = (inv: any) => {
+    setSelectedInvoice({
+      id: inv.id,
+      student_name: inv.student_name,
+      amount: inv.amount,
+      paid: inv.paid,
+      tenant_id: inv.tenant_id,
+    });
+    setPaymentOpen(true);
   };
 
   if (loading) return <DashboardSkeleton />;
@@ -139,31 +152,42 @@ export default function FinanceDashboard() {
                 <th className="text-label text-left px-4 py-3 hidden md:table-cell">Balance</th>
                 <th className="text-label text-left px-4 py-3">Status</th>
                 <th className="text-label text-left px-4 py-3 hidden lg:table-cell">Due Date</th>
+                <th className="text-label text-left px-4 py-3">Action</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((inv) => (
-                <tr key={inv.id} className="border-t border-border/50 hover:bg-secondary/50 cursor-pointer transition-default">
-                  <td className="px-4 py-3 text-sm font-mono font-medium">{inv.id.slice(0, 8)}</td>
-                  <td className="px-4 py-3 text-sm">{inv.student_name}</td>
-                  <td className="px-4 py-3 hidden sm:table-cell">
-                    <span className="text-xs capitalize bg-secondary px-2 py-0.5 rounded">{inv.type}</span>
-                  </td>
-                  <td className="px-4 py-3 text-sm font-medium">Rs.{Number(inv.amount).toLocaleString()}</td>
-                  <td className="px-4 py-3 text-sm text-success font-medium hidden md:table-cell">Rs.{Number(inv.paid).toLocaleString()}</td>
-                  <td className="px-4 py-3 text-sm font-medium hidden md:table-cell">
-                    {Number(inv.amount) - Number(inv.paid) > 0 ? (
-                      <span className="text-destructive">Rs.{(Number(inv.amount) - Number(inv.paid)).toLocaleString()}</span>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <StatusBadge status={inv.status} variant={statusVariant(inv.status)} />
-                  </td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground hidden lg:table-cell">{inv.due_date || '—'}</td>
-                </tr>
-              ))}
+              {filtered.map((inv) => {
+                const balance = Number(inv.amount) - Number(inv.paid);
+                return (
+                  <tr key={inv.id} className="border-t border-border/50 hover:bg-secondary/50 transition-default">
+                    <td className="px-4 py-3 text-sm font-mono font-medium">{inv.id.slice(0, 8)}</td>
+                    <td className="px-4 py-3 text-sm">{inv.student_name}</td>
+                    <td className="px-4 py-3 hidden sm:table-cell">
+                      <span className="text-xs capitalize bg-secondary px-2 py-0.5 rounded">{inv.type}</span>
+                    </td>
+                    <td className="px-4 py-3 text-sm font-medium">Rs.{Number(inv.amount).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-sm text-success font-medium hidden md:table-cell">Rs.{Number(inv.paid).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-sm font-medium hidden md:table-cell">
+                      {balance > 0 ? (
+                        <span className="text-destructive">Rs.{balance.toLocaleString()}</span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusBadge status={inv.status} variant={statusVariant(inv.status)} />
+                    </td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground hidden lg:table-cell">{inv.due_date || '—'}</td>
+                    <td className="px-4 py-3">
+                      {balance > 0 && (
+                        <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => openPayment(inv)}>
+                          <Banknote className="w-3 h-3 mr-1" /> Pay
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -173,6 +197,7 @@ export default function FinanceDashboard() {
       </div>
 
       <CreateInvoiceModal open={invoiceOpen} onOpenChange={setInvoiceOpen} onCreated={refetch} />
+      <RecordPaymentModal open={paymentOpen} onOpenChange={setPaymentOpen} invoice={selectedInvoice} onRecorded={refetch} />
     </DashboardLayout>
   );
 }
