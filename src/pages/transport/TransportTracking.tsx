@@ -76,10 +76,10 @@ export default function TransportTracking() {
   return (
     <DashboardLayout title="Transport & GPS Tracking" subtitle="Manage vehicles, routes, and live tracking">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <StatCard title="Vehicles" value={stats.vehicles} icon={Bus} trend="neutral" />
-        <StatCard title="Active" value={stats.active} icon={Navigation} trend="up" />
-        <StatCard title="Routes" value={stats.routes} icon={Route} trend="neutral" />
-        <StatCard title="Students" value={stats.students} icon={Users} trend="neutral" />
+        <StatCard label="Vehicles" value={stats.vehicles} icon={Bus} />
+        <StatCard label="Active" value={stats.active} icon={Navigation} change="↑" changeType="positive" />
+        <StatCard label="Routes" value={stats.routes} icon={Route} />
+        <StatCard label="Students" value={stats.students} icon={Users} />
       </div>
 
       <Tabs defaultValue="vehicles">
