@@ -270,8 +270,8 @@ export default function TenantLandingPage() {
               </div>
               <div className="mt-4 rounded-lg p-3 text-center" style={{ backgroundColor: `${pc}08` }}>
                 <p className="text-sm font-bold" style={{ color: pc }}>
-                  <TrendingDown className="w-4 h-4 inline mr-1" />
-                  You save Rs. 1.5–2+ Crore on a 3-year degree
+                   <TrendingDown className="w-4 h-4 inline mr-1" />
+                   You save Rs. 2–3+ Crore on a 3-year degree
                 </p>
               </div>
             </motion.div>
