@@ -91,7 +91,10 @@ export default function FinanceDashboard() {
             <SelectItem value="commission">Commission</SelectItem>
           </SelectContent>
         </Select>
-        <Button variant="outline" size="sm" className="text-xs ml-auto" onClick={() => toast({ title: 'Exported', description: 'CSV file downloaded successfully.' })}>Export CSV</Button>
+        <Button variant="outline" size="sm" className="text-xs ml-auto" onClick={handleExportCSV} disabled={exporting}>
+          {exporting ? <Loader2 className="w-3 h-3 mr-1.5 animate-spin" /> : <Download className="w-3 h-3 mr-1.5" />}
+          Export CSV
+        </Button>
       </div>
 
       {/* Invoice Table */}

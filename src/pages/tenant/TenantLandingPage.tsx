@@ -272,7 +272,7 @@ export default function TenantLandingPage() {
       <section className="py-20 sm:py-28" style={{ background: `${pc}03` }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <span className="text-xs font-bold uppercase tracking-widest mb-3 block" style={{ color: pc }}>Accreditation</span>
-          <h2 className="text-2xl sm:text-4xl font-extrabold mb-10">Accredited & Recognised Globally</h2>
+          <h2 className="text-2xl sm:text-4xl font-extrabold mb-10">Accredited & Recognised in 100+ Countries</h2>
           <div className="flex flex-col sm:flex-row justify-center gap-6 max-w-3xl mx-auto">
             {[
               { name: 'OTHM Qualifications', desc: 'UK Ofqual regulated awarding body' },
