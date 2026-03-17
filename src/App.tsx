@@ -26,6 +26,8 @@ const TenantCoursesPage = lazy(() => import("./pages/tenant/TenantCoursesPage"))
 const TenantContactPage = lazy(() => import("./pages/tenant/TenantContactPage"));
 const TenantAdminDashboard = lazy(() => import("./pages/tenant/TenantAdminDashboard"));
 const TenantBranding = lazy(() => import("./pages/tenant/TenantBranding"));
+const TenantPageBuilder = lazy(() => import("./pages/tenant/TenantPageBuilder"));
+const TenantDomainSettings = lazy(() => import("./pages/tenant/TenantDomainSettings"));
 const CentreDirectorDashboard = lazy(() => import("./pages/director/CentreDirectorDashboard"));
 const ProgrammeManagement = lazy(() => import("./pages/director/ProgrammeManagement"));
 const StaffManagement = lazy(() => import("./pages/director/StaffManagement"));
