@@ -85,7 +85,7 @@ export default function PrivacyPolicyPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-foreground">8. Contact</h2>
-            <p>For data protection enquiries, contact our Data Protection Officer at <strong>dpo@educloud.com</strong>.</p>
+            <p>For data protection enquiries, contact our Data Protection Officer at <strong>dpo@educloud.pk</strong>.</p>
           </section>
         </div>
       </main>

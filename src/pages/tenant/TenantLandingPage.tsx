@@ -16,7 +16,7 @@ const DEFAULT_THEME: TenantTheme = {
   heroSubtitle: 'Study OTHM, QUALIFI & IAB accredited Level 3–5 diplomas 80% online.',
   heroImageUrl: '',
   customDomain: '',
-  brandName: 'EduPathway',
+  brandName: 'UniPathway',
 };
 
 export default function TenantLandingPage() {
@@ -232,7 +232,7 @@ export default function TenantLandingPage() {
             {[
               { icon: MapPin, title: 'Visit Us', info: 'Main Boulevard, Gulberg III, Lahore, Pakistan' },
               { icon: Phone, title: 'Call Us', info: '+92 42 1234 5678' },
-              { icon: Mail, title: 'Email Us', info: 'admissions@edupathway.pk' },
+              { icon: Mail, title: 'Email Us', info: 'admissions@unipathway.pk' },
             ].map((c) => (
               <div key={c.title} className="surface-card p-5 text-center">
                 <c.icon className="w-5 h-5 mx-auto mb-2" style={{ color: theme.primaryColor }} />

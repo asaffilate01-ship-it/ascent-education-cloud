@@ -183,11 +183,11 @@ export default function SettingsPage() {
               <div className="space-y-4">
                 <div>
                   <label className="text-label mb-1.5 block">Centre Name</label>
-                  <input defaultValue="EduPathway Lahore" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none" />
+                  <input defaultValue="UniPathway Lahore" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none" />
                 </div>
                 <div>
                   <label className="text-label mb-1.5 block">Contact Email</label>
-                  <input defaultValue="admin@edupathway.pk" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none" />
+                  <input defaultValue="admin@unipathway.pk" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none" />
                 </div>
                 <div>
                   <label className="text-label mb-1.5 block">Timezone</label>

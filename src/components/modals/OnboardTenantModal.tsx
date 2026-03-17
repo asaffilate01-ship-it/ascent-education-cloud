@@ -75,7 +75,7 @@ export default function OnboardTenantModal({ onSuccess, children }: Props) {
             <Label>Slug</Label>
             <div className="flex items-center gap-1">
               <Input value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))} />
-              <span className="text-xs text-muted-foreground whitespace-nowrap">.educloud.com</span>
+              <span className="text-xs text-muted-foreground whitespace-nowrap">.educloud.pk</span>
             </div>
           </div>
           <div>

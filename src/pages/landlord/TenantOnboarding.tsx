@@ -100,13 +100,13 @@ export default function TenantOnboarding() {
             <div className="space-y-4">
               <div>
                 <label className="text-label mb-1.5 block">Centre Name</label>
-                <input value={formData.centreName} onChange={(e) => updateField('centreName', e.target.value)} placeholder="e.g. EduPathway Lahore" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none text-foreground" />
+                <input value={formData.centreName} onChange={(e) => updateField('centreName', e.target.value)} placeholder="e.g. UniPathway Lahore" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none text-foreground" />
               </div>
               <div>
                 <label className="text-label mb-1.5 block">URL Slug</label>
                 <div className="flex items-center bg-secondary rounded-lg">
-                  <span className="text-xs text-muted-foreground pl-3">educloud.com/</span>
-                  <input value={formData.slug} onChange={(e) => updateField('slug', e.target.value)} placeholder="edupathway" className="flex-1 bg-transparent text-sm px-1 py-2.5 outline-none text-foreground" />
+                  <span className="text-xs text-muted-foreground pl-3">educloud.pk/</span>
+                  <input value={formData.slug} onChange={(e) => updateField('slug', e.target.value)} placeholder="unipathway" className="flex-1 bg-transparent text-sm px-1 py-2.5 outline-none text-foreground" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -188,7 +188,7 @@ export default function TenantOnboarding() {
             <div className="space-y-4">
               <div>
                 <label className="text-label mb-1.5 block">Brand Name</label>
-                <input value={formData.brandName} onChange={(e) => updateField('brandName', e.target.value)} placeholder="EduPathway" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none text-foreground" />
+                <input value={formData.brandName} onChange={(e) => updateField('brandName', e.target.value)} placeholder="UniPathway" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none text-foreground" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -228,7 +228,7 @@ export default function TenantOnboarding() {
               </div>
               <div>
                 <label className="text-label mb-1.5 block">Email Address</label>
-                <input type="email" value={formData.adminEmail} onChange={(e) => updateField('adminEmail', e.target.value)} placeholder="director@edupathway.pk" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none text-foreground" />
+                <input type="email" value={formData.adminEmail} onChange={(e) => updateField('adminEmail', e.target.value)} placeholder="director@unipathway.pk" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none text-foreground" />
               </div>
               <p className="text-xs text-muted-foreground">An invitation email will be sent to create their password and complete setup.</p>
             </div>
@@ -241,7 +241,7 @@ export default function TenantOnboarding() {
             <div className="grid md:grid-cols-2 gap-4 mb-6">
               {[
                 { label: 'Centre Name', value: formData.centreName || 'Not set' },
-                { label: 'URL', value: `${formData.slug || '...'}.educloud.com` },
+                { label: 'URL', value: `${formData.slug || '...'}.educloud.pk` },
                 { label: 'Location', value: `${formData.city || '...'}, ${formData.country}` },
                 { label: 'Plan', value: formData.plan.charAt(0).toUpperCase() + formData.plan.slice(1) },
                 { label: 'Admin', value: formData.adminName || 'Not set' },

@@ -53,7 +53,7 @@ export default function LandlordDashboard() {
     { key: 'name', label: 'Centre', render: (t: any) => (
       <div>
         <p className="text-sm font-medium">{t.name}</p>
-        <p className="text-xs text-muted-foreground">{t.slug}.educloud.com</p>
+        <p className="text-xs text-muted-foreground">{t.slug}.educloud.pk</p>
       </div>
     )},
     { key: 'plan', label: 'Plan', render: (t: any) => (

@@ -39,7 +39,7 @@ export default function SaaSLandingPage() {
             <a href="#pricing" className="hover:text-foreground transition-default">Pricing</a>
             <a href="#modules" className="hover:text-foreground transition-default">Modules</a>
             <a href="#security" className="hover:text-foreground transition-default">Security</a>
-            <Link to="/tenant/edupathway">
+            <Link to="/tenant/unipathway">
               <Button variant="outline" size="sm">Demo Tenant</Button>
             </Link>
             <Link to="/landlord">
@@ -63,7 +63,7 @@ export default function SaaSLandingPage() {
             <a href="#modules" className="block text-sm text-muted-foreground" onClick={() => setMobileMenuOpen(false)}>Modules</a>
             <a href="#security" className="block text-sm text-muted-foreground" onClick={() => setMobileMenuOpen(false)}>Security</a>
             <div className="flex gap-2 pt-2">
-              <Link to="/tenant/edupathway" className="flex-1">
+              <Link to="/tenant/unipathway" className="flex-1">
                 <Button variant="outline" size="sm" className="w-full">Demo Tenant</Button>
               </Link>
               <Link to="/landlord" className="flex-1">
@@ -101,7 +101,7 @@ export default function SaaSLandingPage() {
                   Launch Your Centre <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
               </Link>
-              <Link to="/tenant/edupathway">
+              <Link to="/tenant/unipathway">
                 <Button variant="outline" size="lg" className="w-full sm:w-auto">See Live Demo</Button>
               </Link>
             </div>
@@ -381,7 +381,7 @@ export default function SaaSLandingPage() {
           <p className="text-center text-muted-foreground mb-8 sm:mb-10">See what our centres are saying</p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
-              { name: 'Dr. Sarah Khan', role: 'Centre Director, EduPathway London', quote: 'EduCloud transformed our college operations. We went from spreadsheets to a fully digital campus in 2 weeks. The QA module alone saved us 40 hours per audit cycle.' },
+              { name: 'Dr. Sarah Khan', role: 'Centre Director, UniPathway London', quote: 'EduCloud transformed our college operations. We went from spreadsheets to a fully digital campus in 2 weeks. The QA module alone saved us 40 hours per audit cycle.' },
               { name: 'James Okonkwo', role: 'Programme Leader, Manchester Academy', quote: 'The multi-tenant setup means each of our 3 campuses has independent branding but I can oversee everything from one dashboard. Brilliant architecture.' },
               { name: 'Fatima Al-Rashid', role: 'Recruitment Agent, Gulf Region', quote: 'The agent portal is a game-changer. I can track my students from lead to enrolment, see commission breakdowns, and communicate directly with admissions.' },
             ].map((t) => (
@@ -414,7 +414,7 @@ export default function SaaSLandingPage() {
                 Start Free Trial <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             </Link>
-            <a href="mailto:sales@educloud.com?subject=Book%20a%20Demo">
+            <a href="mailto:sales@educloud.pk?subject=Book%20a%20Demo">
               <Button variant="outline" size="lg" className="w-full sm:w-auto">Book a Demo</Button>
             </a>
           </div>
@@ -447,7 +447,7 @@ export default function SaaSLandingPage() {
                 <li><Link to="/apply" className="hover:text-background transition-default">Apply Now</Link></li>
                 <li><Link to="/login" className="hover:text-background transition-default">Login</Link></li>
                 <li><Link to="/register" className="hover:text-background transition-default">Register</Link></li>
-                <li><a href="mailto:support@educloud.com" className="hover:text-background transition-default">Help Centre</a></li>
+                <li><a href="mailto:support@educloud.pk" className="hover:text-background transition-default">Help Centre</a></li>
               </ul>
             </div>
             <div>
