@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { MapPin, Phone, Mail, Clock, Send, Globe, MessageSquare } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, Send, Globe, MessageSquare, MessageCircle } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import TenantNav from '@/components/TenantNav';
