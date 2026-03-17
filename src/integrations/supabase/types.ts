@@ -1241,6 +1241,38 @@ export type Database = {
           },
         ]
       }
+      lecture_reminders: {
+        Row: {
+          id: string
+          lecture_date: string
+          reminder_type: string
+          scheduled_lecture_id: string
+          sent_at: string
+        }
+        Insert: {
+          id?: string
+          lecture_date: string
+          reminder_type: string
+          scheduled_lecture_id: string
+          sent_at?: string
+        }
+        Update: {
+          id?: string
+          lecture_date?: string
+          reminder_type?: string
+          scheduled_lecture_id?: string
+          sent_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lecture_reminders_scheduled_lecture_id_fkey"
+            columns: ["scheduled_lecture_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_lectures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_plans: {
         Row: {
           activities: string | null
@@ -2274,6 +2306,91 @@ export type Database = {
           },
         ]
       }
+      scheduled_lectures: {
+        Row: {
+          academic_year: string
+          color: string | null
+          created_at: string
+          day_of_week: number
+          effective_from: string
+          effective_until: string | null
+          end_time: string
+          id: string
+          is_active: boolean
+          lecturer_id: string
+          module_id: string
+          notes: string | null
+          recurrence: string
+          room: string | null
+          semester: number
+          start_time: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          academic_year?: string
+          color?: string | null
+          created_at?: string
+          day_of_week: number
+          effective_from?: string
+          effective_until?: string | null
+          end_time: string
+          id?: string
+          is_active?: boolean
+          lecturer_id: string
+          module_id: string
+          notes?: string | null
+          recurrence?: string
+          room?: string | null
+          semester?: number
+          start_time: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          academic_year?: string
+          color?: string | null
+          created_at?: string
+          day_of_week?: number
+          effective_from?: string
+          effective_until?: string | null
+          end_time?: string
+          id?: string
+          is_active?: boolean
+          lecturer_id?: string
+          module_id?: string
+          notes?: string | null
+          recurrence?: string
+          room?: string | null
+          semester?: number
+          start_time?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_lectures_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_lectures_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_lectures_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       student_enrolments: {
         Row: {
           application_id: string | null
@@ -2825,6 +2942,17 @@ export type Database = {
       }
     }
     Functions: {
+      auto_schedule_module: {
+        Args: {
+          _academic_year?: string
+          _color?: string
+          _lecturer_id: string
+          _module_id: string
+          _semester?: number
+          _tenant_id: string
+        }
+        Returns: Json
+      }
       delete_user_account: { Args: { _user_id: string }; Returns: undefined }
       export_user_data: { Args: { _user_id: string }; Returns: Json }
       get_user_tenant_id: { Args: { _user_id: string }; Returns: string }
