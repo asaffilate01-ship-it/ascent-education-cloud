@@ -89,6 +89,14 @@ import ParentDashboard from "./pages/parent/ParentDashboard";
 import CloudCodingSandbox from "./pages/coding/CloudCodingSandbox";
 import ReportCardGenerator from "./pages/reports/ReportCardGenerator";
 
+// New Feature Pages
+import AcademicCalendar from "./pages/calendar/AcademicCalendar";
+import LessonPlanBuilder from "./pages/lessons/LessonPlanBuilder";
+import LeaveManagement from "./pages/leave/LeaveManagement";
+import HealthRecords from "./pages/health/HealthRecords";
+import TransportTracking from "./pages/transport/TransportTracking";
+import AIRecommendations from "./pages/ai/AIRecommendations";
+
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
