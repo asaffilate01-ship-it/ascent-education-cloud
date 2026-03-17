@@ -3,12 +3,13 @@ import {
   Briefcase, CreditCard, FileCheck, UserPlus, BarChart3, Building2,
   Zap, CheckCircle, Server, Lock, Cloud, Smartphone, Layers, Menu, X,
   Star, Quote, ChevronRight, Sparkles, TrendingUp, Award, MessageSquare,
-  Clock, Eye, Target, Headphones
+  Clock, Eye, Target, Headphones, Moon, Sun
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import { useTheme } from '@/hooks/useTheme';
 import heroDashboard from '@/assets/hero-dashboard.png';
 
 const fadeUp = {
