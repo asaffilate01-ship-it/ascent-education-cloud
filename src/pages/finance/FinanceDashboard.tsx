@@ -53,10 +53,10 @@ export default function FinanceDashboard() {
       actions={<Button size="sm" onClick={() => setInvoiceOpen(true)}><FileText className="w-3.5 h-3.5 mr-1.5" /> New Invoice</Button>}
     >
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard label="Total Billed" value={`£${totalBilled.toLocaleString()}`} icon={CreditCard} />
-        <StatCard label="Collected" value={`£${totalCollected.toLocaleString()}`} change={totalBilled ? `${Math.round((totalCollected / totalBilled) * 100)}% collection` : '—'} changeType="positive" icon={TrendingUp} />
-        <StatCard label="Overdue" value={`£${overdue.toLocaleString()}`} change="action needed" changeType="negative" icon={AlertTriangle} />
-        <StatCard label="Commissions Due" value={`£${commissionsDue.toLocaleString()}`} icon={Handshake} />
+        <StatCard label="Total Billed" value={`Rs.${totalBilled.toLocaleString()}`} icon={CreditCard} />
+        <StatCard label="Collected" value={`Rs.${totalCollected.toLocaleString()}`} change={totalBilled ? `${Math.round((totalCollected / totalBilled) * 100)}% collection` : '—'} changeType="positive" icon={TrendingUp} />
+        <StatCard label="Overdue" value={`Rs.${overdue.toLocaleString()}`} change="action needed" changeType="negative" icon={AlertTriangle} />
+        <StatCard label="Commissions Due" value={`Rs.${commissionsDue.toLocaleString()}`} icon={Handshake} />
       </div>
 
       {/* Filters */}
