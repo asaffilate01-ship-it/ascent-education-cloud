@@ -1,5 +1,5 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { BookOpen, Clock, Users, Award, ChevronRight, CheckCircle, Circle, Lock } from 'lucide-react';
+import { BookOpen, Clock, Award, ChevronRight, CheckCircle, Circle, Lock } from 'lucide-react';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
 import { useMemo, useState } from 'react';
