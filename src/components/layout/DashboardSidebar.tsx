@@ -181,6 +181,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Commissions', icon: CreditCard, path: '/agent/commissions' },
       { label: 'Onboarding', icon: Briefcase, path: '/agent/onboarding' },
       { label: 'Resources', icon: Library, path: '/agent/resources' },
+      { label: 'Activity Log', icon: Activity, path: '/my-activity' },
       { label: 'Messages', icon: MessageSquare, path: '/messaging' },
     ]},
   ],
