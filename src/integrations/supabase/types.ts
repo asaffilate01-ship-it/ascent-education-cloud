@@ -269,6 +269,82 @@ export type Database = {
           },
         ]
       }
+      classroom_recordings: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration_seconds: number | null
+          file_size_mb: number | null
+          host_id: string
+          host_name: string | null
+          id: string
+          recorded_at: string
+          recording_url: string | null
+          room_name: string
+          session_id: string | null
+          status: string
+          tenant_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration_seconds?: number | null
+          file_size_mb?: number | null
+          host_id: string
+          host_name?: string | null
+          id?: string
+          recorded_at?: string
+          recording_url?: string | null
+          room_name: string
+          session_id?: string | null
+          status?: string
+          tenant_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration_seconds?: number | null
+          file_size_mb?: number | null
+          host_id?: string
+          host_name?: string | null
+          id?: string
+          recorded_at?: string
+          recording_url?: string | null
+          room_name?: string
+          session_id?: string | null
+          status?: string
+          tenant_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classroom_recordings_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "classroom_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "classroom_recordings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "classroom_recordings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       classroom_sessions: {
         Row: {
           created_at: string
@@ -278,6 +354,7 @@ export type Database = {
           id: string
           module_id: string | null
           participant_count: number
+          recording_url: string | null
           room_name: string
           started_at: string
           status: string
@@ -291,6 +368,7 @@ export type Database = {
           id?: string
           module_id?: string | null
           participant_count?: number
+          recording_url?: string | null
           room_name: string
           started_at?: string
           status?: string
@@ -304,6 +382,7 @@ export type Database = {
           id?: string
           module_id?: string | null
           participant_count?: number
+          recording_url?: string | null
           room_name?: string
           started_at?: string
           status?: string
