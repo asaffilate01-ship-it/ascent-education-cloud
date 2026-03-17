@@ -1339,6 +1339,82 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount: number
+          bank_name: string | null
+          created_at: string
+          id: string
+          invoice_id: string
+          method: Database["public"]["Enums"]["payment_method"]
+          notes: string | null
+          receipt_url: string | null
+          reference_number: string | null
+          sender_account: string | null
+          status: string
+          tenant_id: string | null
+          updated_at: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          amount?: number
+          bank_name?: string | null
+          created_at?: string
+          id?: string
+          invoice_id: string
+          method?: Database["public"]["Enums"]["payment_method"]
+          notes?: string | null
+          receipt_url?: string | null
+          reference_number?: string | null
+          sender_account?: string | null
+          status?: string
+          tenant_id?: string | null
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          amount?: number
+          bank_name?: string | null
+          created_at?: string
+          id?: string
+          invoice_id?: string
+          method?: Database["public"]["Enums"]["payment_method"]
+          notes?: string | null
+          receipt_url?: string | null
+          reference_number?: string | null
+          sender_account?: string | null
+          status?: string
+          tenant_id?: string | null
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plagiarism_reports: {
         Row: {
           ai_generated_score: number
@@ -2295,6 +2371,14 @@ export type Database = {
       awarding_body: "OTHM" | "QUALIFI" | "IAB"
       invoice_status: "paid" | "partial" | "overdue" | "pending" | "refunded"
       invoice_type: "tuition" | "exam" | "deposit" | "commission"
+      payment_method:
+        | "bank_transfer"
+        | "raast"
+        | "nayapay"
+        | "sadapay"
+        | "bank_alfalah"
+        | "stripe"
+        | "other"
       programme_status: "active" | "draft" | "archived"
       tenant_plan: "starter" | "professional" | "enterprise"
       tenant_status: "active" | "suspended" | "onboarding"
@@ -2458,6 +2542,15 @@ export const Constants = {
       awarding_body: ["OTHM", "QUALIFI", "IAB"],
       invoice_status: ["paid", "partial", "overdue", "pending", "refunded"],
       invoice_type: ["tuition", "exam", "deposit", "commission"],
+      payment_method: [
+        "bank_transfer",
+        "raast",
+        "nayapay",
+        "sadapay",
+        "bank_alfalah",
+        "stripe",
+        "other",
+      ],
       programme_status: ["active", "draft", "archived"],
       tenant_plan: ["starter", "professional", "enterprise"],
       tenant_status: ["active", "suspended", "onboarding"],
