@@ -317,6 +317,7 @@ export default function DashboardSidebar() {
             <optgroup label="External">
               <option value="agent">Agent</option>
               <option value="student">Student</option>
+              <option value="parent_guardian">Parent / Guardian</option>
               <option value="university_partner">University Partner</option>
               <option value="employer_partner">Employer Partner</option>
             </optgroup>
