@@ -80,4 +80,6 @@ const PWAInstallPrompt = forwardRef<HTMLDivElement>(function PWAInstallPrompt(_p
       </div>
     </div>
   );
-}
+});
+
+export default PWAInstallPrompt;
