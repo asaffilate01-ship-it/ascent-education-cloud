@@ -376,28 +376,49 @@ export default function TenantLandingPage() {
             </Link>
           </div>
 
-          {/* General Requirements */}
+          {/* Entry Requirements */}
           <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-            className="max-w-3xl mx-auto mt-14 surface-card p-6 sm:p-8 border border-border/50"
+            className="max-w-4xl mx-auto mt-14 surface-card p-6 sm:p-8 border border-border/50"
           >
-            <h3 className="text-base sm:text-lg font-bold mb-4 flex items-center gap-2">
+            <h3 className="text-base sm:text-lg font-bold mb-5 flex items-center gap-2">
               <CheckCircle className="w-5 h-5" style={{ color: pc }} />
-              Entry Requirements (All Programmes)
+              Entry Requirements
             </h3>
-            <div className="grid sm:grid-cols-2 gap-3">
+
+            {/* Level-specific */}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
               {[
-                'Matric / O-Levels or equivalent secondary qualification',
-                'IELTS 5.0+ or equivalent (if English is not first language)',
-                'Laptop or desktop computer (min 8 GB RAM recommended)',
-                'Reliable internet connection (min 10 Mbps)',
-                '2 × 5-day intensive residential workshops per academic year at our campus',
-                'Minimum age: 16 years',
-              ].map((req) => (
-                <div key={req} className="flex items-start gap-2.5 text-sm text-muted-foreground">
-                  <CheckCircle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: pc }} />
-                  <span>{req}</span>
+                { level: 'Level 3', academic: 'Matric / O-Levels or equivalent', english: 'IELTS 5.0+', age: '16+' },
+                { level: 'Level 4', academic: 'Level 3 qualification or A-Levels', english: 'IELTS 5.5+', age: '17+' },
+                { level: 'Level 5', academic: 'Level 4 diploma or equivalent', english: 'IELTS 6.0+', age: '18+' },
+              ].map((r) => (
+                <div key={r.level} className="rounded-xl border border-border/50 p-4">
+                  <p className="text-xs font-bold uppercase tracking-wider mb-2.5" style={{ color: pc }}>{r.level}</p>
+                  <div className="space-y-1.5 text-xs text-muted-foreground">
+                    <p><span className="font-medium text-foreground">Academic:</span> {r.academic}</p>
+                    <p><span className="font-medium text-foreground">English:</span> {r.english}</p>
+                    <p><span className="font-medium text-foreground">Age:</span> {r.age}</p>
+                  </div>
                 </div>
               ))}
+            </div>
+
+            {/* General requirements */}
+            <div className="border-t border-border/50 pt-4">
+              <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: pc }}>All Students Also Need</p>
+              <div className="grid sm:grid-cols-2 gap-2.5">
+                {[
+                  'Laptop or desktop computer (min 8 GB RAM recommended)',
+                  'Reliable internet connection (min 10 Mbps)',
+                  '2 × 5-day intensive residential workshops per academic year at our campus',
+                  'Passport / CNIC copy and academic transcripts',
+                ].map((req) => (
+                  <div key={req} className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <CheckCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color: pc }} />
+                    <span>{req}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </motion.div>
         </div>
