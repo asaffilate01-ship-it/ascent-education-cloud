@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
       }
       case 'submissions': {
         let query = adminClient.from('submissions').select('student_name, assignment_id, status, grade, plagiarism_score, word_count, submitted_at')
-        if (tenantId) query = query.eq('tenant_id', tenantId)
+        if (effectiveTenantId) query = query.eq('tenant_id', effectiveTenantId)
         const { data: rows } = await query.limit(5000)
         data = (rows || []) as Record<string, unknown>[]
         filename = 'submissions-export.csv'
