@@ -373,9 +373,9 @@ export default function SaaSLandingPage() {
           </div>
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {[
-              { name: 'Starter', price: 'Rs.80,000', gbp: '£200', period: '/month', desc: 'For new centres getting started', features: ['Up to 50 students', 'Basic LMS & Classroom', '1 Admin user', 'Email support', 'EduCloud subdomain'], cta: 'Start Free Trial', link: 'https://buy.stripe.com/test_cNieVd5PJag2gk60mL00003' },
-              { name: 'Professional', price: 'Rs.200,000', gbp: '£500', period: '/month', desc: 'For growing accredited centres', features: ['Up to 500 students', 'Full LMS + Video + QA', '5 Admin users', 'Custom branding & domain', 'Agent portal', 'Priority support'], cta: 'Get Started', popular: true, link: 'https://buy.stripe.com/test_7sY5kD91Vdsefg20mL00004' },
-              { name: 'Enterprise', price: 'Rs.400,000', gbp: '£1,000', period: '/month', desc: 'For multi-campus institutions', features: ['Unlimited students', 'Full platform access', 'Unlimited admins', 'Custom domain & white-label', 'API access', 'SLA guarantee', 'Dedicated account manager'], cta: 'Contact Sales', link: 'https://buy.stripe.com/test_00w5kDemfewi6Jw0mL00005' },
+              { name: 'Starter', price: 'Rs.80,000', gbp: '£200', period: '/month', desc: 'For new centres getting started', features: ['Up to 50 students', 'Basic LMS & Classroom', '1 Admin user', 'Email support', 'EduCloud subdomain'], cta: 'Start Free Trial', tier: 'starter' as const },
+              { name: 'Professional', price: 'Rs.200,000', gbp: '£500', period: '/month', desc: 'For growing accredited centres', features: ['Up to 500 students', 'Full LMS + Video + QA', '5 Admin users', 'Custom branding & domain', 'Agent portal', 'Priority support'], cta: 'Get Started', popular: true, tier: 'professional' as const },
+              { name: 'Enterprise', price: 'Rs.400,000', gbp: '£1,000', period: '/month', desc: 'For multi-campus institutions', features: ['Unlimited students', 'Full platform access', 'Unlimited admins', 'Custom domain & white-label', 'API access', 'SLA guarantee', 'Dedicated account manager'], cta: 'Contact Sales', tier: 'enterprise' as const },
             ].map((plan) => (
               <motion.div key={plan.name} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
                 className={`surface-card p-7 relative border ${plan.popular ? 'border-primary ring-1 ring-primary/20 shadow-xl' : 'border-border/50'}`}
@@ -400,11 +400,16 @@ export default function SaaSLandingPage() {
                     </li>
                   ))}
                 </ul>
-                <a href={plan.link} target="_blank" rel="noopener noreferrer">
-                  <Button className="w-full h-11" variant={plan.popular ? 'default' : 'outline'} size="lg">
-                    {plan.cta} <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                  </Button>
-                </a>
+                <Button 
+                  className="w-full h-11" 
+                  variant={plan.popular ? 'default' : 'outline'} 
+                  size="lg"
+                  disabled={checkoutLoading === TIERS[plan.tier].price_id}
+                  onClick={() => handleCheckout(TIERS[plan.tier].price_id)}
+                >
+                  {checkoutLoading === TIERS[plan.tier].price_id ? 'Processing…' : plan.cta} 
+                  {checkoutLoading !== TIERS[plan.tier].price_id && <ArrowRight className="w-3.5 h-3.5 ml-1" />}
+                </Button>
               </motion.div>
             ))}
           </div>
