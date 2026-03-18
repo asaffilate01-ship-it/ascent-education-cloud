@@ -32,7 +32,7 @@ export default function TenantNav({ brandName = 'EduPathway', primaryColor, acti
           >
             <GraduationCap className="w-5 h-5 text-primary-foreground" />
           </div>
-          <span className="font-bold text-foreground">{brandName}</span>
+          <span className="font-extrabold text-foreground tracking-tight">{brandName}</span>
         </Link>
 
         {/* Desktop */}
