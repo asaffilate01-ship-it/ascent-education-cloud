@@ -114,7 +114,7 @@ const DEFAULT_SECTIONS: PageSection[] = [
     content: {
       heading: 'Transfer to Universities Worldwide',
       destinations: [
-        { flag: '🇬🇧', country: 'United Kingdom', visa: '2-Year Post-Study Work Visa' },
+        { flag: '🇬🇧', country: 'United Kingdom', visa: 'Graduate Route Visa (2 yrs, 18 months from 2027)' },
         { flag: '🇨🇦', country: 'Canada', visa: '3-Year PGWP' },
         { flag: '🇦🇺', country: 'Australia', visa: '2–4 Year Post-Study Visa' },
         { flag: '🇦🇪', country: 'UAE', visa: 'Employment Opportunities' },

@@ -285,7 +285,7 @@ export default function TenantLandingPage() {
               { icon: Banknote, title: 'Save Rs. 2.5+ Crore', desc: 'For a 3-year degree, save over Rs. 2.5 Crore in tuition and living costs. For 4-year degrees, savings exceed Rs. 3.5 Crore.' },
               { icon: Heart, title: 'Family & Support', desc: 'Stay close to family during the crucial first 2 years. Enjoy home-cooked meals, familiar surroundings, and zero culture shock while studying.' },
               { icon: Plane, title: 'Just 1 Year Abroad', desc: 'Fly out only for the final top-up year. Experience international campus life, build global networks, and graduate in person — all in 12 months.' },
-              { icon: Globe, title: 'Global Career Options', desc: 'A UK/Australian/Canadian degree opens doors worldwide. Access post-study work visas (UK 2-year, Australia 2–4 year, Canada 3-year PGWP).' },
+              { icon: Globe, title: 'Global Career Options', desc: 'A UK/Australian/Canadian degree opens doors worldwide. Access post-study work visas (UK Graduate Route — currently 2 years, reducing to 18 months from 2027; Australia 2–4 year; Canada 3-year PGWP).' },
               { icon: Shield, title: 'UK-Regulated Quality', desc: 'Your Level 4 & 5 qualifications are regulated by Ofqual and recognised by OTHM, QUALIFI & IAB — the same standards as studying in the UK.' },
               { icon: Star, title: 'No Compromise on Learning', desc: 'HD live lectures, recorded sessions, virtual classrooms, e-library access, dedicated tutors, and 2 residential weeks per year for in-person experience.' },
             ].map((b) => (
@@ -693,7 +693,7 @@ export default function TenantLandingPage() {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { flag: '🇬🇧', country: 'United Kingdom', visa: '2-Year Post-Study Work Visa', unis: ['Sunderland', 'Anglia Ruskin', 'UCLan', 'Middlesex', 'Derby', 'Bolton'] },
+              { flag: '🇬🇧', country: 'United Kingdom', visa: 'Graduate Route Visa (2 yrs; 18 months from 2027)', unis: ['Sunderland', 'Anglia Ruskin', 'UCLan', 'Middlesex', 'Derby', 'Bolton'] },
               { flag: '🇨🇦', country: 'Canada', visa: '3-Year PGWP', unis: ['Royal Roads', 'Yorkville', 'Athabasca'] },
               { flag: '🇦🇺', country: 'Australia', visa: '2–4 Year Post-Study Visa', unis: ['Torrens', 'Deakin', 'ECU', 'Charles Sturt'] },
               { flag: '🇦🇪', country: 'UAE', visa: 'Employment Opportunities', unis: ['Partner institutions available'] },
@@ -733,7 +733,7 @@ export default function TenantLandingPage() {
               { icon: Shield, title: 'UK-Regulated & Accredited', desc: 'All qualifications are Ofqual-regulated and recognised worldwide. Your child receives the exact same degree as students studying in the UK.' },
               { icon: Banknote, title: 'Save Rs. 2.5+ Crore', desc: 'Instead of spending Rs. 3–4 Crore on a full 3-year degree abroad, save 50–70% by studying the first 2 years at home.' },
               { icon: Briefcase, title: 'Real Internships & Jobs', desc: 'We provide internship placements across Pakistan — in corporate offices, IT firms, accounting practices, and healthcare organisations.' },
-              { icon: Globe, title: 'Global Degree, Global Career', desc: 'After the final year abroad, your child has a UK/Australian/Canadian degree with access to post-study work visas in those countries.' },
+              { icon: Globe, title: 'Global Degree, Global Career', desc: 'After the final year abroad, your child has a UK/Australian/Canadian degree with access to post-study work visas (UK Graduate Route currently 2 years, reducing to 18 months from 2027).' },
               { icon: Users, title: 'Dedicated Support Team', desc: 'Personal academic tutor, career counsellor, and parent liaison officer. We keep you informed every step of the way.' },
             ].map((f) => (
               <motion.div key={f.title} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
