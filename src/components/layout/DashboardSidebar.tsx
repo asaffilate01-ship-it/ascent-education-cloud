@@ -172,6 +172,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
     { items: [
       { label: 'Dashboard', icon: LayoutDashboard, path: '/marketing' },
       { label: 'Campaigns', icon: Megaphone, path: '/marketing/campaigns' },
+      { label: 'Email Campaigns', icon: Mail, path: '/marketing/email-campaigns' },
       { label: 'Leads', icon: UserPlus, path: '/marketing/leads' },
       { label: 'Webinars', icon: Video, path: '/marketing/webinars' },
       { label: 'Analytics', icon: BarChart3, path: '/marketing/analytics' },
