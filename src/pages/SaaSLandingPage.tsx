@@ -10,7 +10,16 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useTheme } from '@/hooks/useTheme';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import heroDashboard from '@/assets/hero-dashboard.png';
+
+// EduCloud Stripe tiers
+const TIERS = {
+  starter: { price_id: 'price_1TCMVSFFogsDQVs4vjrxg3YN', product_id: 'prod_UAhvHWQxAi5x6L' },
+  professional: { price_id: 'price_1TCMVTFFogsDQVs4Fxtrs4ES', product_id: 'prod_UAhvrU5LFmty22' },
+  enterprise: { price_id: 'price_1TCMVUFFogsDQVs47Wd3IbXl', product_id: 'prod_UAhvry0Rs90Wce' },
+};
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -26,7 +35,29 @@ const stagger = {
 
 export default function SaaSLandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const { theme, toggleTheme } = useTheme();
+
+  const handleCheckout = async (priceId: string) => {
+    setCheckoutLoading(priceId);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error('Please sign in first to subscribe');
+        setCheckoutLoading(null);
+        return;
+      }
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { price_id: priceId },
+      });
+      if (error) throw error;
+      if (data?.url) window.open(data.url, '_blank');
+    } catch (e: any) {
+      toast.error(e.message || 'Checkout failed');
+    } finally {
+      setCheckoutLoading(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -342,9 +373,9 @@ export default function SaaSLandingPage() {
           </div>
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {[
-              { name: 'Starter', price: 'Rs.80,000', gbp: '£200', period: '/month', desc: 'For new centres getting started', features: ['Up to 50 students', 'Basic LMS & Classroom', '1 Admin user', 'Email support', 'EduCloud subdomain'], cta: 'Start Free Trial', link: 'https://buy.stripe.com/test_cNieVd5PJag2gk60mL00003' },
-              { name: 'Professional', price: 'Rs.200,000', gbp: '£500', period: '/month', desc: 'For growing accredited centres', features: ['Up to 500 students', 'Full LMS + Video + QA', '5 Admin users', 'Custom branding & domain', 'Agent portal', 'Priority support'], cta: 'Get Started', popular: true, link: 'https://buy.stripe.com/test_7sY5kD91Vdsefg20mL00004' },
-              { name: 'Enterprise', price: 'Rs.400,000', gbp: '£1,000', period: '/month', desc: 'For multi-campus institutions', features: ['Unlimited students', 'Full platform access', 'Unlimited admins', 'Custom domain & white-label', 'API access', 'SLA guarantee', 'Dedicated account manager'], cta: 'Contact Sales', link: 'https://buy.stripe.com/test_00w5kDemfewi6Jw0mL00005' },
+              { name: 'Starter', price: 'Rs.80,000', gbp: '£200', period: '/month', desc: 'For new centres getting started', features: ['Up to 50 students', 'Basic LMS & Classroom', '1 Admin user', 'Email support', 'EduCloud subdomain'], cta: 'Start Free Trial', tier: 'starter' as const },
+              { name: 'Professional', price: 'Rs.200,000', gbp: '£500', period: '/month', desc: 'For growing accredited centres', features: ['Up to 500 students', 'Full LMS + Video + QA', '5 Admin users', 'Custom branding & domain', 'Agent portal', 'Priority support'], cta: 'Get Started', popular: true, tier: 'professional' as const },
+              { name: 'Enterprise', price: 'Rs.400,000', gbp: '£1,000', period: '/month', desc: 'For multi-campus institutions', features: ['Unlimited students', 'Full platform access', 'Unlimited admins', 'Custom domain & white-label', 'API access', 'SLA guarantee', 'Dedicated account manager'], cta: 'Contact Sales', tier: 'enterprise' as const },
             ].map((plan) => (
               <motion.div key={plan.name} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
                 className={`surface-card p-7 relative border ${plan.popular ? 'border-primary ring-1 ring-primary/20 shadow-xl' : 'border-border/50'}`}
@@ -369,11 +400,16 @@ export default function SaaSLandingPage() {
                     </li>
                   ))}
                 </ul>
-                <a href={plan.link} target="_blank" rel="noopener noreferrer">
-                  <Button className="w-full h-11" variant={plan.popular ? 'default' : 'outline'} size="lg">
-                    {plan.cta} <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                  </Button>
-                </a>
+                <Button 
+                  className="w-full h-11" 
+                  variant={plan.popular ? 'default' : 'outline'} 
+                  size="lg"
+                  disabled={checkoutLoading === TIERS[plan.tier].price_id}
+                  onClick={() => handleCheckout(TIERS[plan.tier].price_id)}
+                >
+                  {checkoutLoading === TIERS[plan.tier].price_id ? 'Processing…' : plan.cta} 
+                  {checkoutLoading !== TIERS[plan.tier].price_id && <ArrowRight className="w-3.5 h-3.5 ml-1" />}
+                </Button>
               </motion.div>
             ))}
           </div>
