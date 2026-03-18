@@ -53,13 +53,11 @@ export default function DocumentManagement() {
       const { error: uploadError } = await supabase.storage.from('kyc-documents').upload(path, file);
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage.from('kyc-documents').getPublicUrl(path);
-
       const { error: insertError } = await supabase.from('kyc_documents').insert({
         user_id: user.id,
         document_type: 'general',
         file_name: file.name,
-        file_url: urlData.publicUrl,
+        file_url: path,
         status: 'pending',
       });
       if (insertError) throw insertError;
