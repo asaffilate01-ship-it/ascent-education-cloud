@@ -411,7 +411,8 @@ export default function TenantLandingPage() {
                   'Laptop or desktop computer (min 8 GB RAM recommended)',
                   'Reliable internet connection (min 10 Mbps)',
                   '2 × 5-day intensive residential workshops per academic year at our campus',
-                  'Passport / CNIC copy and academic transcripts',
+                  'Passport / CNIC copy and academic transcripts (verified during enrolment)',
+                  'All qualifications and ID documents will be verified before admission',
                 ].map((req) => (
                   <div key={req} className="flex items-start gap-2 text-sm text-muted-foreground">
                     <CheckCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color: pc }} />
