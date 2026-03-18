@@ -1,6 +1,12 @@
 import { CheckCircle2, Info, BookOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+const generalRequirements = [
+  'Laptop or desktop computer (minimum 8GB RAM recommended)',
+  'Reliable internet connection (minimum 10 Mbps)',
+  '2 × 5-day intensive residential workshops per academic year at our campus',
+];
+
 const requirements = [
   {
     level: 'Level 3 Foundation',

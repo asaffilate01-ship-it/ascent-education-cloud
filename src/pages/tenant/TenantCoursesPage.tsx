@@ -82,9 +82,8 @@ export default function TenantCoursesPage() {
                   {/* Price & CTA */}
                   <div className="lg:w-48 shrink-0 flex lg:flex-col items-center lg:items-end justify-between lg:justify-start gap-2">
                     <div className="lg:text-right">
-                      <p className="text-xl sm:text-2xl font-bold text-primary">{course.fee}</p>
-                      <p className="text-xs text-muted-foreground">per year</p>
-                      <p className="text-[10px] text-muted-foreground mt-1 hidden sm:block">Instalment plans available</p>
+                      <p className="text-xl sm:text-2xl font-bold text-primary">POA</p>
+                      <p className="text-xs text-muted-foreground">Price on Application</p>
                     </div>
                     <Link to="/apply">
                       <Button className="mt-0 lg:mt-3">
