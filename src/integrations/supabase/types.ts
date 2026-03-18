@@ -1774,6 +1774,81 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          assignment_deadlines_email: boolean | null
+          assignment_deadlines_push: boolean | null
+          assignment_deadlines_sms: boolean | null
+          attendance_warnings_email: boolean | null
+          attendance_warnings_push: boolean | null
+          attendance_warnings_sms: boolean | null
+          class_changes_email: boolean | null
+          class_changes_push: boolean | null
+          class_changes_sms: boolean | null
+          created_at: string | null
+          fee_reminders_email: boolean | null
+          fee_reminders_push: boolean | null
+          fee_reminders_sms: boolean | null
+          grade_releases_email: boolean | null
+          grade_releases_push: boolean | null
+          grade_releases_sms: boolean | null
+          id: string
+          messages_email: boolean | null
+          messages_push: boolean | null
+          messages_sms: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          assignment_deadlines_email?: boolean | null
+          assignment_deadlines_push?: boolean | null
+          assignment_deadlines_sms?: boolean | null
+          attendance_warnings_email?: boolean | null
+          attendance_warnings_push?: boolean | null
+          attendance_warnings_sms?: boolean | null
+          class_changes_email?: boolean | null
+          class_changes_push?: boolean | null
+          class_changes_sms?: boolean | null
+          created_at?: string | null
+          fee_reminders_email?: boolean | null
+          fee_reminders_push?: boolean | null
+          fee_reminders_sms?: boolean | null
+          grade_releases_email?: boolean | null
+          grade_releases_push?: boolean | null
+          grade_releases_sms?: boolean | null
+          id?: string
+          messages_email?: boolean | null
+          messages_push?: boolean | null
+          messages_sms?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          assignment_deadlines_email?: boolean | null
+          assignment_deadlines_push?: boolean | null
+          assignment_deadlines_sms?: boolean | null
+          attendance_warnings_email?: boolean | null
+          attendance_warnings_push?: boolean | null
+          attendance_warnings_sms?: boolean | null
+          class_changes_email?: boolean | null
+          class_changes_push?: boolean | null
+          class_changes_sms?: boolean | null
+          created_at?: string | null
+          fee_reminders_email?: boolean | null
+          fee_reminders_push?: boolean | null
+          fee_reminders_sms?: boolean | null
+          grade_releases_email?: boolean | null
+          grade_releases_push?: boolean | null
+          grade_releases_sms?: boolean | null
+          id?: string
+          messages_email?: boolean | null
+          messages_push?: boolean | null
+          messages_sms?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
