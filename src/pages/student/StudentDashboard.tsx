@@ -135,7 +135,7 @@ export default function StudentDashboard() {
             {gradedSubmissions.slice(0, 5).map((s) => (
               <div key={s.id} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
                 <div>
-                  <p className="text-sm font-medium">{(s as any).file_name || s.student_name || 'Submission'}</p>
+                  <p className="text-sm font-medium truncate">{(s as any).file_name || 'Submission'}</p>
                   <p className="text-xs text-muted-foreground">
                     Graded {s.graded_at ? new Date(s.graded_at).toLocaleDateString() : '—'}
                   </p>
