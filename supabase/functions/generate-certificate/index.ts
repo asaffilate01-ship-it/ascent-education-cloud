@@ -81,10 +81,6 @@ Deno.serve(async (req) => {
   <div class="cert-id">${certId}</div>
 </div></div></body></html>`
 
-    const adminClient = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    )
     await adminClient.from('audit_logs').insert({
       user_id: auth.userId,
       user_email: auth.email,
