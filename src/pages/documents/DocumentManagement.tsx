@@ -18,6 +18,7 @@ export default function DocumentManagement() {
   const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [tab, setTab] = useState('all');
+  const [viewingUrl, setViewingUrl] = useState<string | null>(null);
 
   const { data: documents, loading, refetch } = useSupabaseQuery('kyc_documents') as { data: any[] | null; loading: boolean; refetch: () => void };
   const { data: signatures } = useSupabaseQuery('e_signatures') as { data: any[] | null; loading: boolean; refetch: () => void };
@@ -53,13 +54,11 @@ export default function DocumentManagement() {
       const { error: uploadError } = await supabase.storage.from('kyc-documents').upload(path, file);
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage.from('kyc-documents').getPublicUrl(path);
-
       const { error: insertError } = await supabase.from('kyc_documents').insert({
         user_id: user.id,
         document_type: 'general',
         file_name: file.name,
-        file_url: urlData.publicUrl,
+        file_url: path,
         status: 'pending',
       });
       if (insertError) throw insertError;
@@ -121,8 +120,12 @@ export default function DocumentManagement() {
                       variant={doc.status === 'verified' || doc.status === 'signed' ? 'success' : doc.status === 'rejected' ? 'danger' : 'warning'}
                     />
                     {doc.file_url && (
-                      <Button size="sm" variant="ghost" asChild className="h-8">
-                        <a href={doc.file_url} target="_blank" rel="noopener noreferrer"><Eye className="w-3.5 h-3.5" /></a>
+                      <Button size="sm" variant="ghost" className="h-8" onClick={async () => {
+                        const { data } = await supabase.storage.from('kyc-documents').createSignedUrl(doc.file_url, 300);
+                        if (data?.signedUrl) window.open(data.signedUrl, '_blank');
+                        else toast.error('Could not generate download link');
+                      }}>
+                        <Eye className="w-3.5 h-3.5" />
                       </Button>
                     )}
                   </CardContent>

@@ -54,20 +54,18 @@ export default function LecturerOnboarding() {
         .upload(filePath, file);
       if (uploadErr) throw uploadErr;
 
-      const { data: urlData } = supabase.storage.from('kyc-documents').getPublicUrl(filePath);
-
       // Check if doc already exists
       const existing = docs.find(d => d.document_type === docType);
       if (existing) {
         await supabase.from('kyc_documents')
-          .update({ file_name: file.name, file_url: urlData.publicUrl, status: 'pending' })
+          .update({ file_name: file.name, file_url: filePath, status: 'pending' })
           .eq('id', existing.id);
       } else {
         await supabase.from('kyc_documents').insert({
           user_id: user.id,
           document_type: docType,
           file_name: file.name,
-          file_url: urlData.publicUrl,
+          file_url: filePath,
           status: 'pending',
           tenant_id: user.tenantId || null,
         });

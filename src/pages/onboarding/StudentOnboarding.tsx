@@ -72,15 +72,11 @@ export default function StudentOnboarding() {
         .upload(filePath, file);
       if (uploadErr) throw uploadErr;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('kyc-documents')
-        .getPublicUrl(filePath);
-
       const { error: dbErr } = await supabase.from('kyc_documents').insert({
         user_id: user.id,
         document_type: docType,
         file_name: file.name,
-        file_url: publicUrl,
+        file_url: filePath,
         status: 'pending',
       });
       if (dbErr) throw dbErr;
