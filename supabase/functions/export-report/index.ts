@@ -55,13 +55,27 @@ Deno.serve(async (req) => {
       })
     }
 
+    // Enforce tenant isolation: non-superadmins can only export their own tenant's data
+    const isSuperadmin = userRoles.includes('superadmin')
+    let effectiveTenantId = tenantId
+    if (!isSuperadmin) {
+      const { data: profile } = await adminClient.from('profiles').select('tenant_id').eq('user_id', auth.userId).single()
+      if (!profile?.tenant_id) {
+        return new Response(JSON.stringify({ error: 'User has no tenant assigned' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+      // Force tenant_id to user's own tenant regardless of what was passed
+      effectiveTenantId = profile.tenant_id
+    }
+
     let data: Record<string, unknown>[] = []
     let filename = ''
 
     switch (reportType) {
       case 'students': {
         let query = adminClient.from('profiles').select('full_name, email, phone, tenant_id, created_at')
-        if (tenantId) query = query.eq('tenant_id', tenantId)
+        if (effectiveTenantId) query = query.eq('tenant_id', effectiveTenantId)
         const { data: rows } = await query.limit(5000)
         data = (rows || []) as Record<string, unknown>[]
         filename = 'students-export.csv'
@@ -69,7 +83,7 @@ Deno.serve(async (req) => {
       }
       case 'invoices': {
         let query = adminClient.from('invoices').select('student_name, type, amount, paid, status, issued_date, due_date')
-        if (tenantId) query = query.eq('tenant_id', tenantId)
+        if (effectiveTenantId) query = query.eq('tenant_id', effectiveTenantId)
         if (filters?.status && typeof filters.status === 'string') query = query.eq('status', filters.status)
         const { data: rows } = await query.limit(5000)
         data = (rows || []) as Record<string, unknown>[]
@@ -78,7 +92,7 @@ Deno.serve(async (req) => {
       }
       case 'attendance': {
         let query = adminClient.from('attendance_records').select('student_id, date, status, method, module_id')
-        if (tenantId) query = query.eq('tenant_id', tenantId)
+        if (effectiveTenantId) query = query.eq('tenant_id', effectiveTenantId)
         if (filters?.dateFrom && typeof filters.dateFrom === 'string') query = query.gte('date', filters.dateFrom)
         if (filters?.dateTo && typeof filters.dateTo === 'string') query = query.lte('date', filters.dateTo)
         const { data: rows } = await query.limit(5000)
@@ -88,7 +102,7 @@ Deno.serve(async (req) => {
       }
       case 'submissions': {
         let query = adminClient.from('submissions').select('student_name, assignment_id, status, grade, plagiarism_score, word_count, submitted_at')
-        if (tenantId) query = query.eq('tenant_id', tenantId)
+        if (effectiveTenantId) query = query.eq('tenant_id', effectiveTenantId)
         const { data: rows } = await query.limit(5000)
         data = (rows || []) as Record<string, unknown>[]
         filename = 'submissions-export.csv'
@@ -96,7 +110,7 @@ Deno.serve(async (req) => {
       }
       case 'applications': {
         let query = adminClient.from('applications').select('student_name, email, phone, programme_name, stage, source, counsellor, created_at')
-        if (tenantId) query = query.eq('tenant_id', tenantId)
+        if (effectiveTenantId) query = query.eq('tenant_id', effectiveTenantId)
         if (filters?.stage && typeof filters.stage === 'string') query = query.eq('stage', filters.stage)
         const { data: rows } = await query.limit(5000)
         data = (rows || []) as Record<string, unknown>[]

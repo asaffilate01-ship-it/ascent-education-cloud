@@ -94,6 +94,22 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Enforce tenant isolation: verify user belongs to the requested tenant
+    const { data: roles } = await supabase.from('user_roles').select('role').eq('user_id', auth.userId);
+    const userRoles = (roles || []).map(r => r.role);
+    const isSuperadmin = userRoles.includes('superadmin');
+
+    if (!isSuperadmin) {
+      const { data: profile } = await supabase.from('profiles').select('tenant_id').eq('user_id', auth.userId).single();
+      if (params.tenant_id && params.tenant_id !== profile?.tenant_id) {
+        return new Response(JSON.stringify({ error: 'Access denied: tenant mismatch' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      // Force tenant_id to user's own tenant
+      params.tenant_id = profile?.tenant_id;
+    }
+
     let result;
     switch (action) {
       case 'list_vms': {
