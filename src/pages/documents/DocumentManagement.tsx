@@ -19,19 +19,19 @@ export default function DocumentManagement() {
   const [search, setSearch] = useState('');
   const [tab, setTab] = useState('all');
 
-  const { data: documents, loading, refetch } = useSupabaseQuery('kyc_documents');
-  const { data: signatures } = useSupabaseQuery('e_signatures');
+  const { data: documents, loading, refetch } = useSupabaseQuery('kyc_documents') as { data: any[] | null; loading: boolean; refetch: () => void };
+  const { data: signatures } = useSupabaseQuery('e_signatures') as { data: any[] | null; loading: boolean; refetch: () => void };
 
   const filtered = useMemo(() => {
-    let docs = documents || [];
+    let docs = (documents || []) as any[];
     if (search) {
       const q = search.toLowerCase();
-      docs = docs.filter(d => d.document_type?.toLowerCase().includes(q) || d.file_name?.toLowerCase().includes(q));
+      docs = docs.filter((d: any) => d.document_type?.toLowerCase().includes(q) || d.file_name?.toLowerCase().includes(q));
     }
-    if (tab === 'pending') docs = docs.filter(d => d.status === 'pending');
-    if (tab === 'verified') docs = docs.filter(d => d.status === 'verified');
+    if (tab === 'pending') docs = docs.filter((d: any) => d.status === 'pending');
+    if (tab === 'verified') docs = docs.filter((d: any) => d.status === 'verified');
     if (tab === 'signed') {
-      return (signatures || []).map(s => ({
+      return ((signatures || []) as any[]).map((s: any) => ({
         id: s.id,
         document_type: s.document_type,
         file_name: `Signed: ${s.document_type}`,
