@@ -367,6 +367,8 @@ const App = () => (
             <AppRoutes />
             <CookieConsent />
             <PWAInstallPrompt />
+            <MobileBottomNav />
+            <AIChatWidgetLazy />
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
