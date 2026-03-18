@@ -360,8 +360,8 @@ export default function TenantLandingPage() {
                 </div>
                 <div className="flex items-center justify-between pt-3 border-t border-border/50 mt-auto">
                   <div>
-                    <span className="text-lg font-extrabold" style={{ color: pc }}>{course.fee}</span>
-                    <span className="text-[10px] text-muted-foreground ml-1.5">({course.gbp})</span>
+                    <span className="text-lg font-extrabold" style={{ color: pc }}>POA</span>
+                    <span className="text-[10px] text-muted-foreground ml-1.5">Price on Application</span>
                   </div>
                   <Link to="/apply">
                     <Button size="sm" variant="outline" className="text-xs font-semibold">Apply <ArrowRight className="w-3 h-3 ml-1" /></Button>
