@@ -222,4 +222,6 @@ const AIChatWidget = forwardRef<HTMLDivElement>(function AIChatWidget(_props, re
       </AnimatePresence>
     </>
   );
-}
+});
+
+export default AIChatWidget;

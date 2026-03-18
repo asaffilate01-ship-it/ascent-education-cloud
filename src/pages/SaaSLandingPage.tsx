@@ -647,4 +647,6 @@ const SaaSLandingPage = forwardRef<HTMLDivElement>(function SaaSLandingPage(_pro
       </footer>
     </div>
   );
-}
+});
+
+export default SaaSLandingPage;
