@@ -1,6 +1,12 @@
 import { CheckCircle2, Info, BookOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+const generalRequirements = [
+  'Laptop or desktop computer (minimum 8GB RAM recommended)',
+  'Reliable internet connection (minimum 10 Mbps)',
+  '2 × 5-day intensive residential workshops per academic year at our campus',
+];
+
 const requirements = [
   {
     level: 'Level 3 Foundation',
@@ -53,6 +59,21 @@ export default function EntryRequirements() {
       <p className="text-xs text-muted-foreground mb-5">
         Understand the academic and English language requirements needed for each qualification level.
       </p>
+
+      {/* General Requirements */}
+      <div className="surface-card rounded-xl p-4 mb-4">
+        <p className="text-xs font-semibold mb-2 flex items-center gap-2">
+          <Info className="w-3.5 h-3.5 text-primary" /> General Requirements (All Levels)
+        </p>
+        <ul className="space-y-1.5">
+          {generalRequirements.map((req) => (
+            <li key={req} className="flex items-start gap-2 text-xs text-muted-foreground">
+              <CheckCircle2 className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
+              <span>{req}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
 
       <div className="space-y-3">
         {requirements.map((req, i) => (
