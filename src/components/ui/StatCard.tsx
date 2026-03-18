@@ -82,7 +82,7 @@ export default function StatCard({ label, value, change, changeType = 'neutral',
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
-      className="surface-card p-5 group hover:shadow-surface-lg transition-default relative overflow-hidden"
+      className="surface-card p-5 group hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden"
     >
       {/* Subtle gradient accent line at top */}
       <div className="absolute top-0 left-0 right-0 h-[2px] gradient-primary opacity-0 group-hover:opacity-100 transition-default" />
@@ -102,8 +102,8 @@ export default function StatCard({ label, value, change, changeType = 'neutral',
         </div>
 
         <div className="flex flex-col items-end gap-2">
-          <div className="p-2.5 rounded-xl bg-primary/8 border border-primary/10 group-hover:bg-primary/12 transition-default">
-            <Icon className="w-4.5 h-4.5 text-primary" />
+          <div className="p-2.5 rounded-xl bg-primary/8 border border-primary/10 group-hover:bg-primary/15 group-hover:scale-105 transition-all duration-300">
+            <Icon className="w-[18px] h-[18px] text-primary" />
           </div>
           {sparklineData && <MiniSparkline data={sparklineData} color={sparkColor} />}
         </div>

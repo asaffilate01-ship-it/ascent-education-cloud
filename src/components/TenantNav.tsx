@@ -23,16 +23,16 @@ export default function TenantNav({ brandName = 'EduPathway', primaryColor, acti
   ];
 
   return (
-    <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm shadow-surface-sm">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+    <nav className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border/40 shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <Link to={`/tenant/${slug}`} className="flex items-center gap-2">
           <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center bg-primary"
+            className="w-9 h-9 rounded-xl flex items-center justify-center bg-primary shadow-md"
             style={primaryColor ? { backgroundColor: primaryColor } : undefined}
           >
-            <GraduationCap className="w-4 h-4 text-primary-foreground" />
+            <GraduationCap className="w-5 h-5 text-primary-foreground" />
           </div>
-          <span className="font-bold text-foreground">{brandName}</span>
+          <span className="font-extrabold text-foreground tracking-tight">{brandName}</span>
         </Link>
 
         {/* Desktop */}

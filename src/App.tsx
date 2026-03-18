@@ -137,9 +137,15 @@ const ParentR = ({ children }: { children: React.ReactNode }) => (
 function LoadingFallback() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
-      <div className="flex flex-col items-center gap-3">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-        <p className="text-sm text-muted-foreground">Loading…</p>
+      <div className="flex flex-col items-center gap-4">
+        <div className="relative w-10 h-10">
+          <div className="absolute inset-0 rounded-full border-[3px] border-primary/15" />
+          <div className="absolute inset-0 rounded-full border-[3px] border-primary border-t-transparent animate-spin" />
+        </div>
+        <div className="text-center">
+          <p className="text-sm font-semibold text-foreground">Loading</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">Please wait…</p>
+        </div>
       </div>
     </div>
   );
