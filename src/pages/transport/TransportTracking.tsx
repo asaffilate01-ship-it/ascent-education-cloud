@@ -136,9 +136,9 @@ export default function TransportTracking() {
                   </div>
                   <div className="space-y-1 text-xs text-muted-foreground">
                     <p>Type: <span className="capitalize text-foreground">{v.vehicle_type}</span> · Capacity: <span className="text-foreground">{v.capacity}</span></p>
-                    {v.driver_name && <p className="flex items-center gap-1"><Users className="w-3 h-3" /> {v.driver_name}</p>}
-                    {v.driver_phone && <p className="flex items-center gap-1"><Phone className="w-3 h-3" /> {v.driver_phone}</p>}
-                    {v.current_lat && <p className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {Number(v.current_lat).toFixed(4)}, {Number(v.current_lng).toFixed(4)}</p>}
+                    {isDirector && v.driver_name && <p className="flex items-center gap-1"><Users className="w-3 h-3" /> {v.driver_name}</p>}
+                    {isDirector && v.driver_phone && <p className="flex items-center gap-1"><Phone className="w-3 h-3" /> {v.driver_phone}</p>}
+                    {isDirector && v.current_lat && <p className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {Number(v.current_lat).toFixed(4)}, {Number(v.current_lng).toFixed(4)}</p>}
                   </div>
                   {isDirector && (
                     <div className="flex gap-1 mt-3 opacity-0 group-hover:opacity-100 transition-all">
