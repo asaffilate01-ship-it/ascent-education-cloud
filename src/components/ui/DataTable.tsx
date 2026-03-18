@@ -189,8 +189,8 @@ export default function DataTable<T extends { id: string }>({
                 animate={{ opacity: 1 }}
                 transition={{ delay: idx * 0.02, duration: 0.2 }}
                 onClick={() => onRowClick?.(item)}
-                className={`border-t border-border/50 transition-default ${
-                  onRowClick ? 'cursor-pointer hover:bg-secondary/50' : ''
+                className={`border-t border-border/30 transition-all duration-150 ${
+                  onRowClick ? 'cursor-pointer hover:bg-primary/[0.02]' : 'hover:bg-muted/30'
                 } ${selected.has(item.id) ? 'bg-primary/5' : ''}`}
               >
                 {selectable && (
