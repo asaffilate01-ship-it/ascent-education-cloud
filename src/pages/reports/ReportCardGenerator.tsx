@@ -6,6 +6,7 @@ import { FileText, Printer, Download, GraduationCap, Award, BookOpen, CheckCircl
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 const getGradeClass = (grade: number) => {
   if (grade >= 70) return { label: 'Distinction', color: 'text-success', bg: 'bg-success/10' };
@@ -13,6 +14,65 @@ const getGradeClass = (grade: number) => {
   if (grade >= 40) return { label: 'Pass', color: 'text-warning', bg: 'bg-warning/10' };
   return { label: 'Fail', color: 'text-destructive', bg: 'bg-destructive/10' };
 };
+
+function generateReportHtml(reportData: any) {
+  const rows = reportData.moduleGrades.map((mg: any) => `
+    <tr>
+      <td style="padding:8px 12px;border-bottom:1px solid #eee;font-weight:500">${mg.module}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #eee;font-family:monospace;font-size:12px;color:#888">${mg.code || '—'}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:center">${mg.credits}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:center;font-weight:700;color:${mg.averageGrade !== null ? (mg.averageGrade >= 70 ? '#16a34a' : mg.averageGrade >= 60 ? '#8B1538' : mg.averageGrade >= 40 ? '#d97706' : '#dc2626') : '#999'}">${mg.averageGrade !== null ? mg.averageGrade + '%' : '—'}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:center">${mg.classification?.label || '—'}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:center">${mg.averageGrade !== null ? (mg.averageGrade >= 40 ? '✅ PASS' : '❌ REFER') : 'IN PROGRESS'}</td>
+    </tr>
+  `).join('');
+
+  return `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Report Card — ${reportData.student.full_name}</title>
+<style>
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:800px;margin:0 auto;padding:32px;color:#1a1a2e}
+  h1{color:#8B1538;margin:0}
+  table{width:100%;border-collapse:collapse;margin:16px 0}
+  th{text-align:left;padding:8px 12px;border-bottom:2px solid #8B1538;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#666}
+  .stat{background:#f8f8fc;border-radius:12px;padding:16px;text-align:center}
+  .stat strong{display:block;font-size:24px;color:#8B1538}
+  .stat small{font-size:10px;color:#888}
+  @media print{body{padding:16px}}
+</style></head><body>
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;border-bottom:3px solid #8B1538;padding-bottom:16px">
+  <div><h1>Student Report Card</h1><p style="margin:4px 0 0;color:#888;font-size:12px">Generated: ${reportData.generatedAt}</p></div>
+  <div style="margin-left:auto;text-align:right"><strong style="color:#8B1538;font-size:13px">${reportData.programme.awarding_body}</strong></div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px">
+  <div><h3 style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#888;margin-bottom:8px">Student Details</h3>
+    <p style="margin:4px 0;font-size:14px"><span style="color:#888">Name:</span> <strong>${reportData.student.full_name}</strong></p>
+    <p style="margin:4px 0;font-size:14px"><span style="color:#888">Email:</span> ${reportData.student.email}</p>
+    <p style="margin:4px 0;font-size:14px"><span style="color:#888">ID:</span> <code>${reportData.student.user_id.slice(0,8).toUpperCase()}</code></p>
+  </div>
+  <div><h3 style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#888;margin-bottom:8px">Programme Details</h3>
+    <p style="margin:4px 0;font-size:14px"><span style="color:#888">Programme:</span> <strong>${reportData.programme.title}</strong></p>
+    <p style="margin:4px 0;font-size:14px"><span style="color:#888">Level:</span> ${reportData.programme.level}</p>
+    <p style="margin:4px 0;font-size:14px"><span style="color:#888">Duration:</span> ${reportData.programme.duration || '—'}</p>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">
+  <div class="stat"><strong>${reportData.overallAverage ?? '—'}%</strong><small>Overall Average</small>${reportData.overallClassification ? `<br><span style="font-size:11px;font-weight:700;color:${reportData.overallAverage >= 70 ? '#16a34a' : reportData.overallAverage >= 60 ? '#8B1538' : '#d97706'}">${reportData.overallClassification.label}</span>` : ''}</div>
+  <div class="stat"><strong>${reportData.earnedCredits}/${reportData.totalCredits}</strong><small>Credits Earned</small></div>
+  <div class="stat"><strong>${reportData.attendanceRate ?? '—'}%</strong><small>Attendance</small></div>
+  <div class="stat"><strong>${reportData.moduleGrades.length}</strong><small>Modules</small></div>
+</div>
+
+<table><thead><tr><th>Module</th><th>Code</th><th style="text-align:center">Credits</th><th style="text-align:center">Grade</th><th style="text-align:center">Classification</th><th style="text-align:center">Status</th></tr></thead>
+<tbody>${rows}</tbody></table>
+
+<div style="margin-top:32px;padding-top:16px;border-top:3px solid #8B1538;display:flex;justify-content:space-between;font-size:11px;color:#888">
+  <p>This is a computer-generated report card. For verification, contact the centre administration.</p>
+  <p>Powered by EduCloud</p>
+</div>
+</body></html>`;
+}
 
 export default function ReportCardGenerator() {
   const { user } = useAuth();
@@ -29,18 +89,13 @@ export default function ReportCardGenerator() {
 
   const loading = pLoad || prLoad;
 
-  // Get student profiles
-  const students = useMemo(() => {
-    return profiles.filter(p => p.user_id);
-  }, [profiles]);
+  const students = useMemo(() => profiles.filter(p => p.user_id), [profiles]);
 
-  // Filter modules by selected programme
   const progModules = useMemo(() => {
     if (!selectedProgramme) return [];
     return modules.filter(m => m.programme_id === selectedProgramme);
   }, [modules, selectedProgramme]);
 
-  // Build grade data for selected student
   const reportData = useMemo(() => {
     if (!selectedStudent || !selectedProgramme) return null;
 
@@ -77,13 +132,11 @@ export default function ReportCardGenerator() {
       };
     });
 
-    // Attendance
     const studentAttendance = attendance.filter(a => a.student_id === selectedStudent);
     const totalRecords = studentAttendance.length;
     const presentRecords = studentAttendance.filter(a => a.status === 'present' || a.status === 'late').length;
     const attendanceRate = totalRecords > 0 ? Math.round((presentRecords / totalRecords) * 100) : null;
 
-    // Overall
     const allGraded = moduleGrades.filter(m => m.averageGrade !== null);
     const overallAvg = allGraded.length > 0
       ? Math.round(allGraded.reduce((sum, m) => sum + (m.averageGrade || 0), 0) / allGraded.length)
@@ -104,8 +157,19 @@ export default function ReportCardGenerator() {
     };
   }, [selectedStudent, selectedProgramme, progModules, assignments, submissions, attendance, programmes, students]);
 
-  const handlePrint = () => {
-    window.print();
+  const handlePrint = () => window.print();
+
+  const handleDownloadReport = () => {
+    if (!reportData) return;
+    const html = generateReportHtml(reportData);
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `report-card-${reportData.student.full_name.replace(/\s+/g, '-').toLowerCase()}-${new Date().toISOString().slice(0, 10)}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Report card downloaded');
   };
 
   if (loading) return <DashboardSkeleton />;
@@ -116,9 +180,14 @@ export default function ReportCardGenerator() {
       subtitle="Generate and print student report cards"
       actions={
         reportData && (
-          <Button size="sm" onClick={handlePrint}>
-            <Printer className="w-3.5 h-3.5 mr-1.5" /> Print Report
-          </Button>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" onClick={handleDownloadReport}>
+              <Download className="w-3.5 h-3.5 mr-1.5" /> Download
+            </Button>
+            <Button size="sm" onClick={handlePrint}>
+              <Printer className="w-3.5 h-3.5 mr-1.5" /> Print
+            </Button>
+          </div>
         )
       }
     >
