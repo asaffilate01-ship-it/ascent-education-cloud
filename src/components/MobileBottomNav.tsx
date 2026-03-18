@@ -62,7 +62,7 @@ export default function MobileBottomNav() {
   const items = BOTTOM_NAV[user.role] || BOTTOM_NAV.student;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-t border-border safe-area-pb lg:hidden">
+    <nav aria-label="Mobile navigation" className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-t border-border safe-area-pb lg:hidden">
       <div className="flex items-center justify-around px-1 py-1">
         {items.map((item) => (
           <NavLink
@@ -81,7 +81,7 @@ export default function MobileBottomNav() {
                 <div className={`p-1 rounded-lg transition-all ${isActive ? 'bg-primary/10' : ''}`}>
                   <item.icon className="w-5 h-5" />
                 </div>
-                <span className="text-[10px] font-medium leading-none">{item.label}</span>
+                <span className="text-[10px] font-medium leading-none" aria-hidden="true">{item.label}</span>
               </>
             )}
           </NavLink>

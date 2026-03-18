@@ -86,11 +86,14 @@ export default function NotificationBell() {
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="p-2 rounded-lg hover:bg-secondary transition-default relative"
+        className="p-2 rounded-lg hover:bg-secondary transition-default relative focus-ring"
+        aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
+        aria-expanded={open}
+        aria-haspopup="true"
       >
-        <Bell className="w-4 h-4 text-muted-foreground" />
+        <Bell className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
+          <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center" aria-hidden="true">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -102,7 +105,7 @@ export default function NotificationBell() {
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
 
           {/* Dropdown */}
-          <div className="absolute right-0 top-full mt-2 w-80 max-h-[420px] overflow-y-auto bg-popover border border-border rounded-xl shadow-lg z-50">
+          <div role="menu" aria-label="Notifications" className="absolute right-0 top-full mt-2 w-80 max-h-[420px] overflow-y-auto bg-popover border border-border rounded-xl shadow-lg z-50">
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
               <h4 className="text-sm font-semibold">Notifications</h4>
               {unreadCount > 0 && (
