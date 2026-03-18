@@ -85,7 +85,7 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
               )}
             </button>
             <NotificationBell />
-            <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center text-primary-foreground text-xs font-bold ring-2 ring-primary/20">
+            <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center text-primary-foreground text-xs font-bold ring-2 ring-primary/20 shadow-md hover:ring-primary/40 transition-default cursor-pointer">
               {user?.name?.charAt(0) || 'U'}
             </div>
           </div>
