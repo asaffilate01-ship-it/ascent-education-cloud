@@ -693,7 +693,7 @@ export default function TenantLandingPage() {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { flag: '🇬🇧', country: 'United Kingdom', visa: '2-Year Post-Study Work Visa', unis: ['Sunderland', 'Anglia Ruskin', 'UCLan', 'Middlesex', 'Derby', 'Bolton'] },
+              { flag: '🇬🇧', country: 'United Kingdom', visa: 'Graduate Route Visa (2 yrs; 18 months from 2027)', unis: ['Sunderland', 'Anglia Ruskin', 'UCLan', 'Middlesex', 'Derby', 'Bolton'] },
               { flag: '🇨🇦', country: 'Canada', visa: '3-Year PGWP', unis: ['Royal Roads', 'Yorkville', 'Athabasca'] },
               { flag: '🇦🇺', country: 'Australia', visa: '2–4 Year Post-Study Visa', unis: ['Torrens', 'Deakin', 'ECU', 'Charles Sturt'] },
               { flag: '🇦🇪', country: 'UAE', visa: 'Employment Opportunities', unis: ['Partner institutions available'] },
