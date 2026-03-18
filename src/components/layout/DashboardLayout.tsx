@@ -44,7 +44,7 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
       <DashboardSidebar />
       <div className="lg:pl-60 pl-0">
         {/* Premium Top Bar */}
-        <header className="sticky top-0 z-40 h-14 flex items-center justify-between px-4 lg:px-6 border-b border-border/50 bg-card/80 backdrop-blur-md">
+        <header className="sticky top-0 z-40 h-14 flex items-center justify-between px-4 lg:px-6 border-b border-border/40 bg-card/90 backdrop-blur-xl shadow-sm">
           <div className="ml-10 lg:ml-0">
             {breadcrumbs.length > 1 && (
               <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mb-0.5">
