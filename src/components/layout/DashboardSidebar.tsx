@@ -64,6 +64,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Transport', icon: Bus, path: '/transport' },
       { label: 'Health Records', icon: Heart, path: '/health' },
       { label: 'AI Insights', icon: Sparkles, path: '/ai-recommendations' },
+      { label: 'AI Builder', icon: Brain, path: '/director/ai-course-builder' },
       { label: 'Residential', icon: Building2, path: '/residential' },
       { label: 'Agents', icon: Handshake, path: '/director/agents' },
       { label: 'Audit Logs', icon: FileText, path: '/audit' },
