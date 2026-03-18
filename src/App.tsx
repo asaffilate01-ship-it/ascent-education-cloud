@@ -321,6 +321,8 @@ function AppRoutes() {
         <Route path="/health" element={<P><HealthRecords /></P>} />
         <Route path="/transport" element={<P><TransportTracking /></P>} />
         <Route path="/ai-recommendations" element={<P><AIRecommendations /></P>} />
+        <Route path="/ai-course-builder" element={<LecturerR><AICourseBuilder /></LecturerR>} />
+        <Route path="/director/ai-course-builder" element={<Director><AICourseBuilder /></Director>} />
         <Route path="/quizzes" element={<P><QuizDashboard /></P>} />
         <Route path="/forums" element={<P><ForumPage /></P>} />
         <Route path="/gradebook" element={<P><GradebookPage /></P>} />
