@@ -41,3 +41,12 @@ verify_jwt = false
 
 [functions.send-whatsapp]
 verify_jwt = false
+
+[functions.ai-course-builder]
+verify_jwt = false
+
+[functions.ai-tutor]
+verify_jwt = false
+
+[functions.predictive-analytics]
+verify_jwt = false
