@@ -10,7 +10,16 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useTheme } from '@/hooks/useTheme';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import heroDashboard from '@/assets/hero-dashboard.png';
+
+// EduCloud Stripe tiers
+const TIERS = {
+  starter: { price_id: 'price_1TCMVSFFogsDQVs4vjrxg3YN', product_id: 'prod_UAhvHWQxAi5x6L' },
+  professional: { price_id: 'price_1TCMVTFFogsDQVs4Fxtrs4ES', product_id: 'prod_UAhvrU5LFmty22' },
+  enterprise: { price_id: 'price_1TCMVUFFogsDQVs47Wd3IbXl', product_id: 'prod_UAhvry0Rs90Wce' },
+};
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
