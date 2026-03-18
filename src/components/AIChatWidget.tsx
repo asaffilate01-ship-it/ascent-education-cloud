@@ -11,7 +11,9 @@ interface Message {
 
 const TUTOR_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-tutor`;
 
-export default function AIChatWidget() {
+import { forwardRef } from 'react';
+
+const AIChatWidget = forwardRef<HTMLDivElement>(function AIChatWidget(_props, ref) {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);

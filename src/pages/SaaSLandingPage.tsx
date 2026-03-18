@@ -33,7 +33,9 @@ const stagger = {
   visible: { transition: { staggerChildren: 0.06 } },
 };
 
-export default function SaaSLandingPage() {
+import { forwardRef } from 'react';
+
+const SaaSLandingPage = forwardRef<HTMLDivElement>(function SaaSLandingPage(_props, ref) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const { theme, toggleTheme } = useTheme();
