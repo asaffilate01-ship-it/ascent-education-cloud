@@ -331,6 +331,13 @@ function AppRoutes() {
         <Route path="/quizzes" element={<P><QuizDashboard /></P>} />
         <Route path="/forums" element={<P><ForumPage /></P>} />
         <Route path="/gradebook" element={<P><GradebookPage /></P>} />
+        <Route path="/predictive-analytics" element={<Director><PredictiveAnalytics /></Director>} />
+        <Route path="/director/predictive-analytics" element={<Director><PredictiveAnalytics /></Director>} />
+        <Route path="/documents" element={<P><DocumentManagement /></P>} />
+        <Route path="/director/documents" element={<Director><DocumentManagement /></Director>} />
+        <Route path="/email-campaigns" element={<Marketing><EmailCampaigns /></Marketing>} />
+        <Route path="/marketing/email-campaigns" element={<Marketing><EmailCampaigns /></Marketing>} />
+        <Route path="/director/email-campaigns" element={<Director><EmailCampaigns /></Director>} />
 
         {/* Lecturer-specific routes for new features */}
         <Route path="/lecturer/quizzes" element={<LecturerR><QuizDashboard /></LecturerR>} />
