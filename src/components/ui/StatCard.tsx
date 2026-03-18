@@ -102,8 +102,8 @@ export default function StatCard({ label, value, change, changeType = 'neutral',
         </div>
 
         <div className="flex flex-col items-end gap-2">
-          <div className="p-2.5 rounded-xl bg-primary/8 border border-primary/10 group-hover:bg-primary/12 transition-default">
-            <Icon className="w-4.5 h-4.5 text-primary" />
+          <div className="p-2.5 rounded-xl bg-primary/8 border border-primary/10 group-hover:bg-primary/15 group-hover:scale-105 transition-all duration-300">
+            <Icon className="w-[18px] h-[18px] text-primary" />
           </div>
           {sparklineData && <MiniSparkline data={sparklineData} color={sparkColor} />}
         </div>
