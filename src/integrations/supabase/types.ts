@@ -3413,6 +3413,7 @@ export type Database = {
       transport_vehicles_student: {
         Row: {
           capacity: number | null
+          created_at: string | null
           id: string | null
           status: string | null
           tenant_id: string | null
@@ -3421,6 +3422,7 @@ export type Database = {
         }
         Insert: {
           capacity?: number | null
+          created_at?: string | null
           id?: string | null
           status?: string | null
           tenant_id?: string | null
@@ -3429,6 +3431,7 @@ export type Database = {
         }
         Update: {
           capacity?: number | null
+          created_at?: string | null
           id?: string | null
           status?: string | null
           tenant_id?: string | null
