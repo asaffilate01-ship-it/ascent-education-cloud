@@ -120,8 +120,12 @@ export default function DocumentManagement() {
                       variant={doc.status === 'verified' || doc.status === 'signed' ? 'success' : doc.status === 'rejected' ? 'danger' : 'warning'}
                     />
                     {doc.file_url && (
-                      <Button size="sm" variant="ghost" asChild className="h-8">
-                        <a href={doc.file_url} target="_blank" rel="noopener noreferrer"><Eye className="w-3.5 h-3.5" /></a>
+                      <Button size="sm" variant="ghost" className="h-8" onClick={async () => {
+                        const { data } = await supabase.storage.from('kyc-documents').createSignedUrl(doc.file_url, 300);
+                        if (data?.signedUrl) window.open(data.signedUrl, '_blank');
+                        else toast.error('Could not generate download link');
+                      }}>
+                        <Eye className="w-3.5 h-3.5" />
                       </Button>
                     )}
                   </CardContent>
