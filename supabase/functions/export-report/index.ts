@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
       }
       case 'invoices': {
         let query = adminClient.from('invoices').select('student_name, type, amount, paid, status, issued_date, due_date')
-        if (tenantId) query = query.eq('tenant_id', tenantId)
+        if (effectiveTenantId) query = query.eq('tenant_id', effectiveTenantId)
         if (filters?.status && typeof filters.status === 'string') query = query.eq('status', filters.status)
         const { data: rows } = await query.limit(5000)
         data = (rows || []) as Record<string, unknown>[]
