@@ -55,6 +55,20 @@ Deno.serve(async (req) => {
       })
     }
 
+    // Enforce tenant isolation: non-superadmins can only export their own tenant's data
+    const isSuperadmin = userRoles.includes('superadmin')
+    let effectiveTenantId = tenantId
+    if (!isSuperadmin) {
+      const { data: profile } = await adminClient.from('profiles').select('tenant_id').eq('user_id', auth.userId).single()
+      if (!profile?.tenant_id) {
+        return new Response(JSON.stringify({ error: 'User has no tenant assigned' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+      // Force tenant_id to user's own tenant regardless of what was passed
+      effectiveTenantId = profile.tenant_id
+    }
+
     let data: Record<string, unknown>[] = []
     let filename = ''
 
