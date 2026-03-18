@@ -285,7 +285,7 @@ export default function TenantLandingPage() {
               { icon: Banknote, title: 'Save Rs. 2.5+ Crore', desc: 'For a 3-year degree, save over Rs. 2.5 Crore in tuition and living costs. For 4-year degrees, savings exceed Rs. 3.5 Crore.' },
               { icon: Heart, title: 'Family & Support', desc: 'Stay close to family during the crucial first 2 years. Enjoy home-cooked meals, familiar surroundings, and zero culture shock while studying.' },
               { icon: Plane, title: 'Just 1 Year Abroad', desc: 'Fly out only for the final top-up year. Experience international campus life, build global networks, and graduate in person — all in 12 months.' },
-              { icon: Globe, title: 'Global Career Options', desc: 'A UK/Australian/Canadian degree opens doors worldwide. Access post-study work visas (UK 2-year, Australia 2–4 year, Canada 3-year PGWP).' },
+              { icon: Globe, title: 'Global Career Options', desc: 'A UK/Australian/Canadian degree opens doors worldwide. Access post-study work visas (UK Graduate Route — currently 2 years, reducing to 18 months from 2027; Australia 2–4 year; Canada 3-year PGWP).' },
               { icon: Shield, title: 'UK-Regulated Quality', desc: 'Your Level 4 & 5 qualifications are regulated by Ofqual and recognised by OTHM, QUALIFI & IAB — the same standards as studying in the UK.' },
               { icon: Star, title: 'No Compromise on Learning', desc: 'HD live lectures, recorded sessions, virtual classrooms, e-library access, dedicated tutors, and 2 residential weeks per year for in-person experience.' },
             ].map((b) => (
