@@ -10,6 +10,8 @@ import CookieConsent from "@/components/CookieConsent";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { lazy, Suspense } from "react";
+import MobileBottomNav from "@/components/MobileBottomNav";
+const AIChatWidgetLazy = lazy(() => import("@/components/AIChatWidget"));
 
 // Lazy-loaded route components
 const SaaSLandingPage = lazy(() => import("./pages/SaaSLandingPage"));
@@ -77,11 +79,15 @@ const LeaveManagement = lazy(() => import("./pages/leave/LeaveManagement"));
 const HealthRecords = lazy(() => import("./pages/health/HealthRecords"));
 const TransportTracking = lazy(() => import("./pages/transport/TransportTracking"));
 const AIRecommendations = lazy(() => import("./pages/ai/AIRecommendations"));
+const AICourseBuilder = lazy(() => import("./pages/ai/AICourseBuilder"));
 const QuizDashboard = lazy(() => import("./pages/quiz/QuizDashboard"));
 const ForumPage = lazy(() => import("./pages/forums/ForumPage"));
 const GradebookPage = lazy(() => import("./pages/gradebook/GradebookPage"));
 const ITLabsDashboard = lazy(() => import("./pages/labs/ITLabsDashboard"));
 const CertificateVerification = lazy(() => import("./pages/verify/CertificateVerification"));
+const PredictiveAnalytics = lazy(() => import("./pages/analytics/PredictiveAnalytics"));
+const DocumentManagement = lazy(() => import("./pages/documents/DocumentManagement"));
+const EmailCampaigns = lazy(() => import("./pages/marketing/EmailCampaigns"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -320,9 +326,18 @@ function AppRoutes() {
         <Route path="/health" element={<P><HealthRecords /></P>} />
         <Route path="/transport" element={<P><TransportTracking /></P>} />
         <Route path="/ai-recommendations" element={<P><AIRecommendations /></P>} />
+        <Route path="/ai-course-builder" element={<LecturerR><AICourseBuilder /></LecturerR>} />
+        <Route path="/director/ai-course-builder" element={<Director><AICourseBuilder /></Director>} />
         <Route path="/quizzes" element={<P><QuizDashboard /></P>} />
         <Route path="/forums" element={<P><ForumPage /></P>} />
         <Route path="/gradebook" element={<P><GradebookPage /></P>} />
+        <Route path="/predictive-analytics" element={<Director><PredictiveAnalytics /></Director>} />
+        <Route path="/director/predictive-analytics" element={<Director><PredictiveAnalytics /></Director>} />
+        <Route path="/documents" element={<P><DocumentManagement /></P>} />
+        <Route path="/director/documents" element={<Director><DocumentManagement /></Director>} />
+        <Route path="/email-campaigns" element={<Marketing><EmailCampaigns /></Marketing>} />
+        <Route path="/marketing/email-campaigns" element={<Marketing><EmailCampaigns /></Marketing>} />
+        <Route path="/director/email-campaigns" element={<Director><EmailCampaigns /></Director>} />
 
         {/* Lecturer-specific routes for new features */}
         <Route path="/lecturer/quizzes" element={<LecturerR><QuizDashboard /></LecturerR>} />
@@ -364,6 +379,8 @@ const App = () => (
             <AppRoutes />
             <CookieConsent />
             <PWAInstallPrompt />
+            <MobileBottomNav />
+            <AIChatWidgetLazy />
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>

@@ -9,7 +9,7 @@ import {
   ChevronLeft, ChevronRight, UserCheck, Calendar,
   Award, Megaphone, FileText, AlertTriangle, FolderOpen,
   Handshake, Monitor, Clock, Cloud, Menu, X,
-  Bus, Heart, Sparkles, CalendarDays, Activity
+  Bus, Heart, Sparkles, CalendarDays, Activity, Brain, Mail
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
@@ -64,6 +64,10 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Transport', icon: Bus, path: '/transport' },
       { label: 'Health Records', icon: Heart, path: '/health' },
       { label: 'AI Insights', icon: Sparkles, path: '/ai-recommendations' },
+      { label: 'AI Builder', icon: Brain, path: '/director/ai-course-builder' },
+      { label: 'Predictive', icon: BarChart3, path: '/director/predictive-analytics' },
+      { label: 'Documents', icon: FolderOpen, path: '/director/documents' },
+      { label: 'Email Campaigns', icon: Megaphone, path: '/director/email-campaigns' },
       { label: 'Residential', icon: Building2, path: '/residential' },
       { label: 'Agents', icon: Handshake, path: '/director/agents' },
       { label: 'Audit Logs', icon: FileText, path: '/audit' },
@@ -96,6 +100,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Classroom', icon: Video, path: '/lecturer/classroom' },
       { label: 'IT Labs', icon: Cloud, path: '/lecturer/labs' },
       { label: 'Lesson Plans', icon: BookOpen, path: '/lesson-plans' },
+      { label: 'AI Builder', icon: Brain, path: '/ai-course-builder' },
       { label: 'Marking', icon: ClipboardList, path: '/lecturer/marking' },
       { label: 'Report Cards', icon: FileText, path: '/lecturer/report-cards' },
       { label: 'Attendance', icon: Calendar, path: '/lecturer/attendance' },
@@ -167,6 +172,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
     { items: [
       { label: 'Dashboard', icon: LayoutDashboard, path: '/marketing' },
       { label: 'Campaigns', icon: Megaphone, path: '/marketing/campaigns' },
+      { label: 'Email Campaigns', icon: Mail, path: '/marketing/email-campaigns' },
       { label: 'Leads', icon: UserPlus, path: '/marketing/leads' },
       { label: 'Webinars', icon: Video, path: '/marketing/webinars' },
       { label: 'Analytics', icon: BarChart3, path: '/marketing/analytics' },
