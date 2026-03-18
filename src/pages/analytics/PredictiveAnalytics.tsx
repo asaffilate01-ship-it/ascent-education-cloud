@@ -140,7 +140,7 @@ export default function PredictiveAnalytics() {
                               <td className="py-2.5 px-3 text-center">
                                 <StatusBadge
                                   status={s.risk_level}
-                                  variant={s.risk_level === 'high' ? 'error' : s.risk_level === 'medium' ? 'warning' : 'success'}
+                                  variant={s.risk_level === 'high' ? 'danger' : s.risk_level === 'medium' ? 'warning' : 'success'}
                                 />
                               </td>
                             </tr>

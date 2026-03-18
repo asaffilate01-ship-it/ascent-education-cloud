@@ -118,7 +118,7 @@ export default function DocumentManagement() {
                     </div>
                     <StatusBadge
                       status={doc.status}
-                      variant={doc.status === 'verified' || doc.status === 'signed' ? 'success' : doc.status === 'rejected' ? 'error' : 'warning'}
+                      variant={doc.status === 'verified' || doc.status === 'signed' ? 'success' : doc.status === 'rejected' ? 'danger' : 'warning'}
                     />
                     {doc.file_url && (
                       <Button size="sm" variant="ghost" asChild className="h-8">
