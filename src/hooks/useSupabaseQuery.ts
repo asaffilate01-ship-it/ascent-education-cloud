@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 
-type TableName = 'applications' | 'invoices' | 'programmes' | 'modules' | 'profiles' | 'tenants' | 'attendance_records' | 'user_roles' | 'assignments' | 'submissions' | 'notifications' | 'conversations' | 'conversation_participants' | 'messages' | 'leave_requests' | 'lesson_plans' | 'transport_vehicles' | 'transport_routes' | 'transport_assignments' | 'health_records' | 'academic_events' | 'resource_view_logs' | 'scheduled_lectures' | 'lecture_reminders' | 'student_enrolments';
+type TableName = 'applications' | 'invoices' | 'programmes' | 'modules' | 'profiles' | 'tenants' | 'attendance_records' | 'user_roles' | 'assignments' | 'submissions' | 'notifications' | 'conversations' | 'conversation_participants' | 'messages' | 'leave_requests' | 'lesson_plans' | 'transport_vehicles' | 'transport_routes' | 'transport_assignments' | 'health_records' | 'academic_events' | 'resource_view_logs' | 'scheduled_lectures' | 'lecture_reminders' | 'student_enrolments' | 'kyc_documents' | 'e_signatures' | 'compliance_checklists' | 'certificate_verifications' | 'forum_threads' | 'forum_replies' | 'gradebook_entries' | 'classroom_sessions' | 'classroom_recordings' | 'lab_sessions' | 'lab_vms' | 'payments' | 'audit_logs' | 'consent_records' | 'notification_preferences' | 'job_listings' | 'partner_universities' | 'accreditation_bodies' | 'parent_student_links' | 'plagiarism_reports';
 
 export function useSupabaseQuery<T extends TableName>(
   table: T,
