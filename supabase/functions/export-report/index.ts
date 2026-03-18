@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
       }
       case 'attendance': {
         let query = adminClient.from('attendance_records').select('student_id, date, status, method, module_id')
-        if (tenantId) query = query.eq('tenant_id', tenantId)
+        if (effectiveTenantId) query = query.eq('tenant_id', effectiveTenantId)
         if (filters?.dateFrom && typeof filters.dateFrom === 'string') query = query.gte('date', filters.dateFrom)
         if (filters?.dateTo && typeof filters.dateTo === 'string') query = query.lte('date', filters.dateTo)
         const { data: rows } = await query.limit(5000)
