@@ -360,8 +360,8 @@ export default function TenantLandingPage() {
                 </div>
                 <div className="flex items-center justify-between pt-3 border-t border-border/50 mt-auto">
                   <div>
-                    <span className="text-lg font-extrabold" style={{ color: pc }}>{course.fee}</span>
-                    <span className="text-[10px] text-muted-foreground ml-1.5">({course.gbp})</span>
+                    <span className="text-lg font-extrabold" style={{ color: pc }}>POA</span>
+                    <span className="text-[10px] text-muted-foreground ml-1.5">Price on Application</span>
                   </div>
                   <Link to="/apply">
                     <Button size="sm" variant="outline" className="text-xs font-semibold">Apply <ArrowRight className="w-3 h-3 ml-1" /></Button>
@@ -375,6 +375,31 @@ export default function TenantLandingPage() {
               <Button variant="outline" size="lg">View All Courses <ArrowRight className="w-4 h-4 ml-2" /></Button>
             </Link>
           </div>
+
+          {/* General Requirements */}
+          <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+            className="max-w-3xl mx-auto mt-14 surface-card p-6 sm:p-8 border border-border/50"
+          >
+            <h3 className="text-base sm:text-lg font-bold mb-4 flex items-center gap-2">
+              <CheckCircle className="w-5 h-5" style={{ color: pc }} />
+              Entry Requirements (All Programmes)
+            </h3>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {[
+                'Matric / O-Levels or equivalent secondary qualification',
+                'IELTS 5.0+ or equivalent (if English is not first language)',
+                'Laptop or desktop computer (min 8 GB RAM recommended)',
+                'Reliable internet connection (min 10 Mbps)',
+                '2 × 5-day intensive residential workshops per academic year at our campus',
+                'Minimum age: 16 years',
+              ].map((req) => (
+                <div key={req} className="flex items-start gap-2.5 text-sm text-muted-foreground">
+                  <CheckCircle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: pc }} />
+                  <span>{req}</span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
         </div>
       </section>
 
