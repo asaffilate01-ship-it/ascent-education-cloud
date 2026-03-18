@@ -160,6 +160,8 @@ function LoadingFallback() {
 function AppRoutes() {
   return (
     <Suspense fallback={<LoadingFallback />}>
+      <a href="#main-content" className="skip-to-content">Skip to content</a>
+      <main id="main-content">
       <Routes>
         {/* ========== PUBLIC ROUTES ========== */}
         <Route path="/" element={<SaaSLandingPage />} />

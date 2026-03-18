@@ -33,7 +33,7 @@ export default function CookieConsent() {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[100] p-4 bg-card border-t border-border shadow-xl">
+    <div role="dialog" aria-label="Cookie consent" className="fixed bottom-0 left-0 right-0 z-[100] p-4 bg-card border-t border-border shadow-xl">
       <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center gap-4">
         <Shield className="w-5 h-5 text-primary shrink-0" />
         <p className="text-sm text-muted-foreground flex-1">

@@ -81,7 +81,7 @@ export default function MobileBottomNav() {
                 <div className={`p-1 rounded-lg transition-all ${isActive ? 'bg-primary/10' : ''}`}>
                   <item.icon className="w-5 h-5" />
                 </div>
-                <span className="text-[10px] font-medium leading-none">{item.label}</span>
+                <span className="text-[10px] font-medium leading-none" aria-hidden="true">{item.label}</span>
               </>
             )}
           </NavLink>

@@ -105,7 +105,7 @@ export default function NotificationBell() {
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
 
           {/* Dropdown */}
-          <div className="absolute right-0 top-full mt-2 w-80 max-h-[420px] overflow-y-auto bg-popover border border-border rounded-xl shadow-lg z-50">
+          <div role="menu" aria-label="Notifications" className="absolute right-0 top-full mt-2 w-80 max-h-[420px] overflow-y-auto bg-popover border border-border rounded-xl shadow-lg z-50">
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
               <h4 className="text-sm font-semibold">Notifications</h4>
               {unreadCount > 0 && (
