@@ -3119,6 +3119,13 @@ export type Database = {
             referencedRelation: "transport_vehicles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "transport_routes_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "transport_vehicles_student"
+            referencedColumns: ["id"]
+          },
         ]
       }
       transport_vehicles: {
@@ -3408,6 +3415,48 @@ export type Database = {
           status?: Database["public"]["Enums"]["tenant_status"] | null
         }
         Relationships: []
+      }
+      transport_vehicles_student: {
+        Row: {
+          capacity: number | null
+          id: string | null
+          status: string | null
+          tenant_id: string | null
+          vehicle_number: string | null
+          vehicle_type: string | null
+        }
+        Insert: {
+          capacity?: number | null
+          id?: string | null
+          status?: string | null
+          tenant_id?: string | null
+          vehicle_number?: string | null
+          vehicle_type?: string | null
+        }
+        Update: {
+          capacity?: number | null
+          id?: string | null
+          status?: string | null
+          tenant_id?: string | null
+          vehicle_number?: string | null
+          vehicle_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transport_vehicles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_vehicles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {
