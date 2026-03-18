@@ -12,6 +12,20 @@ Deno.serve(async (req) => {
     const auth = await authenticateRequest(req)
     if (auth instanceof Response) return auth
 
+    // Verify user has certificate generation permissions
+    const adminClient = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    )
+    const { data: roles } = await adminClient.from('user_roles').select('role').eq('user_id', auth.userId)
+    const userRoles = roles?.map(r => r.role) || []
+    const allowedRoles = ['superadmin', 'centre_director', 'exams_officer', 'programme_leader']
+    if (!userRoles.some(r => allowedRoles.includes(r))) {
+      return new Response(JSON.stringify({ error: 'Only authorised staff can generate certificates' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
     const { studentName, programmeName, awardingBody, grade, completionDate, certificateType } = await req.json()
 
     if (!studentName || !programmeName) {
