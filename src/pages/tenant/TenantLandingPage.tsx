@@ -733,7 +733,7 @@ export default function TenantLandingPage() {
               { icon: Shield, title: 'UK-Regulated & Accredited', desc: 'All qualifications are Ofqual-regulated and recognised worldwide. Your child receives the exact same degree as students studying in the UK.' },
               { icon: Banknote, title: 'Save Rs. 2.5+ Crore', desc: 'Instead of spending Rs. 3–4 Crore on a full 3-year degree abroad, save 50–70% by studying the first 2 years at home.' },
               { icon: Briefcase, title: 'Real Internships & Jobs', desc: 'We provide internship placements across Pakistan — in corporate offices, IT firms, accounting practices, and healthcare organisations.' },
-              { icon: Globe, title: 'Global Degree, Global Career', desc: 'After the final year abroad, your child has a UK/Australian/Canadian degree with access to post-study work visas in those countries.' },
+              { icon: Globe, title: 'Global Degree, Global Career', desc: 'After the final year abroad, your child has a UK/Australian/Canadian degree with access to post-study work visas (UK Graduate Route currently 2 years, reducing to 18 months from 2027).' },
               { icon: Users, title: 'Dedicated Support Team', desc: 'Personal academic tutor, career counsellor, and parent liaison officer. We keep you informed every step of the way.' },
             ].map((f) => (
               <motion.div key={f.title} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
