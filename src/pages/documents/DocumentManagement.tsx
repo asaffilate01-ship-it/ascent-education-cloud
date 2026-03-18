@@ -18,6 +18,7 @@ export default function DocumentManagement() {
   const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [tab, setTab] = useState('all');
+  const [viewingUrl, setViewingUrl] = useState<string | null>(null);
 
   const { data: documents, loading, refetch } = useSupabaseQuery('kyc_documents') as { data: any[] | null; loading: boolean; refetch: () => void };
   const { data: signatures } = useSupabaseQuery('e_signatures') as { data: any[] | null; loading: boolean; refetch: () => void };
