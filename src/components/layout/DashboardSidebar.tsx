@@ -346,8 +346,8 @@ export default function DashboardSidebar() {
         ))}
       </nav>
 
-      {/* Role Switcher - Only in local development */}
-      {!collapsed && import.meta.env.DEV && window.location.hostname === 'localhost' && (
+      {/* Role Switcher - Temporarily available until 30 Apr 2026 for live testing */}
+      {!collapsed && (new Date() < new Date('2026-05-01T00:00:00Z') || (import.meta.env.DEV && window.location.hostname === 'localhost')) && (
         <div className="px-3 py-2 border-t border-sidebar-border">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40 mb-1.5 px-1">
             Dev: Switch Role
