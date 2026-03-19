@@ -324,7 +324,7 @@ export default function LiveClassroom() {
         setIsInSession(true);
         setIsLoading(false);
         setParticipantCount(1);
-        console.log('[Classroom] Successfully joined conference');
+        
       });
       api.addEventListener('videoConferenceLeft', () => {
         console.log('[Classroom] Left conference');
