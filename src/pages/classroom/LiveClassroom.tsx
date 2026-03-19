@@ -223,7 +223,7 @@ export default function LiveClassroom() {
 
     try {
       const fullRoomName = buildJaasRoomName(effectiveRoomName);
-      console.log('[Classroom] Requesting token for room:', fullRoomName);
+      
 
       const { data: tokenData, error: tokenError } = await supabase.functions.invoke('jaas-token', {
         body: {
