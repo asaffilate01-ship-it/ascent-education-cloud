@@ -223,7 +223,7 @@ export default function LiveClassroom() {
 
     try {
       const fullRoomName = buildJaasRoomName(effectiveRoomName);
-      console.log('[Classroom] Requesting token for room:', fullRoomName);
+      
 
       const { data: tokenData, error: tokenError } = await supabase.functions.invoke('jaas-token', {
         body: {
@@ -247,8 +247,6 @@ export default function LiveClassroom() {
       }
 
       const jitsiRoomName = `${tokenData.appId}/${fullRoomName}`;
-      console.log('[Classroom] Jitsi roomName:', jitsiRoomName);
-      console.log('[Classroom] AppId:', tokenData.appId);
 
       await loadJitsiApi(tokenData.appId);
       await new Promise(resolve => setTimeout(resolve, 200));
@@ -326,10 +324,10 @@ export default function LiveClassroom() {
         setIsInSession(true);
         setIsLoading(false);
         setParticipantCount(1);
-        console.log('[Classroom] Successfully joined conference');
+        
       });
       api.addEventListener('videoConferenceLeft', () => {
-        console.log('[Classroom] Left conference');
+        
         if (!joinedConference) {
           void handleJoinFailure('Disconnected before joining');
         }
