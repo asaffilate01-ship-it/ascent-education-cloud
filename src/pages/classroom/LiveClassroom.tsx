@@ -327,7 +327,7 @@ export default function LiveClassroom() {
         
       });
       api.addEventListener('videoConferenceLeft', () => {
-        console.log('[Classroom] Left conference');
+        
         if (!joinedConference) {
           void handleJoinFailure('Disconnected before joining');
         }
