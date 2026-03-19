@@ -247,8 +247,6 @@ export default function LiveClassroom() {
       }
 
       const jitsiRoomName = `${tokenData.appId}/${fullRoomName}`;
-      console.log('[Classroom] Jitsi roomName:', jitsiRoomName);
-      console.log('[Classroom] AppId:', tokenData.appId);
 
       await loadJitsiApi(tokenData.appId);
       await new Promise(resolve => setTimeout(resolve, 200));
