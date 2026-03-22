@@ -19,6 +19,8 @@ export default function TenantOnboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [launching, setLaunching] = useState(false);
+  const [uploadedDocs, setUploadedDocs] = useState<Record<string, string>>({});
+  const [uploadingDoc, setUploadingDoc] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     centreName: '',
     slug: '',
