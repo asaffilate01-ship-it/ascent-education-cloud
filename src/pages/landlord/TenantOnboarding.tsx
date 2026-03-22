@@ -37,6 +37,26 @@ export default function TenantOnboarding() {
 
   const updateField = (key: string, value: string) => setFormData(prev => ({ ...prev, [key]: value }));
 
+  const handleDocUpload = async (docName: string, file: File | undefined) => {
+    if (!file) return;
+    setUploadingDoc(docName);
+    try {
+      const safeName = docName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+      const ext = file.name.split('.').pop();
+      const path = `onboarding/${formData.slug || 'new'}/${safeName}.${ext}`;
+
+      const { error } = await supabase.storage.from('kyc-documents').upload(path, file, { upsert: true });
+      if (error) throw error;
+
+      setUploadedDocs(prev => ({ ...prev, [docName]: file.name }));
+      toast.success(`${docName} uploaded`);
+    } catch (e: any) {
+      toast.error(e.message || 'Upload failed');
+    } finally {
+      setUploadingDoc(null);
+    }
+  };
+
   const handleLaunch = async () => {
     if (!formData.centreName || !formData.slug) {
       toast.error('Centre name and slug are required');
