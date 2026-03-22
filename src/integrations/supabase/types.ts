@@ -2573,6 +2573,110 @@ export type Database = {
           },
         ]
       }
+      referral_income: {
+        Row: {
+          academic_year: string | null
+          commission_amount: number
+          commission_rate: number | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          id: string
+          intake: string | null
+          notes: string | null
+          payment_method: string | null
+          payment_reference: string | null
+          payment_status: string
+          programme: string
+          received_amount: number | null
+          received_date: string | null
+          referral_date: string
+          student_id: string | null
+          student_name: string
+          tenant_id: string | null
+          university_id: string | null
+          university_name: string
+          updated_at: string
+        }
+        Insert: {
+          academic_year?: string | null
+          commission_amount?: number
+          commission_rate?: number | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          id?: string
+          intake?: string | null
+          notes?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          payment_status?: string
+          programme: string
+          received_amount?: number | null
+          received_date?: string | null
+          referral_date?: string
+          student_id?: string | null
+          student_name: string
+          tenant_id?: string | null
+          university_id?: string | null
+          university_name: string
+          updated_at?: string
+        }
+        Update: {
+          academic_year?: string | null
+          commission_amount?: number
+          commission_rate?: number | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          id?: string
+          intake?: string | null
+          notes?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          payment_status?: string
+          programme?: string
+          received_amount?: number | null
+          received_date?: string | null
+          referral_date?: string
+          student_id?: string | null
+          student_name?: string
+          tenant_id?: string | null
+          university_id?: string | null
+          university_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_income_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_income_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_income_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "partner_universities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_income_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "partner_universities_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       residential_bookings: {
         Row: {
           check_in_at: string | null
@@ -3731,6 +3835,7 @@ export type Database = {
         | "bank_charges"
         | "taxes"
         | "miscellaneous"
+        | "university_referral_income"
       expense_payment_method:
         | "cash"
         | "bank_transfer"
@@ -3944,6 +4049,7 @@ export const Constants = {
         "bank_charges",
         "taxes",
         "miscellaneous",
+        "university_referral_income",
       ],
       expense_payment_method: [
         "cash",
