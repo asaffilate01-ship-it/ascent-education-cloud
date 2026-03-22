@@ -32,7 +32,7 @@ export default function FinanceDashboard() {
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [exporting, setExporting] = useState(false);
   const { toast } = useToast();
-  const tenantId = invoices?.[0]?.tenant_id || null;
+  
   const { data: invoices, loading, refetch } = useSupabaseQuery('invoices', {
     orderBy: { column: 'created_at', ascending: false },
   });
