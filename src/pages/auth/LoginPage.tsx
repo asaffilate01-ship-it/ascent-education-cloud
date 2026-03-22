@@ -220,7 +220,7 @@ export default function LoginPage() {
           </p>
 
           {/* Dev Login Panel - Temporarily available until 30 Apr 2026 for live testing */}
-          {(new Date() < new Date('2026-05-01T00:00:00Z') || (import.meta.env.DEV && window.location.hostname === 'localhost')) && (
+          {devUnlocked && (
             <div className="mt-6 border border-dashed border-destructive/30 rounded-lg overflow-hidden">
               <button
                 onClick={() => setDevOpen(!devOpen)}
