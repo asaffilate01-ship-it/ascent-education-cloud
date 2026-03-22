@@ -204,7 +204,7 @@ export default function FinanceDashboard() {
         </TabsContent>
 
         <TabsContent value="expenses">
-          <ExpenseManagement tenantId={profile?.tenant_id} totalRevenue={totalCollected} />
+          <ExpenseManagement tenantId={invoices?.[0]?.tenant_id || null} totalRevenue={totalCollected} />
         </TabsContent>
       </Tabs>
 
