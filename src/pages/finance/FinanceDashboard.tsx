@@ -14,7 +14,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 
 const statusVariant = (s: string): 'success' | 'warning' | 'danger' | 'info' | 'neutral' => {
   if (s === 'paid') return 'success';
