@@ -208,6 +208,10 @@ export default function FinanceDashboard() {
         <TabsContent value="expenses">
           <ExpenseManagement tenantId={invoices?.[0]?.tenant_id || null} totalRevenue={totalCollected} />
         </TabsContent>
+
+        <TabsContent value="referrals">
+          <ReferralIncomeTracker tenantId={invoices?.[0]?.tenant_id || null} />
+        </TabsContent>
       </Tabs>
 
       <CreateInvoiceModal open={invoiceOpen} onOpenChange={setInvoiceOpen} onCreated={refetch} />
