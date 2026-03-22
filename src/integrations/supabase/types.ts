@@ -819,6 +819,142 @@ export type Database = {
           },
         ]
       }
+      expenses: {
+        Row: {
+          agent_id: string | null
+          agent_name: string | null
+          amount: number
+          approved_at: string | null
+          approved_by: string | null
+          category: Database["public"]["Enums"]["expense_category"]
+          commission_percentage: number | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          description: string
+          expense_date: string
+          id: string
+          is_recurring: boolean
+          is_reimbursable: boolean
+          notes: string | null
+          paid_by_name: string | null
+          paid_by_user_id: string | null
+          payment_method: Database["public"]["Enums"]["expense_payment_method"]
+          payment_reference: string | null
+          receipt_url: string | null
+          recurring_frequency: string | null
+          reimbursed_amount: number | null
+          reimbursed_at: string | null
+          reimbursed_by: string | null
+          reimbursement_status: string | null
+          rejection_reason: string | null
+          related_invoice_id: string | null
+          status: string
+          student_id: string | null
+          student_name: string | null
+          subcategory: string | null
+          tenant_id: string | null
+          updated_at: string
+          vendor_name: string | null
+        }
+        Insert: {
+          agent_id?: string | null
+          agent_name?: string | null
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          category?: Database["public"]["Enums"]["expense_category"]
+          commission_percentage?: number | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description: string
+          expense_date?: string
+          id?: string
+          is_recurring?: boolean
+          is_reimbursable?: boolean
+          notes?: string | null
+          paid_by_name?: string | null
+          paid_by_user_id?: string | null
+          payment_method?: Database["public"]["Enums"]["expense_payment_method"]
+          payment_reference?: string | null
+          receipt_url?: string | null
+          recurring_frequency?: string | null
+          reimbursed_amount?: number | null
+          reimbursed_at?: string | null
+          reimbursed_by?: string | null
+          reimbursement_status?: string | null
+          rejection_reason?: string | null
+          related_invoice_id?: string | null
+          status?: string
+          student_id?: string | null
+          student_name?: string | null
+          subcategory?: string | null
+          tenant_id?: string | null
+          updated_at?: string
+          vendor_name?: string | null
+        }
+        Update: {
+          agent_id?: string | null
+          agent_name?: string | null
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          category?: Database["public"]["Enums"]["expense_category"]
+          commission_percentage?: number | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string
+          expense_date?: string
+          id?: string
+          is_recurring?: boolean
+          is_reimbursable?: boolean
+          notes?: string | null
+          paid_by_name?: string | null
+          paid_by_user_id?: string | null
+          payment_method?: Database["public"]["Enums"]["expense_payment_method"]
+          payment_reference?: string | null
+          receipt_url?: string | null
+          recurring_frequency?: string | null
+          reimbursed_amount?: number | null
+          reimbursed_at?: string | null
+          reimbursed_by?: string | null
+          reimbursement_status?: string | null
+          rejection_reason?: string | null
+          related_invoice_id?: string | null
+          status?: string
+          student_id?: string | null
+          student_name?: string | null
+          subcategory?: string | null
+          tenant_id?: string | null
+          updated_at?: string
+          vendor_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_related_invoice_id_fkey"
+            columns: ["related_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       forum_replies: {
         Row: {
           author_id: string
@@ -3568,6 +3704,46 @@ export type Database = {
         | "deferred"
       attendance_status: "present" | "absent" | "late" | "excused"
       awarding_body: "OTHM" | "QUALIFI" | "IAB"
+      expense_category:
+        | "cloud_hosting"
+        | "api_services"
+        | "development"
+        | "staff_salary"
+        | "staff_bonus"
+        | "marketing"
+        | "advertising"
+        | "utility"
+        | "rent"
+        | "internet"
+        | "phone"
+        | "fuel"
+        | "travel"
+        | "office_supplies"
+        | "software_licenses"
+        | "insurance"
+        | "legal"
+        | "accounting"
+        | "agent_commission"
+        | "maintenance"
+        | "equipment"
+        | "training"
+        | "subscriptions"
+        | "bank_charges"
+        | "taxes"
+        | "miscellaneous"
+      expense_payment_method:
+        | "cash"
+        | "bank_transfer"
+        | "credit_card"
+        | "debit_card"
+        | "cheque"
+        | "raast"
+        | "nayapay"
+        | "sadapay"
+        | "jazzcash"
+        | "easypaisa"
+        | "petty_cash"
+        | "other"
       invoice_status: "paid" | "partial" | "overdue" | "pending" | "refunded"
       invoice_type: "tuition" | "exam" | "deposit" | "commission"
       payment_method:
@@ -3741,6 +3917,48 @@ export const Constants = {
       ],
       attendance_status: ["present", "absent", "late", "excused"],
       awarding_body: ["OTHM", "QUALIFI", "IAB"],
+      expense_category: [
+        "cloud_hosting",
+        "api_services",
+        "development",
+        "staff_salary",
+        "staff_bonus",
+        "marketing",
+        "advertising",
+        "utility",
+        "rent",
+        "internet",
+        "phone",
+        "fuel",
+        "travel",
+        "office_supplies",
+        "software_licenses",
+        "insurance",
+        "legal",
+        "accounting",
+        "agent_commission",
+        "maintenance",
+        "equipment",
+        "training",
+        "subscriptions",
+        "bank_charges",
+        "taxes",
+        "miscellaneous",
+      ],
+      expense_payment_method: [
+        "cash",
+        "bank_transfer",
+        "credit_card",
+        "debit_card",
+        "cheque",
+        "raast",
+        "nayapay",
+        "sadapay",
+        "jazzcash",
+        "easypaisa",
+        "petty_cash",
+        "other",
+      ],
       invoice_status: ["paid", "partial", "overdue", "pending", "refunded"],
       invoice_type: ["tuition", "exam", "deposit", "commission"],
       payment_method: [
