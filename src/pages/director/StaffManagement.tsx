@@ -124,8 +124,9 @@ export default function StaffManagement() {
     <DashboardLayout
       title="Staff Management"
       subtitle={`${staff.length} staff members`}
-      actions={<Button size="sm"><UserPlus className="w-3.5 h-3.5 mr-1.5" />Add Staff</Button>}
+      actions={<Button size="sm" onClick={() => setAddOpen(true)}><UserPlus className="w-3.5 h-3.5 mr-1.5" />Add Staff</Button>}
     >
+      <AddStaffModal open={addOpen} onOpenChange={setAddOpen} onStaffAdded={loadStaff} />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Total Staff" value={staff.length} icon={Users} />
         <StatCard label="Lecturers" value={lecturerCount} icon={Award} />
