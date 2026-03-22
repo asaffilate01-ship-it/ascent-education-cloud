@@ -99,6 +99,7 @@ export default function FinanceDashboard() {
         <TabsList>
           <TabsTrigger value="revenue">Revenue & Invoices</TabsTrigger>
           <TabsTrigger value="expenses">Expenses</TabsTrigger>
+          <TabsTrigger value="referrals">University Referrals</TabsTrigger>
         </TabsList>
 
         <TabsContent value="revenue" className="space-y-4">
