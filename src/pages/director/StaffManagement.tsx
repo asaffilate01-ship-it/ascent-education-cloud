@@ -37,59 +37,59 @@ export default function StaffManagement() {
   const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
 
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
-      // Get all profiles in tenant that have non-student roles
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, email, avatar_url, created_at');
+  const loadStaff = useCallback(async () => {
+    setLoading(true);
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('user_id, full_name, email, avatar_url, created_at');
 
-      const { data: roles } = await supabase
-        .from('user_roles')
-        .select('user_id, role');
+    const { data: roles } = await supabase
+      .from('user_roles')
+      .select('user_id, role');
 
-      const { data: modules } = await supabase
-        .from('modules')
-        .select('lecturer_id');
+    const { data: modules } = await supabase
+      .from('modules')
+      .select('lecturer_id');
 
-      const staffRoles = new Set([
-        'centre_director', 'admissions_admin', 'lecturer', 'programme_leader',
-        'iqa_officer', 'exams_officer', 'finance_officer', 'marketing_officer',
-      ]);
+    const staffRoles = new Set([
+      'centre_director', 'admissions_admin', 'lecturer', 'programme_leader',
+      'iqa_officer', 'exams_officer', 'finance_officer', 'marketing_officer',
+    ]);
 
-      const roleMap: Record<string, string[]> = {};
-      (roles || []).forEach(r => {
-        if (staffRoles.has(r.role)) {
-          if (!roleMap[r.user_id]) roleMap[r.user_id] = [];
-          roleMap[r.user_id].push(r.role);
-        }
-      });
+    const roleMap: Record<string, string[]> = {};
+    (roles || []).forEach(r => {
+      if (staffRoles.has(r.role)) {
+        if (!roleMap[r.user_id]) roleMap[r.user_id] = [];
+        roleMap[r.user_id].push(r.role);
+      }
+    });
 
-      const moduleCountMap: Record<string, number> = {};
-      (modules || []).forEach(m => {
-        if (m.lecturer_id) {
-          moduleCountMap[m.lecturer_id] = (moduleCountMap[m.lecturer_id] || 0) + 1;
-        }
-      });
+    const moduleCountMap: Record<string, number> = {};
+    (modules || []).forEach(m => {
+      if (m.lecturer_id) {
+        moduleCountMap[m.lecturer_id] = (moduleCountMap[m.lecturer_id] || 0) + 1;
+      }
+    });
 
-      const members: StaffMember[] = (profiles || [])
-        .filter(p => roleMap[p.user_id])
-        .map(p => ({
-          id: p.user_id,
-          name: p.full_name,
-          email: p.email,
-          role: ROLE_DISPLAY[roleMap[p.user_id][0]] || roleMap[p.user_id][0],
-          avatarUrl: p.avatar_url,
-          createdAt: p.created_at,
-          moduleCount: moduleCountMap[p.user_id] || 0,
-        }));
+    const members: StaffMember[] = (profiles || [])
+      .filter(p => roleMap[p.user_id])
+      .map(p => ({
+        id: p.user_id,
+        name: p.full_name,
+        email: p.email,
+        role: ROLE_DISPLAY[roleMap[p.user_id][0]] || roleMap[p.user_id][0],
+        avatarUrl: p.avatar_url,
+        createdAt: p.created_at,
+        moduleCount: moduleCountMap[p.user_id] || 0,
+      }));
 
-      setStaff(members);
-      setLoading(false);
-    }
-    load();
+    setStaff(members);
+    setLoading(false);
   }, []);
+
+  useEffect(() => {
+    loadStaff();
+  }, [loadStaff]);
 
   const filtered = useMemo(() =>
     staff.filter(s =>
