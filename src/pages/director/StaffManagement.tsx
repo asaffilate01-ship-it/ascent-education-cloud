@@ -35,6 +35,7 @@ export default function StaffManagement() {
   const [search, setSearch] = useState('');
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const [addOpen, setAddOpen] = useState(false);
 
   useEffect(() => {
     async function load() {
