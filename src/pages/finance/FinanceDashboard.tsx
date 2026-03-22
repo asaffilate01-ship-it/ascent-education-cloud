@@ -10,6 +10,7 @@ import { useState } from 'react';
 import CreateInvoiceModal from '@/components/modals/CreateInvoiceModal';
 import RecordPaymentModal from '@/components/modals/RecordPaymentModal';
 import ExpenseManagement from '@/components/finance/ExpenseManagement';
+import ReferralIncomeTracker from '@/components/finance/ReferralIncomeTracker';
 import { useToast } from '@/hooks/use-toast';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
@@ -98,6 +99,7 @@ export default function FinanceDashboard() {
         <TabsList>
           <TabsTrigger value="revenue">Revenue & Invoices</TabsTrigger>
           <TabsTrigger value="expenses">Expenses</TabsTrigger>
+          <TabsTrigger value="referrals">University Referrals</TabsTrigger>
         </TabsList>
 
         <TabsContent value="revenue" className="space-y-4">
@@ -205,6 +207,10 @@ export default function FinanceDashboard() {
 
         <TabsContent value="expenses">
           <ExpenseManagement tenantId={invoices?.[0]?.tenant_id || null} totalRevenue={totalCollected} />
+        </TabsContent>
+
+        <TabsContent value="referrals">
+          <ReferralIncomeTracker tenantId={invoices?.[0]?.tenant_id || null} />
         </TabsContent>
       </Tabs>
 
