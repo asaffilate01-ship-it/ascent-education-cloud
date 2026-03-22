@@ -34,8 +34,19 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [devOpen, setDevOpen] = useState(false);
+  const [devUnlocked, setDevUnlocked] = useState(false);
   const [devLoading, setDevLoading] = useState<string | null>(null);
+  const tapTimestamps = useRef<number[]>([]);
   const navigate = useNavigate();
+
+  const handleLogoTap = useCallback(() => {
+    const now = Date.now();
+    tapTimestamps.current = [...tapTimestamps.current.filter(t => now - t < 3000), now];
+    if (tapTimestamps.current.length >= 5) {
+      setDevUnlocked(prev => !prev);
+      tapTimestamps.current = [];
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
