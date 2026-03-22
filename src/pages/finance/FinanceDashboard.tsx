@@ -10,6 +10,7 @@ import { useState } from 'react';
 import CreateInvoiceModal from '@/components/modals/CreateInvoiceModal';
 import RecordPaymentModal from '@/components/modals/RecordPaymentModal';
 import ExpenseManagement from '@/components/finance/ExpenseManagement';
+import ReferralIncomeTracker from '@/components/finance/ReferralIncomeTracker';
 import { useToast } from '@/hooks/use-toast';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
