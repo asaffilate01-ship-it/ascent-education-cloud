@@ -141,7 +141,7 @@ export default function LoginPage() {
       {/* Right: Form */}
       <div className="flex-1 flex items-center justify-center p-8 overflow-y-auto">
         <div className="w-full max-w-md">
-          <div className="lg:hidden flex items-center gap-2 mb-8">
+          <div className="lg:hidden flex items-center gap-2 mb-8 cursor-pointer select-none" onClick={handleLogoTap}>
             <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
               <Cloud className="w-4 h-4 text-white" />
             </div>
