@@ -19,6 +19,8 @@ export default function TenantOnboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [launching, setLaunching] = useState(false);
+  const [uploadedDocs, setUploadedDocs] = useState<Record<string, string>>({});
+  const [uploadingDoc, setUploadingDoc] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     centreName: '',
     slug: '',
@@ -34,6 +36,26 @@ export default function TenantOnboarding() {
   });
 
   const updateField = (key: string, value: string) => setFormData(prev => ({ ...prev, [key]: value }));
+
+  const handleDocUpload = async (docName: string, file: File | undefined) => {
+    if (!file) return;
+    setUploadingDoc(docName);
+    try {
+      const safeName = docName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+      const ext = file.name.split('.').pop();
+      const path = `onboarding/${formData.slug || 'new'}/${safeName}.${ext}`;
+
+      const { error } = await supabase.storage.from('kyc-documents').upload(path, file, { upsert: true });
+      if (error) throw error;
+
+      setUploadedDocs(prev => ({ ...prev, [docName]: file.name }));
+      toast.success(`${docName} uploaded`);
+    } catch (e: any) {
+      toast.error(e.message || 'Upload failed');
+    } finally {
+      setUploadingDoc(null);
+    }
+  };
 
   const handleLaunch = async () => {
     if (!formData.centreName || !formData.slug) {
@@ -173,9 +195,24 @@ export default function TenantOnboarding() {
                 <div key={doc} className="flex items-center justify-between p-3 border border-border rounded-lg">
                   <div className="flex items-center gap-2">
                     <FileText className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">{doc}</span>
+                    <div>
+                      <span className="text-sm">{doc}</span>
+                      {uploadedDocs[doc] && (
+                        <p className="text-[10px] text-success font-medium">✓ {uploadedDocs[doc]}</p>
+                      )}
+                    </div>
                   </div>
-                  <Button variant="outline" size="sm" className="text-xs">Upload</Button>
+                  <label className="cursor-pointer">
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept=".pdf,.doc,.docx,.png,.jpg"
+                      onChange={(e) => handleDocUpload(doc, e.target.files?.[0])}
+                    />
+                    <Button variant="outline" size="sm" className="text-xs pointer-events-none" asChild={false}>
+                      {uploadingDoc === doc ? <Loader2 className="w-3 h-3 animate-spin" /> : uploadedDocs[doc] ? 'Replace' : 'Upload'}
+                    </Button>
+                  </label>
                 </div>
               ))}
             </div>

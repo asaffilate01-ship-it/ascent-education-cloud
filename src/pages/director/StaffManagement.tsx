@@ -4,10 +4,11 @@ import DataTable from '@/components/ui/DataTable';
 import StatCard from '@/components/ui/StatCard';
 import { Users, UserPlus, Shield, Award, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
 import { ROLE_LABELS } from '@/contexts/AuthContext';
+import AddStaffModal from '@/components/modals/AddStaffModal';
 
 interface StaffMember {
   id: string;
@@ -34,60 +35,61 @@ export default function StaffManagement() {
   const [search, setSearch] = useState('');
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const [addOpen, setAddOpen] = useState(false);
+
+  const loadStaff = useCallback(async () => {
+    setLoading(true);
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('user_id, full_name, email, avatar_url, created_at');
+
+    const { data: roles } = await supabase
+      .from('user_roles')
+      .select('user_id, role');
+
+    const { data: modules } = await supabase
+      .from('modules')
+      .select('lecturer_id');
+
+    const staffRoles = new Set([
+      'centre_director', 'admissions_admin', 'lecturer', 'programme_leader',
+      'iqa_officer', 'exams_officer', 'finance_officer', 'marketing_officer',
+    ]);
+
+    const roleMap: Record<string, string[]> = {};
+    (roles || []).forEach(r => {
+      if (staffRoles.has(r.role)) {
+        if (!roleMap[r.user_id]) roleMap[r.user_id] = [];
+        roleMap[r.user_id].push(r.role);
+      }
+    });
+
+    const moduleCountMap: Record<string, number> = {};
+    (modules || []).forEach(m => {
+      if (m.lecturer_id) {
+        moduleCountMap[m.lecturer_id] = (moduleCountMap[m.lecturer_id] || 0) + 1;
+      }
+    });
+
+    const members: StaffMember[] = (profiles || [])
+      .filter(p => roleMap[p.user_id])
+      .map(p => ({
+        id: p.user_id,
+        name: p.full_name,
+        email: p.email,
+        role: ROLE_DISPLAY[roleMap[p.user_id][0]] || roleMap[p.user_id][0],
+        avatarUrl: p.avatar_url,
+        createdAt: p.created_at,
+        moduleCount: moduleCountMap[p.user_id] || 0,
+      }));
+
+    setStaff(members);
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
-    async function load() {
-      setLoading(true);
-      // Get all profiles in tenant that have non-student roles
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, email, avatar_url, created_at');
-
-      const { data: roles } = await supabase
-        .from('user_roles')
-        .select('user_id, role');
-
-      const { data: modules } = await supabase
-        .from('modules')
-        .select('lecturer_id');
-
-      const staffRoles = new Set([
-        'centre_director', 'admissions_admin', 'lecturer', 'programme_leader',
-        'iqa_officer', 'exams_officer', 'finance_officer', 'marketing_officer',
-      ]);
-
-      const roleMap: Record<string, string[]> = {};
-      (roles || []).forEach(r => {
-        if (staffRoles.has(r.role)) {
-          if (!roleMap[r.user_id]) roleMap[r.user_id] = [];
-          roleMap[r.user_id].push(r.role);
-        }
-      });
-
-      const moduleCountMap: Record<string, number> = {};
-      (modules || []).forEach(m => {
-        if (m.lecturer_id) {
-          moduleCountMap[m.lecturer_id] = (moduleCountMap[m.lecturer_id] || 0) + 1;
-        }
-      });
-
-      const members: StaffMember[] = (profiles || [])
-        .filter(p => roleMap[p.user_id])
-        .map(p => ({
-          id: p.user_id,
-          name: p.full_name,
-          email: p.email,
-          role: ROLE_DISPLAY[roleMap[p.user_id][0]] || roleMap[p.user_id][0],
-          avatarUrl: p.avatar_url,
-          createdAt: p.created_at,
-          moduleCount: moduleCountMap[p.user_id] || 0,
-        }));
-
-      setStaff(members);
-      setLoading(false);
-    }
-    load();
-  }, []);
+    loadStaff();
+  }, [loadStaff]);
 
   const filtered = useMemo(() =>
     staff.filter(s =>
@@ -122,8 +124,9 @@ export default function StaffManagement() {
     <DashboardLayout
       title="Staff Management"
       subtitle={`${staff.length} staff members`}
-      actions={<Button size="sm"><UserPlus className="w-3.5 h-3.5 mr-1.5" />Add Staff</Button>}
+      actions={<Button size="sm" onClick={() => setAddOpen(true)}><UserPlus className="w-3.5 h-3.5 mr-1.5" />Add Staff</Button>}
     >
+      <AddStaffModal open={addOpen} onOpenChange={setAddOpen} onStaffAdded={loadStaff} />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Total Staff" value={staff.length} icon={Users} />
         <StatCard label="Lecturers" value={lecturerCount} icon={Award} />

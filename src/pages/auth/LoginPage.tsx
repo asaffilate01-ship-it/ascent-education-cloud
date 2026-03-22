@@ -22,6 +22,7 @@ const DEV_ACCOUNTS: { role: UserRole; email: string; label: string; color: strin
   { role: 'agent', email: 'dev.agent@educloud.test', label: 'Agent', color: 'bg-secondary text-secondary-foreground border-border' },
   { role: 'university_partner', email: 'dev.unipartner@educloud.test', label: 'Uni Partner', color: 'bg-primary/10 text-primary border-primary/20' },
   { role: 'employer_partner', email: 'dev.employer@educloud.test', label: 'Employer', color: 'bg-primary/10 text-primary border-primary/20' },
+  { role: 'parent_guardian', email: 'dev.parent@educloud.test', label: 'Parent', color: 'bg-secondary text-secondary-foreground border-border' },
 ];
 
 const DEV_PASSWORD = 'DevTest123!';
