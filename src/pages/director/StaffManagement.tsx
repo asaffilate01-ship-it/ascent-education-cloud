@@ -4,10 +4,11 @@ import DataTable from '@/components/ui/DataTable';
 import StatCard from '@/components/ui/StatCard';
 import { Users, UserPlus, Shield, Award, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
 import { ROLE_LABELS } from '@/contexts/AuthContext';
+import AddStaffModal from '@/components/modals/AddStaffModal';
 
 interface StaffMember {
   id: string;
