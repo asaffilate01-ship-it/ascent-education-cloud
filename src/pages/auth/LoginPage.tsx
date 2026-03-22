@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable/index';
@@ -34,8 +34,19 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [devOpen, setDevOpen] = useState(false);
+  const [devUnlocked, setDevUnlocked] = useState(false);
   const [devLoading, setDevLoading] = useState<string | null>(null);
+  const tapTimestamps = useRef<number[]>([]);
   const navigate = useNavigate();
+
+  const handleLogoTap = useCallback(() => {
+    const now = Date.now();
+    tapTimestamps.current = [...tapTimestamps.current.filter(t => now - t < 3000), now];
+    if (tapTimestamps.current.length >= 5) {
+      setDevUnlocked(prev => !prev);
+      tapTimestamps.current = [];
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,7 +111,7 @@ export default function LoginPage() {
       {/* Left: Branding */}
       <div className="hidden lg:flex lg:w-1/2 gradient-primary relative flex-col justify-between p-12">
         <div>
-          <div className="flex items-center gap-3 mb-16">
+          <div className="flex items-center gap-3 mb-16 cursor-pointer select-none" onClick={handleLogoTap}>
             <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
               <Cloud className="w-5 h-5 text-white" />
             </div>
@@ -130,7 +141,7 @@ export default function LoginPage() {
       {/* Right: Form */}
       <div className="flex-1 flex items-center justify-center p-8 overflow-y-auto">
         <div className="w-full max-w-md">
-          <div className="lg:hidden flex items-center gap-2 mb-8">
+          <div className="lg:hidden flex items-center gap-2 mb-8 cursor-pointer select-none" onClick={handleLogoTap}>
             <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
               <Cloud className="w-4 h-4 text-white" />
             </div>
@@ -209,7 +220,7 @@ export default function LoginPage() {
           </p>
 
           {/* Dev Login Panel - Temporarily available until 30 Apr 2026 for live testing */}
-          {(new Date() < new Date('2026-05-01T00:00:00Z') || (import.meta.env.DEV && window.location.hostname === 'localhost')) && (
+          {devUnlocked && (
             <div className="mt-6 border border-dashed border-destructive/30 rounded-lg overflow-hidden">
               <button
                 onClick={() => setDevOpen(!devOpen)}
