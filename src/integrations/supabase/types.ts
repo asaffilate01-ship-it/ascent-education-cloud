@@ -139,8 +139,11 @@ export type Database = {
           agent_id: string | null
           counsellor: string | null
           created_at: string
+          destination: string | null
+          document_checklist: Json | null
           email: string
           id: string
+          intake: string | null
           level: string | null
           notes: string | null
           phone: string | null
@@ -149,6 +152,7 @@ export type Database = {
           source: string | null
           stage: Database["public"]["Enums"]["application_stage"]
           student_name: string
+          study_level: string | null
           tenant_id: string | null
           updated_at: string
           user_id: string | null
@@ -157,8 +161,11 @@ export type Database = {
           agent_id?: string | null
           counsellor?: string | null
           created_at?: string
+          destination?: string | null
+          document_checklist?: Json | null
           email: string
           id?: string
+          intake?: string | null
           level?: string | null
           notes?: string | null
           phone?: string | null
@@ -167,6 +174,7 @@ export type Database = {
           source?: string | null
           stage?: Database["public"]["Enums"]["application_stage"]
           student_name: string
+          study_level?: string | null
           tenant_id?: string | null
           updated_at?: string
           user_id?: string | null
@@ -175,8 +183,11 @@ export type Database = {
           agent_id?: string | null
           counsellor?: string | null
           created_at?: string
+          destination?: string | null
+          document_checklist?: Json | null
           email?: string
           id?: string
+          intake?: string | null
           level?: string | null
           notes?: string | null
           phone?: string | null
@@ -185,6 +196,7 @@ export type Database = {
           source?: string | null
           stage?: Database["public"]["Enums"]["application_stage"]
           student_name?: string
+          study_level?: string | null
           tenant_id?: string | null
           updated_at?: string
           user_id?: string | null

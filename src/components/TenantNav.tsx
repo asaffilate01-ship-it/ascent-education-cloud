@@ -18,6 +18,9 @@ export default function TenantNav({ brandName = 'EduPathway', primaryColor, acti
   const links = [
     { label: 'Home', path: `/tenant/${slug}`, key: 'home' },
     { label: 'Courses', path: `/tenant/${slug}/courses`, key: 'courses' },
+    { label: '🇩🇪 Germany', path: `/tenant/${slug}/germany`, key: 'germany' },
+    { label: '🇬🇧 UK', path: `/tenant/${slug}/uk`, key: 'uk' },
+    { label: 'Pathways', path: `/tenant/${slug}/pathways`, key: 'pathways' },
     { label: 'About', path: `/tenant/${slug}/about`, key: 'about' },
     { label: 'Contact', path: `/tenant/${slug}/contact`, key: 'contact' },
   ];

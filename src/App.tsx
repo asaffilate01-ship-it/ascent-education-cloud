@@ -30,6 +30,10 @@ const TenantAdminDashboard = lazy(() => import("./pages/tenant/TenantAdminDashbo
 const TenantBranding = lazy(() => import("./pages/tenant/TenantBranding"));
 const TenantPageBuilder = lazy(() => import("./pages/tenant/TenantPageBuilder"));
 const TenantDomainSettings = lazy(() => import("./pages/tenant/TenantDomainSettings"));
+const GermanyPathway = lazy(() => import("./pages/tenant/GermanyPathway"));
+const UKPathway = lazy(() => import("./pages/tenant/UKPathway"));
+const PathwaysCompare = lazy(() => import("./pages/tenant/PathwaysCompare"));
+const DestinationApply = lazy(() => import("./pages/tenant/apply/DestinationApply"));
 const CentreDirectorDashboard = lazy(() => import("./pages/director/CentreDirectorDashboard"));
 const ProgrammeManagement = lazy(() => import("./pages/director/ProgrammeManagement"));
 const StaffManagement = lazy(() => import("./pages/director/StaffManagement"));
@@ -180,6 +184,10 @@ function AppRoutes() {
         <Route path="/tenant/:slug/courses" element={<TenantCoursesPage />} />
         <Route path="/tenant/:slug/about" element={<TenantLandingPage />} />
         <Route path="/tenant/:slug/contact" element={<TenantContactPage />} />
+        <Route path="/tenant/:slug/germany" element={<GermanyPathway />} />
+        <Route path="/tenant/:slug/uk" element={<UKPathway />} />
+        <Route path="/tenant/:slug/pathways" element={<PathwaysCompare />} />
+        <Route path="/tenant/:slug/apply/:destination" element={<DestinationApply />} />
 
         {/* ========== LANDLORD (SaaS Owner) ========== */}
         <Route path="/landlord" element={<Landlord><LandlordDashboard /></Landlord>} />

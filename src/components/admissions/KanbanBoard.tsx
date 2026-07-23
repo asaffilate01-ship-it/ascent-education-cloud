@@ -105,11 +105,24 @@ export default function KanbanBoard({ applications, onRefetch }: KanbanBoardProp
                           {app.programme_name && (
                             <p className="text-[10px] text-muted-foreground truncate mt-1">{app.programme_name}</p>
                           )}
-                          {app.source && (
-                            <span className="inline-block text-[9px] bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded mt-1.5">
-                              {app.source}
-                            </span>
-                          )}
+                          <div className="flex items-center gap-1 mt-1.5 flex-wrap">
+                            {(() => {
+                              const dest = (app as any).destination
+                                || ((app.source || '').startsWith('consultancy_') ? (app.source as string).replace('consultancy_', '') : null);
+                              if (!dest) return null;
+                              const flag = dest === 'germany' ? '🇩🇪' : dest === 'uk' ? '🇬🇧' : '🇵🇰';
+                              return (
+                                <span className="inline-block text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-semibold">
+                                  {flag} {dest.toUpperCase()}
+                                </span>
+                              );
+                            })()}
+                            {app.source && !app.source.startsWith('consultancy_') && (
+                              <span className="inline-block text-[9px] bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded">
+                                {app.source}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       )}
                     </Draggable>

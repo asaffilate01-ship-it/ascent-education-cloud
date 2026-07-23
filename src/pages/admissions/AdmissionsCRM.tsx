@@ -37,6 +37,7 @@ export default function AdmissionsCRM() {
   const [view, setView] = useState<'kanban' | 'table'>('kanban');
   const [search, setSearch] = useState('');
   const [stageFilter, setStageFilter] = useState<string>('all');
+  const [destFilter, setDestFilter] = useState<string>('all');
   const { data: applications, loading, refetch } = useSupabaseQuery('applications', {
     orderBy: { column: 'updated_at', ascending: false },
   });
@@ -45,6 +46,11 @@ export default function AdmissionsCRM() {
 
   const filtered = applications.filter((app) => {
     if (stageFilter !== 'all' && app.stage !== stageFilter) return false;
+    if (destFilter !== 'all') {
+      const d = (app as any).destination
+        || ((app.source || '').startsWith('consultancy_') ? (app.source as string).replace('consultancy_', '') : 'pakistan');
+      if (d !== destFilter) return false;
+    }
     if (search) {
       const q = search.toLowerCase();
       return (
@@ -137,6 +143,17 @@ export default function AdmissionsCRM() {
             {PIPELINE_STAGES.map((s) => (
               <SelectItem key={s.key} value={s.key}>{s.label}</SelectItem>
             ))}
+          </SelectContent>
+        </Select>
+        <Select value={destFilter} onValueChange={setDestFilter}>
+          <SelectTrigger className="w-[150px] h-8 text-xs">
+            <SelectValue placeholder="Destination" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Destinations</SelectItem>
+            <SelectItem value="pakistan">🇵🇰 Pakistan</SelectItem>
+            <SelectItem value="germany">🇩🇪 Germany</SelectItem>
+            <SelectItem value="uk">🇬🇧 UK</SelectItem>
           </SelectContent>
         </Select>
       </div>
