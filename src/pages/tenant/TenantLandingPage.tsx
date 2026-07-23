@@ -80,15 +80,15 @@ export default function TenantLandingPage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-white">
           <div className="flex items-center gap-2">
             <Flame className="w-5 h-5 animate-pulse" />
-            <span className="font-extrabold text-lg sm:text-xl tracking-tight">30% OFF ALL COURSES</span>
+            <span className="font-extrabold text-lg sm:text-xl tracking-tight">SEPTEMBER 2026 INTAKE NOW OPEN</span>
             <Flame className="w-5 h-5 animate-pulse" />
           </div>
           <span className="text-sm sm:text-base font-medium opacity-95">
-            Enrol by <span className="font-bold underline decoration-2 underline-offset-2">1st June 2026</span> to claim your discount!
+            Secure your seat for the <span className="font-bold underline decoration-2 underline-offset-2">September start</span> — limited places.
           </span>
           <Link to="/apply">
             <Button size="sm" className="bg-white hover:bg-white/90 font-bold shadow-lg" style={{ color: pc }}>
-              <Zap className="w-4 h-4 mr-1" /> Claim Offer
+              <Zap className="w-4 h-4 mr-1" /> Enrol Now
             </Button>
           </Link>
         </div>
