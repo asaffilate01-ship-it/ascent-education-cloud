@@ -78,7 +78,7 @@ export default function LandlordDashboard() {
 
   return (
     <DashboardLayout
-      title="EduCloud — Landlord Dashboard"
+      title="UniPathway — Landlord Dashboard"
       subtitle="Platform owner view — All centres, revenue, and operations"
       actions={
         <div className="flex gap-2">
