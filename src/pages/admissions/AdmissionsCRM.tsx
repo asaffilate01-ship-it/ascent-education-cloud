@@ -37,6 +37,7 @@ export default function AdmissionsCRM() {
   const [view, setView] = useState<'kanban' | 'table'>('kanban');
   const [search, setSearch] = useState('');
   const [stageFilter, setStageFilter] = useState<string>('all');
+  const [destFilter, setDestFilter] = useState<string>('all');
   const { data: applications, loading, refetch } = useSupabaseQuery('applications', {
     orderBy: { column: 'updated_at', ascending: false },
   });
