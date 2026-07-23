@@ -313,6 +313,114 @@ export default function TenantLandingPage() {
         </div>
       </section>
 
+      {/* ─── GERMANY ROUTE ─── */}
+      <section className="py-20 sm:py-28 border-t border-border/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <span className="text-xs font-bold uppercase tracking-widest mb-3 block" style={{ color: pc }}>
+              🇩🇪 Study in Germany
+            </span>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground">
+              The Germany Route — Low Tuition, World-Class Degrees
+            </h2>
+            <p className="text-muted-foreground mt-4 max-w-2xl mx-auto text-base leading-relaxed">
+              Public universities in Germany charge little or no tuition — most students pay only a semester contribution (approx. €150–€350). Combine that with an 18-month post-study job-seeker visa and you have one of the strongest global pathways for Pakistani and overseas students.
+            </p>
+          </div>
+
+          {/* Route steps */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-12">
+            {[
+              { step: '1', title: 'Assess Equivalency', desc: 'HSSC / A-Level / Bachelor recognition via Anabin & uni-assist. Studienkolleg may be required before bachelor entry.' },
+              { step: '2', title: 'Reach Language Level', desc: 'German B1–B2 for German-taught programmes, or IELTS 6.0–6.5 / TOEFL for English-taught masters.' },
+              { step: '3', title: 'Apply & Blocked Account', desc: 'Apply through uni-assist / directly. Open a Sperrkonto with approx. €11,904 for the first year of living costs.' },
+              { step: '4', title: 'Student Visa & Arrival', desc: 'National D visa via the German mission, health insurance, and city registration on arrival.' },
+            ].map((s) => (
+              <motion.div key={s.step} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                className="surface-card p-6 border border-border/50 hover:shadow-lg transition-all"
+              >
+                <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-extrabold mb-4" style={{ backgroundColor: `${pc}12`, color: pc }}>
+                  {s.step}
+                </div>
+                <h3 className="text-sm font-bold mb-2">{s.title}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">{s.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Required language courses */}
+          <div className="surface-card p-6 sm:p-8 border border-border/50 rounded-2xl mb-8">
+            <div className="flex items-start gap-3 mb-6">
+              <div className="p-2.5 rounded-xl" style={{ backgroundColor: `${pc}10` }}>
+                <BookOpen className="w-5 h-5" style={{ color: pc }} />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold">Language Courses Required for Germany</h3>
+                <p className="text-sm text-muted-foreground mt-1">Most German-taught bachelor's programmes need B2 (some require C1). English-taught masters usually accept IELTS 6.0–6.5.</p>
+              </div>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                { code: 'A1', title: 'German A1 — Foundations', hours: '80 hrs · 8 wks', fee: 'Rs.28,000', note: 'Alphabet, greetings, basic present tense.' },
+                { code: 'A2', title: 'German A2 — Elementary', hours: '100 hrs · 10 wks', fee: 'Rs.34,000', note: 'Past tenses, everyday topics, forms.' },
+                { code: 'B1', title: 'German B1 — Intermediate', hours: '120 hrs · 12 wks', fee: 'Rs.42,000', note: 'Independent user level — apprenticeships, integration.' },
+                { code: 'B2', title: 'German B2 — Upper Intermediate', hours: '140 hrs · 14 wks', fee: 'Rs.52,000', note: 'Required for most German-taught degrees.', highlight: true },
+                { code: 'TestDaF', title: 'TestDaF Preparation', hours: '40 hrs · 4 wks', fee: 'Rs.24,000', note: 'Preparation only — exam booked with authorised centre.', prep: true },
+                { code: 'telc', title: 'telc Deutsch B1/B2 Prep', hours: '32 hrs · 4 wks', fee: 'Rs.22,000', note: 'Preparation only — certificate issued by telc.', prep: true },
+                { code: 'Goethe', title: 'Goethe-Zertifikat Prep', hours: '32 hrs · 4 wks', fee: 'Rs.22,000', note: 'Preparation only — certificate by Goethe-Institut.', prep: true },
+                { code: 'IELTS', title: 'IELTS Academic Prep', hours: '48 hrs · 6 wks', fee: 'Rs.22,000', note: 'For English-taught masters in Germany.', prep: true },
+              ].map((c) => (
+                <div key={c.code} className={`rounded-xl border p-4 ${c.highlight ? 'border-primary/40' : 'border-border/50'}`} style={c.highlight ? { borderColor: pc, backgroundColor: `${pc}05` } : undefined}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md" style={{ backgroundColor: `${pc}12`, color: pc }}>{c.code}</span>
+                    {c.prep && <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-600 dark:text-amber-400">Prep only</span>}
+                    {c.highlight && <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded" style={{ backgroundColor: pc, color: 'white' }}>Recommended</span>}
+                  </div>
+                  <h4 className="text-sm font-bold mb-1 leading-snug">{c.title}</h4>
+                  <p className="text-[11px] text-muted-foreground mb-2 leading-relaxed">{c.note}</p>
+                  <div className="flex items-center justify-between text-xs pt-2 border-t border-border/40">
+                    <span className="text-muted-foreground">{c.hours}</span>
+                    <span className="font-bold" style={{ color: pc }}>{c.fee}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="text-[11px] text-muted-foreground italic mt-5">
+              Preparation courses do not include the official examination fee, sitting or certification — those are issued exclusively by the authorised exam body (TestDaF-Institut, telc, Goethe-Institut, British Council/IDP, Pearson, ETS).
+            </p>
+          </div>
+
+          {/* Cost snapshot */}
+          <div className="grid sm:grid-cols-3 gap-5 mb-10">
+            {[
+              { icon: Banknote, label: 'Tuition (public universities)', value: '€0 – €1,500 / yr', note: 'Semester fee ~€150–€350' },
+              { icon: Home, label: 'Blocked account (Sperrkonto)', value: '≈ €11,904 / yr', note: 'For first-year living costs' },
+              { icon: Briefcase, label: 'Post-study visa', value: '18 months', note: 'Job-seeker residence permit' },
+            ].map((k) => (
+              <div key={k.label} className="surface-card p-5 border border-border/50 rounded-xl">
+                <div className="p-2 rounded-lg w-fit mb-3" style={{ backgroundColor: `${pc}10` }}>
+                  <k.icon className="w-4 h-4" style={{ color: pc }} />
+                </div>
+                <p className="text-xs text-muted-foreground font-medium">{k.label}</p>
+                <p className="text-xl font-extrabold mt-1" style={{ color: pc }}>{k.value}</p>
+                <p className="text-[11px] text-muted-foreground mt-1">{k.note}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center">
+            <Link to={`/tenant/${slug}/germany`}>
+              <Button size="lg" style={{ backgroundColor: pc }}>
+                Explore the Germany Route <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Link>
+            <p className="text-[11px] text-muted-foreground mt-3 max-w-2xl mx-auto">
+              Indicative figures — verify current DAAD Pakistan and Make it in Germany guidance at the time of application. Admission and visa decisions rest with the receiving institution and the competent German authority.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* ─── COURSES ─── */}
       <section id="courses" className="py-20 sm:py-28" style={{ background: `${pc}03` }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
