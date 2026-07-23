@@ -64,7 +64,7 @@ export default function ResetPasswordPage() {
           <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
             <Cloud className="w-4 h-4 text-white" />
           </div>
-          <span className="font-bold text-foreground">EduCloud</span>
+          <span className="font-bold text-foreground">UniPathway</span>
         </div>
 
         <h2 className="text-2xl font-bold mb-1">Set new password</h2>
