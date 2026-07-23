@@ -799,9 +799,10 @@ export default function TenantLandingPage() {
             <span className="text-xs font-bold uppercase tracking-widest mb-3 block" style={{ color: pc }}>Global Mobility</span>
             <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground">Transfer to Universities Worldwide</h2>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
             {[
               { flag: '🇬🇧', country: 'United Kingdom', visa: 'Graduate Route Visa (2 yrs; 18 months from 2027)', unis: ['Sunderland', 'Anglia Ruskin', 'UCLan', 'Middlesex', 'Derby', 'Bolton'] },
+              { flag: '🇩🇪', country: 'Germany', visa: '18-Month Job-Seeker Visa', unis: ['TU Berlin', 'RWTH Aachen', 'Uni Hamburg', 'TU Munich', 'Uni Bonn', 'HTW Berlin'] },
               { flag: '🇨🇦', country: 'Canada', visa: '3-Year PGWP', unis: ['Royal Roads', 'Yorkville', 'Athabasca'] },
               { flag: '🇦🇺', country: 'Australia', visa: '2–4 Year Post-Study Visa', unis: ['Torrens', 'Deakin', 'ECU', 'Charles Sturt'] },
               { flag: '🇦🇪', country: 'UAE', visa: 'Employment Opportunities', unis: ['Partner institutions available'] },

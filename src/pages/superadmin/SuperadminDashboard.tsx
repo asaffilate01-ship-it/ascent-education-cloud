@@ -49,7 +49,7 @@ export default function SuperadminDashboard() {
   return (
     <DashboardLayout
       title="Platform Overview"
-      subtitle="EduCloud SaaS — All tenants and metrics"
+      subtitle="UniPathway — All tenants and metrics"
       actions={<Button size="sm" onClick={() => navigate('/landlord/onboarding')}>+ Onboard Tenant</Button>}
     >
       {/* Stats */}

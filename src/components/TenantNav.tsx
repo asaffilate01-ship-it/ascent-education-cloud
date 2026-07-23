@@ -10,7 +10,7 @@ interface TenantNavProps {
   activePage?: 'home' | 'courses' | 'about' | 'contact';
 }
 
-export default function TenantNav({ brandName = 'EduPathway', primaryColor, activePage }: TenantNavProps) {
+export default function TenantNav({ brandName = 'UniPathway', primaryColor, activePage }: TenantNavProps) {
   const { slug } = useParams();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();

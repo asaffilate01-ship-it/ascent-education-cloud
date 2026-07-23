@@ -181,7 +181,7 @@ const DEFAULT_SECTIONS: PageSection[] = [
     content: {
       tagline: 'UK-accredited education centre in Pakistan. OTHM, QUALIFI & IAB approved.',
       badges: ['OTHM', 'QUALIFI', 'IAB'],
-      copyright: '© 2026 {brandName}. Powered by EduCloud.',
+      copyright: '© 2026 {brandName}. Powered by UniPathway.',
     },
     sort_order: 14,
     is_visible: true,

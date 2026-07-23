@@ -299,7 +299,7 @@ export default function DashboardSidebar() {
         </div>
         {!collapsed && (
           <div className="overflow-hidden flex-1">
-            <p className="text-sm font-extrabold tracking-tight truncate">{isLandlord ? 'EduCloud' : 'EduPathway'}</p>
+            <p className="text-sm font-extrabold tracking-tight truncate">UniPathway</p>
             <p className="text-[10px] text-sidebar-foreground/40 uppercase tracking-[0.1em] font-semibold">
               {isLandlord ? 'Platform Owner' : ROLE_LABELS[user.role]}
             </p>
