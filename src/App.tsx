@@ -24,6 +24,7 @@ const ForgotPasswordPage = lazy(() => import("./pages/auth/ForgotPasswordPage"))
 const ResetPasswordPage = lazy(() => import("./pages/auth/ResetPasswordPage"));
 const StudentApplication = lazy(() => import("./pages/apply/StudentApplication"));
 const TenantLandingPage = lazy(() => import("./pages/tenant/TenantLandingPage"));
+const TenantAboutPage = lazy(() => import("./pages/tenant/TenantAboutPage"));
 const TenantCoursesPage = lazy(() => import("./pages/tenant/TenantCoursesPage"));
 const TenantContactPage = lazy(() => import("./pages/tenant/TenantContactPage"));
 const TenantAdminDashboard = lazy(() => import("./pages/tenant/TenantAdminDashboard"));
@@ -182,7 +183,7 @@ function AppRoutes() {
         {/* Tenant Public Pages */}
         <Route path="/tenant/:slug" element={<TenantLandingPage />} />
         <Route path="/tenant/:slug/courses" element={<TenantCoursesPage />} />
-        <Route path="/tenant/:slug/about" element={<TenantLandingPage />} />
+        <Route path="/tenant/:slug/about" element={<TenantAboutPage />} />
         <Route path="/tenant/:slug/contact" element={<TenantContactPage />} />
         <Route path="/tenant/:slug/germany" element={<GermanyPathway />} />
         <Route path="/tenant/:slug/uk" element={<UKPathway />} />
