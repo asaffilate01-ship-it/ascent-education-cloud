@@ -127,7 +127,7 @@ export default function LoginPage() {
             <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
               <Cloud className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-white">EduCloud</span>
+            <span className="text-xl font-bold text-white">UniPathway</span>
           </div>
           <h1 className="text-4xl font-bold text-white leading-tight max-w-md">
             The Complete Education Operating System
@@ -157,7 +157,7 @@ export default function LoginPage() {
             <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
               <Cloud className="w-4 h-4 text-white" />
             </div>
-            <span className="font-bold text-foreground">EduCloud</span>
+            <span className="font-bold text-foreground">UniPathway</span>
           </div>
 
           <h2 className="text-2xl font-bold mb-1">Welcome back</h2>
@@ -228,7 +228,7 @@ export default function LoginPage() {
             Don't have an account? <Link to="/register" className="text-primary hover:underline font-medium">Register</Link>
           </p>
           <p className="text-center text-xs text-muted-foreground mt-2">
-            <Link to="/" className="hover:underline">← Back to EduCloud</Link>
+            <Link to="/" className="hover:underline">← Back to UniPathway</Link>
           </p>
 
           {/* Dev Login Panel - Temporarily available until 30 Apr 2026 for live testing */}

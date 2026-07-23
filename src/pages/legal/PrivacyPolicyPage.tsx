@@ -10,7 +10,7 @@ export default function PrivacyPolicyPage() {
             <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
               <Cloud className="w-4 h-4 text-primary-foreground" />
             </div>
-            <span className="font-bold text-foreground">EduCloud</span>
+            <span className="font-bold text-foreground">UniPathway</span>
           </Link>
           <Link to="/" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1">
             <ArrowLeft className="w-3.5 h-3.5" /> Back
@@ -25,7 +25,7 @@ export default function PrivacyPolicyPage() {
         <div className="prose prose-sm max-w-none space-y-6 text-foreground/80">
           <section>
             <h2 className="text-lg font-semibold text-foreground">1. Introduction</h2>
-            <p>EduCloud ("we", "our", "us") is committed to protecting your personal data. This Privacy Policy explains how we collect, use, store, and share your information when you use our education management platform.</p>
+            <p>UniPathway ("we", "our", "us") is committed to protecting your personal data. This Privacy Policy explains how we collect, use, store, and share your information when you use our education management platform.</p>
           </section>
 
           <section>
@@ -85,7 +85,7 @@ export default function PrivacyPolicyPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-foreground">8. Contact</h2>
-            <p>For data protection enquiries, contact our Data Protection Officer at <strong>dpo@educloud.pk</strong>.</p>
+            <p>For data protection enquiries, contact our Data Protection Officer at <strong>dpo@unipathway.pk</strong>.</p>
           </section>
         </div>
       </main>
