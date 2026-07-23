@@ -184,6 +184,10 @@ function AppRoutes() {
         <Route path="/tenant/:slug/courses" element={<TenantCoursesPage />} />
         <Route path="/tenant/:slug/about" element={<TenantLandingPage />} />
         <Route path="/tenant/:slug/contact" element={<TenantContactPage />} />
+        <Route path="/tenant/:slug/germany" element={<GermanyPathway />} />
+        <Route path="/tenant/:slug/uk" element={<UKPathway />} />
+        <Route path="/tenant/:slug/pathways" element={<PathwaysCompare />} />
+        <Route path="/tenant/:slug/apply/:destination" element={<DestinationApply />} />
 
         {/* ========== LANDLORD (SaaS Owner) ========== */}
         <Route path="/landlord" element={<Landlord><LandlordDashboard /></Landlord>} />
