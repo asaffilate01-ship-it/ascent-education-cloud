@@ -24,6 +24,7 @@ const ForgotPasswordPage = lazy(() => import("./pages/auth/ForgotPasswordPage"))
 const ResetPasswordPage = lazy(() => import("./pages/auth/ResetPasswordPage"));
 const StudentApplication = lazy(() => import("./pages/apply/StudentApplication"));
 const TenantLandingPage = lazy(() => import("./pages/tenant/TenantLandingPage"));
+const TenantAboutPage = lazy(() => import("./pages/tenant/TenantAboutPage"));
 const TenantCoursesPage = lazy(() => import("./pages/tenant/TenantCoursesPage"));
 const TenantContactPage = lazy(() => import("./pages/tenant/TenantContactPage"));
 const TenantAdminDashboard = lazy(() => import("./pages/tenant/TenantAdminDashboard"));
