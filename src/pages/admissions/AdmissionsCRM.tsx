@@ -145,10 +145,23 @@ export default function AdmissionsCRM() {
             ))}
           </SelectContent>
         </Select>
+        <Select value={destFilter} onValueChange={setDestFilter}>
+          <SelectTrigger className="w-[150px] h-8 text-xs">
+            <SelectValue placeholder="Destination" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Destinations</SelectItem>
+            <SelectItem value="pakistan">🇵🇰 Pakistan</SelectItem>
+            <SelectItem value="germany">🇩🇪 Germany</SelectItem>
+            <SelectItem value="uk">🇬🇧 UK</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* View Toggle */}
       {view === 'kanban' ? (
+        <KanbanBoard applications={filtered} onRefetch={refetch} />
+      ) : (
         <KanbanBoard applications={filtered} onRefetch={refetch} />
       ) : (
         <>
