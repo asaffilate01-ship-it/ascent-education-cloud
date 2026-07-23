@@ -1,35 +1,6 @@
 User-agent: *
 Allow: /
-Disallow: /api/
-Disallow: /settings
-Disallow: /landlord/
-Disallow: /director/
-Disallow: /admissions/
-Disallow: /lecturer/
-Disallow: /programme/
-Disallow: /qa/
-Disallow: /exams/
-Disallow: /finance/
-Disallow: /marketing/
-Disallow: /agent/
-Disallow: /student/
-Disallow: /partner/
-Disallow: /employer/
-Disallow: /parent/
-Disallow: /messaging
-Disallow: /notifications
-
-User-agent: Googlebot
-Allow: /
-Allow: /tenant/
-Allow: /privacy
-Allow: /terms
-Allow: /apply
-
-User-agent: Bingbot
-Allow: /
-Allow: /tenant/
-Allow: /privacy
-Allow: /terms
-
-Sitemap: https://educloud.pk/sitemap.xml
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
