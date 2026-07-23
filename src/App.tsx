@@ -183,7 +183,7 @@ function AppRoutes() {
         {/* Tenant Public Pages */}
         <Route path="/tenant/:slug" element={<TenantLandingPage />} />
         <Route path="/tenant/:slug/courses" element={<TenantCoursesPage />} />
-        <Route path="/tenant/:slug/about" element={<TenantLandingPage />} />
+        <Route path="/tenant/:slug/about" element={<TenantAboutPage />} />
         <Route path="/tenant/:slug/contact" element={<TenantContactPage />} />
         <Route path="/tenant/:slug/germany" element={<GermanyPathway />} />
         <Route path="/tenant/:slug/uk" element={<UKPathway />} />
