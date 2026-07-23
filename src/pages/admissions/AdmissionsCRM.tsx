@@ -162,8 +162,6 @@ export default function AdmissionsCRM() {
       {view === 'kanban' ? (
         <KanbanBoard applications={filtered} onRefetch={refetch} />
       ) : (
-        <KanbanBoard applications={filtered} onRefetch={refetch} />
-      ) : (
         <>
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-sm font-semibold">Applications ({filtered.length})</h2>
