@@ -46,6 +46,11 @@ export default function AdmissionsCRM() {
 
   const filtered = applications.filter((app) => {
     if (stageFilter !== 'all' && app.stage !== stageFilter) return false;
+    if (destFilter !== 'all') {
+      const d = (app as any).destination
+        || ((app.source || '').startsWith('consultancy_') ? (app.source as string).replace('consultancy_', '') : 'pakistan');
+      if (d !== destFilter) return false;
+    }
     if (search) {
       const q = search.toLowerCase();
       return (
