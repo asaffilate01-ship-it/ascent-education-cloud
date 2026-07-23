@@ -57,7 +57,7 @@ const PWAInstallPrompt = forwardRef<HTMLDivElement>(function PWAInstallPrompt(_p
             <Smartphone className="w-5 h-5 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold">Install EduCloud</p>
+            <p className="text-sm font-semibold">Install UniPathway</p>
             {isIos ? (
               <p className="text-xs text-muted-foreground mt-0.5">
                 Tap <span className="font-medium">Share</span> then <span className="font-medium">"Add to Home Screen"</span>
