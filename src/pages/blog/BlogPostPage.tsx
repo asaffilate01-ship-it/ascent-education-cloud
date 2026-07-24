@@ -29,6 +29,7 @@ export default function BlogPostPage() {
     '@type': 'BlogPosting',
     headline: post.title,
     description: post.excerpt,
+    image: [typeof window !== 'undefined' ? `${window.location.origin}${post.cover}` : post.cover],
     author: { '@type': 'Organization', name: post.author },
     datePublished: post.date,
     articleSection: post.category,
@@ -55,7 +56,15 @@ export default function BlogPostPage() {
           <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{post.readMinutes} min read</span>
         </div>
 
-        <div className="aspect-[16/8] rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-accent/20 mt-8" />
+        <div className="aspect-[16/8] rounded-2xl overflow-hidden bg-muted mt-8">
+          <img
+            src={post.cover}
+            alt={post.coverAlt}
+            width={1280}
+            height={640}
+            className="w-full h-full object-cover"
+          />
+        </div>
 
         <div className="prose prose-sm sm:prose-base max-w-none mt-8 text-foreground/80 space-y-5 leading-relaxed">
           <p className="text-lg font-medium text-foreground/90">{post.excerpt}</p>

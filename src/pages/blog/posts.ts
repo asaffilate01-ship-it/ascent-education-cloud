@@ -1,3 +1,9 @@
+import ukVisaCover from '@/assets/blog/uk-visa.jpg';
+import germanySperrkontoCover from '@/assets/blog/germany-sperrkonto.jpg';
+import englishExamsCover from '@/assets/blog/english-exams.jpg';
+import germanExamsCover from '@/assets/blog/german-exams.jpg';
+import diplomaGuidanceCover from '@/assets/blog/diploma-guidance.jpg';
+
 export interface BlogPost {
   slug: string;
   title: string;
@@ -6,7 +12,8 @@ export interface BlogPost {
   author: string;
   date: string; // ISO
   readMinutes: number;
-  cover?: string;
+  cover: string;
+  coverAlt: string;
   body: string[]; // paragraphs (plain text)
 }
 
@@ -20,6 +27,8 @@ export const BLOG_POSTS: BlogPost[] = [
     author: 'UniPathway Editorial',
     date: '2026-06-02',
     readMinutes: 8,
+    cover: ukVisaCover,
+    coverAlt: 'UK passport and university acceptance letter with Westminster in the background',
     body: [
       'Applying for a UK Student Visa from Pakistan in 2026 is straightforward if you prepare in the right order. This guide walks through every document UKVI expects, the current maintenance-fund thresholds, and the common reasons Pakistani applications are refused.',
       'You need a Confirmation of Acceptance for Studies (CAS) from a licensed UK sponsor before you can apply. Your CAS is valid for six months and lists your course, start date, tuition, and any deposits already paid.',
@@ -37,6 +46,8 @@ export const BLOG_POSTS: BlogPost[] = [
     author: 'UniPathway Editorial',
     date: '2026-05-18',
     readMinutes: 6,
+    cover: germanySperrkontoCover,
+    coverAlt: 'Euro banknotes and a banking dashboard on a laptop with the Brandenburg Gate behind',
     body: [
       'To study in Germany, most Pakistani students must show proof of funds in a Sperrkonto (blocked account) before the German mission will issue a student visa.',
       'The amount is set by the Federal Foreign Office and is reviewed each year. It is released to you monthly during your studies — you cannot withdraw the full amount at once.',
@@ -54,6 +65,8 @@ export const BLOG_POSTS: BlogPost[] = [
     author: 'UniPathway Language Team',
     date: '2026-04-27',
     readMinutes: 5,
+    cover: englishExamsCover,
+    coverAlt: 'Student taking an English language exam on a computer with headphones on',
     body: [
       'All three tests are widely accepted, but they measure English differently and cost different amounts in Pakistan.',
       'IELTS is the most familiar to UK universities and UKVI. Results usually arrive in 3–5 days for the computer-delivered version.',
@@ -71,6 +84,8 @@ export const BLOG_POSTS: BlogPost[] = [
     author: 'UniPathway Language Team',
     date: '2026-03-30',
     readMinutes: 6,
+    cover: germanExamsCover,
+    coverAlt: 'Open German textbook with flashcards, a coffee mug and a German flag pin',
     body: [
       'German-taught programmes typically require a C1-level certificate. TestDaF, telc Deutsch C1 Hochschule, and Goethe-Zertifikat C1/C2 are the three most widely accepted.',
       'TestDaF is administered by the TestDaF-Institut and is designed specifically for academic admission — most universities accept a TDN 4 in each section.',
@@ -88,6 +103,8 @@ export const BLOG_POSTS: BlogPost[] = [
     author: 'UniPathway Editorial',
     date: '2026-03-04',
     readMinutes: 4,
+    cover: diplomaGuidanceCover,
+    coverAlt: 'Counsellor and Pakistani student reviewing a diploma pathway brochure together',
     body: [
       'OTHM, QUALIFI, and IAB are Ofqual-regulated UK awarding bodies. UniPathway delivers Level 3–5 diplomas across all three.',
       'OTHM diplomas cover business, computing, health and social care, and more. They articulate into the final year of many UK bachelor’s degrees.',
