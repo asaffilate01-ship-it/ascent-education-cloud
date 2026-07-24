@@ -985,19 +985,23 @@ export default function TenantLandingPage() {
       {/* ─── FOOTER ─── */}
       <footer className="bg-foreground text-background/50 py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-            <div className="col-span-2 md:col-span-1">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+            <div className="col-span-2 md:col-span-2">
               <div className="flex items-center gap-2.5 mb-4">
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: pc }}>
                   <GraduationCap className="w-4 h-4 text-primary-foreground" />
                 </div>
                 <span className="font-extrabold text-background text-lg">{theme.brandName}</span>
               </div>
-              <p className="text-sm leading-relaxed">UK-accredited education centre in Pakistan. OTHM, QUALIFI & IAB approved.</p>
+              <p className="text-sm leading-relaxed max-w-sm">UK-accredited education centre in Pakistan. OTHM, QUALIFI & IAB approved — with UK & Germany progression pathways.</p>
               <div className="flex gap-2 mt-4">
                 {['OTHM', 'QUALIFI', 'IAB'].map(b => (
                   <span key={b} className="text-[9px] font-bold uppercase tracking-wider bg-background/5 px-2 py-1 rounded">{b}</span>
                 ))}
+              </div>
+              <div className="mt-6">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-background/70 mb-3">Follow us</p>
+                <SocialIcons variant="dark" />
               </div>
             </div>
             <div>
@@ -1010,30 +1014,39 @@ export default function TenantLandingPage() {
               </ul>
             </div>
             <div>
-              <p className="font-bold text-background text-sm mb-3">Students</p>
+              <p className="font-bold text-background text-sm mb-3">Company</p>
               <ul className="space-y-2 text-sm">
-                <li><Link to="/login" className="hover:text-background transition-all">Student Portal</Link></li>
-                <li><Link to="/login" className="hover:text-background transition-all">Library</Link></li>
-                <li><Link to="/login" className="hover:text-background transition-all">Timetable</Link></li>
-                <li><Link to="/login" className="hover:text-background transition-all">Fees</Link></li>
+                <li><Link to={`/tenant/${slug}/about`} className="hover:text-background transition-all">About</Link></li>
+                <li><Link to="/blog" className="hover:text-background transition-all">Blog</Link></li>
+                <li><Link to={`/tenant/${slug}/contact`} className="hover:text-background transition-all">Contact</Link></li>
+                <li><Link to="/register" className="hover:text-background transition-all">Agent Partnership</Link></li>
               </ul>
             </div>
             <div>
-              <p className="font-bold text-background text-sm mb-3">Centre</p>
+              <p className="font-bold text-background text-sm mb-3">Legal</p>
               <ul className="space-y-2 text-sm">
-                <li><Link to={`/tenant/${slug}/contact`} className="hover:text-background transition-all">Contact</Link></li>
-                <li><Link to="/register" className="hover:text-background transition-all">Agent Partnership</Link></li>
                 <li><Link to="/privacy" className="hover:text-background transition-all">Privacy Policy</Link></li>
-                <li><Link to="/terms" className="hover:text-background transition-all">Terms</Link></li>
+                <li><Link to="/terms" className="hover:text-background transition-all">Terms of Service</Link></li>
+                <li><Link to="/cookies" className="hover:text-background transition-all">Cookie Policy</Link></li>
+                <li><Link to="/disclaimer" className="hover:text-background transition-all">Disclaimer</Link></li>
+                <li>
+                  <button
+                    onClick={openCookiePreferences}
+                    className="hover:text-background transition-all text-left"
+                  >
+                    Cookie preferences
+                  </button>
+                </li>
               </ul>
             </div>
           </div>
           <div className="border-t border-background/10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-            <p>© 2026 {theme.brandName}. Powered by UniPathway.</p>
+            <p>© 2026 {theme.brandName}. All rights reserved.</p>
             <div className="flex gap-4">
               <Link to="/privacy" className="hover:text-background transition-all">Privacy</Link>
               <Link to="/terms" className="hover:text-background transition-all">Terms</Link>
-              <Link to="/privacy" className="hover:text-background transition-all">GDPR</Link>
+              <Link to="/cookies" className="hover:text-background transition-all">Cookies</Link>
+              <Link to="/disclaimer" className="hover:text-background transition-all">Disclaimer</Link>
             </div>
           </div>
         </div>
