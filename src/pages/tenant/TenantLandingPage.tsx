@@ -15,7 +15,7 @@ const DEFAULT_THEME: TenantTheme = {
   faviconUrl: '',
   fontFamily: 'Inter',
   heroTitle: 'Your Gateway to Global Qualifications',
-  heroSubtitle: 'Study OTHM, QUALIFI & IAB accredited Level 3–5 diplomas 80% online. Progress to universities in the UK, USA, Australia, Canada & beyond.',
+  heroSubtitle: 'Study OTHM, QUALIFI & IAB accredited Level 3–5 diplomas 80% online. Progress to universities in the UK, USA, Australia, Canada, Germany &amp; beyond.',
   heroImageUrl: '',
   customDomain: '',
   brandName: 'UniPathway',
@@ -43,7 +43,7 @@ export default function TenantLandingPage() {
           faviconUrl: '',
           fontFamily: 'Inter',
           heroTitle: `Your Gateway to Global Qualifications`,
-          heroSubtitle: 'Study internationally recognised diplomas from Pakistan. 80% online, 20% in-centre. Progress to UK, USA, Australia & Canada. Save 50–70% vs studying abroad.',
+          heroSubtitle: 'Study internationally recognised diplomas from Pakistan. 80% online, 20% in-centre. Progress to UK, USA, Australia, Canada & Germany. Save 50–70% vs studying abroad.',
           heroImageUrl: '',
           customDomain: t.custom_domain || '',
           brandName: t.brand_name || t.name,
@@ -192,7 +192,7 @@ export default function TenantLandingPage() {
               { icon: GraduationCap, title: 'Globally Recognised Qualifications', desc: 'Study OTHM, QUALIFI, and IAB accredited courses — recognised by universities across the UK, USA, Canada, Australia, and beyond.' },
               { icon: Video, title: '80% Online Learning', desc: 'Join HD live lectures from home. Interactive whiteboard, breakout rooms, and all sessions recorded for 24/7 playback.' },
               { icon: MapPin, title: '20% In-Centre Experience', desc: 'Attend 2 residential weeks per year for workshops, presentations, tutor meetings, and formal examinations.' },
-              { icon: Target, title: 'Global University Progression', desc: 'Clear academic pathways to top-up your diploma to a full bachelor\'s degree at partner universities in UK, USA, Australia & Canada.' },
+              { icon: Target, title: 'Global University Progression', desc: 'Clear academic pathways to top-up your diploma to a full bachelor\'s degree at partner universities in UK, USA, Australia, Canada & Germany.' },
               { icon: Shield, title: 'Full QA Compliance', desc: 'Every assignment is moderated, plagiarism-checked, and verified to meet awarding body standards.' },
               { icon: Users, title: 'Career Support', desc: 'Access job listings, CV builder, and employer partner internships through our integrated career portal.' },
             ].map((f) => (
@@ -217,7 +217,7 @@ export default function TenantLandingPage() {
             <span className="text-xs font-bold uppercase tracking-widest mb-3 block" style={{ color: pc }}>The Smart Way to a Global Degree</span>
             <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground">Study 2 Years from Home. <br className="hidden sm:block" /><span style={{ color: pc }}>Final Year Abroad.</span> Same Degree.</h2>
             <p className="text-muted-foreground mt-4 max-w-2xl mx-auto text-base leading-relaxed">
-              Complete your Level 4 &amp; 5 diplomas from the comfort of home in Pakistan, then fly out for just the final top-up year at a partner university in the UK, USA, Australia or Canada. You graduate with the <strong>exact same degree</strong> as students who studied all 3 years on campus.
+              Complete your Level 4 &amp; 5 diplomas from the comfort of home in Pakistan, then fly out for just the final top-up year at a partner university in the UK, USA, Australia, Canada or Germany. You graduate with the <strong>exact same degree</strong> as students who studied all 3 years on campus.
             </p>
           </div>
 
@@ -539,7 +539,7 @@ export default function TenantLandingPage() {
           <div className="text-center mb-14">
             <span className="text-xs font-bold uppercase tracking-widest mb-3 block" style={{ color: pc }}>Academic Pathways</span>
             <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground">Your Route to a Global Degree</h2>
-            <p className="text-muted-foreground mt-3 max-w-lg mx-auto">Complete Level 4 & 5 in Pakistan, then top-up to a full bachelor's degree at universities in the UK, USA, Australia or Canada</p>
+            <p className="text-muted-foreground mt-3 max-w-lg mx-auto">Complete Level 4 & 5 in Pakistan, then top-up to a full bachelor's degree at universities in the UK, USA, Australia, Canada or Germany</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
