@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import TenantNav from '@/components/TenantNav';
 import tenantHero from '@/assets/tenant-hero.jpg';
 import SocialIcons from '@/components/SocialIcons';
+import unipathwayLogo from '@/assets/unipathway-logo.png.asset.json';
 import { openCookiePreferences } from '@/components/CookieConsent';
 
 const DEFAULT_THEME: TenantTheme = {
@@ -989,11 +990,8 @@ export default function TenantLandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
             <div className="col-span-2 md:col-span-2">
-              <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: pc }}>
-                  <GraduationCap className="w-4 h-4 text-primary-foreground" />
-                </div>
-                <span className="font-extrabold text-background text-lg">{theme.brandName}</span>
+              <div className="mb-4">
+                <img src={unipathwayLogo.url} alt="UniPathway" className="h-16 w-auto bg-white/95 rounded-lg p-2" />
               </div>
               <p className="text-sm leading-relaxed max-w-sm">UK-accredited education centre in Pakistan. OTHM, QUALIFI & IAB approved — with UK & Germany progression pathways.</p>
               <div className="flex gap-2 mt-4">

@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { GraduationCap, Menu, X, Moon, Sun } from 'lucide-react';
+import { Menu, X, Moon, Sun } from 'lucide-react';
+import unipathwayLogo from '@/assets/unipathway-logo.png.asset.json';
 import { useState } from 'react';
 import { useTheme } from '@/hooks/useTheme';
 
@@ -27,15 +28,13 @@ export default function TenantNav({ brandName = 'UniPathway', primaryColor, acti
 
   return (
     <nav className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border/40 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <Link to={`/tenant/${slug}`} className="flex items-center gap-2">
-          <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center bg-primary shadow-md"
-            style={primaryColor ? { backgroundColor: primaryColor } : undefined}
-          >
-            <GraduationCap className="w-5 h-5 text-primary-foreground" />
-          </div>
-          <span className="font-extrabold text-foreground tracking-tight">{brandName}</span>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 lg:h-28 flex items-center justify-between">
+        <Link to={`/tenant/${slug}`} className="flex items-center">
+          <img
+            src={unipathwayLogo.url}
+            alt={brandName}
+            className="h-12 lg:h-24 w-auto"
+          />
         </Link>
 
         {/* Desktop */}
