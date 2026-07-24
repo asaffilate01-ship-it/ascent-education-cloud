@@ -28,7 +28,7 @@ const DEFAULT_SECTIONS: PageSection[] = [
     section_key: 'hero',
     content: {
       title: 'Your Gateway to Global Qualifications',
-      subtitle: 'Study internationally recognised diplomas from Pakistan. 80% online, 20% in-centre. Progress to UK, USA, Australia & Canada.',
+      subtitle: 'Study internationally recognised diplomas from Pakistan. 80% online, 20% in-centre. Progress to UK, USA, Australia, Canada & Germany.',
       cta_primary_text: 'Apply Now',
       cta_primary_link: '/apply',
       cta_secondary_text: 'View Courses',
