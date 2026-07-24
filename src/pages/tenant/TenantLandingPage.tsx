@@ -1043,7 +1043,7 @@ export default function TenantLandingPage() {
             </div>
           </div>
           <div className="border-t border-background/10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-            <p>© 2026 {theme.brandName}. All rights reserved. {theme.brandName} is a brand of LoungeTech Digitallösungen GmbH.</p>
+            <p>© 2026 UNIPATHWAY.PK. All rights reserved. A brand of LoungeTech Digitallösungen GmbH.</p>
             <div className="flex gap-4">
               <Link to="/privacy" className="hover:text-background transition-all">Privacy</Link>
               <Link to="/terms" className="hover:text-background transition-all">Terms</Link>
