@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { GraduationCap, Menu, X, Moon, Sun } from 'lucide-react';
+import { Menu, X, Moon, Sun } from 'lucide-react';
+import unipathwayLogo from '@/assets/unipathway-logo.png.asset.json';
 import { useState } from 'react';
 import { useTheme } from '@/hooks/useTheme';
 
