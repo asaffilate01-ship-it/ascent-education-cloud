@@ -15,7 +15,7 @@ const DEFAULT_THEME: TenantTheme = {
   faviconUrl: '',
   fontFamily: 'Inter',
   heroTitle: 'Your Gateway to Global Qualifications',
-  heroSubtitle: 'Study OTHM, QUALIFI & IAB accredited Level 3–5 diplomas 80% online. Progress to universities in the UK, USA, Australia, Canada, Germany &amp; beyond.',
+  heroSubtitle: 'Study OTHM, QUALIFI & IAB accredited Level 3–5 diplomas 80% online. Progress to universities in the UK, USA, Australia, Canada, Germany & beyond.',
   heroImageUrl: '',
   customDomain: '',
   brandName: 'UniPathway',
