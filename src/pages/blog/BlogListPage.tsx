@@ -40,8 +40,18 @@ export default function BlogListPage() {
               key={post.slug}
               className="group rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg transition-all"
             >
-              <div className="aspect-[16/9] bg-gradient-to-br from-primary/20 via-primary/10 to-accent/20 flex items-center justify-center">
-                <span className="text-xs font-bold uppercase tracking-widest text-primary">{post.category}</span>
+              <div className="aspect-[16/9] overflow-hidden bg-muted relative">
+                <img
+                  src={post.cover}
+                  alt={post.coverAlt}
+                  loading="lazy"
+                  width={1280}
+                  height={720}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <span className="absolute top-3 left-3 text-[10px] font-bold uppercase tracking-widest text-primary-foreground bg-primary/90 backdrop-blur px-2 py-1 rounded">
+                  {post.category}
+                </span>
               </div>
               <div className="p-5">
                 <div className="flex items-center gap-3 text-[11px] text-muted-foreground mb-2">
