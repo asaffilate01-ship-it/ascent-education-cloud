@@ -7,6 +7,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { motion } from 'framer-motion';
 import TenantNav from '@/components/TenantNav';
 import tenantHero from '@/assets/tenant-hero.jpg';
+import SocialIcons from '@/components/SocialIcons';
+import { openCookiePreferences } from '@/components/CookieConsent';
 
 const DEFAULT_THEME: TenantTheme = {
   primaryColor: '#b91c1c',

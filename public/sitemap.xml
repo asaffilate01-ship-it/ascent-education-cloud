@@ -9,6 +9,14 @@
   <url><loc>/pathways</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>/apply/uk</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>/apply/germany</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>/blog</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>/blog/uk-student-visa-2026-checklist</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>/blog/germany-blocked-account-sperrkonto-explained</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>/blog/ielts-vs-pte-vs-toefl-2026</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>/blog/testdaf-vs-telc-vs-goethe</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>/blog/choosing-otms-qualifi-iab-diploma</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>/privacy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>/terms</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>/cookies</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>/disclaimer</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
 </urlset>
