@@ -83,6 +83,10 @@ const EmployerPortal = lazy(() => import("./pages/employer/EmployerPortal"));
 // Legal + misc
 const PrivacyPolicyPage = lazy(() => import("./pages/legal/PrivacyPolicyPage"));
 const TermsOfServicePage = lazy(() => import("./pages/legal/TermsOfServicePage"));
+const CookiePolicyPage = lazy(() => import("./pages/legal/CookiePolicyPage"));
+const DisclaimerPage = lazy(() => import("./pages/legal/DisclaimerPage"));
+const BlogListPage = lazy(() => import("./pages/blog/BlogListPage"));
+const BlogPostPage = lazy(() => import("./pages/blog/BlogPostPage"));
 const StudentOnboarding = lazy(() => import("./pages/onboarding/StudentOnboarding"));
 const LecturerOnboarding = lazy(() => import("./pages/onboarding/LecturerOnboarding"));
 const ResidentialWeeks = lazy(() => import("./pages/residential/ResidentialWeeks"));
@@ -218,6 +222,10 @@ function AppRoutes() {
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/terms" element={<TermsOfServicePage />} />
+        <Route path="/cookies" element={<CookiePolicyPage />} />
+        <Route path="/disclaimer" element={<DisclaimerPage />} />
+        <Route path="/blog" element={<BlogListPage />} />
+        <Route path="/blog/:slug" element={<BlogPostPage />} />
         <Route path="/verify" element={<CertificateVerification />} />
         <Route path="/live-classroom" element={<P><LiveClassroom /></P>} />
 
