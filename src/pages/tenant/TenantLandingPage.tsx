@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { motion } from 'framer-motion';
 import TenantNav from '@/components/TenantNav';
-import tenantHero from '@/assets/tenant-hero.jpg';
+import tenantHero from '@/assets/unipathway-hero.jpg';
 import SocialIcons from '@/components/SocialIcons';
 import unipathwayLogo from '@/assets/unipathway-logo.png.asset.json';
 import { openCookiePreferences } from '@/components/CookieConsent';
