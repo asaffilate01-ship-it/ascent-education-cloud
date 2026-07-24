@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import TenantNav from '@/components/TenantNav';
 import tenantHero from '@/assets/tenant-hero.jpg';
 import SocialIcons from '@/components/SocialIcons';
+import unipathwayLogo from '@/assets/unipathway-logo.png.asset.json';
 import { openCookiePreferences } from '@/components/CookieConsent';
 
 const DEFAULT_THEME: TenantTheme = {
