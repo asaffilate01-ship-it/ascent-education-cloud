@@ -5,6 +5,7 @@ import { lovable } from '@/integrations/lovable/index';
 import { Button } from '@/components/ui/button';
 import { Cloud, Eye, EyeOff, ArrowRight, CheckCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import unipathwayLogo from '@/assets/unipathway-logo.png.asset.json';
 
 const ACCOUNT_TYPES = [
   { key: 'student', label: 'Student', desc: 'I want to study', role: 'student' },
@@ -87,15 +88,12 @@ export default function RegisterPage() {
       <div className="hidden lg:flex lg:w-1/2 gradient-primary relative flex-col justify-between p-12">
         <div>
           <div className="flex items-center gap-3 mb-16">
-            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-              <Cloud className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold text-white">UniPathway</span>
+            <img src={unipathwayLogo.url} alt="UniPathway" className="h-12 w-auto" />
           </div>
-          <h1 className="text-4xl font-bold text-white leading-tight max-w-md">
+          <h1 className="text-4xl font-bold text-primary-foreground leading-tight max-w-md">
             Join UniPathway
           </h1>
-          <p className="text-white/70 mt-4 text-lg max-w-md leading-relaxed">
+          <p className="text-primary-foreground/70 mt-4 text-lg max-w-md leading-relaxed">
             {accountType === 'student' && 'Start your journey to UK qualifications today.'}
             {accountType === 'agent' && 'Recruit students and earn commissions with UniPathway.'}
             
@@ -108,8 +106,8 @@ export default function RegisterPage() {
             { icon: CheckCircle, text: 'Virtual campus with live classes' },
           ].map((f) => (
             <div key={f.text} className="flex items-center gap-2">
-              <f.icon className="w-4 h-4 text-white/80" />
-              <span className="text-white/80 text-sm">{f.text}</span>
+              <f.icon className="w-4 h-4 text-primary-foreground/80" />
+              <span className="text-primary-foreground/80 text-sm">{f.text}</span>
             </div>
           ))}
         </div>
@@ -119,10 +117,7 @@ export default function RegisterPage() {
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
           <div className="lg:hidden flex items-center gap-2 mb-8">
-            <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
-              <Cloud className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold text-foreground">UniPathway</span>
+            <img src={unipathwayLogo.url} alt="UniPathway" className="h-10 w-auto" />
           </div>
 
           {step === 'type' ? (

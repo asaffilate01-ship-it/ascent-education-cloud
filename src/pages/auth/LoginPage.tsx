@@ -7,6 +7,7 @@ import { Cloud, Eye, EyeOff, ArrowRight, Loader2, Bug, ChevronDown, ChevronUp } 
 import { toast } from 'sonner';
 import { ROLE_HOME, ROLE_LABELS } from '@/contexts/AuthContext';
 import type { UserRole } from '@/types/platform';
+import unipathwayLogo from '@/assets/unipathway-logo.png.asset.json';
 
 const DEV_ACCOUNTS: { role: UserRole; email: string; label: string; color: string }[] = [
   { role: 'superadmin', email: 'dev.superadmin@educloud.test', label: 'Super Admin', color: 'bg-destructive/10 text-destructive border-destructive/20' },
@@ -113,16 +114,13 @@ export default function LoginPage() {
       <div className="hidden lg:flex lg:w-1/2 gradient-primary relative flex-col justify-between p-12">
         <div>
           <div className="flex items-center gap-3 mb-16 cursor-pointer select-none" onClick={handleLogoTap}>
-            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-              <Cloud className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold text-white">UniPathway</span>
+            <img src={unipathwayLogo.url} alt="UniPathway" className="h-12 w-auto" />
           </div>
-          <h1 className="text-4xl font-bold text-white leading-tight max-w-md">
-            The Complete Education Operating System
+          <h1 className="text-4xl font-bold text-primary-foreground leading-tight max-w-md">
+            Your Gateway to Global Qualifications
           </h1>
-          <p className="text-white/70 mt-4 text-lg max-w-md leading-relaxed">
-            From student recruitment to university progression — manage your accredited college on one platform.
+          <p className="text-primary-foreground/70 mt-4 text-lg max-w-md leading-relaxed">
+            Study OTHM, QUALIFI and IAB accredited diplomas online and progress to universities in the UK, Germany and beyond.
           </p>
         </div>
         <div className="space-y-4">
@@ -132,8 +130,8 @@ export default function LoginPage() {
             { stat: 'OTHM · QUALIFI · IAB', label: 'Accreditation Support' },
           ].map((s) => (
             <div key={s.label} className="flex items-center gap-3">
-              <span className="text-2xl font-bold text-white">{s.stat}</span>
-              <span className="text-white/60 text-sm">{s.label}</span>
+              <span className="text-2xl font-bold text-primary-foreground">{s.stat}</span>
+              <span className="text-primary-foreground/60 text-sm">{s.label}</span>
             </div>
           ))}
         </div>
@@ -143,10 +141,7 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center p-8 overflow-y-auto">
         <div className="w-full max-w-md">
           <div className="lg:hidden flex items-center gap-2 mb-8 cursor-pointer select-none" onClick={handleLogoTap}>
-            <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
-              <Cloud className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold text-foreground">UniPathway</span>
+            <img src={unipathwayLogo.url} alt="UniPathway" className="h-10 w-auto" />
           </div>
 
           <h2 className="text-2xl font-bold mb-1">Welcome back</h2>

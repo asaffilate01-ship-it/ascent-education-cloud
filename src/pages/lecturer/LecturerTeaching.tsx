@@ -230,7 +230,7 @@ export default function LecturerTeaching() {
                   <div key={slot.start} className="flex-1 border-l border-border/30 p-1 min-h-[56px] relative">
                     {lecture ? (
                       <div
-                        className="rounded p-1.5 text-white text-[10px] h-full flex flex-col justify-between cursor-pointer hover:opacity-90 transition-default"
+                        className="rounded p-1.5 text-primary-foreground text-[10px] h-full flex flex-col justify-between cursor-pointer hover:opacity-90 transition-default"
                         style={{ backgroundColor: lecture.color || '#3b82f6' }}
                         title={`${lecture.module_title}\n${lecture.room}\n${lecture.start_time}–${lecture.end_time}`}
                       >

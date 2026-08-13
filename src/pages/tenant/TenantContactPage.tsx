@@ -74,7 +74,7 @@ export default function TenantContactPage() {
                 className="flex items-center gap-3 w-full px-4 py-3 rounded-xl bg-[#25D366]/10 border border-[#25D366]/20 hover:bg-[#25D366]/20 transition-all group mt-2"
               >
                 <div className="w-10 h-10 rounded-full bg-[#25D366] flex items-center justify-center shrink-0">
-                  <MessageCircle className="w-5 h-5 text-white" />
+                  <MessageCircle className="w-5 h-5 text-primary-foreground" />
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-[#25D366] group-hover:underline">Chat on WhatsApp</p>
