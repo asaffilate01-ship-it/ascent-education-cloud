@@ -119,7 +119,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-dvh bg-background flex">
       {/* Left: Branding */}
       <div className="hidden lg:flex lg:w-1/2 gradient-primary relative flex-col justify-between p-12">
         <div>

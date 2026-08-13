@@ -150,9 +150,9 @@ export default function DestinationApply() {
   const flag = dest === 'germany' ? '🇩🇪 Germany' : '🇬🇧 United Kingdom';
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-dvh bg-background text-foreground">
       <TenantNav brandName="UniPathway" />
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
         <div className="mb-6">
           <span className="text-xs font-bold uppercase tracking-widest text-primary">{flag} · Application</span>
           <h1 className="text-2xl sm:text-3xl font-extrabold mt-2">Start your consultancy application</h1>
@@ -344,7 +344,7 @@ export default function DestinationApply() {
             )}
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

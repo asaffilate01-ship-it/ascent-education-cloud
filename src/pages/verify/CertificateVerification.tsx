@@ -39,7 +39,7 @@ export default function CertificateVerification() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       {/* Header */}
       <header className="border-b border-border/50 bg-card/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -55,7 +55,7 @@ export default function CertificateVerification() {
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-16">
+      <div className="max-w-2xl mx-auto px-4 py-16">
         {/* Hero */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -179,7 +179,7 @@ export default function CertificateVerification() {
           <p>This verification portal confirms certificates issued by accredited centres registered on our platform.</p>
           <p>For further enquiries, please <Link to="/apply" className="text-primary hover:underline">contact admissions</Link>.</p>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

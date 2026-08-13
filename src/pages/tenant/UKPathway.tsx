@@ -6,7 +6,7 @@ import { GraduationCap, Wallet, ShieldCheck, FileCheck2, Briefcase, Building2 } 
 
 export default function UKPathway() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-dvh bg-background text-foreground">
       <TenantNav brandName="UniPathway" activePage="home" />
 
       <DestinationHero
@@ -23,7 +23,7 @@ export default function UKPathway() {
         destination="uk"
       />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-14">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-14">
         <ComplianceDisclosure destination="uk" />
 
         {/* Study levels */}
@@ -128,7 +128,7 @@ export default function UKPathway() {
         <LanguageAcademy track="english" />
 
         <ComplianceDisclosure destination="language" compact />
-      </main>
+      </div>
 
       <footer className="border-t border-border/40 mt-14 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-xs text-muted-foreground space-y-2">

@@ -8,7 +8,7 @@ const categories = ['All', 'UK', 'Germany', 'Language', 'Guidance'] as const;
 
 export default function BlogListPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <TenantNav brandName="UniPathway" />
 
       <header className="border-b border-border bg-gradient-to-br from-primary/5 to-background">
@@ -33,7 +33,7 @@ export default function BlogListPage() {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {BLOG_POSTS.map((post) => (
             <article
@@ -78,7 +78,7 @@ export default function BlogListPage() {
           <p className="text-sm text-muted-foreground mt-1">Visa updates, scholarship deadlines, and exam tips.</p>
           <SocialIcons className="justify-center mt-4" />
         </div>
-      </main>
+      </div>
     </div>
   );
 }

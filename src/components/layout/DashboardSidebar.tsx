@@ -423,7 +423,7 @@ export default function DashboardSidebar() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 h-screen bg-sidebar text-sidebar-foreground flex flex-col z-50 transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)]
+        className={`fixed left-0 top-0 h-dvh bg-sidebar text-sidebar-foreground flex flex-col z-50 transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)]
           ${collapsed ? 'w-16' : 'w-60'}
           ${mobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'}
         `}

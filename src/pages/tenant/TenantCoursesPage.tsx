@@ -17,7 +17,7 @@ export default function TenantCoursesPage() {
   const { brandName, primaryColor } = useTenantBranding();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <TenantNav brandName={brandName} primaryColor={primaryColor} activePage="courses" />
 
       {/* Hero */}

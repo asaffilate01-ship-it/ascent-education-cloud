@@ -3,7 +3,7 @@ import { Cloud, ArrowLeft } from 'lucide-react';
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm shadow-surface-sm">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
@@ -18,7 +18,7 @@ export default function PrivacyPolicyPage() {
         </div>
       </nav>
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
         <h1 className="text-3xl font-bold mb-2">Privacy Policy</h1>
         <p className="text-muted-foreground mb-8">Last updated: 16 March 2026</p>
 
@@ -88,7 +88,7 @@ export default function PrivacyPolicyPage() {
             <p>For data protection enquiries, contact our Data Protection Officer at <strong>dpo@unipathway.pk</strong>.</p>
           </section>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

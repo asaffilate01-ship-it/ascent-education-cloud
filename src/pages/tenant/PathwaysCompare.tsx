@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/button';
 export default function PathwaysCompare() {
   const { slug } = useParams();
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-dvh bg-background text-foreground">
       <TenantNav brandName="UniPathway" />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
         <div>
           <span className="text-xs font-bold uppercase tracking-widest text-primary">Pathways</span>
           <h1 className="text-3xl sm:text-4xl font-extrabold mt-2 tracking-tight">Study in Pakistan, Germany or the United Kingdom</h1>
@@ -27,7 +27,7 @@ export default function PathwaysCompare() {
         </div>
 
         <ComplianceDisclosure />
-      </main>
+      </div>
     </div>
   );
 }
