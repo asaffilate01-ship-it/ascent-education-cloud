@@ -23,10 +23,57 @@ const DEFAULT_THEME: TenantTheme = {
 };
 
 export default function TenantBranding() {
+  const { user } = useAuth();
+  const tenantId = user?.tenantId;
   const [theme, setTheme] = useState<TenantTheme>(DEFAULT_THEME);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   const update = (key: keyof TenantTheme, value: string) =>
     setTheme((t) => ({ ...t, [key]: value }));
+
+  useEffect(() => {
+    let active = true;
+    async function load() {
+      if (!tenantId) { setLoading(false); return; }
+      const { data } = await supabase
+        .from('tenants')
+        .select('name, brand_name, custom_domain, logo_url, primary_color, accent_color')
+        .eq('id', tenantId)
+        .maybeSingle();
+      if (active && data) {
+        setTheme((t) => ({
+          ...t,
+          brandName: data.brand_name || data.name || t.brandName,
+          customDomain: data.custom_domain || '',
+          logoUrl: data.logo_url || '',
+          primaryColor: data.primary_color || t.primaryColor,
+          accentColor: data.accent_color || t.accentColor,
+        }));
+      }
+      if (active) setLoading(false);
+    }
+    load();
+    return () => { active = false; };
+  }, [tenantId]);
+
+  const handleSave = async () => {
+    if (!tenantId) { toast.error('No centre linked to your account.'); return; }
+    setSaving(true);
+    const { error } = await supabase
+      .from('tenants')
+      .update({
+        brand_name: theme.brandName,
+        custom_domain: theme.customDomain || null,
+        logo_url: theme.logoUrl || null,
+        primary_color: theme.primaryColor,
+        accent_color: theme.accentColor,
+      })
+      .eq('id', tenantId);
+    setSaving(false);
+    if (error) toast.error(error.message);
+    else toast.success('Theme saved and published.');
+  };
 
   return (
     <DashboardLayout title="Branding & Theme" subtitle="Customise your tenant landing page with live preview">
