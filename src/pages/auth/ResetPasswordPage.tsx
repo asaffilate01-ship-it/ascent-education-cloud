@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Cloud, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import unipathwayLogo from '@/assets/unipathway-logo.png.asset.json';
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState('');
@@ -61,10 +62,7 @@ export default function ResetPasswordPage() {
     <div className="min-h-dvh bg-background flex items-center justify-center p-8">
       <div className="w-full max-w-md">
         <div className="flex items-center gap-2 mb-8">
-          <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
-            <Cloud className="w-4 h-4 text-white" />
-          </div>
-          <span className="font-bold text-foreground">UniPathway</span>
+          <img src={unipathwayLogo.url} alt="UniPathway" className="h-10 w-auto" />
         </div>
 
         <h2 className="text-2xl font-bold mb-1">Set new password</h2>

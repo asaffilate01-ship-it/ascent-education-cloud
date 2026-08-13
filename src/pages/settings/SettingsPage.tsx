@@ -353,7 +353,7 @@ export default function SettingsPage() {
                     disabled={uploadingAvatar}
                     className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-default"
                   >
-                    {uploadingAvatar ? <Loader2 className="w-5 h-5 animate-spin text-white" /> : <Upload className="w-5 h-5 text-white" />}
+                    {uploadingAvatar ? <Loader2 className="w-5 h-5 animate-spin text-primary-foreground" /> : <Upload className="w-5 h-5 text-primary-foreground" />}
                   </button>
                 </div>
                 <div>
@@ -613,14 +613,14 @@ export default function SettingsPage() {
                           <img src={brandData.logo_url} alt="Preview" className="w-8 h-8 rounded-lg object-contain" />
                         ) : (
                           <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: brandData.primary_color }}>
-                            <span className="text-white text-xs font-bold">{brandData.brand_name?.charAt(0) || 'U'}</span>
+                            <span className="text-primary-foreground text-xs font-bold">{brandData.brand_name?.charAt(0) || 'U'}</span>
                           </div>
                         )}
                         <span className="font-bold text-sm">{brandData.brand_name || 'Your Centre'}</span>
                       </div>
                       <div className="flex gap-2">
-                        <div className="h-8 rounded-lg px-4 flex items-center text-xs font-semibold text-white" style={{ backgroundColor: brandData.primary_color }}>Primary</div>
-                        <div className="h-8 rounded-lg px-4 flex items-center text-xs font-semibold text-white" style={{ backgroundColor: brandData.accent_color }}>Accent</div>
+                        <div className="h-8 rounded-lg px-4 flex items-center text-xs font-semibold text-primary-foreground" style={{ backgroundColor: brandData.primary_color }}>Primary</div>
+                        <div className="h-8 rounded-lg px-4 flex items-center text-xs font-semibold text-primary-foreground" style={{ backgroundColor: brandData.accent_color }}>Accent</div>
                       </div>
                     </div>
                   </div>

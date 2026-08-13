@@ -212,7 +212,7 @@ export default function AcademicTimeline() {
                         style={{ left: `${left}%`, width: `${width}%`, minWidth: '4px', backgroundColor: `${event.colour}cc` }}
                         title={`${event.title}\n${event.startDate.toLocaleDateString()} – ${event.endDate.toLocaleDateString()}${event.details ? '\n' + event.details : ''}`}
                       >
-                        <span className="text-[9px] text-white font-medium px-1 truncate block leading-7">{event.title}</span>
+                        <span className="text-[9px] text-primary-foreground font-medium px-1 truncate block leading-7">{event.title}</span>
                       </div>
                     )}
                   </div>

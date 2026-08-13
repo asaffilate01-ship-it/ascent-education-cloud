@@ -300,7 +300,7 @@ export default function DashboardSidebar() {
           isLandlord ? 'gradient-gold' : 'gradient-primary'
         }`}>
           {isLandlord ? (
-            <Cloud className="w-4 h-4 text-white" />
+            <Cloud className="w-4 h-4 text-sidebar-primary-foreground" />
           ) : (
             <GraduationCap className="w-4 h-4 text-sidebar-primary-foreground" />
           )}
