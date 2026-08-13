@@ -269,7 +269,7 @@ export default function TenantDomainSettings() {
             <div>
               <h4 className="text-sm font-semibold mb-1">Need Help?</h4>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Contact the EduCloud team to verify your domain setup. We'll check your DNS records and activate your custom domain and email sending.
+                Contact the UniPathway team to verify your domain setup. We'll check your DNS records and activate your custom domain and email sending.
                 Typically DNS propagation takes 15 minutes to 72 hours depending on your registrar.
               </p>
             </div>

@@ -80,22 +80,10 @@ export default function LoginPage() {
 
   const handleDevLogin = async (account: typeof DEV_ACCOUNTS[0]) => {
     setDevLoading(account.role);
-    const attempt = () =>
-      supabase.auth.signInWithPassword({ email: account.email, password: DEV_PASSWORD });
-
-    let { data, error } = await attempt();
-
-    if (error && /invalid[_ ]credentials/i.test(error.message)) {
-      toast.message('Seeding dev accounts — one moment…');
-      const { error: seedErr } = await supabase.functions.invoke('seed-dev-users');
-      if (seedErr) {
-        setDevLoading(null);
-        toast.error(`Dev seed failed: ${seedErr.message}`);
-        return;
-      }
-      ({ data, error } = await attempt());
-    }
-
+    const { error } = await supabase.auth.signInWithPassword({
+      email: account.email,
+      password: DEV_PASSWORD,
+    });
     setDevLoading(null);
 
     if (error) {
@@ -106,6 +94,7 @@ export default function LoginPage() {
     toast.success(`Signed in as ${account.label}`);
     navigate(ROLE_HOME[account.role] || '/student');
   };
+
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
@@ -119,7 +108,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-dvh bg-background flex">
       {/* Left: Branding */}
       <div className="hidden lg:flex lg:w-1/2 gradient-primary relative flex-col justify-between p-12">
         <div>

@@ -23,7 +23,7 @@ const TEMPLATES: Record<string, { name: string; language: string; code: string }
 </head>
 <body>
   <div class="card">
-    <h1>Hello, EduCloud!</h1>
+    <h1>Hello, UniPathway!</h1>
     <p>Edit this code and click Run to see changes.</p>
     <button onclick="greet()">Click Me</button>
     <div id="output"></div>
@@ -58,7 +58,7 @@ print("Fibonacci sequence:", fib)
 print("Sum:", sum(fib))
 
 # String manipulation
-name = "EduCloud Student"
+name = "UniPathway Student"
 print(f"Hello, {name}!")
 print(f"Name length: {len(name)}")
 `,

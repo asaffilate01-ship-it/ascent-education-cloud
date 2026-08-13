@@ -59,7 +59,7 @@ export default function TenantLandingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-dvh flex items-center justify-center bg-background">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
@@ -68,7 +68,7 @@ export default function TenantLandingPage() {
   const pc = theme.primaryColor;
 
   return (
-    <div className="min-h-screen bg-background" style={{ fontFamily: theme.fontFamily }}>
+    <div className="min-h-dvh bg-background" style={{ fontFamily: theme.fontFamily }}>
       <TenantNav brandName={theme.brandName} primaryColor={pc} activePage="home" />
 
       {/* ─── PROMO BANNER ─── */}

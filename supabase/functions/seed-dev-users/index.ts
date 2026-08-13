@@ -30,6 +30,29 @@ Deno.serve(async (req) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   );
 
+  // Only an authenticated superadmin may seed dev accounts.
+  const authHeader = req.headers.get('Authorization') ?? '';
+  const token = authHeader.replace(/^Bearer\s+/i, '');
+  const { data: userData } = await admin.auth.getUser(token);
+  const callerId = userData?.user?.id;
+  if (!callerId) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+  const { data: isSuper } = await admin.rpc('has_role', {
+    _user_id: callerId,
+    _role: 'superadmin',
+  });
+  if (!isSuper) {
+    return new Response(JSON.stringify({ error: 'Forbidden' }), {
+      status: 403,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+
   // Pick a tenant (unipathway if present, else any)
   const { data: tenants } = await admin
     .from('tenants')

@@ -10,10 +10,10 @@ export default function TenantAboutPage() {
   const { slug } = useParams();
   const { brandName, primaryColor: pc, loading } = useTenantBranding();
 
-  if (loading) return <div className="min-h-screen bg-background" />;
+  if (loading) return <div className="min-h-dvh bg-background" />;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <TenantNav brandName={brandName} primaryColor={pc} activePage="about" />
 
       {/* Hero */}

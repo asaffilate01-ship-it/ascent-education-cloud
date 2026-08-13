@@ -69,7 +69,7 @@ function generateReportHtml(reportData: any) {
 
 <div style="margin-top:32px;padding-top:16px;border-top:3px solid #8B1538;display:flex;justify-content:space-between;font-size:11px;color:#888">
   <p>This is a computer-generated report card. For verification, contact the centre administration.</p>
-  <p>Powered by EduCloud</p>
+  <p>Powered by UniPathway</p>
 </div>
 </body></html>`;
 }
@@ -374,7 +374,7 @@ export default function ReportCardGenerator() {
           {/* Footer */}
           <div className="mt-8 pt-6 border-t-2 border-primary/20 flex items-center justify-between text-xs text-muted-foreground">
             <p>This is a computer-generated report card. For verification, contact the centre administration.</p>
-            <p>Powered by EduCloud</p>
+            <p>Powered by UniPathway</p>
           </div>
         </div>
       )}

@@ -5,7 +5,7 @@ import { openCookiePreferences } from '@/components/CookieConsent';
 
 export default function CookiePolicyPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm shadow-surface-sm">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
@@ -20,7 +20,7 @@ export default function CookiePolicyPage() {
         </div>
       </nav>
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
         <h1 className="text-3xl font-bold mb-2">Cookie Policy</h1>
         <p className="text-muted-foreground mb-8">Last updated: 24 July 2026</p>
 
@@ -71,7 +71,7 @@ export default function CookiePolicyPage() {
             <p>For questions about this policy, email <a href="mailto:dpo@unipathway.pk" className="text-primary hover:underline">dpo@unipathway.pk</a>. See also our <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link> and <Link to="/terms" className="text-primary hover:underline">Terms of Service</Link>.</p>
           </section>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

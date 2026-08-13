@@ -102,6 +102,10 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Lesson Plans', icon: BookOpen, path: '/lesson-plans' },
       { label: 'AI Builder', icon: Brain, path: '/ai-course-builder' },
       { label: 'Marking', icon: ClipboardList, path: '/lecturer/marking' },
+      { label: 'Quizzes', icon: ClipboardList, path: '/lecturer/quizzes' },
+      { label: 'Forums', icon: BookOpen, path: '/lecturer/forums' },
+      { label: 'Gradebook', icon: BarChart3, path: '/lecturer/gradebook' },
+
       { label: 'Report Cards', icon: FileText, path: '/lecturer/report-cards' },
       { label: 'Attendance', icon: Calendar, path: '/lecturer/attendance' },
       { label: 'Calendar', icon: CalendarDays, path: '/calendar' },
@@ -204,7 +208,11 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Calendar', icon: CalendarDays, path: '/calendar' },
       { label: 'Timeline', icon: Clock, path: '/student/timeline' },
       { label: 'Library', icon: Library, path: '/student/library' },
+      { label: 'Quizzes', icon: ClipboardList, path: '/student/quizzes' },
+      { label: 'Forums', icon: BookOpen, path: '/student/forums' },
+      { label: 'Gradebook', icon: BarChart3, path: '/student/gradebook' },
       { label: 'Code Lab', icon: Monitor, path: '/coding' },
+
     ]},
     { title: 'Services', items: [
       { label: 'Finance', icon: CreditCard, path: '/student/finance' },
@@ -423,7 +431,7 @@ export default function DashboardSidebar() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 h-screen bg-sidebar text-sidebar-foreground flex flex-col z-50 transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)]
+        className={`fixed left-0 top-0 h-dvh bg-sidebar text-sidebar-foreground flex flex-col z-50 transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)]
           ${collapsed ? 'w-16' : 'w-60'}
           ${mobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'}
         `}

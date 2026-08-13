@@ -40,7 +40,7 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
   }));
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <DashboardSidebar />
       <div className="lg:pl-60 pl-0">
         {/* Premium Top Bar */}
