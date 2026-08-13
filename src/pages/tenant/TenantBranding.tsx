@@ -163,7 +163,7 @@ export default function TenantBranding() {
               <div className="w-2.5 h-2.5 rounded-full bg-success/40" />
             </div>
             <p className="text-xs text-muted-foreground ml-2 font-mono">
-              {theme.customDomain || 'your-college.edupathway.com'}
+              {theme.customDomain || 'your-centre.unipathway.pk'}
             </p>
           </div>
           <div className="h-full overflow-y-auto" style={{ fontFamily: theme.fontFamily }}>
