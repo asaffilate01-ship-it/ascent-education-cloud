@@ -138,7 +138,18 @@ export default function DestinationApply() {
       const { error } = await supabase.from('applications').insert(payload);
       if (error) throw error;
 
-      toast({ title: 'Application received', description: 'Our counselling team will contact you within one working day.' });
+      // Confirmation email + admissions alert (never blocks the applicant).
+      supabase.functions.invoke('notify-application', {
+        body: {
+          name: form.full_name,
+          email: form.email,
+          destination: dest,
+          intake: form.intake,
+          tenantId: (tenant as any)?.id ?? null,
+        },
+      }).catch(() => undefined);
+
+      toast({ title: 'Application received', description: 'Check your inbox — our counselling team will contact you within one working day.' });
       navigate(`/tenant/${slug}/${dest}`);
     } catch (e: any) {
       toast({ title: 'Could not submit', description: e.message, variant: 'destructive' });
