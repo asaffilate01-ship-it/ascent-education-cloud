@@ -102,6 +102,10 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Lesson Plans', icon: BookOpen, path: '/lesson-plans' },
       { label: 'AI Builder', icon: Brain, path: '/ai-course-builder' },
       { label: 'Marking', icon: ClipboardList, path: '/lecturer/marking' },
+      { label: 'Quizzes', icon: ClipboardList, path: '/lecturer/quizzes' },
+      { label: 'Forums', icon: BookOpen, path: '/lecturer/forums' },
+      { label: 'Gradebook', icon: BarChart3, path: '/lecturer/gradebook' },
+
       { label: 'Report Cards', icon: FileText, path: '/lecturer/report-cards' },
       { label: 'Attendance', icon: Calendar, path: '/lecturer/attendance' },
       { label: 'Calendar', icon: CalendarDays, path: '/calendar' },
