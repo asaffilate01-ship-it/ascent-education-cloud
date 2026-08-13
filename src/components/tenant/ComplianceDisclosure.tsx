@@ -7,7 +7,7 @@ interface Props {
 
 /**
  * Compliance disclosure shown on every consultancy page.
- * Wording follows the launch boundaries in the EduCloud/LoungeTech blueprint:
+ * Wording follows the launch boundaries in the UniPathway/LoungeTech blueprint:
  * no guaranteed admission/CAS/visa, no unlicensed immigration advice, and
  * official certificates are only issued by authorised exam bodies.
  */

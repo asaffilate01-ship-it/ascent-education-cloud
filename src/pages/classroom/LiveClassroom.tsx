@@ -17,7 +17,7 @@ declare global {
   }
 }
 
-const JAAS_ROOM_PREFIX = 'EduCloud-';
+const JAAS_ROOM_PREFIX = 'UniPathway-';
 const JITSI_SCRIPT_ID = 'jitsi-script';
 
 const normalizeRoomName = (value: string) => {
