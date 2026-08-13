@@ -64,6 +64,7 @@ const StudentAssignments = lazy(() => import("./pages/student/StudentAssignments
 const StudentGrades = lazy(() => import("./pages/student/StudentGrades"));
 const StudentLibrary = lazy(() => import("./pages/student/StudentLibrary"));
 const StudentCareer = lazy(() => import("./pages/student/StudentCareer"));
+const StudentFees = lazy(() => import("./pages/student/StudentFees"));
 
 // Lecturer
 const LecturerDashboard = lazy(() => import("./pages/lecturer/LecturerDashboard"));
@@ -349,7 +350,7 @@ function AppRoutes() {
         <Route path="/student/grades" element={<StudentR><StudentGrades /></StudentR>} />
         <Route path="/student/attendance" element={<StudentR><AttendanceDashboard /></StudentR>} />
         <Route path="/student/library" element={<StudentR><StudentLibrary /></StudentR>} />
-        <Route path="/student/finance" element={<StudentR><FinanceDashboard /></StudentR>} />
+        <Route path="/student/finance" element={<StudentR><StudentFees /></StudentR>} />
         <Route path="/student/progression" element={<StudentR><ProgressionDashboard /></StudentR>} />
         <Route path="/student/timeline" element={<StudentR><AcademicTimeline /></StudentR>} />
         <Route path="/student/career" element={<StudentR><StudentCareer /></StudentR>} />
