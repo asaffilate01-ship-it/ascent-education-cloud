@@ -204,7 +204,11 @@ function AppRoutes() {
         <Route path="/germany" element={<RedirectToTenant suffix="/germany" />} />
         <Route path="/uk" element={<RedirectToTenant suffix="/uk" />} />
         <Route path="/pathways" element={<RedirectToTenant suffix="/pathways" />} />
+        <Route path="/apply" element={<Navigate to="/tenant/unipathway/apply/uk" replace />} />
         <Route path="/apply/:destination" element={<ApplyRedirect />} />
+        <Route path="/tenant/:slug/apply" element={<Navigate to="/tenant/unipathway/apply/uk" replace />} />
+        <Route path="/blog" element={<BlogListPage />} />
+
 
         <Route path="/tenant/:slug" element={<TenantLandingPage />} />
         <Route path="/tenant/:slug/courses" element={<TenantCoursesPage />} />
