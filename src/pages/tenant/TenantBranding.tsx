@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { TenantTheme } from '@/types/platform';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
 
 const DEFAULT_THEME: TenantTheme = {
   primaryColor: '#3b82f6',
@@ -19,10 +23,57 @@ const DEFAULT_THEME: TenantTheme = {
 };
 
 export default function TenantBranding() {
+  const { user } = useAuth();
+  const tenantId = user?.tenantId;
   const [theme, setTheme] = useState<TenantTheme>(DEFAULT_THEME);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   const update = (key: keyof TenantTheme, value: string) =>
     setTheme((t) => ({ ...t, [key]: value }));
+
+  useEffect(() => {
+    let active = true;
+    async function load() {
+      if (!tenantId) { setLoading(false); return; }
+      const { data } = await supabase
+        .from('tenants')
+        .select('name, brand_name, custom_domain, logo_url, primary_color, accent_color')
+        .eq('id', tenantId)
+        .maybeSingle();
+      if (active && data) {
+        setTheme((t) => ({
+          ...t,
+          brandName: data.brand_name || data.name || t.brandName,
+          customDomain: data.custom_domain || '',
+          logoUrl: data.logo_url || '',
+          primaryColor: data.primary_color || t.primaryColor,
+          accentColor: data.accent_color || t.accentColor,
+        }));
+      }
+      if (active) setLoading(false);
+    }
+    load();
+    return () => { active = false; };
+  }, [tenantId]);
+
+  const handleSave = async () => {
+    if (!tenantId) { toast.error('No centre linked to your account.'); return; }
+    setSaving(true);
+    const { error } = await supabase
+      .from('tenants')
+      .update({
+        brand_name: theme.brandName,
+        custom_domain: theme.customDomain || null,
+        logo_url: theme.logoUrl || null,
+        primary_color: theme.primaryColor,
+        accent_color: theme.accentColor,
+      })
+      .eq('id', tenantId);
+    setSaving(false);
+    if (error) toast.error(error.message);
+    else toast.success('Theme saved and published.');
+  };
 
   return (
     <DashboardLayout title="Branding & Theme" subtitle="Customise your tenant landing page with live preview">
@@ -97,7 +148,10 @@ export default function TenantBranding() {
             </div>
           </div>
 
-          <Button className="w-full">Save & Publish Theme</Button>
+          <Button className="w-full" onClick={handleSave} disabled={saving || loading}>
+            {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            {saving ? 'Saving…' : 'Save & Publish Theme'}
+          </Button>
         </div>
 
         {/* Live Preview */}
@@ -109,7 +163,7 @@ export default function TenantBranding() {
               <div className="w-2.5 h-2.5 rounded-full bg-success/40" />
             </div>
             <p className="text-xs text-muted-foreground ml-2 font-mono">
-              {theme.customDomain || 'your-college.edupathway.com'}
+              {theme.customDomain || 'your-centre.unipathway.pk'}
             </p>
           </div>
           <div className="h-full overflow-y-auto" style={{ fontFamily: theme.fontFamily }}>
