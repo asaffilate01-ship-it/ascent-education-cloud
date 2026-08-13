@@ -207,7 +207,6 @@ function AppRoutes() {
         <Route path="/apply" element={<Navigate to="/tenant/unipathway/apply/uk" replace />} />
         <Route path="/apply/:destination" element={<ApplyRedirect />} />
         <Route path="/tenant/:slug/apply" element={<Navigate to="/tenant/unipathway/apply/uk" replace />} />
-        <Route path="/blog" element={<BlogListPage />} />
 
 
         <Route path="/tenant/:slug" element={<TenantLandingPage />} />
