@@ -148,7 +148,10 @@ export default function TenantBranding() {
             </div>
           </div>
 
-          <Button className="w-full">Save & Publish Theme</Button>
+          <Button className="w-full" onClick={handleSave} disabled={saving || loading}>
+            {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            {saving ? 'Saving…' : 'Save & Publish Theme'}
+          </Button>
         </div>
 
         {/* Live Preview */}
