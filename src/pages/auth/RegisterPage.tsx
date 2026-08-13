@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable/index';
 import { Button } from '@/components/ui/button';
-import { Cloud, Eye, EyeOff, ArrowRight, CheckCircle, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, CheckCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import unipathwayLogo from '@/assets/unipathway-logo.png.asset.json';
 

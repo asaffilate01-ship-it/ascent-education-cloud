@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable/index';
 import { Button } from '@/components/ui/button';
-import { Cloud, Eye, EyeOff, ArrowRight, Loader2, Bug, ChevronDown, ChevronUp } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, Loader2, Bug, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { ROLE_HOME, ROLE_LABELS } from '@/contexts/AuthContext';
 import type { UserRole } from '@/types/platform';

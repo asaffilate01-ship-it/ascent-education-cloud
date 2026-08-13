@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Cloud, ArrowLeft, Mail, Loader2 } from 'lucide-react';
+import { ArrowLeft, Mail, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import unipathwayLogo from '@/assets/unipathway-logo.png.asset.json';
 
