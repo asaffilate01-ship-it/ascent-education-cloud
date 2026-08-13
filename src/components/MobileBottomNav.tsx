@@ -53,7 +53,7 @@ const BOTTOM_NAV: Record<string, BottomNavItem[]> = {
   ],
   admissions_admin: [
     { label: 'Home', icon: LayoutDashboard, path: '/admissions' },
-    { label: 'Pipeline', icon: UserPlus, path: '/admissions/pipeline' },
+    { label: 'Pipeline', icon: UserPlus, path: '/admissions/applications' },
     { label: 'Students', icon: Users, path: '/director/students' },
     { label: 'Alerts', icon: Bell, path: '/notifications' },
     { label: 'Chat', icon: MessageSquare, path: '/messaging' },
@@ -61,7 +61,7 @@ const BOTTOM_NAV: Record<string, BottomNavItem[]> = {
   finance_officer: [
     { label: 'Home', icon: LayoutDashboard, path: '/finance' },
     { label: 'Invoices', icon: CreditCard, path: '/finance/invoices' },
-    { label: 'Reports', icon: BarChart3, path: '/analytics' },
+    { label: 'Reports', icon: BarChart3, path: '/finance/reports' },
     { label: 'Alerts', icon: Bell, path: '/notifications' },
     { label: 'Chat', icon: MessageSquare, path: '/messaging' },
   ],
@@ -89,13 +89,13 @@ const BOTTOM_NAV: Record<string, BottomNavItem[]> = {
   marketing_officer: [
     { label: 'Home', icon: LayoutDashboard, path: '/marketing' },
     { label: 'Campaigns', icon: Megaphone, path: '/marketing/campaigns' },
-    { label: 'Analytics', icon: BarChart3, path: '/analytics' },
+    { label: 'Analytics', icon: BarChart3, path: '/marketing/analytics' },
     { label: 'Alerts', icon: Bell, path: '/notifications' },
     { label: 'Chat', icon: MessageSquare, path: '/messaging' },
   ],
   university_partner: [
     { label: 'Home', icon: LayoutDashboard, path: '/partner' },
-    { label: 'Students', icon: Users, path: '/partner/students' },
+    { label: 'Applications', icon: Users, path: '/partner/applications' },
     { label: 'Alerts', icon: Bell, path: '/notifications' },
     { label: 'Chat', icon: MessageSquare, path: '/messaging' },
   ],
