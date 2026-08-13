@@ -215,7 +215,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
 
     ]},
     { title: 'Services', items: [
-      { label: 'Finance', icon: CreditCard, path: '/student/finance' },
+      { label: 'Fees & Payments', icon: CreditCard, path: '/student/finance' },
       { label: 'Progression', icon: GraduationCap, path: '/student/progression' },
       { label: 'Career', icon: Briefcase, path: '/student/career' },
       { label: 'Health', icon: Heart, path: '/health' },

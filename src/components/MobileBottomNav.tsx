@@ -1,6 +1,6 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, ClipboardList, BarChart3, MessageSquare, UserPlus, CreditCard, Building2, Users, Briefcase } from 'lucide-react';
+import { LayoutDashboard, BookOpen, ClipboardList, BarChart3, MessageSquare, UserPlus, CreditCard, Building2, Users, Briefcase, ShieldCheck, FileText, Megaphone, GraduationCap, Bell } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import type { UserRole } from '@/types/platform';
 
@@ -51,6 +51,60 @@ const BOTTOM_NAV: Record<string, BottomNavItem[]> = {
     { label: 'Progress', icon: BarChart3, path: '/parent/progress' },
     { label: 'Chat', icon: MessageSquare, path: '/parent/messages' },
   ],
+  admissions_admin: [
+    { label: 'Home', icon: LayoutDashboard, path: '/admissions' },
+    { label: 'Pipeline', icon: UserPlus, path: '/admissions/applications' },
+    { label: 'Students', icon: Users, path: '/director/students' },
+    { label: 'Alerts', icon: Bell, path: '/notifications' },
+    { label: 'Chat', icon: MessageSquare, path: '/messaging' },
+  ],
+  finance_officer: [
+    { label: 'Home', icon: LayoutDashboard, path: '/finance' },
+    { label: 'Invoices', icon: CreditCard, path: '/finance/invoices' },
+    { label: 'Reports', icon: BarChart3, path: '/finance/reports' },
+    { label: 'Alerts', icon: Bell, path: '/notifications' },
+    { label: 'Chat', icon: MessageSquare, path: '/messaging' },
+  ],
+  programme_leader: [
+    { label: 'Home', icon: LayoutDashboard, path: '/programme' },
+    { label: 'Programmes', icon: GraduationCap, path: '/director/programmes' },
+    { label: 'Schedule', icon: ClipboardList, path: '/schedule' },
+    { label: 'Alerts', icon: Bell, path: '/notifications' },
+    { label: 'Chat', icon: MessageSquare, path: '/messaging' },
+  ],
+  iqa_officer: [
+    { label: 'Home', icon: LayoutDashboard, path: '/qa' },
+    { label: 'Compliance', icon: ShieldCheck, path: '/compliance' },
+    { label: 'Audit', icon: FileText, path: '/audit' },
+    { label: 'Alerts', icon: Bell, path: '/notifications' },
+    { label: 'Chat', icon: MessageSquare, path: '/messaging' },
+  ],
+  exams_officer: [
+    { label: 'Home', icon: LayoutDashboard, path: '/exams' },
+    { label: 'Gradebook', icon: BarChart3, path: '/gradebook' },
+    { label: 'Schedule', icon: ClipboardList, path: '/schedule' },
+    { label: 'Alerts', icon: Bell, path: '/notifications' },
+    { label: 'Chat', icon: MessageSquare, path: '/messaging' },
+  ],
+  marketing_officer: [
+    { label: 'Home', icon: LayoutDashboard, path: '/marketing' },
+    { label: 'Campaigns', icon: Megaphone, path: '/marketing/campaigns' },
+    { label: 'Analytics', icon: BarChart3, path: '/marketing/analytics' },
+    { label: 'Alerts', icon: Bell, path: '/notifications' },
+    { label: 'Chat', icon: MessageSquare, path: '/messaging' },
+  ],
+  university_partner: [
+    { label: 'Home', icon: LayoutDashboard, path: '/partner' },
+    { label: 'Applications', icon: Users, path: '/partner/applications' },
+    { label: 'Alerts', icon: Bell, path: '/notifications' },
+    { label: 'Chat', icon: MessageSquare, path: '/messaging' },
+  ],
+  employer_partner: [
+    { label: 'Home', icon: LayoutDashboard, path: '/employer' },
+    { label: 'Roles', icon: Briefcase, path: '/employer/jobs' },
+    { label: 'Alerts', icon: Bell, path: '/notifications' },
+    { label: 'Chat', icon: MessageSquare, path: '/messaging' },
+  ],
 };
 
 export default function MobileBottomNav() {
@@ -81,7 +135,7 @@ export default function MobileBottomNav() {
                 <div className={`p-1 rounded-lg transition-all ${isActive ? 'bg-primary/10' : ''}`}>
                   <item.icon className="w-5 h-5" />
                 </div>
-                <span className="text-[10px] font-medium leading-none" aria-hidden="true">{item.label}</span>
+                <span className="text-[10px] font-medium leading-none">{item.label}</span>
               </>
             )}
           </NavLink>
