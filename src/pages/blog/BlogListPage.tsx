@@ -3,12 +3,14 @@ import { Calendar, Clock, ArrowRight } from 'lucide-react';
 import TenantNav from '@/components/TenantNav';
 import { BLOG_POSTS } from './posts';
 import SocialIcons from '@/components/SocialIcons';
+import Seo from '@/components/Seo';
 
 const categories = ['All', 'UK', 'Germany', 'Language', 'Guidance'] as const;
 
 export default function BlogListPage() {
   return (
     <div className="min-h-dvh bg-background">
+      <Seo title="UniPathway Blog — Study Abroad Guidance for Pakistani Students" description="Guides on UK and Germany admissions, visas, funding, IELTS and accredited diplomas, written for students applying from Pakistan." canonical="/blog" />
       <TenantNav brandName="UniPathway" />
 
       <header className="border-b border-border bg-gradient-to-br from-primary/5 to-background">

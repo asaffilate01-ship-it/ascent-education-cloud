@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import Seo from '@/components/Seo';
 
 type CertResult = {
   certificate_number: string;
@@ -40,6 +41,7 @@ export default function CertificateVerification() {
 
   return (
     <div className="min-h-dvh bg-background">
+      <Seo title="Verify a Certificate — UniPathway" description="Check the authenticity of a UniPathway certificate by entering its certificate number." canonical="/verify" noindex />
       {/* Header */}
       <header className="border-b border-border/50 bg-card/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">

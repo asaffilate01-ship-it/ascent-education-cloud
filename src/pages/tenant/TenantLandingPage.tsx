@@ -10,6 +10,7 @@ import tenantHero from '@/assets/unipathway-hero.jpg';
 import SocialIcons from '@/components/SocialIcons';
 import unipathwayLogo from '@/assets/unipathway-logo.png.asset.json';
 import { openCookiePreferences } from '@/components/CookieConsent';
+import Seo from '@/components/Seo';
 
 const DEFAULT_THEME: TenantTheme = {
   primaryColor: '#b91c1c',
@@ -60,6 +61,7 @@ export default function TenantLandingPage() {
   if (loading) {
     return (
       <div className="min-h-dvh flex items-center justify-center bg-background">
+        <Seo title="UniPathway — UK & Germany Study Pathways from Pakistan" description="OTHM, QUALIFI and IAB accredited Level 3–5 diplomas studied 80% online, with progression to universities in the UK, Germany, USA, Australia and Canada." canonical="/" />
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );

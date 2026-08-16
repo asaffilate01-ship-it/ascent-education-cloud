@@ -2,10 +2,12 @@ import { Link } from 'react-router-dom';
 import { Cloud, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { openCookiePreferences } from '@/components/CookieConsent';
+import Seo from '@/components/Seo';
 
 export default function CookiePolicyPage() {
   return (
     <div className="min-h-dvh bg-background">
+      <Seo title="Cookie Policy — UniPathway" description="What cookies UniPathway uses, why we use them, and how you can manage your cookie preferences." canonical="/cookies" />
       <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm shadow-surface-sm">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">

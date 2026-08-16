@@ -5,6 +5,7 @@ import { GraduationCap, Globe, Shield, Users, Target, Heart, Award, BookOpen, Bu
 import TenantNav from '@/components/TenantNav';
 import ComplianceDisclosure from '@/components/tenant/ComplianceDisclosure';
 import { useTenantBranding } from '@/hooks/useTenantBranding';
+import Seo from '@/components/Seo';
 
 export default function TenantAboutPage() {
   const { slug } = useParams();
@@ -14,6 +15,7 @@ export default function TenantAboutPage() {
 
   return (
     <div className="min-h-dvh bg-background">
+      <Seo title="About UniPathway — Study Abroad Counselling in Pakistan" description="UniPathway is a Pakistan-based education counselling and language-preparation service helping students progress to recognised universities in the UK and Germany." canonical="/about" />
       <TenantNav brandName={brandName} primaryColor={pc} activePage="about" />
 
       {/* Hero */}
