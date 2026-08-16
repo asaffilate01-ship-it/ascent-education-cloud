@@ -1,6 +1,31 @@
 User-agent: *
 Allow: /
+
+# Authentication
 Disallow: /login
 Disallow: /register
 Disallow: /forgot-password
 Disallow: /reset-password
+
+# Private application areas
+Disallow: /landlord
+Disallow: /director
+Disallow: /admissions
+Disallow: /lecturer
+Disallow: /programme
+Disallow: /qa
+Disallow: /exams
+Disallow: /finance
+Disallow: /marketing
+Disallow: /agent
+Disallow: /student
+Disallow: /parent
+Disallow: /partner
+Disallow: /employer
+Disallow: /settings
+Disallow: /notifications
+Disallow: /messaging
+Disallow: /verify
+Disallow: /live-classroom
+
+Sitemap: https://unipathway.pk/sitemap.xml

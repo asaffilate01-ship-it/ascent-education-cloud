@@ -37,7 +37,7 @@ export default function TenantCoursesPage() {
     (async () => {
       const { data } = await supabase
         .from('programmes')
-        .select('id, title, level, awarding_body, credits, duration, progression_pathway, modules(title)')
+        .select('id, title, level, awarding_body, credits, duration, progression_pathway, modules(title, code)')
         .eq('status', 'active')
         .order('level', { ascending: true });
 
