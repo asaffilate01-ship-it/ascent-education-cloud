@@ -30,7 +30,7 @@ export default function Seo({ title, description, canonical, type = 'website', i
 
   useEffect(() => {
     const path = canonical ?? location.pathname;
-    const url = `${SITE_URL}${path === '/' ? '' : path}`;
+    const url = `${SITE_URL}${path}`;
     const absoluteImage = image
       ? image.startsWith('http')
         ? image
