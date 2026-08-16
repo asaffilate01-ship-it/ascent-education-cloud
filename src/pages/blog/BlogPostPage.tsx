@@ -2,23 +2,12 @@ import { Link, useParams, Navigate } from 'react-router-dom';
 import { Calendar, Clock, ArrowLeft } from 'lucide-react';
 import TenantNav from '@/components/TenantNav';
 import SocialShare from '@/components/SocialShare';
+import Seo from '@/components/Seo';
 import { BLOG_POSTS, getPost } from './posts';
-import { useEffect } from 'react';
 
 export default function BlogPostPage() {
   const { slug } = useParams();
   const post = slug ? getPost(slug) : undefined;
-
-  useEffect(() => {
-    if (post) {
-      document.title = `${post.title} — UniPathway Blog`;
-      const meta = document.querySelector('meta[name="description"]');
-      if (meta) meta.setAttribute('content', post.excerpt);
-    }
-    return () => {
-      document.title = 'UniPathway — UK & Germany Study Consultancy (Pakistan)';
-    };
-  }, [post]);
 
   if (!post) return <Navigate to="/blog" replace />;
 
@@ -29,7 +18,7 @@ export default function BlogPostPage() {
     '@type': 'BlogPosting',
     headline: post.title,
     description: post.excerpt,
-    image: [typeof window !== 'undefined' ? `${window.location.origin}${post.cover}` : post.cover],
+    image: [post.cover],
     author: { '@type': 'Organization', name: post.author },
     datePublished: post.date,
     articleSection: post.category,
@@ -37,8 +26,16 @@ export default function BlogPostPage() {
 
   return (
     <div className="min-h-dvh bg-background">
+      <Seo
+        title={`${post.title} — UniPathway Blog`}
+        description={post.excerpt}
+        canonical={`/blog/${post.slug}`}
+        type="article"
+        image={post.cover}
+        jsonLd={jsonLd}
+      />
       <TenantNav brandName="UniPathway" />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+
 
       <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1 mb-6">
