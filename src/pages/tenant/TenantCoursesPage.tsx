@@ -1,25 +1,81 @@
 import { Link, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { GraduationCap, Clock, Award, Video, ArrowRight, Shield } from 'lucide-react';
 import TenantNav from '@/components/TenantNav';
 import { useTenantBranding } from '@/hooks/useTenantBranding';
+import { supabase } from '@/integrations/supabase/client';
 import Seo from '@/components/Seo';
 
-const COURSES = [
-  { id: '1', title: 'Level 5 Diploma in Business Management', body: 'OTHM', level: 'Level 5', duration: '12 months', credits: 120, fee: 'Rs.880,000', modules: ['Strategic Management', 'Financial Analysis', 'Marketing Strategy', 'Business Environment', 'Research Methods', 'Operations Management'], progression: 'BA (Hons) Top-Up at UK universities' },
-  { id: '2', title: 'Level 4 Diploma in Business Management', body: 'OTHM', level: 'Level 4', duration: '12 months', credits: 120, fee: 'Rs.720,000', modules: ['Business Environment', 'Communication Skills', 'Financial Accounting', 'Management Accounting', 'People Management', 'Business Law'], progression: 'Level 5 Diploma' },
-  { id: '3', title: 'Level 5 Diploma in Computing', body: 'QUALIFI', level: 'Level 5', duration: '12 months', credits: 120, fee: 'Rs.880,000', modules: ['Software Engineering', 'Database Design', 'Networking', 'Cyber Security', 'Web Development', 'Project Management'], progression: 'BSc (Hons) Top-Up at UK universities' },
-  { id: '4', title: 'Level 4 Diploma in Computing', body: 'QUALIFI', level: 'Level 4', duration: '12 months', credits: 120, fee: 'Rs.720,000', modules: ['Computer Systems', 'Programming Fundamentals', 'Web Technologies', 'Database Systems', 'Networking Basics', 'IT Project'], progression: 'Level 5 Diploma' },
-  { id: '5', title: 'Level 3 Diploma in Accounting', body: 'IAB', level: 'Level 3', duration: '6 months', credits: 60, fee: 'Rs.560,000', modules: ['Bookkeeping', 'Financial Statements', 'VAT Returns', 'Payroll'], progression: 'Level 4 Diploma in Accounting' },
+interface Course {
+  id: string;
+  title: string;
+  body: string;
+  level: string;
+  duration: string;
+  credits: number;
+  modules: string[];
+  progression: string;
+}
+
+// Fallback catalogue used only if the programme table is unreachable.
+const FALLBACK_COURSES: Course[] = [
+  { id: '1', title: 'Level 5 Diploma in Business Management', body: 'OTHM', level: 'Level 5', duration: '12 months', credits: 120, modules: ['Strategic Management', 'Financial Analysis', 'Marketing Strategy', 'Business Environment', 'Research Methods', 'Operations Management'], progression: 'BA (Hons) Top-Up at UK universities' },
+  { id: '2', title: 'Level 4 Diploma in Business Management', body: 'OTHM', level: 'Level 4', duration: '12 months', credits: 120, modules: ['Business Environment', 'Communication Skills', 'Financial Accounting', 'Management Accounting', 'People Management', 'Business Law'], progression: 'Level 5 Diploma' },
+  { id: '3', title: 'Level 5 Diploma in Computing', body: 'QUALIFI', level: 'Level 5', duration: '12 months', credits: 120, modules: ['Software Engineering', 'Database Design', 'Networking', 'Cyber Security', 'Web Development', 'Project Management'], progression: 'BSc (Hons) Top-Up at UK universities' },
+  { id: '4', title: 'Level 4 Diploma in Computing', body: 'QUALIFI', level: 'Level 4', duration: '12 months', credits: 120, modules: ['Computer Systems', 'Programming Fundamentals', 'Web Technologies', 'Database Systems', 'Networking Basics', 'IT Project'], progression: 'Level 5 Diploma' },
+  { id: '5', title: 'Level 3 Diploma in Accounting', body: 'IAB', level: 'Level 3', duration: '6 months', credits: 60, modules: ['Bookkeeping', 'Financial Statements', 'VAT Returns', 'Payroll'], progression: 'Level 4 Diploma in Accounting' },
 ];
 
 export default function TenantCoursesPage() {
   const { slug } = useParams();
   const { brandName, primaryColor } = useTenantBranding();
+  const [courses, setCourses] = useState<Course[]>(FALLBACK_COURSES);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const { data } = await supabase
+        .from('programmes')
+        .select('id, title, level, awarding_body, credits, duration, progression_pathway, modules(title)')
+        .eq('status', 'active')
+        .order('level', { ascending: true });
+
+      if (!active || !data?.length) return;
+      setCourses(
+        data.map((p: any) => ({
+          id: p.id,
+          title: p.title,
+          body: p.awarding_body,
+          level: p.level,
+          duration: p.duration ?? '12 months',
+          credits: p.credits ?? 0,
+          modules: (p.modules ?? []).map((m: any) => m.title),
+          progression: typeof p.progression_pathway === 'string' ? p.progression_pathway : '',
+        })),
+      );
+    })();
+    return () => { active = false; };
+  }, []);
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    itemListElement: courses.map((c, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      item: {
+        '@type': 'Course',
+        name: c.title,
+        description: `${c.level} qualification awarded by ${c.body}, ${c.credits} credits over ${c.duration}.`,
+        provider: { '@type': 'Organization', name: 'UniPathway' },
+      },
+    })),
+  };
 
   return (
     <div className="min-h-dvh bg-background">
-      <Seo title="Programmes & Diplomas — OTHM, QUALIFI & IAB | UniPathway" description="Browse UK-accredited Level 3–5 diplomas in business, computing and accounting. Study 80% online from Pakistan and progress to a university top-up degree." canonical="/courses" />
+      <Seo title="Programmes & Diplomas — OTHM, QUALIFI & IAB | UniPathway" description="Browse UK-accredited Level 3–5 diplomas in business, computing and accounting. Study 80% online from Pakistan and progress to a university top-up degree." canonical="/courses" jsonLd={jsonLd} />
       <TenantNav brandName={brandName} primaryColor={primaryColor} activePage="courses" />
 
       {/* Hero */}
@@ -48,7 +104,8 @@ export default function TenantCoursesPage() {
       <section className="py-8 sm:py-12">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="space-y-4 sm:space-y-6">
-            {COURSES.map((course) => (
+            {courses.map((course) => (
+
               <div key={course.id} className="surface-card p-4 sm:p-6 hover:shadow-lg transition-default">
                 <div className="flex flex-col lg:flex-row lg:items-start gap-4 sm:gap-6">
                   <div className="flex-1">
