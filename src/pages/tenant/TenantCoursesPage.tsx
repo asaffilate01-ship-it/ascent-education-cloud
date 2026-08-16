@@ -50,7 +50,7 @@ export default function TenantCoursesPage() {
           level: p.level,
           duration: p.duration ?? '12 months',
           credits: p.credits ?? 0,
-          modules: (p.modules ?? []).map((m: any) => m.title),
+          modules: [...(p.modules ?? [])].sort((a: any, b: any) => String(a.code ?? '').localeCompare(String(b.code ?? ''))).map((m: any) => m.title),
           progression: typeof p.progression_pathway === 'string' ? p.progression_pathway : '',
         })),
       );
