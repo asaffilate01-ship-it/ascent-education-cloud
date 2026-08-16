@@ -162,7 +162,13 @@ export default function DestinationApply() {
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
+      <Seo
+        title={dest === 'germany' ? 'Apply to Study in Germany — UniPathway' : 'Apply to Study in the UK — UniPathway'}
+        description="Start your UniPathway application in five short steps. Our counselling team confirms eligibility, documents and next actions within one working day."
+        canonical={`/apply/${dest}`}
+      />
       <TenantNav brandName="UniPathway" />
+
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
         <div className="mb-6">
           <span className="text-xs font-bold uppercase tracking-widest text-primary">{flag} · Application</span>
