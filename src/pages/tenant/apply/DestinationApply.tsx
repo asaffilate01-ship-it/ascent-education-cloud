@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
+import Seo from '@/components/Seo';
 import TenantNav from '@/components/TenantNav';
 import ComplianceDisclosure from '@/components/tenant/ComplianceDisclosure';
 import { Button } from '@/components/ui/button';
