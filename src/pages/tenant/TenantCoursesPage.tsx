@@ -131,11 +131,14 @@ export default function TenantCoursesPage() {
                     </div>
 
                     {/* Progression */}
-                    <div className="mt-3 flex items-center gap-2 text-xs">
-                      <GraduationCap className="w-3.5 h-3.5 text-success" />
-                      <span className="text-muted-foreground">Progresses to:</span>
-                      <span className="font-medium text-success">{course.progression}</span>
-                    </div>
+                    {course.progression && (
+                      <div className="mt-3 flex items-center gap-2 text-xs">
+                        <GraduationCap className="w-3.5 h-3.5 text-success" />
+                        <span className="text-muted-foreground">Progresses to:</span>
+                        <span className="font-medium text-success">{course.progression}</span>
+                      </div>
+                    )}
+
                   </div>
 
                   {/* Price & CTA */}
