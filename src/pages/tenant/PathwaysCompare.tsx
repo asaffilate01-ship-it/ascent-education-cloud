@@ -3,11 +3,13 @@ import PathwayComparisonTable from '@/components/tenant/PathwayComparisonTable';
 import ComplianceDisclosure from '@/components/tenant/ComplianceDisclosure';
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import Seo from '@/components/Seo';
 
 export default function PathwaysCompare() {
   const { slug } = useParams();
   return (
     <div className="min-h-dvh bg-background text-foreground">
+      <Seo title="UK vs Germany — Compare Study Pathways | UniPathway" description="Compare tuition, living costs, language requirements, work rights and post-study visas for studying in the UK versus Germany from Pakistan." canonical="/pathways" />
       <TenantNav brandName="UniPathway" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
         <div>

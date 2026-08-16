@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
 import { Cloud, ArrowLeft } from 'lucide-react';
+import Seo from '@/components/Seo';
 
 export default function DisclaimerPage() {
   return (
     <div className="min-h-dvh bg-background">
+      <Seo title="Disclaimer — UniPathway" description="Important information about the accuracy, scope and limitations of the guidance published on the UniPathway website." canonical="/disclaimer" />
       <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm shadow-surface-sm">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">

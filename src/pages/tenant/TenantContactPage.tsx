@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import TenantNav from '@/components/TenantNav';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantBranding } from '@/hooks/useTenantBranding';
+import Seo from '@/components/Seo';
 export default function TenantContactPage() {
   const { slug } = useParams();
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
@@ -35,6 +36,7 @@ export default function TenantContactPage() {
 
   return (
     <div className="min-h-dvh bg-background">
+      <Seo title="Contact UniPathway — Talk to an Admissions Adviser" description="Speak to a UniPathway adviser about UK and Germany study pathways, diplomas, language courses and visa guidance. We reply within 24 hours." canonical="/contact" />
       <TenantNav brandName={brandName} primaryColor={primaryColor} activePage="contact" />
 
       <section className="py-12 sm:py-16">

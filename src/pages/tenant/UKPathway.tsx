@@ -3,10 +3,12 @@ import ComplianceDisclosure from '@/components/tenant/ComplianceDisclosure';
 import LanguageAcademy from '@/components/tenant/LanguageAcademy';
 import DestinationHero from '@/components/tenant/DestinationHero';
 import { GraduationCap, Wallet, ShieldCheck, FileCheck2, Briefcase, Building2 } from 'lucide-react';
+import Seo from '@/components/Seo';
 
 export default function UKPathway() {
   return (
     <div className="min-h-dvh bg-background text-foreground">
+      <Seo title="Study in the UK from Pakistan — Degrees & Top-Ups | UniPathway" description="UK university pathways for Pakistani students: accredited diplomas, top-up degrees, IELTS preparation and student visa guidance." canonical="/uk" />
       <TenantNav brandName="UniPathway" activePage="home" />
 
       <DestinationHero

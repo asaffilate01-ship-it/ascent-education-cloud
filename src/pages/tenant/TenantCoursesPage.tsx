@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { GraduationCap, Clock, Award, Video, ArrowRight, Shield } from 'lucide-react';
 import TenantNav from '@/components/TenantNav';
 import { useTenantBranding } from '@/hooks/useTenantBranding';
+import Seo from '@/components/Seo';
 
 const COURSES = [
   { id: '1', title: 'Level 5 Diploma in Business Management', body: 'OTHM', level: 'Level 5', duration: '12 months', credits: 120, fee: 'Rs.880,000', modules: ['Strategic Management', 'Financial Analysis', 'Marketing Strategy', 'Business Environment', 'Research Methods', 'Operations Management'], progression: 'BA (Hons) Top-Up at UK universities' },
@@ -18,6 +19,7 @@ export default function TenantCoursesPage() {
 
   return (
     <div className="min-h-dvh bg-background">
+      <Seo title="Programmes & Diplomas — OTHM, QUALIFI & IAB | UniPathway" description="Browse UK-accredited Level 3–5 diplomas in business, computing and accounting. Study 80% online from Pakistan and progress to a university top-up degree." canonical="/courses" />
       <TenantNav brandName={brandName} primaryColor={primaryColor} activePage="courses" />
 
       {/* Hero */}

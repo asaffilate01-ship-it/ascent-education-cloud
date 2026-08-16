@@ -3,10 +3,12 @@ import ComplianceDisclosure from '@/components/tenant/ComplianceDisclosure';
 import LanguageAcademy from '@/components/tenant/LanguageAcademy';
 import DestinationHero from '@/components/tenant/DestinationHero';
 import { GraduationCap, Wallet, ShieldCheck, FileCheck2, Briefcase, Building2 } from 'lucide-react';
+import Seo from '@/components/Seo';
 
 export default function GermanyPathway() {
   return (
     <div className="min-h-dvh bg-background text-foreground">
+      <Seo title="Study in Germany from Pakistan — Pathways & Costs | UniPathway" description="Low-tuition public universities, English-taught master’s, Studienkolleg routes and German A1–B2 language preparation for Pakistani students." canonical="/germany" />
       <TenantNav brandName="UniPathway" activePage="home" />
 
       <DestinationHero
