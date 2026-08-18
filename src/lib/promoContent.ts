@@ -116,7 +116,6 @@ export const COPY: Record<Locale, Copy> = {
     navApp: 'Mobile App',
     navFaq: 'FAQ',
     navAccess: 'Zugang',
-    badge: 'Private Vorschau · Studienstart September 2026',
     heroTitle: 'Dein Weg zur Universität und darüber hinaus.',
     heroLead:
       'UniPathway ist eine komplette Bildungsplattform — akkreditierte Diplome der Stufen 3–5, ein Bewerbungs-CRM, ein virtueller Campus, Finanzen und Compliance, alles in einem System für Colleges und ihre Studierenden.',
