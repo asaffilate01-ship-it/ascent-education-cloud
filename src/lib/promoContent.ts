@@ -21,7 +21,6 @@ interface Copy {
   navApp: string;
   navFaq: string;
   navAccess: string;
-  badge: string;
   heroTitle: string;
   heroLead: string;
   ctaPrimary: string;
@@ -59,7 +58,6 @@ export const COPY: Record<Locale, Copy> = {
     navApp: 'Mobile App',
     navFaq: 'FAQs',
     navAccess: 'Access',
-    badge: 'Private preview · September 2026 intake',
     heroTitle: 'Your Journey to University and Beyond.',
     heroLead:
       'UniPathway is a complete education platform — accredited Level 3–5 diplomas, an admissions CRM, a virtual campus, finance and compliance, all in one branded system for colleges and their students.',
