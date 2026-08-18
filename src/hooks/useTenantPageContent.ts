@@ -181,7 +181,7 @@ const DEFAULT_SECTIONS: PageSection[] = [
     content: {
       tagline: 'UK-accredited education centre in Pakistan. OTHM, QUALIFI & IAB approved.',
       badges: ['OTHM', 'QUALIFI', 'IAB'],
-      copyright: '© 2026 {brandName}. A brand of LoungeTech Digitallösungen GmbH.',
+      copyright: '© 2026 {brandName}. A trading name of iTechLounge GmbH (Germany) and iTechLounge Ltd (UK & rest of world).',
     },
     sort_order: 14,
     is_visible: true,

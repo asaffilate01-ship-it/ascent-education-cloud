@@ -27,7 +27,7 @@ export default function TermsOfServicePage() {
         <div className="prose prose-sm max-w-none space-y-6 text-foreground/80">
           <section>
             <h2 className="text-lg font-semibold text-foreground">1. Agreement</h2>
-            <p>By accessing or using UniPathway, you agree to be bound by these Terms. UniPathway is a brand of LoungeTech Digitallösungen GmbH and is provided as a multi-tenant education management Software-as-a-Service (SaaS) solution.</p>
+            <p>By accessing or using UniPathway, you agree to be bound by these Terms. UniPathway is a trading name of iTechLounge GmbH in Germany and of iTechLounge Ltd in the UK and the rest of the world and is provided as a multi-tenant education management Software-as-a-Service (SaaS) solution.</p>
           </section>
 
           <section>

@@ -19,21 +19,26 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    /* Primary: Deep Crimson — authoritative, institutional */
-    --primary: 349 72% 38%;
+    /* Primary: Deep Navy — UniPathway brand */
+    --primary: 216 78% 22%;
     --primary-foreground: 0 0% 100%;
 
+    /* Brand palette from logo */
+    --brand-navy: 216 78% 22%;
+    --brand-green: 152 76% 30%;
+    --brand-red: 349 85% 42%;
+
     /* Primary shades */
-    --primary-50: 350 60% 97%;
-    --primary-100: 349 55% 93%;
-    --primary-200: 349 52% 85%;
-    --primary-300: 349 56% 72%;
-    --primary-400: 349 65% 55%;
-    --primary-500: 349 72% 38%;
-    --primary-600: 349 76% 32%;
-    --primary-700: 349 72% 26%;
-    --primary-800: 349 68% 20%;
-    --primary-900: 349 62% 15%;
+    --primary-50: 216 60% 96%;
+    --primary-100: 216 55% 91%;
+    --primary-200: 216 52% 82%;
+    --primary-300: 216 56% 66%;
+    --primary-400: 216 65% 45%;
+    --primary-500: 216 78% 30%;
+    --primary-600: 216 78% 26%;
+    --primary-700: 216 80% 22%;
+    --primary-800: 216 82% 17%;
+    --primary-900: 216 84% 13%;
 
     --secondary: 220 14% 96%;
     --secondary-foreground: 222 47% 11%;
@@ -49,7 +54,7 @@
     --gold-foreground: 42 10% 15%;
 
     /* Success — Emerald */
-    --success: 160 84% 39%;
+    --success: 152 76% 30%;
     --success-foreground: 0 0% 100%;
 
     /* Warning — Amber */
@@ -61,7 +66,7 @@
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 349 72% 38%;
+    --ring: 216 78% 22%;
 
     --radius: 0.75rem;
 
@@ -75,22 +80,22 @@
     /* Sidebar — Deep Navy */
     --sidebar-background: 222 47% 11%;
     --sidebar-foreground: 220 20% 85%;
-    --sidebar-primary: 349 72% 50%;
+    --sidebar-primary: 152 76% 34%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 222 30% 17%;
     --sidebar-accent-foreground: 220 20% 90%;
     --sidebar-border: 222 30% 16%;
-    --sidebar-ring: 349 72% 50%;
+    --sidebar-ring: 152 76% 34%;
 
     /* Surface levels */
     --surface-l2: 0 0% 100%;
     --surface-l3: 220 20% 97%;
 
     /* Chart colors */
-    --chart-1: 349 72% 38%;
-    --chart-2: 160 84% 39%;
+    --chart-1: 216 78% 22%;
+    --chart-2: 152 76% 30%;
     --chart-3: 38 92% 50%;
-    --chart-4: 222 47% 45%;
+    --chart-4: 349 85% 42%;
     --chart-5: 42 87% 55%;
   }
 
@@ -104,19 +109,23 @@
     --popover: 222 40% 10%;
     --popover-foreground: 220 20% 95%;
 
-    --primary: 349 72% 52%;
+    --primary: 216 70% 55%;
     --primary-foreground: 0 0% 100%;
 
-    --primary-50: 349 30% 14%;
-    --primary-100: 349 35% 17%;
-    --primary-200: 349 40% 22%;
-    --primary-300: 349 50% 30%;
-    --primary-400: 349 60% 42%;
-    --primary-500: 349 72% 52%;
-    --primary-600: 349 75% 45%;
-    --primary-700: 349 72% 38%;
-    --primary-800: 349 68% 30%;
-    --primary-900: 349 62% 24%;
+    --brand-navy: 216 78% 22%;
+    --brand-green: 152 66% 42%;
+    --brand-red: 349 80% 55%;
+
+    --primary-50: 216 40% 14%;
+    --primary-100: 216 42% 18%;
+    --primary-200: 216 45% 24%;
+    --primary-300: 216 50% 32%;
+    --primary-400: 216 60% 44%;
+    --primary-500: 216 70% 55%;
+    --primary-600: 216 70% 48%;
+    --primary-700: 216 72% 40%;
+    --primary-800: 216 74% 32%;
+    --primary-900: 216 76% 24%;
 
     --secondary: 222 30% 14%;
     --secondary-foreground: 220 20% 90%;
@@ -130,7 +139,7 @@
     --gold: 42 87% 55%;
     --gold-foreground: 42 10% 15%;
 
-    --success: 160 84% 39%;
+    --success: 152 76% 30%;
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
@@ -141,7 +150,7 @@
 
     --border: 222 25% 16%;
     --input: 222 25% 16%;
-    --ring: 349 72% 52%;
+    --ring: 216 70% 55%;
 
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
     --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
@@ -151,20 +160,20 @@
 
     --sidebar-background: 222 47% 5%;
     --sidebar-foreground: 220 15% 85%;
-    --sidebar-primary: 349 72% 52%;
+    --sidebar-primary: 152 66% 42%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 222 25% 12%;
     --sidebar-accent-foreground: 220 15% 90%;
     --sidebar-border: 222 25% 12%;
-    --sidebar-ring: 349 72% 52%;
+    --sidebar-ring: 152 66% 42%;
 
     --surface-l2: 222 40% 10%;
     --surface-l3: 222 35% 12%;
 
-    --chart-1: 349 72% 52%;
-    --chart-2: 160 84% 39%;
+    --chart-1: 216 70% 55%;
+    --chart-2: 152 76% 30%;
     --chart-3: 38 92% 50%;
-    --chart-4: 222 47% 55%;
+    --chart-4: 349 80% 55%;
     --chart-5: 42 87% 55%;
   }
 }

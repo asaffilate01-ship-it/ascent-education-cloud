@@ -11,6 +11,8 @@ import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { lazy, Suspense } from "react";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import { isSiteUnlocked, isGatedPath } from "@/lib/siteAccess";
+import { useLocation } from "react-router-dom";
 const AIChatWidgetLazy = lazy(() => import("@/components/AIChatWidget"));
 
 // Auth
@@ -20,6 +22,7 @@ const ForgotPasswordPage = lazy(() => import("./pages/auth/ForgotPasswordPage"))
 const ResetPasswordPage = lazy(() => import("./pages/auth/ResetPasswordPage"));
 
 // UniPathway marketing (canonical)
+const PromoHome = lazy(() => import("./pages/promo/PromoHome"));
 const TenantLandingPage = lazy(() => import("./pages/tenant/TenantLandingPage"));
 const TenantAboutPage = lazy(() => import("./pages/tenant/TenantAboutPage"));
 const TenantCoursesPage = lazy(() => import("./pages/tenant/TenantCoursesPage"));
@@ -192,13 +195,18 @@ function ApplyRedirect() {
 }
 
 function AppRoutes() {
+  const location = useLocation();
+  if (isGatedPath(location.pathname) && !isSiteUnlocked()) {
+    return <Navigate to="/" replace />;
+  }
+
   return (
     <Suspense fallback={<LoadingFallback />}>
       <a href="#main-content" className="skip-to-content">Skip to content</a>
       <main id="main-content">
       <Routes>
         {/* ========== PUBLIC MARKETING (UniPathway) ========== */}
-        <Route path="/" element={<RedirectToTenant />} />
+        <Route path="/" element={<PromoHome />} />
         <Route path="/about" element={<RedirectToTenant suffix="/about" />} />
         <Route path="/courses" element={<RedirectToTenant suffix="/courses" />} />
         <Route path="/contact" element={<RedirectToTenant suffix="/contact" />} />
