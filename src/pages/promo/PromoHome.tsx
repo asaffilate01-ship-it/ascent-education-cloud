@@ -135,10 +135,7 @@ export default function PromoHome() {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.07] via-background to-success/[0.07]" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-24 grid lg:grid-cols-2 gap-12 items-center">
           <div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold text-primary">
-              <Sparkles className="w-3.5 h-3.5" /> {t.badge}
-            </span>
-            <h1 className="mt-5 text-4xl lg:text-6xl font-extrabold leading-[1.05] text-foreground">
+            <h1 className="text-4xl lg:text-6xl font-extrabold leading-[1.05] text-foreground">
               {t.heroTitle}
             </h1>
             <p className="mt-5 text-base lg:text-lg text-muted-foreground max-w-xl">{t.heroLead}</p>
