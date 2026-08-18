@@ -57,6 +57,11 @@ export default {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",
         },
+        brand: {
+          navy: "hsl(var(--brand-navy))",
+          green: "hsl(var(--brand-green))",
+          red: "hsl(var(--brand-red))",
+        },
         gold: {
           DEFAULT: "hsl(var(--gold))",
           foreground: "hsl(var(--gold-foreground))",
