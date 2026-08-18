@@ -27,7 +27,7 @@ export default function PrivacyPolicyPage() {
         <div className="prose prose-sm max-w-none space-y-6 text-foreground/80">
           <section>
             <h2 className="text-lg font-semibold text-foreground">1. Introduction</h2>
-            <p>UniPathway, a brand of LoungeTech Digitallösungen GmbH ("we", "our", "us"), is committed to protecting your personal data. This Privacy Policy explains how we collect, use, store, and share your information when you use our education management platform.</p>
+            <p>UniPathway, a trading name of iTechLounge GmbH (Germany) and iTechLounge Ltd (UK and rest of world) ("we", "our", "us"), is committed to protecting your personal data. This Privacy Policy explains how we collect, use, store, and share your information when you use our education management platform.</p>
           </section>
 
           <section>
