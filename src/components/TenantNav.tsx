@@ -1,7 +1,7 @@
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu, X, Moon, Sun } from 'lucide-react';
-import unipathwayLogo from '@/assets/unipathway-logo.png.asset.json';
+import unipathwayLogo from '@/assets/unipathway-logo.png';
 import { useState } from 'react';
 import { useTheme } from '@/hooks/useTheme';
 
@@ -31,7 +31,7 @@ export default function TenantNav({ brandName = 'UniPathway', primaryColor, acti
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 lg:h-28 flex items-center justify-between">
         <Link to={`/tenant/${slug}`} className="flex items-center">
           <img
-            src={unipathwayLogo.url}
+            src={unipathwayLogo}
             alt={brandName}
             className="h-12 lg:h-24 w-auto"
           />
