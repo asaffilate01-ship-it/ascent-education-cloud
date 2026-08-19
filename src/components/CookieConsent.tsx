@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 
 const STORAGE_KEY = 'cookie_consent_v2';
 const REOPEN_EVENT = 'unipathway:open-cookie-preferences';
+const CHANGE_EVENT = 'unipathway:cookie-consent-changed';
 
 export type ConsentState = {
   essential: true;
