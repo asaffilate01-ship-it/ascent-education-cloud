@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   UserPlus, GraduationCap, Video, CreditCard, ShieldCheck, Sparkles, Globe2, BarChart3, Lock,
   ArrowRight, Check, Home, LayoutGrid, Smartphone, HelpCircle, KeyRound, ChevronDown, Menu, X,
