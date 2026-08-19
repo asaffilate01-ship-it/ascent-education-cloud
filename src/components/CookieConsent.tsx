@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 
 const STORAGE_KEY = 'cookie_consent_v2';
 const REOPEN_EVENT = 'unipathway:open-cookie-preferences';
+const CHANGE_EVENT = 'unipathway:cookie-consent-changed';
 
 export type ConsentState = {
   essential: true;
@@ -58,10 +59,14 @@ export default function CookieConsent() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     setVisible(false);
     setShowDetails(false);
-    // Non-blocking DB audit trail (best-effort, RLS may reject anonymous writes)
+    window.dispatchEvent(new CustomEvent(CHANGE_EVENT, { detail: state }));
+    // Non-blocking DB audit trail for signed-in users only (anonymous writes are rejected by RLS)
     try {
+      const { data } = await supabase.auth.getSession();
+      const userId = data.session?.user?.id;
+      if (!userId) return;
       await supabase.from('consent_records').insert({
-        user_id: '00000000-0000-0000-0000-000000000000',
+        user_id: userId,
         consent_type: 'cookie_consent',
         granted: state.analytics || state.marketing,
         user_agent: navigator.userAgent,

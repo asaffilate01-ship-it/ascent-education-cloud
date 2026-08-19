@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   UserPlus, GraduationCap, Video, CreditCard, ShieldCheck, Sparkles, Globe2, BarChart3, Lock,
   ArrowRight, Check, Home, LayoutGrid, Smartphone, HelpCircle, KeyRound, ChevronDown, Menu, X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { openCookiePreferences } from '@/components/CookieConsent';
 import { Input } from '@/components/ui/input';
 import Seo from '@/components/Seo';
 import logo from '@/assets/unipathway-logo.png.asset.json';
@@ -304,6 +305,15 @@ export default function PromoHome() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col items-center text-center gap-4">
           <img src={logo.url} alt="UniPathway" className="h-16 w-auto" loading="lazy" />
           <p className="text-sm text-muted-foreground">{t.footerTagline}</p>
+          <nav aria-label="Legal" className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
+            <Link to="/privacy" className="hover:text-foreground transition-colors">{t.legalPrivacy}</Link>
+            <Link to="/terms" className="hover:text-foreground transition-colors">{t.legalTerms}</Link>
+            <Link to="/cookies" className="hover:text-foreground transition-colors">{t.legalCookies}</Link>
+            <Link to="/disclaimer" className="hover:text-foreground transition-colors">{t.legalDisclaimer}</Link>
+            <button type="button" onClick={openCookiePreferences} className="hover:text-foreground transition-colors underline-offset-2 hover:underline">
+              {t.legalCookiePrefs}
+            </button>
+          </nav>
           <div className="text-xs text-muted-foreground space-y-1 max-w-xl">
             <p>{t.legalDe}</p>
             <p>{t.legalRow}</p>

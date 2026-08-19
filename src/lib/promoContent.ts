@@ -49,6 +49,11 @@ interface Copy {
   legalRow: string;
   rights: string;
   language: string;
+  legalPrivacy: string;
+  legalTerms: string;
+  legalCookies: string;
+  legalDisclaimer: string;
+  legalCookiePrefs: string;
 }
 
 export const COPY: Record<Locale, Copy> = {
@@ -109,6 +114,11 @@ export const COPY: Record<Locale, Copy> = {
     legalRow: 'In the UK and the rest of the world, UniPathway is a trading name of iTechLounge Ltd.',
     rights: 'All rights reserved.',
     language: 'Language',
+    legalPrivacy: 'Privacy Policy',
+    legalTerms: 'Terms of Service',
+    legalCookies: 'Cookie Policy',
+    legalDisclaimer: 'Disclaimer',
+    legalCookiePrefs: 'Cookie preferences',
   },
   de: {
     navHome: 'Überblick',
@@ -167,5 +177,10 @@ export const COPY: Record<Locale, Copy> = {
     legalRow: 'In Großbritannien und der übrigen Welt ist UniPathway ein Handelsname der iTechLounge Ltd.',
     rights: 'Alle Rechte vorbehalten.',
     language: 'Sprache',
+    legalPrivacy: 'Datenschutzerklärung',
+    legalTerms: 'Nutzungsbedingungen',
+    legalCookies: 'Cookie-Richtlinie',
+    legalDisclaimer: 'Haftungsausschluss',
+    legalCookiePrefs: 'Cookie-Einstellungen',
   },
 };
