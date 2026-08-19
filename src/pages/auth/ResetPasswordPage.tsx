@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import unipathwayLogo from '@/assets/unipathway-logo.png.asset.json';
+import unipathwayLogo from '@/assets/unipathway-logo.png';
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState('');
@@ -62,7 +62,7 @@ export default function ResetPasswordPage() {
     <div className="min-h-dvh bg-background flex items-center justify-center p-8">
       <div className="w-full max-w-md">
         <div className="flex items-center gap-2 mb-8">
-          <img src={unipathwayLogo.url} alt="UniPathway" className="h-10 w-auto" />
+          <img src={unipathwayLogo} alt="UniPathway" className="h-10 w-auto" />
         </div>
 
         <h2 className="text-2xl font-bold mb-1">Set new password</h2>

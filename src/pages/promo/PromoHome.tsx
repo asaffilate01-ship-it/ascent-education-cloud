@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { openCookiePreferences } from '@/components/CookieConsent';
 import { Input } from '@/components/ui/input';
 import Seo from '@/components/Seo';
-import logo from '@/assets/unipathway-logo.png.asset.json';
+import logo from '@/assets/unipathway-logo.png';
 import heroImage from '@/assets/promo-hero.jpg';
 import shotDesktop from '@/assets/promo-shot-desktop.jpg';
 import shotMobile from '@/assets/promo-shot-mobile.jpg';
@@ -77,7 +77,7 @@ export default function PromoHome() {
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 lg:h-28 flex items-center justify-between">
           <button onClick={() => scrollToId('top')} className="flex items-center" aria-label="UniPathway">
-            <img src={logo.url} alt="UniPathway" className="h-14 lg:h-24 w-auto" />
+            <img src={logo} alt="UniPathway" className="h-14 lg:h-24 w-auto" />
           </button>
 
           <nav className="hidden lg:flex items-center gap-7 text-sm font-medium text-muted-foreground">
@@ -303,7 +303,7 @@ export default function PromoHome() {
       {/* Footer */}
       <footer className="border-t border-border bg-secondary/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col items-center text-center gap-4">
-          <img src={logo.url} alt="UniPathway" className="h-16 w-auto" loading="lazy" />
+          <img src={logo} alt="UniPathway" className="h-16 w-auto" loading="lazy" />
           <p className="text-sm text-muted-foreground">{t.footerTagline}</p>
           <nav aria-label="Legal" className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
             <Link to="/privacy" className="hover:text-foreground transition-colors">{t.legalPrivacy}</Link>

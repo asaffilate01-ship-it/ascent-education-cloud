@@ -5,7 +5,7 @@ import { lovable } from '@/integrations/lovable/index';
 import { Button } from '@/components/ui/button';
 import { Eye, EyeOff, ArrowRight, CheckCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import unipathwayLogo from '@/assets/unipathway-logo.png.asset.json';
+import unipathwayLogo from '@/assets/unipathway-logo.png';
 
 const ACCOUNT_TYPES = [
   { key: 'student', label: 'Student', desc: 'I want to study', role: 'student' },
@@ -88,7 +88,7 @@ export default function RegisterPage() {
       <div className="hidden lg:flex lg:w-1/2 gradient-primary relative flex-col justify-between p-12">
         <div>
           <div className="flex items-center gap-3 mb-16">
-            <img src={unipathwayLogo.url} alt="UniPathway" className="h-12 w-auto" />
+            <img src={unipathwayLogo} alt="UniPathway" className="h-12 w-auto" />
           </div>
           <h1 className="text-4xl font-bold text-primary-foreground leading-tight max-w-md">
             Join UniPathway
@@ -117,7 +117,7 @@ export default function RegisterPage() {
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
           <div className="lg:hidden flex items-center gap-2 mb-8">
-            <img src={unipathwayLogo.url} alt="UniPathway" className="h-10 w-auto" />
+            <img src={unipathwayLogo} alt="UniPathway" className="h-10 w-auto" />
           </div>
 
           {step === 'type' ? (

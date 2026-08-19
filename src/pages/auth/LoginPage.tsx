@@ -7,7 +7,7 @@ import { Eye, EyeOff, ArrowRight, Loader2, Bug, ChevronDown, ChevronUp } from 'l
 import { toast } from 'sonner';
 import { ROLE_HOME, ROLE_LABELS } from '@/contexts/AuthContext';
 import type { UserRole } from '@/types/platform';
-import unipathwayLogo from '@/assets/unipathway-logo.png.asset.json';
+import unipathwayLogo from '@/assets/unipathway-logo.png';
 
 const DEV_ACCOUNTS: { role: UserRole; email: string; label: string; color: string }[] = [
   { role: 'superadmin', email: 'dev.superadmin@educloud.test', label: 'Super Admin', color: 'bg-destructive/10 text-destructive border-destructive/20' },
@@ -114,7 +114,7 @@ export default function LoginPage() {
       <div className="hidden lg:flex lg:w-1/2 gradient-primary relative flex-col justify-between p-12">
         <div>
           <div className="flex items-center gap-3 mb-16 cursor-pointer select-none" onClick={handleLogoTap}>
-            <img src={unipathwayLogo.url} alt="UniPathway" className="h-12 w-auto" />
+            <img src={unipathwayLogo} alt="UniPathway" className="h-12 w-auto" />
           </div>
           <h1 className="text-4xl font-bold text-primary-foreground leading-tight max-w-md">
             Your Gateway to Global Qualifications
@@ -141,7 +141,7 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center p-8 overflow-y-auto">
         <div className="w-full max-w-md">
           <div className="lg:hidden flex items-center gap-2 mb-8 cursor-pointer select-none" onClick={handleLogoTap}>
-            <img src={unipathwayLogo.url} alt="UniPathway" className="h-10 w-auto" />
+            <img src={unipathwayLogo} alt="UniPathway" className="h-10 w-auto" />
           </div>
 
           <h2 className="text-2xl font-bold mb-1">Welcome back</h2>
