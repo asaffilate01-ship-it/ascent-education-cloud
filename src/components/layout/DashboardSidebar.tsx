@@ -118,6 +118,26 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Messages', icon: MessageSquare, path: '/messaging' },
     ]},
   ],
+  assessor: [
+    { items: [
+      { label: 'Assessment Queue', icon: ClipboardList, path: '/assessor' },
+      { label: 'Messages', icon: MessageSquare, path: '/messaging' },
+      { label: 'Activity Log', icon: Activity, path: '/my-activity' },
+    ]},
+  ],
+  awarding_body_eqa: [
+    { items: [
+      { label: 'Evidence Portal', icon: Shield, path: '/eqa' },
+      { label: 'Activity Log', icon: Activity, path: '/my-activity' },
+    ]},
+  ],
+  welfare_officer: [
+    { items: [
+      { label: 'Welfare & Health', icon: Heart, path: '/health' },
+      { label: 'Residential', icon: Building2, path: '/residential' },
+      { label: 'Messages', icon: MessageSquare, path: '/messaging' },
+    ]},
+  ],
   programme_leader: [
     { items: [
       { label: 'Dashboard', icon: LayoutDashboard, path: '/programme' },
