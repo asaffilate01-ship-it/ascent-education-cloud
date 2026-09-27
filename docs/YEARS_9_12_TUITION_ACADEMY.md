@@ -4,7 +4,7 @@
 A separate school-support/coaching product inside UniPathway, distinct from regulated higher/pathway qualifications. Students may buy one subject or a package.
 
 ## Initial subjects
-Mathematics, Physics, Chemistry, English, Computer Science / IT / Technology. Biology can be added as a natural next subject where demand warrants.
+Mathematics, Physics, Chemistry, Biology, English, Computer Science / IT / Technology.
 
 ## Curriculum routes
 Do not assume one Pakistan syllabus. Track curriculum/exam-board/version explicitly. Initial support can include FBISE and selected provincial BISE routes, followed by Cambridge O Level/A Level. Pakistan's curriculum is devolved to provinces after the 18th Amendment, while NCC sets national standards/frameworks; therefore content must be board/version mapped rather than labelled generically "Pakistan Grade 9". 
