@@ -67,6 +67,9 @@ const StudentAssignments = lazy(() => import("./pages/student/StudentAssignments
 const StudentGrades = lazy(() => import("./pages/student/StudentGrades"));
 const StudentLibrary = lazy(() => import("./pages/student/StudentLibrary"));
 const StudentCareer = lazy(() => import("./pages/student/StudentCareer"));
+const CareerMarketplace = lazy(() => import("./pages/careers/CareerMarketplace"));
+const GlobalProgression = lazy(() => import("./pages/progression/GlobalProgression"));
+const StudentLife = lazy(() => import("./pages/student/StudentLife"));
 const StudentFees = lazy(() => import("./pages/student/StudentFees"));
 
 // Lecturer
@@ -74,6 +77,8 @@ const LecturerDashboard = lazy(() => import("./pages/lecturer/LecturerDashboard"
 const LecturerTeaching = lazy(() => import("./pages/lecturer/LecturerTeaching"));
 const LecturerMarking = lazy(() => import("./pages/lecturer/LecturerMarking"));
 const LecturerAttendance = lazy(() => import("./pages/lecturer/LecturerAttendance"));
+const AssessorDashboard = lazy(() => import("./pages/assessor/AssessorDashboard"));
+const AwardingBodyDashboard = lazy(() => import("./pages/eqa/AwardingBodyDashboard"));
 
 // External + shared
 const MessagingInbox = lazy(() => import("./pages/messaging/MessagingInbox"));
@@ -138,6 +143,12 @@ const LecturerR = ({ children }: { children: React.ReactNode }) => (
 );
 const Programme = ({ children }: { children: React.ReactNode }) => (
   <RoleGuard allowed={['programme_leader', 'centre_director', 'superadmin']}>{children}</RoleGuard>
+);
+const AssessorR = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['assessor', 'programme_leader', 'centre_director', 'superadmin']}>{children}</RoleGuard>
+);
+const EQAR = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['awarding_body_eqa', 'superadmin']}>{children}</RoleGuard>
 );
 const QA = ({ children }: { children: React.ReactNode }) => (
   <RoleGuard allowed={['iqa_officer', 'centre_director', 'superadmin']}>{children}</RoleGuard>
@@ -294,6 +305,12 @@ function AppRoutes() {
         <Route path="/lecturer/quizzes" element={<LecturerR><QuizDashboard /></LecturerR>} />
         <Route path="/lecturer/forums" element={<LecturerR><ForumPage /></LecturerR>} />
         <Route path="/lecturer/gradebook" element={<LecturerR><GradebookPage /></LecturerR>} />
+
+        {/* ========== ASSESSOR ========== */}
+        <Route path="/assessor" element={<AssessorR><AssessorDashboard /></AssessorR>} />
+        <Route path="/assessor/queue" element={<AssessorR><AssessorDashboard /></AssessorR>} />
+        {/* ========== AWARDING BODY / EQA ========== */}
+        <Route path="/eqa" element={<EQAR><AwardingBodyDashboard /></EQAR>} />
 
         {/* ========== PROGRAMME LEADER ========== */}
         <Route path="/programme" element={<Programme><ProgrammeManagement /></Programme>} />

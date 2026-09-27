@@ -9,7 +9,7 @@ import {
   ChevronLeft, ChevronRight, UserCheck, Calendar,
   Award, Megaphone, FileText, AlertTriangle, FolderOpen,
   Handshake, Monitor, Clock, Cloud, Menu, X,
-  Bus, Heart, Sparkles, CalendarDays, Activity, Brain, Mail
+  Bus, Heart, Sparkles, CalendarDays, Activity, Brain, Mail, Trophy
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
@@ -118,6 +118,26 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Messages', icon: MessageSquare, path: '/messaging' },
     ]},
   ],
+  assessor: [
+    { items: [
+      { label: 'Assessment Queue', icon: ClipboardList, path: '/assessor' },
+      { label: 'Messages', icon: MessageSquare, path: '/messaging' },
+      { label: 'Activity Log', icon: Activity, path: '/my-activity' },
+    ]},
+  ],
+  awarding_body_eqa: [
+    { items: [
+      { label: 'Evidence Portal', icon: Shield, path: '/eqa' },
+      { label: 'Activity Log', icon: Activity, path: '/my-activity' },
+    ]},
+  ],
+  welfare_officer: [
+    { items: [
+      { label: 'Welfare & Health', icon: Heart, path: '/health' },
+      { label: 'Residential', icon: Building2, path: '/residential' },
+      { label: 'Messages', icon: MessageSquare, path: '/messaging' },
+    ]},
+  ],
   programme_leader: [
     { items: [
       { label: 'Dashboard', icon: LayoutDashboard, path: '/programme' },
@@ -217,7 +237,9 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
     { title: 'Services', items: [
       { label: 'Fees & Payments', icon: CreditCard, path: '/student/finance' },
       { label: 'Progression', icon: GraduationCap, path: '/student/progression' },
-      { label: 'Career', icon: Briefcase, path: '/student/career' },
+      { label: 'Careers & Internships', icon: Briefcase, path: '/student/career' },
+      { label: 'Universities Abroad', icon: GraduationCap, path: '/student/global-progression' },
+      { label: 'Student Life', icon: Trophy, path: '/student/student-life' },
       { label: 'Health', icon: Heart, path: '/health' },
       { label: 'Transport', icon: Bus, path: '/transport' },
       { label: 'Residential', icon: Building2, path: '/residential' },
