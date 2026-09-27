@@ -67,6 +67,9 @@ const StudentAssignments = lazy(() => import("./pages/student/StudentAssignments
 const StudentGrades = lazy(() => import("./pages/student/StudentGrades"));
 const StudentLibrary = lazy(() => import("./pages/student/StudentLibrary"));
 const StudentCareer = lazy(() => import("./pages/student/StudentCareer"));
+const CareerMarketplace = lazy(() => import("./pages/careers/CareerMarketplace"));
+const GlobalProgression = lazy(() => import("./pages/progression/GlobalProgression"));
+const StudentLife = lazy(() => import("./pages/student/StudentLife"));
 const StudentFees = lazy(() => import("./pages/student/StudentFees"));
 
 // Lecturer
