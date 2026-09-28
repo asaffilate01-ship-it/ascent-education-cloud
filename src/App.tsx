@@ -51,6 +51,7 @@ const StudentManagement = lazy(() => import("./pages/director/StudentManagement"
 
 // Ops portals
 const AdmissionsCRM = lazy(() => import("./pages/admissions/AdmissionsCRM"));
+const ActionCentre = lazy(() => import("./pages/actions/ActionCentre"));
 const QADashboard = lazy(() => import("./pages/qa/QADashboard"));
 const FinanceDashboard = lazy(() => import("./pages/finance/FinanceDashboard"));
 const ExamsDashboard = lazy(() => import("./pages/exams/ExamsDashboard"));
