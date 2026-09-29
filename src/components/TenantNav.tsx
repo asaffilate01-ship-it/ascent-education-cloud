@@ -4,6 +4,7 @@ import { Menu, X, Moon, Sun } from 'lucide-react';
 import unipathwayLogo from '@/assets/unipathway-logo.png';
 import { useState } from 'react';
 import { useTheme } from '@/hooks/useTheme';
+import PublicNav from '@/components/PublicNav';
 
 interface TenantNavProps {
   brandName?: string;
@@ -12,6 +13,7 @@ interface TenantNavProps {
 }
 
 export default function TenantNav({ brandName = 'UniPathway', primaryColor, activePage }: TenantNavProps) {
+  return <PublicNav />;
   const { slug } = useParams();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
