@@ -21,6 +21,7 @@ const ResetPasswordPage = lazy(() => import("./pages/auth/ResetPasswordPage"));
 
 // UniPathway marketing (canonical)
 const PromoHome = lazy(() => import("./pages/promo/PromoHome"));
+const LearningOverview = lazy(() => import("./pages/learning/LearningOverview"));
 const TenantLandingPage = lazy(() => import("./pages/tenant/TenantLandingPage"));
 const TenantAboutPage = lazy(() => import("./pages/tenant/TenantAboutPage"));
 const TenantCoursesPage = lazy(() => import("./pages/tenant/TenantCoursesPage"));
@@ -218,6 +219,8 @@ function AppRoutes() {
         <Route path="/" element={<PromoHome />} />
         <Route path="/about" element={<RedirectToTenant suffix="/about" />} />
         <Route path="/courses" element={<RedirectToTenant suffix="/courses" />} />
+        <Route path="/tuition" element={<LearningOverview kind="tuition" />} />
+        <Route path="/employer-learning" element={<LearningOverview kind="employer" />} />
         <Route path="/contact" element={<RedirectToTenant suffix="/contact" />} />
         <Route path="/germany" element={<RedirectToTenant suffix="/germany" />} />
         <Route path="/uk" element={<RedirectToTenant suffix="/uk" />} />

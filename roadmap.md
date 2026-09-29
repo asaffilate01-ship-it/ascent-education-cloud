@@ -1,0 +1,4 @@
+- [x] Connect public qualifications, tuition, employer learning and pathways without exposing management pages.
+- [x] Standardise the public header and course presentation with the selected editorial direction.
+- [x] Refresh the public homepage and shared typography.
+- [x] Validate mobile and desktop navigation, layout and current preview diagnostics.

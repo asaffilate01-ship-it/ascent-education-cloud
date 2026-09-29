@@ -1,9 +1,4 @@
-import { Link, useParams } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Menu, X, Moon, Sun } from 'lucide-react';
-import unipathwayLogo from '@/assets/unipathway-logo.png';
-import { useState } from 'react';
-import { useTheme } from '@/hooks/useTheme';
+import PublicNav from '@/components/PublicNav';
 
 interface TenantNavProps {
   brandName?: string;
@@ -11,85 +6,6 @@ interface TenantNavProps {
   activePage?: 'home' | 'courses' | 'about' | 'contact';
 }
 
-export default function TenantNav({ brandName = 'UniPathway', primaryColor, activePage }: TenantNavProps) {
-  const { slug } = useParams();
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const { theme, toggleTheme } = useTheme();
-
-  const links = [
-    { label: 'Home', path: `/tenant/${slug}`, key: 'home' },
-    { label: 'Courses', path: `/tenant/${slug}/courses`, key: 'courses' },
-    { label: '🇩🇪 Germany', path: `/tenant/${slug}/germany`, key: 'germany' },
-    { label: '🇬🇧 UK', path: `/tenant/${slug}/uk`, key: 'uk' },
-    { label: 'Pathways', path: `/tenant/${slug}/pathways`, key: 'pathways' },
-    { label: 'About', path: `/tenant/${slug}/about`, key: 'about' },
-    { label: 'Contact', path: `/tenant/${slug}/contact`, key: 'contact' },
-  ];
-
-  return (
-    <nav className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border/40 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 lg:h-28 flex items-center justify-between">
-        <Link to={`/tenant/${slug}`} className="flex items-center">
-          <img
-            src={unipathwayLogo}
-            alt={brandName}
-            className="h-12 lg:h-24 w-auto"
-          />
-        </Link>
-
-        {/* Desktop */}
-        <div className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
-          {links.map((l) => (
-            <Link
-              key={l.key}
-              to={l.path}
-              className={activePage === l.key ? 'text-primary font-medium' : 'hover:text-foreground transition-default'}
-            >
-              {l.label}
-            </Link>
-          ))}
-          <button
-            onClick={toggleTheme}
-            className="p-2 rounded-lg border border-border/50 bg-background hover:bg-accent transition-all"
-            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-          >
-            {theme === 'dark' ? <Sun className="w-4 h-4 text-muted-foreground" /> : <Moon className="w-4 h-4 text-muted-foreground" />}
-          </button>
-          <Link to="/login"><Button variant="outline" size="sm">Login</Button></Link>
-          <Link to="/apply">
-            <Button size="sm" style={primaryColor ? { backgroundColor: primaryColor } : undefined}>Apply Now</Button>
-          </Link>
-        </div>
-
-        {/* Mobile hamburger */}
-        <button className="md:hidden p-2" onClick={() => setMobileOpen(!mobileOpen)}>
-          {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
-      </div>
-
-      {/* Mobile menu */}
-      {mobileOpen && (
-        <div className="md:hidden border-t border-border bg-background px-4 py-4 space-y-3">
-          {links.map((l) => (
-            <Link
-              key={l.key}
-              to={l.path}
-              className={`block text-sm ${activePage === l.key ? 'text-primary font-medium' : 'text-muted-foreground'}`}
-              onClick={() => setMobileOpen(false)}
-            >
-              {l.label}
-            </Link>
-          ))}
-          <div className="flex gap-2 pt-2">
-            <Link to="/login" className="flex-1">
-              <Button variant="outline" size="sm" className="w-full">Login</Button>
-            </Link>
-            <Link to="/apply" className="flex-1">
-              <Button size="sm" className="w-full" style={primaryColor ? { backgroundColor: primaryColor } : undefined}>Apply</Button>
-            </Link>
-          </div>
-        </div>
-      )}
-    </nav>
-  );
+export default function TenantNav(_props: TenantNavProps) {
+  return <PublicNav />;
 }
