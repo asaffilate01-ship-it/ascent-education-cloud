@@ -220,6 +220,8 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Dashboard', icon: LayoutDashboard, path: '/student' },
       { label: 'Courses', icon: BookOpen, path: '/student/courses' },
       { label: 'Live Classroom', icon: Video, path: '/student/classroom' },
+      { label: 'Lesson Archive', icon: Library, path: '/student/lesson-archive' },
+      { label: 'Microsoft 365', icon: Mail, path: '/student/microsoft' },
       { label: 'IT Labs', icon: Cloud, path: '/student/labs' },
       { label: 'Assignments', icon: ClipboardList, path: '/student/assignments' },
       { label: 'Grades', icon: BarChart3, path: '/student/grades' },

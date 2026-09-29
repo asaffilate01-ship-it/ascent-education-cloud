@@ -59,6 +59,10 @@ const AttendanceDashboard = lazy(() => import("./pages/attendance/AttendanceDash
 const AnalyticsDashboard = lazy(() => import("./pages/analytics/AnalyticsDashboard"));
 const MarketingDashboard = lazy(() => import("./pages/marketing/MarketingDashboard"));
 const LiveClassroom = lazy(() => import("./pages/classroom/TeamsClassroom"));
+const LiveClassScheduler = lazy(() => import("./pages/classroom/LiveClassScheduler"));
+const WhiteboardStudio = lazy(() => import("./pages/classroom/WhiteboardStudio"));
+const MicrosoftAccountCentre = lazy(() => import("./pages/student/MicrosoftAccountCentre"));
+const LessonArchive = lazy(() => import("./pages/student/LessonArchive"));
 
 // Student
 const StudentDashboard = lazy(() => import("./pages/student/StudentDashboard"));
@@ -371,6 +375,8 @@ function AppRoutes() {
         <Route path="/student" element={<StudentR><StudentDashboard /></StudentR>} />
         <Route path="/student/courses" element={<StudentR><StudentCourses /></StudentR>} />
         <Route path="/student/classroom" element={<StudentR><LiveClassroom /></StudentR>} />
+        <Route path="/student/microsoft" element={<StudentR><MicrosoftAccountCentre /></StudentR>} />
+        <Route path="/student/lesson-archive" element={<StudentR><LessonArchive /></StudentR>} />
         <Route path="/student/assignments" element={<StudentR><StudentAssignments /></StudentR>} />
         <Route path="/student/grades" element={<StudentR><StudentGrades /></StudentR>} />
         <Route path="/student/attendance" element={<StudentR><AttendanceDashboard /></StudentR>} />
