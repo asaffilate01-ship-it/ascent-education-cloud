@@ -127,6 +127,7 @@ const PredictiveAnalytics = lazy(() => import("./pages/analytics/PredictiveAnaly
 const DocumentManagement = lazy(() => import("./pages/documents/DocumentManagement"));
 const EmailCampaigns = lazy(() => import("./pages/marketing/EmailCampaigns"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const ActionCentre = lazy(() => import("./pages/actions/ActionCentre"));
 
 const queryClient = new QueryClient();
 
@@ -432,6 +433,7 @@ function AppRoutes() {
         <Route path="/timeline" element={<P><AcademicTimeline /></P>} />
         <Route path="/coding" element={<P><CloudCodingSandbox /></P>} />
 
+        <Route path="/actions" element={<ProtectedRoute><ActionCentre /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       </main>
