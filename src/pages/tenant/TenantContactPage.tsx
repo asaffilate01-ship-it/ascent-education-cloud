@@ -50,9 +50,6 @@ export default function TenantContactPage() {
             {/* Contact Info */}
             <div className="space-y-4">
               {[
-                { icon: MapPin, label: 'Address', value: '123 Education Street, Gulberg III, Lahore, Pakistan' },
-                { icon: Phone, label: 'Phone', value: '+92 42 3578 9012' },
-                { icon: MessageSquare, label: 'WhatsApp', value: '+92 300 1234567', isWhatsApp: true },
                 { icon: Mail, label: 'Email', value: 'admissions@unipathway.pk' },
                 { icon: Globe, label: 'Website', value: 'www.unipathway.pk' },
                 { icon: Clock, label: 'Office Hours', value: 'Mon-Fri: 9:00 AM - 6:00 PM (PKT)' },

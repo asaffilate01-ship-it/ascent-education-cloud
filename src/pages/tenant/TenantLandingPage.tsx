@@ -941,7 +941,6 @@ export default function TenantLandingPage() {
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
             {[
               { icon: MapPin, title: 'Visit Us', info: 'Main Boulevard, Gulberg III, Lahore, Pakistan' },
-              { icon: Phone, title: 'Call Us', info: '+92 42 1234 5678' },
               { icon: Mail, title: 'Email Us', info: 'admissions@unipathway.pk' },
             ].map((c) => (
               <div key={c.title} className="surface-card p-7 text-center border border-border/50 hover:shadow-lg transition-all">
