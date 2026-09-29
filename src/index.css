@@ -356,8 +356,15 @@
   }
 
   /* ═══ SAFE AREA (PWA) ═══ */
-  .safe-area-pb {
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+  .safe-area-pb { padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .page-shell { @apply mx-auto w-full max-w-[1600px]; }
+  .section-heading { @apply text-base font-bold tracking-tight; }
+  .section-copy { @apply text-xs sm:text-sm text-muted-foreground mt-1; }
+  .empty-state { @apply surface-card p-8 sm:p-10 text-center text-muted-foreground; }
+  .tap-target { min-height: 44px; min-width: 44px; }
+  @media (max-width: 640px) {
+    .surface-card { @apply rounded-xl; }
+    body { font-size: 14px; }
   }
   /* Shared workflow UI for high-stakes academic operations */
 .workflow-strip { @apply flex items-center gap-1 overflow-x-auto pb-1; }
