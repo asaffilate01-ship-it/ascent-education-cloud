@@ -66,7 +66,7 @@ export const ROLE_HOME: Record<UserRole, string> = {
 
 async function fetchAuthUser(supaUser: User): Promise<AuthUser> {
   // Make sure self-registered users have a UniPathway profile and role
-  await (supabase.rpc as any)('ensure_my_account').catch?.(() => undefined);
+  try { await (supabase.rpc as any)('ensure_my_account'); } catch { /* non-blocking */ }
   // Fetch profile
   const { data: profile } = await supabase
     .from('profiles')
