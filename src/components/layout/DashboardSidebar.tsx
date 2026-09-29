@@ -97,11 +97,10 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
     { items: [
       { label: 'Dashboard', icon: LayoutDashboard, path: '/lecturer' },
       { label: 'Teaching', icon: BookOpen, path: '/lecturer/teaching' },
-      { label: 'Classroom', icon: Video, path: '/lecturer/classroom' },
+      { label: 'Live Classroom', icon: Video, path: '/lecturer/classroom' },
       { label: 'IT Labs', icon: Cloud, path: '/lecturer/labs' },
       { label: 'Lesson Plans', icon: BookOpen, path: '/lesson-plans' },
       { label: 'AI Builder', icon: Brain, path: '/ai-course-builder' },
-      { label: 'Marking', icon: ClipboardList, path: '/lecturer/marking' },
       { label: 'Quizzes', icon: ClipboardList, path: '/lecturer/quizzes' },
       { label: 'Forums', icon: BookOpen, path: '/lecturer/forums' },
       { label: 'Gradebook', icon: BarChart3, path: '/lecturer/gradebook' },
@@ -220,7 +219,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
     { title: 'Learning', items: [
       { label: 'Dashboard', icon: LayoutDashboard, path: '/student' },
       { label: 'Courses', icon: BookOpen, path: '/student/courses' },
-      { label: 'Classroom', icon: Video, path: '/student/classroom' },
+      { label: 'Live Classroom', icon: Video, path: '/student/classroom' },
       { label: 'IT Labs', icon: Cloud, path: '/student/labs' },
       { label: 'Assignments', icon: ClipboardList, path: '/student/assignments' },
       { label: 'Grades', icon: BarChart3, path: '/student/grades' },
