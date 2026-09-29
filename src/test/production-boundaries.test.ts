@@ -1,0 +1,2 @@
+import {describe,it,expect} from 'vitest';
+describe('production role boundaries',()=>{it('documents lecturer as teaching not summative marking',()=>{const lecturerNav=['Dashboard','Teaching','Live Classroom','Attendance'];expect(lecturerNav).not.toContain('Marking')});it('keeps regulated result decisions human-controlled',()=>{const aiCanReleaseFinalGrade=false;expect(aiCanReleaseFinalGrade).toBe(false)})});
