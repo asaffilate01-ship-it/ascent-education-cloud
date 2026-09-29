@@ -58,7 +58,7 @@ const ProgressionDashboard = lazy(() => import("./pages/progression/ProgressionD
 const AttendanceDashboard = lazy(() => import("./pages/attendance/AttendanceDashboard"));
 const AnalyticsDashboard = lazy(() => import("./pages/analytics/AnalyticsDashboard"));
 const MarketingDashboard = lazy(() => import("./pages/marketing/MarketingDashboard"));
-const LiveClassroom = lazy(() => import("./pages/classroom/LiveClassroom"));
+const LiveClassroom = lazy(() => import("./pages/classroom/TeamsClassroom"));
 
 // Student
 const StudentDashboard = lazy(() => import("./pages/student/StudentDashboard"));
