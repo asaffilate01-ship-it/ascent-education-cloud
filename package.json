@@ -11,7 +11,10 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "native:sync": "cap sync",
+    "native:ios": "cap open ios",
+    "native:android": "cap open android"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",
