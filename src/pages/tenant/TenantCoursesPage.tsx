@@ -6,6 +6,8 @@ import TenantNav from '@/components/TenantNav';
 import { useTenantBranding } from '@/hooks/useTenantBranding';
 import { supabase } from '@/integrations/supabase/client';
 import Seo from '@/components/Seo';
+import PublicFooter from '@/components/PublicFooter';
+import { Link as CourseLink } from 'react-router-dom';
 
 interface Course {
   id: string;
@@ -79,18 +81,20 @@ export default function TenantCoursesPage() {
       <TenantNav brandName={brandName} primaryColor={primaryColor} activePage="courses" />
 
       {/* Hero */}
-      <section className="gradient-subtle py-12 sm:py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">Our Programmes</h1>
-          <p className="text-muted-foreground mt-3 max-w-xl mx-auto text-sm sm:text-base">
-            UK-accredited qualifications from OTHM, QUALIFI, and IAB — study 80% online and progress to top universities worldwide
+      <section className="border-b border-border bg-secondary/40 py-12 sm:py-20">
+        <div className="max-w-7xl mx-auto px-5 sm:px-8">
+          <p className="text-label text-success">Qualifications in Pakistan</p>
+          <h1 className="mt-4 max-w-2xl text-3xl sm:text-5xl font-bold">Find the qualification for your next step.</h1>
+          <p className="text-muted-foreground mt-5 max-w-xl text-sm sm:text-base">
+            Browse Level 3–5 diplomas in business, computing and accounting, with progression options to explore.
           </p>
+          <div className="mt-7 flex flex-wrap gap-3 text-sm"><CourseLink to="/tuition" className="font-bold text-success hover:underline">Looking for school tuition? →</CourseLink><CourseLink to="/employer-learning" className="font-bold text-success hover:underline">Learning for your team? →</CourseLink></div>
         </div>
       </section>
 
       {/* Accreditation Badges */}
       <section className="py-6 sm:py-8 border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-center gap-4 sm:gap-8">
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 flex flex-wrap items-center gap-4 sm:gap-8">
           {['OTHM Qualifications', 'QUALIFI', 'IAB Accounting'].map((body) => (
             <div key={body} className="flex items-center gap-2">
               <Shield className="w-4 h-4 text-primary" />
@@ -102,16 +106,16 @@ export default function TenantCoursesPage() {
 
       {/* Course Cards */}
       <section className="py-8 sm:py-12">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="space-y-4 sm:space-y-6">
+        <div className="max-w-7xl mx-auto px-5 sm:px-8">
+          <div className="grid gap-4 md:grid-cols-2">
             {courses.map((course) => (
 
-              <div key={course.id} className="surface-card p-4 sm:p-6 hover:shadow-lg transition-default">
-                <div className="flex flex-col lg:flex-row lg:items-start gap-4 sm:gap-6">
+              <article key={course.id} className="surface-card rounded-md p-5 sm:p-7 hover-lift">
+                <div className="flex h-full flex-col gap-4">
                   <div className="flex-1">
-                    <div className="flex flex-wrap items-center gap-2 mb-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded">{course.body}</span>
-                      <span className="text-[10px] font-medium bg-secondary px-2 py-0.5 rounded">{course.level}</span>
+                    <div className="flex flex-wrap items-center gap-2 mb-3">
+                      <span className="text-xs font-bold uppercase text-success">{course.body}</span>
+                      <span className="text-xs text-muted-foreground">· {course.level}</span>
                     </div>
                     <h2 className="text-base sm:text-lg font-bold">{course.title}</h2>
                     <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-2 text-xs text-muted-foreground">
@@ -125,7 +129,7 @@ export default function TenantCoursesPage() {
                       <p className="text-xs font-semibold mb-2">Modules</p>
                       <div className="flex flex-wrap gap-1.5">
                         {course.modules.map((m) => (
-                          <span key={m} className="text-[10px] bg-secondary px-2 py-1 rounded font-medium">{m}</span>
+                          <span key={m} className="text-[11px] bg-secondary px-2 py-1 rounded-sm font-medium">{m}</span>
                         ))}
                       </div>
                     </div>
@@ -142,26 +146,26 @@ export default function TenantCoursesPage() {
                   </div>
 
                   {/* Price & CTA */}
-                  <div className="lg:w-48 shrink-0 flex lg:flex-col items-center lg:items-end justify-between lg:justify-start gap-2">
-                    <div className="lg:text-right">
+                  <div className="mt-auto flex flex-wrap items-end justify-between gap-3 border-t border-border pt-5">
+                    <div>
                       <p className="text-xl sm:text-2xl font-bold text-primary">POA</p>
                       <p className="text-xs text-muted-foreground">Price on Application</p>
                     </div>
-                    <Link to="/apply">
-                      <Button className="mt-0 lg:mt-3">
+                    <Button asChild>
+                      <Link to="/apply">
                         Apply Now <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   </div>
                 </div>
-              </div>
+              </article>
             ))}
           </div>
         </div>
       </section>
 
       {/* Delivery Model */}
-      <section className="gradient-subtle py-8 sm:py-12">
+      <section className="bg-secondary/40 py-8 sm:py-12">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <h2 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8">Hybrid Delivery Model</h2>
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -186,6 +190,7 @@ export default function TenantCoursesPage() {
         <p className="text-muted-foreground mb-6 text-sm">Apply today and begin your journey to a UK degree</p>
         <Link to="/apply"><Button size="lg" className="px-8">Apply Now <ArrowRight className="w-4 h-4 ml-1" /></Button></Link>
       </section>
+      <PublicFooter />
     </div>
   );
 }
