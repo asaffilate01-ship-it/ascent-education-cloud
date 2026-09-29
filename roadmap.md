@@ -2,3 +2,7 @@
 - [x] Standardise the public header and course presentation with the selected editorial direction.
 - [x] Refresh the public homepage and shared typography.
 - [x] Validate mobile and desktop navigation, layout and current preview diagnostics.
+- [x] Fix sign-up: auto-create UniPathway profile + student/agent role.
+- [x] Remove bundled dev logins from sign-in page.
+- [x] Remove made-up phone/address.
+- [ ] Add real phone, WhatsApp and address (waiting on user).
