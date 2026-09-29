@@ -1,4 +1,3 @@
-import { useParams } from "react-router-dom";
 import PublicNav from '@/components/PublicNav';
 
 interface TenantNavProps {
@@ -8,6 +7,5 @@ interface TenantNavProps {
 }
 
 export default function TenantNav(_props: TenantNavProps) {
-  const { slug } = useParams();
-  return <PublicNav tenantSlug={slug} />;
+  return <PublicNav />;
 }
