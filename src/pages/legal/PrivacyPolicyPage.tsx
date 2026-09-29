@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Cloud, ArrowLeft } from 'lucide-react';
 import Seo from '@/components/Seo';
+import PublicNav from '@/components/PublicNav';
 
 export default function PrivacyPolicyPage() {
   return (
