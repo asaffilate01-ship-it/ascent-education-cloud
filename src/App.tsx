@@ -11,8 +11,6 @@ import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { lazy, Suspense } from "react";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import { isSiteUnlocked, isGatedPath } from "@/lib/siteAccess";
-import { useLocation } from "react-router-dom";
 const AIChatWidgetLazy = lazy(() => import("@/components/AIChatWidget"));
 
 // Auth
@@ -211,11 +209,6 @@ function ApplyRedirect() {
 }
 
 function AppRoutes() {
-  const location = useLocation();
-  if (isGatedPath(location.pathname) && !isSiteUnlocked()) {
-    return <Navigate to="/" replace />;
-  }
-
   return (
     <Suspense fallback={<LoadingFallback />}>
       <a href="#main-content" className="skip-to-content">Skip to content</a>
