@@ -21,7 +21,7 @@ const BOTTOM_NAV: Record<string, BottomNavItem[]> = {
   lecturer: [
     { label: 'Home', icon: LayoutDashboard, path: '/lecturer' },
     { label: 'Teaching', icon: BookOpen, path: '/lecturer/teaching' },
-    { label: 'Marking', icon: ClipboardList, path: '/lecturer/marking' },
+    { label: 'Live', icon: Video, path: '/lecturer/classroom' },
     { label: 'Students', icon: Users, path: '/lecturer/students' },
     { label: 'Chat', icon: MessageSquare, path: '/messaging' },
   ],

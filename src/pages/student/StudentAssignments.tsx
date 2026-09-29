@@ -43,7 +43,7 @@ export default function StudentAssignments() {
       .order('deadline', { ascending: true });
 
     const { data: { user } } = await supabase.auth.getUser();
-    let submissionsMap: Record<string, any> = {};
+    const submissionsMap: Record<string, any> = {};
     if (user) {
       const { data: subs } = await supabase
         .from('submissions')

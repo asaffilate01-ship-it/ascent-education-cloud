@@ -1,0 +1,2 @@
+import {test,expect} from '@playwright/test';
+test.describe('public production smoke',()=>{test('home and auth routes render without dead-end navigation',async({page})=>{await page.goto('/');await expect(page.locator('body')).toBeVisible();await page.goto('/login');await expect(page.locator('body')).toBeVisible()});test('protected student route does not expose dashboard anonymously',async({page})=>{await page.goto('/student');await page.waitForLoadState('domcontentloaded');expect(page.url()).not.toMatch(/\/student$/)});});

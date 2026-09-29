@@ -138,7 +138,7 @@ export default function CloudCodingSandbox() {
             const printMatch = trimmed.match(/^print\((.+)\)$/);
             if (printMatch) {
               try {
-                let content = printMatch[1].trim();
+                const content = printMatch[1].trim();
                 // Handle string literals safely without eval
                 if ((content.startsWith('"') && content.endsWith('"')) || (content.startsWith("'") && content.endsWith("'"))) {
                   logs.push(content.slice(1, -1));

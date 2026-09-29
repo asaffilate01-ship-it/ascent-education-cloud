@@ -40,7 +40,7 @@ export default function StudentGrades() {
         .select('*, modules(title)')
         .order('deadline', { ascending: true });
 
-      let submissionsMap: Record<string, any> = {};
+      const submissionsMap: Record<string, any> = {};
       if (user) {
         const { data: subs } = await supabase
           .from('submissions')
