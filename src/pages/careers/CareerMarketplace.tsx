@@ -1,10 +1,11 @@
+import { db } from '@/lib/db';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatCard from '@/components/ui/StatCard'; import StatusBadge from '@/components/ui/StatusBadge';
 import { useEffect,useMemo,useState } from 'react'; import { supabase } from '@/integrations/supabase/client';
 import { Briefcase,Building2,GraduationCap,Globe2,Search,MapPin } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 export default function CareerMarketplace(){const [ops,setOps]=useState<any[]>([]),[apps,setApps]=useState<any[]>([]),[q,setQ]=useState('');
- useEffect(()=>{Promise.all([supabase.from('career_opportunities').select('*,career_organisations(name,verified)').eq('status','open').order('created_at',{ascending:false}),supabase.from('career_applications').select('*')]).then(([o,a])=>{setOps(o.data||[]);setApps(a.data||[])})},[]);
+ useEffect(()=>{Promise.all([db.from('career_opportunities').select('*,career_organisations(name,verified)').eq('status','open').order('created_at',{ascending:false}),db.from('career_applications').select('*')]).then(([o,a])=>{setOps(o.data||[]);setApps(a.data||[])})},[]);
  const filtered=useMemo(()=>ops.filter(o=>(o.title+' '+o.country+' '+(o.city||'')+' '+(o.career_organisations?.name||'')).toLowerCase().includes(q.toLowerCase())),[ops,q]);
  return <DashboardLayout title="Careers & Internships" subtitle="Verified opportunities, applications and international careers">
  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5"><StatCard label="Open Opportunities" value={ops.length} icon={Briefcase}/><StatCard label="Internships" value={ops.filter(o=>o.opportunity_type==='internship').length} icon={GraduationCap}/><StatCard label="Sponsorship Listed" value={ops.filter(o=>o.sponsorship_available).length} icon={Globe2}/><StatCard label="My Applications" value={apps.length} icon={Building2}/></div>

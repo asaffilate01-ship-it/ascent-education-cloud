@@ -1,3 +1,4 @@
+import { db } from '@/lib/db';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
@@ -14,9 +15,9 @@ export default function AssessorDashboard() {
  const [attempts,setAttempts]=useState<any[]>([]),[decisions,setDecisions]=useState<any[]>([]),[drafts,setDrafts]=useState<any[]>([]);
  const [selected,setSelected]=useState<any|null>(null),[loading,setLoading]=useState(true),[running,setRunning]=useState(false);
  const load=async()=>{setLoading(true);const [a,d,x]=await Promise.all([
-  supabase.from('submission_attempts').select('*').order('submitted_at',{ascending:false}).limit(100),
-  supabase.from('assessor_decisions').select('*').order('decided_at',{ascending:false}).limit(100),
-  supabase.from('ai_assessment_drafts').select('*').order('created_at',{ascending:false}).limit(100)
+  db.from('submission_attempts').select('*').order('submitted_at',{ascending:false}).limit(100),
+  db.from('assessor_decisions').select('*').order('decided_at',{ascending:false}).limit(100),
+  db.from('ai_assessment_drafts').select('*').order('created_at',{ascending:false}).limit(100)
  ]);setAttempts(a.data||[]);setDecisions(d.data||[]);setDrafts(x.data||[]);setLoading(false)};
  useEffect(()=>{load()},[]);
  const decided=useMemo(()=>new Set(decisions.map(d=>d.submission_attempt_id)),[decisions]);

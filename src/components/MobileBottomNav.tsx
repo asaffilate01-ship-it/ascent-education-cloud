@@ -1,6 +1,6 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, ClipboardList, BarChart3, MessageSquare, UserPlus, CreditCard, Building2, Users, Briefcase, ShieldCheck, FileText, Megaphone, GraduationCap, Bell } from 'lucide-react';
+import { LayoutDashboard, BookOpen, ClipboardList, BarChart3, MessageSquare, UserPlus, CreditCard, Building2, Users, Briefcase, ShieldCheck, FileText, Megaphone, GraduationCap, Bell, Video } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import type { UserRole } from '@/types/platform';
 

@@ -1,9 +1,10 @@
+import { db } from '@/lib/db';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatCard from '@/components/ui/StatCard'; import StatusBadge from '@/components/ui/StatusBadge';
 import { useEffect,useState } from 'react'; import { supabase } from '@/integrations/supabase/client';
 import { ShieldAlert,MessageSquare,Video,CheckCircle2 } from 'lucide-react';
 export default function IntegrityDashboard(){const [cases,setCases]=useState<any[]>([]),[evidence,setEvidence]=useState<any[]>([]);
- useEffect(()=>{Promise.all([supabase.from('integrity_cases').select('*').order('created_at',{ascending:false}),supabase.from('integrity_evidence').select('*').order('created_at',{ascending:false})]).then(([c,e])=>{setCases(c.data||[]);setEvidence(e.data||[])})},[]);
+ useEffect(()=>{Promise.all([db.from('integrity_cases').select('*').order('created_at',{ascending:false}),db.from('integrity_evidence').select('*').order('created_at',{ascending:false})]).then(([c,e])=>{setCases(c.data||[]);setEvidence(e.data||[])})},[]);
  return <DashboardLayout title="Academic Integrity" subtitle="Evidence-led review — no automated misconduct decisions">
  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5"><StatCard label="Open Reviews" value={cases.filter(c=>c.status==='review').length} icon={ShieldAlert}/><StatCard label="Student Discussion" value={cases.filter(c=>c.status==='student_discussion').length} icon={MessageSquare}/><StatCard label="Formal Review" value={cases.filter(c=>c.status==='formal_investigation').length} icon={Video}/><StatCard label="Resolved" value={cases.filter(c=>c.status==='resolved'||c.status==='no_concern').length} icon={CheckCircle2}/></div>
  <div className="surface-card overflow-hidden"><div className="p-4 border-b"><h2 className="text-sm font-bold">Integrity case queue</h2><p className="text-xs text-muted-foreground mt-1">Similarity and AI-writing indicators are evidence signals, not findings.</p></div>
