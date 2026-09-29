@@ -26,7 +26,7 @@ export default function PublicNav({ tenantSlug }: PublicNavProps = {}) {
         <div className="group relative" onMouseEnter={() => setStudyOpen(true)} onMouseLeave={() => setStudyOpen(false)}>
           <Button variant="ghost" aria-haspopup="true" aria-expanded={studyOpen} onClick={() => setStudyOpen(!studyOpen)} className="gap-1 font-semibold">Study <ChevronDown className="size-4" /></Button>
           {studyOpen && <div className="absolute left-0 top-full w-[490px] pt-2"><div className="grid grid-cols-2 gap-2 rounded-md border border-border bg-card p-3 shadow-surface-xl">
-            {studyLinks.map(({ label, detail, to, icon: Icon }) => <Link key={to} to={to} className="group/item flex gap-3 rounded-md p-3 transition-colors hover:bg-secondary"><Icon className="mt-0.5 size-5 shrink-0 text-success" /><span><span className="block text-sm font-bold text-foreground">{label}</span><span className="mt-1 block text-xs text-muted-foreground">{detail}</span></span></Link>)}
+            {studyLinks.map(({ label, detail, to, icon: Icon }) => <Link key={to} to={tenantSlug ? `/tenant/${tenantSlug}${to}` : to} className="group/item flex gap-3 rounded-md p-3 transition-colors hover:bg-secondary"><Icon className="mt-0.5 size-5 shrink-0 text-success" /><span><span className="block text-sm font-bold text-foreground">{label}</span><span className="mt-1 block text-xs text-muted-foreground">{detail}</span></span></Link>)}
           </div></div>}
         </div>
         <Link to={tenantSlug ? `/tenant/${tenantSlug}/germany` : "/germany"} className="rounded-md px-3 py-2 text-sm font-semibold text-foreground hover:bg-accent">Germany</Link>
@@ -40,8 +40,8 @@ export default function PublicNav({ tenantSlug }: PublicNavProps = {}) {
     {open && <nav aria-label="Mobile navigation" className="max-h-[calc(100dvh-5rem)] overflow-y-auto border-t border-border bg-background px-5 pb-6 pt-3 lg:hidden">
       <Link to={tenantSlug ? `/tenant/${tenantSlug}` : "/"} className="block border-b border-border py-3 text-base font-bold">Home</Link>
       <p className="pt-5 text-xs font-bold uppercase text-success">Explore learning</p>
-      <div className="mt-2 grid gap-1">{studyLinks.map(({ label, detail, to, icon: Icon }) => <Link key={to} to={to} className="flex items-center gap-3 rounded-md border border-border bg-card p-3"><Icon className="size-5 shrink-0 text-success" /><span className="flex-1"><span className="block text-sm font-bold">{label}</span><span className="block text-xs text-muted-foreground">{detail}</span></span><ArrowRight className="size-4 text-muted-foreground" /></Link>)}</div>
-      <div className="mt-4 grid grid-cols-2 gap-2">{[['Germany','/germany'],['UK','/uk'],['About','/about'],['Contact','/contact']].map(([label,to]) => <Link key={to} to={to} className="rounded-md py-2 text-sm font-semibold">{label}</Link>)}</div>
+      <div className="mt-2 grid gap-1">{studyLinks.map(({ label, detail, to, icon: Icon }) => <Link key={to} to={tenantSlug ? `/tenant/${tenantSlug}${to}` : to} className="flex items-center gap-3 rounded-md border border-border bg-card p-3"><Icon className="size-5 shrink-0 text-success" /><span className="flex-1"><span className="block text-sm font-bold">{label}</span><span className="block text-xs text-muted-foreground">{detail}</span></span><ArrowRight className="size-4 text-muted-foreground" /></Link>)}</div>
+      <div className="mt-4 grid grid-cols-2 gap-2">{[['Germany','/germany'],['UK','/uk'],['About','/about'],['Contact','/contact']].map(([label,to]) => <Link key={to} to={tenantSlug ? `/tenant/${tenantSlug}${to}` : to} className="rounded-md py-2 text-sm font-semibold">{label}</Link>)}</div>
       <div className="mt-5 flex gap-2"><Button variant="outline" className="flex-1" asChild><Link to="/login">Sign in</Link></Button><Button className="flex-1" asChild><Link to={tenantSlug ? `/tenant/${tenantSlug}/apply/uk` : "/apply"}>Apply now</Link></Button></div>
     </nav>}
   </header>;
