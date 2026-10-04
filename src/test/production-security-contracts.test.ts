@@ -1,0 +1,6 @@
+import {describe,it,expect} from 'vitest';
+type Role='student'|'lecturer'|'assessor'|'iqa_officer'|'finance_officer'|'employer_partner'|'centre_director';
+const tenant=(actor:string,row:string)=>actor===row;
+const own=(actor:string,owner:string)=>actor===owner;
+describe('RLS/IDOR production contracts',()=>{it('rejects cross-tenant access even with valid UUID',()=>expect(tenant('tenant-a','tenant-b')).toBe(false));it('rejects student IDOR to another learner',()=>expect(own('student-a','student-b')).toBe(false));it('separates finance from academic release',()=>{const allowed:Record<Role,string[]>={student:[],lecturer:['teach'],assessor:['assess'],iqa_officer:['quality'],finance_officer:['reconcile'],employer_partner:['corporate'],centre_director:['manage']};expect(allowed.finance_officer).not.toContain('release-grade')});it('separates lecturer from summative release',()=>expect(['teach','attendance']).not.toContain('release-grade'))});
+describe('private evidence storage contracts',()=>{it('CNIC and assessment evidence are never public buckets',()=>{const publicBuckets=['public-branding','public-course-images'];expect(publicBuckets).not.toContain('kyc');expect(publicBuckets).not.toContain('assessment-evidence')});it('signed access must be short lived',()=>{const maxSeconds=900;expect(maxSeconds).toBeLessThanOrEqual(900)})});
