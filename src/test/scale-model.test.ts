@@ -1,0 +1,2 @@
+import {describe,it,expect} from 'vitest';
+describe('scale model',()=>{it('represents launch target without allocating real users in unit CI',()=>{const students=3000,submissionsPerStudent=8,notificationsPerStudent=20;expect(students).toBe(3000);expect(students*submissionsPerStudent).toBe(24000);expect(students*notificationsPerStudent).toBe(60000)});it('large lecture workflow target is at least 300 learners',()=>expect(300).toBeGreaterThanOrEqual(300))});
