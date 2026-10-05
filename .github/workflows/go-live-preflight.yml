@@ -1,0 +1,23 @@
+name: Go-Live Preflight
+on:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24 }
+      - run: npm install --ignore-scripts
+      - name: Core go-live contracts
+        run: npm run test -- --run src/test/two-tenant-attack-matrix.test.ts src/test/authenticated-role-journeys.test.ts src/test/production-security-invariants.test.ts src/test/omniqora-education.test.ts src/test/workflow-security.test.ts
+      - name: Build
+        run: npm run build
+      - name: Required operational artifacts
+        run: |
+          test -f docs/GO_LIVE_GREEN_BOARD.md
+          test -f docs/BACKUP_RESTORE_INCIDENT_RUNBOOK.md
+          test -f docs/AUTHENTICATED_TEST_ENVIRONMENT.md
+          test -f docs/EDGE_FUNCTION_AUDIT_REGISTER.md
+          test -f docs/LOAD_TESTING.md
