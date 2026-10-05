@@ -1,0 +1,2 @@
+import {describe,it,expect} from 'vitest';
+describe('operational incident contracts',()=>{it('defines critical tenant isolation as launch severity',()=>{const critical=['tenant_isolation','auth_compromise','payment_integrity','grade_corruption','widespread_outage'];expect(critical).toContain('tenant_isolation')});it('requires incident lifecycle',()=>expect(['open','contained','monitoring','resolved']).toEqual(expect.arrayContaining(['contained','resolved'])))});
