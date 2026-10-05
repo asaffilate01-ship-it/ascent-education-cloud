@@ -1,0 +1,2 @@
+import {test,expect} from '@playwright/test';
+test.describe('production navigation contracts',()=>{test('public entry points render',async({page})=>{for(const p of ['/','/login','/courses']){await page.goto(p);await expect(page.locator('body')).toBeVisible()}});test('anonymous user cannot remain on protected student route',async({page})=>{await page.goto('/student');await page.waitForLoadState('domcontentloaded');expect(new URL(page.url()).pathname).not.toBe('/student')})});
