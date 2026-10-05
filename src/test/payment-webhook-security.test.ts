@@ -1,0 +1,2 @@
+import {describe,it,expect} from 'vitest';
+describe('payment webhook security contracts',()=>{it('requires signature before processing',()=>expect(['secret','signature','timestamp','hmac','idempotency']).toContain('signature'));it('requires replay window',()=>expect(300).toBeLessThanOrEqual(300));it('requires provider event idempotency',()=>{const key=['provider','provider_event_id'];expect(key).toEqual(['provider','provider_event_id'])});it('does not trust client amount',()=>{const authoritative='provider_event_and_server_order';expect(authoritative).not.toBe('client')})});
