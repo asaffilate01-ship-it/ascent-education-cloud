@@ -1,0 +1,32 @@
+name: Database & E2E Readiness
+on:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  schema-static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Migration ordering and duplicate timestamp check
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from collections import Counter
+          fs=list(Path('supabase/migrations').glob('*.sql'))
+          prefixes=[f.name.split('_',1)[0] for f in fs]
+          d=[k for k,v in Counter(prefixes).items() if v>1]
+          if d:
+            print('Duplicate migration prefixes:',d); raise SystemExit(1)
+          print('Migrations:',len(fs))
+          PY
+      - name: SQL safety smoke
+        run: |
+          ! grep -R -n -E "ALTER TABLE .* DISABLE ROW LEVEL SECURITY|DROP SCHEMA public|GRANT ALL .* anon" supabase/migrations
+  e2e-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24 }
+      - run: npm install --ignore-scripts
+      - run: npm run test -- --run src/test/access-boundaries.test.ts src/test/workflow-security.test.ts src/test/production-security-invariants.test.ts src/test/omniqora-education.test.ts src/test/scale-contracts.test.ts
