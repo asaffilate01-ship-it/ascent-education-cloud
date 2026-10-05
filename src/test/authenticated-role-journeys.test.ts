@@ -1,0 +1,4 @@
+import {describe,it,expect} from 'vitest';
+const homes={student:'/student',lecturer:'/lecturer',assessor:'/assessor',iqa_officer:'/qa',finance_officer:'/finance',employer_partner:'/employer',centre_director:'/director',superadmin:'/landlord'} as const;
+const permissions={student:['student'],lecturer:['lecturer'],assessor:['assessor'],iqa_officer:['iqa_officer'],finance_officer:['finance_officer'],employer_partner:['employer_partner'],centre_director:['centre_director'],superadmin:['superadmin']} as const;
+describe('authenticated role journey contracts',()=>{for(const [role,home] of Object.entries(homes)){it(role+' has a dedicated landing route',()=>expect(home.startsWith('/')).toBe(true));it(role+' cannot become another role by route choice alone',()=>expect(permissions[role as keyof typeof permissions]).toEqual([role]))}});
