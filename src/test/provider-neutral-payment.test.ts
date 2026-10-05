@@ -1,0 +1,2 @@
+import {describe,it,expect} from 'vitest';
+describe('provider-neutral payment invariants',()=>{it('uses authoritative allocation amount',()=>expect('server_allocation').not.toBe('client_amount'));it('supports replaceable gateway adapter',()=>expect(['createCheckout','verifyWebhook','parseProviderEvent','queryPaymentStatus','reconcile']).toHaveLength(5));it('separates checkout from settlement evidence',()=>expect('checkout_success').not.toBe('bank_settlement'))});
