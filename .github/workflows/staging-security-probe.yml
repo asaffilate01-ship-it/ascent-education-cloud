@@ -1,0 +1,25 @@
+name: Staging Security Probe
+on:
+  workflow_dispatch:
+jobs:
+  rls-probe:
+    if: ${{ vars.STAGING_SECURITY_PROBES_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+      TENANT_A_STUDENT_JWT: ${{ secrets.STAGING_TENANT_A_STUDENT_JWT }}
+      TENANT_B_STUDENT_JWT: ${{ secrets.STAGING_TENANT_B_STUDENT_JWT }}
+      TENANT_A_OWN_PROFILE_FILTER: ${{ vars.STAGING_TENANT_A_OWN_PROFILE_FILTER }}
+      TENANT_B_PROFILE_FILTER: ${{ vars.STAGING_TENANT_B_PROFILE_FILTER }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Direct REST RLS probes
+        run: bash scripts/staging-rls-probe.sh
+      - name: Retain probe evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-security-probe-${{ github.run_id }}
+          path: /tmp/rls-body
+          retention-days: 30
