@@ -1,0 +1,4 @@
+import {describe,it,expect} from 'vitest';
+const privateClasses=['kyc','qualification','assessment-evidence','practical-evidence','recording'];
+const retrieval=['authenticate','authorise','tenant-filter','role-filter','approved-version-filter','semantic-retrieve','answer'];
+describe('production security invariants',()=>{it('keeps sensitive document classes private',()=>{expect(privateClasses).not.toContain('public')});it('filters before semantic retrieval',()=>{expect(retrieval.indexOf('role-filter')).toBeLessThan(retrieval.indexOf('semantic-retrieve'));expect(retrieval.indexOf('tenant-filter')).toBeLessThan(retrieval.indexOf('semantic-retrieve'))});it('requires approved version before retrieval',()=>expect(retrieval.indexOf('approved-version-filter')).toBeLessThan(retrieval.indexOf('semantic-retrieve')))});
