@@ -1,0 +1,20 @@
+name: Production Security Gates
+on:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  security-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24 }
+      - run: npm install --ignore-scripts
+      - run: npm run test -- --run src/test/access-boundaries.test.ts src/test/workflow-security.test.ts src/test/omniqora-education.test.ts
+      - name: Reject obvious service-role secrets in client source
+        run: |
+          if grep -R -n -E "SUPABASE_SERVICE_ROLE_KEY|NADRA_API_TOKEN|MS_CLIENT_SECRET|OMNIQORA_FACTORY_TOKEN" src --exclude-dir=test; then
+            echo "Privileged secret reference found in client source"; exit 1
+          fi
+      - name: Verify security documentation
+        run: test -f docs/SECURITY_WORKFLOW_MATRIX.md && test -f docs/EDGE_FUNCTION_SECURITY.md && test -f docs/PATH_TO_100_PERCENT.md
