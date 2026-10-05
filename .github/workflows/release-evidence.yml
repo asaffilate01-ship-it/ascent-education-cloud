@@ -1,0 +1,27 @@
+name: Release Evidence
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+jobs:
+  release-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24 }
+      - run: npm install --ignore-scripts
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run build
+      - name: Produce release evidence
+        run: |
+          mkdir -p release-evidence
+          printf "commit=%s\nrun=%s\nref=%s\n" "$GITHUB_SHA" "$GITHUB_RUN_ID" "$GITHUB_REF" > release-evidence/build.txt
+          find supabase/migrations -type f -name '*.sql' | sort > release-evidence/migrations.txt
+          find supabase/functions -mindepth 2 -maxdepth 2 -name index.ts | sort > release-evidence/edge-functions.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-evidence
+          path: release-evidence
+          retention-days: 90
