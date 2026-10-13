@@ -73,13 +73,17 @@ CREATE TABLE IF NOT EXISTS public.international_partner_agreements (
  CONSTRAINT agreements_partner_tenant FOREIGN KEY(partner_id,tenant_id) REFERENCES public.international_education_partners(id,tenant_id),
  CONSTRAINT signed_agreement_has_document CHECK(status <> 'signed' OR (document_reference IS NOT NULL AND starts_on IS NOT NULL))
 );
+-- Composite key prevents referral records attaching applications belonging to a different tenant or student.
+ALTER TABLE public.international_university_applications
+ ADD CONSTRAINT global_referral_application_identity UNIQUE (id,tenant_id,student_id);
+
 CREATE TABLE IF NOT EXISTS public.international_partner_referrals (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
  tenant_id uuid NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
  partner_id uuid NOT NULL,
  route_id uuid,
  student_id uuid NOT NULL,
- international_application_id uuid REFERENCES public.international_university_applications(id),
+ international_application_id uuid,
  status text NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','consented','submitted','acknowledged','offer','enrolled','withdrawn','rejected')),
  student_consent_at timestamptz,
  external_application_ref text,
@@ -87,9 +91,28 @@ CREATE TABLE IF NOT EXISTS public.international_partner_referrals (
  created_at timestamptz NOT NULL DEFAULT now(),
  CONSTRAINT referrals_same_tenant_partner FOREIGN KEY(partner_id,tenant_id) REFERENCES public.international_education_partners(id,tenant_id),
  CONSTRAINT referrals_same_tenant_route FOREIGN KEY(route_id,tenant_id) REFERENCES public.international_pathway_routes(id,tenant_id),
+ CONSTRAINT referrals_same_tenant_application FOREIGN KEY(international_application_id,tenant_id,student_id) REFERENCES public.international_university_applications(id,tenant_id,student_id),
  CONSTRAINT referral_submission_needs_consent CHECK(status NOT IN ('submitted','acknowledged','offer','enrolled') OR student_consent_at IS NOT NULL)
 );
 CREATE INDEX IF NOT EXISTS idx_international_referrals ON public.international_partner_referrals(tenant_id,student_id,status);
+
+-- Publishing requires reviewed route evidence AND an internally recorded contracted/active partner.
+CREATE OR REPLACE FUNCTION public.check_global_pathway_publication()
+RETURNS trigger LANGUAGE plpgsql SET search_path = public AS $
+BEGIN
+ IF NEW.student_visible AND NOT EXISTS (
+   SELECT 1 FROM public.international_education_partners p
+   WHERE p.id=NEW.partner_id AND p.tenant_id=NEW.tenant_id
+   AND p.relationship_status IN ('contracted','active')
+   AND p.agreement_signed_on IS NOT NULL
+ ) THEN
+   RAISE EXCEPTION 'Cannot publish route without approved contractual partner status';
+ END IF;
+ RETURN NEW;
+END $;
+CREATE TRIGGER check_global_pathway_publication_before_write
+ BEFORE INSERT OR UPDATE ON public.international_pathway_routes
+ FOR EACH ROW EXECUTE FUNCTION public.check_global_pathway_publication();
 
 ALTER TABLE public.international_education_partners ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.international_pathway_routes ENABLE ROW LEVEL SECURITY;
