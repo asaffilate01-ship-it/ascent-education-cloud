@@ -30,6 +30,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
     { title: 'Platform', items: [
       { label: 'Overview', icon: LayoutDashboard, path: '/landlord' },
       { label: 'All Centres', icon: Building2, path: '/landlord/centres' },
+      { label: 'Global Partners', icon: Globe, path: '/landlord/global-partners' },
       { label: 'Platform Users', icon: Users, path: '/landlord/users' },
     ]},
     { title: 'Revenue', items: [
@@ -70,6 +71,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Email Campaigns', icon: Megaphone, path: '/director/email-campaigns' },
       { label: 'Residential', icon: Building2, path: '/residential' },
       { label: 'Agents', icon: Handshake, path: '/director/agents' },
+      { label: 'Global Partners', icon: Globe, path: '/director/global-partners' },
       { label: 'Audit Logs', icon: FileText, path: '/audit' },
       { label: 'Report Cards', icon: FileText, path: '/lecturer/report-cards' },
       { label: 'Reports', icon: BarChart3, path: '/director/reports' },
@@ -86,6 +88,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Applications', icon: FolderOpen, path: '/admissions/applications' },
       { label: 'Documents', icon: FileText, path: '/admissions/documents' },
       { label: 'Eligibility', icon: UserCheck, path: '/admissions/eligibility' },
+      { label: 'Global Partners', icon: Globe, path: '/admissions/global-partners' },
       { label: 'Offers', icon: Award, path: '/admissions/offers' },
       { label: 'Activity Log', icon: Activity, path: '/my-activity' },
       { label: 'Counselling', icon: MessageSquare, path: '/admissions/counselling' },

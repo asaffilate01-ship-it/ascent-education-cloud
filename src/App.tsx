@@ -54,6 +54,7 @@ const QADashboard = lazy(() => import("./pages/qa/QADashboard"));
 const FinanceDashboard = lazy(() => import("./pages/finance/FinanceDashboard"));
 const ExamsDashboard = lazy(() => import("./pages/exams/ExamsDashboard"));
 const ProgressionDashboard = lazy(() => import("./pages/progression/ProgressionDashboard"));
+const GlobalEducationPartners = lazy(() => import("./pages/progression/GlobalEducationPartners"));
 const AttendanceDashboard = lazy(() => import("./pages/attendance/AttendanceDashboard"));
 const AnalyticsDashboard = lazy(() => import("./pages/analytics/AnalyticsDashboard"));
 const MarketingDashboard = lazy(() => import("./pages/marketing/MarketingDashboard"));
@@ -261,6 +262,7 @@ function AppRoutes() {
         <Route path="/landlord/subscriptions" element={<Landlord><SuperadminPlatform /></Landlord>} />
         <Route path="/landlord/compliance" element={<Landlord><ComplianceDashboard /></Landlord>} />
         <Route path="/landlord/onboarding" element={<Landlord><TenantOnboarding /></Landlord>} />
+        <Route path="/landlord/global-partners" element={<Landlord><GlobalEducationPartners /></Landlord>} />
         <Route path="/landlord/audit" element={<Landlord><AuditLog /></Landlord>} />
         <Route path="/landlord/infrastructure" element={<Landlord><SuperadminPlatform /></Landlord>} />
         <Route path="/landlord/settings" element={<Landlord><SettingsPage /></Landlord>} />
@@ -274,6 +276,7 @@ function AppRoutes() {
         <Route path="/director/quality" element={<Director><QADashboard /></Director>} />
         <Route path="/director/finance" element={<Director><FinanceDashboard /></Director>} />
         <Route path="/director/agents" element={<Director><AgentDashboard /></Director>} />
+        <Route path="/director/global-partners" element={<Director><GlobalEducationPartners /></Director>} />
         <Route path="/director/schedule" element={<Director><ScheduleManager /></Director>} />
         <Route path="/director/branding" element={<Director><TenantBranding /></Director>} />
         <Route path="/director/page-builder" element={<Director><TenantPageBuilder /></Director>} />
@@ -287,6 +290,7 @@ function AppRoutes() {
         <Route path="/admissions/applications" element={<Admissions><AdmissionsCRM /></Admissions>} />
         <Route path="/admissions/documents" element={<Admissions><AdmissionsCRM /></Admissions>} />
         <Route path="/admissions/eligibility" element={<Admissions><AdmissionsCRM /></Admissions>} />
+        <Route path="/admissions/global-partners" element={<Admissions><GlobalEducationPartners /></Admissions>} />
         <Route path="/admissions/offers" element={<Admissions><AdmissionsCRM /></Admissions>} />
         <Route path="/admissions/counselling" element={<Admissions><MessagingInbox /></Admissions>} />
         <Route path="/admissions/reports" element={<Admissions><AnalyticsDashboard /></Admissions>} />
