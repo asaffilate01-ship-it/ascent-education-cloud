@@ -29,7 +29,7 @@ const KINDS: { value: PartnerKind; label: string }[] = [
 ];
 const COUNTRIES = ['UK','USA','Canada','Australia','Germany','France','Malta','UAE','Ireland','Europe','New Zealand'];
 const editableStatuses: Relationship[] = ['prospect','contacted','application_submitted','due_diligence','suspended','rejected'];
-const label = (s: string) => s.replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase());
+const label = (s: string) => s.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
 const cleanSlug = (s: string) => s.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,70);
 
 export default function GlobalEducationPartners() {
