@@ -77,6 +77,7 @@ export type EducationTables = {
       clawback_days: number | null;
       notes: string | null;
       created_at: string;
+      document_id: string | null;
     };
     Insert: {
       id?: string;
@@ -93,6 +94,7 @@ export type EducationTables = {
       clawback_days?: number | null;
       notes?: string | null;
       created_at?: string;
+      document_id?: string | null;
     };
     Update: {
       id?: string;
@@ -109,6 +111,7 @@ export type EducationTables = {
       clawback_days?: number | null;
       notes?: string | null;
       created_at?: string;
+      document_id?: string | null;
     };
     Relationships: [];
   };
@@ -144,6 +147,36 @@ export type EducationTables = {
       actor_id?: string | null;
       old_status?: string | null;
       new_status?: string | null;
+      created_at?: string;
+    };
+    Relationships: [];
+  };
+  international_partner_documents: {
+    Row: {
+      id: string;
+      tenant_id: string;
+      partner_id: string;
+      storage_path: string;
+      original_name: string;
+      uploaded_by: string;
+      created_at: string;
+    };
+    Insert: {
+      id?: string;
+      tenant_id: string;
+      partner_id: string;
+      storage_path: string;
+      original_name: string;
+      uploaded_by: string;
+      created_at?: string;
+    };
+    Update: {
+      id?: string;
+      tenant_id?: string;
+      partner_id?: string;
+      storage_path?: string;
+      original_name?: string;
+      uploaded_by?: string;
       created_at?: string;
     };
     Relationships: [];
@@ -634,6 +667,36 @@ export type EducationTables = {
     };
     Relationships: [];
   };
+  omniqora_knowledge_chunks: {
+    Row: {
+      id: string;
+      tenant_id: string;
+      document_id: string;
+      revision: number;
+      chunk_index: number;
+      body: string;
+      created_at: string;
+    };
+    Insert: {
+      id?: string;
+      tenant_id: string;
+      document_id: string;
+      revision: number;
+      chunk_index: number;
+      body: string;
+      created_at?: string;
+    };
+    Update: {
+      id?: string;
+      tenant_id?: string;
+      document_id?: string;
+      revision?: number;
+      chunk_index?: number;
+      body?: string;
+      created_at?: string;
+    };
+    Relationships: [];
+  };
   omniqora_knowledge_documents: {
     Row: {
       id: string;
@@ -651,6 +714,12 @@ export type EducationTables = {
       embedding_reference: string | null;
       metadata: Json;
       indexed_at: string | null;
+      source_text: string | null;
+      content_revision: number;
+      created_by: string | null;
+      reviewed_by: string | null;
+      reviewed_at: string | null;
+      updated_at: string;
     };
     Insert: {
       id?: string;
@@ -668,6 +737,12 @@ export type EducationTables = {
       embedding_reference?: string | null;
       metadata?: Json;
       indexed_at?: string | null;
+      source_text?: string | null;
+      content_revision?: number;
+      created_by?: string | null;
+      reviewed_by?: string | null;
+      reviewed_at?: string | null;
+      updated_at?: string;
     };
     Update: {
       id?: string;
@@ -685,6 +760,12 @@ export type EducationTables = {
       embedding_reference?: string | null;
       metadata?: Json;
       indexed_at?: string | null;
+      source_text?: string | null;
+      content_revision?: number;
+      created_by?: string | null;
+      reviewed_by?: string | null;
+      reviewed_at?: string | null;
+      updated_at?: string;
     };
     Relationships: [];
   };
@@ -718,6 +799,36 @@ export type EducationTables = {
       to_type?: string;
       to_id?: string;
       metadata?: Json;
+    };
+    Relationships: [];
+  };
+  omniqora_knowledge_reviews: {
+    Row: {
+      id: string;
+      tenant_id: string;
+      document_id: string;
+      revision: number;
+      decision: string;
+      actor_id: string;
+      created_at: string;
+    };
+    Insert: {
+      id?: string;
+      tenant_id: string;
+      document_id: string;
+      revision: number;
+      decision: string;
+      actor_id: string;
+      created_at?: string;
+    };
+    Update: {
+      id?: string;
+      tenant_id?: string;
+      document_id?: string;
+      revision?: number;
+      decision?: string;
+      actor_id?: string;
+      created_at?: string;
     };
     Relationships: [];
   };

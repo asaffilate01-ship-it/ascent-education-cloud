@@ -65,3 +65,7 @@ Failed delivery uses exponential backoff; processing leases expire after two min
 8. Full document indexing/vector RAG, scheduled queue delivery, complete education-source event coverage and scoped model gateway execution are not completed by metadata search/event transport.
 
 PR remains a draft until staging migration and role journey gates are satisfied. No merge or production deployment has been performed by this change.
+
+## Subsequent phase update
+
+Private PDF agreement uploads and reviewed full-text source-passage retrieval are implemented in the next release on this branch. See [documents and knowledge phase handover](UNIPATHWAY_DOCUMENTS_AND_KNOWLEDGE_PHASES.md) for the completed scope, tests and remaining deployment gates. This supersedes the earlier statements that this branch has only document references and metadata-only search; vector/model RAG and external provider activation remain outstanding.

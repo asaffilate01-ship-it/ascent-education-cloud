@@ -32,6 +32,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'All Centres', icon: Building2, path: '/landlord/centres' },
       { label: 'Global Partners', icon: Globe, path: '/landlord/global-partners' },
       { label: 'Education Intelligence', icon: BarChart3, path: '/landlord/education-intelligence' },
+      { label: 'Knowledge Library', icon: BookOpen, path: '/landlord/knowledge' },
       { label: 'Launch Readiness', icon: BarChart3, path: '/landlord/readiness' },
       { label: 'Platform Users', icon: Users, path: '/landlord/users' },
     ]},
@@ -75,6 +76,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Agents', icon: Handshake, path: '/director/agents' },
       { label: 'Global Partners', icon: Globe, path: '/director/global-partners' },
       { label: 'Education Intelligence', icon: BarChart3, path: '/director/education-intelligence' },
+      { label: 'Knowledge Library', icon: BookOpen, path: '/director/knowledge' },
       { label: 'Launch Readiness', icon: BarChart3, path: '/director/readiness' },
       { label: 'Audit Logs', icon: FileText, path: '/audit' },
       { label: 'Report Cards', icon: FileText, path: '/lecturer/report-cards' },
@@ -148,6 +150,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
     { items: [
       { label: 'Dashboard', icon: LayoutDashboard, path: '/programme' },
       { label: 'Modules', icon: BookOpen, path: '/programme/modules' },
+      { label: 'Knowledge Library', icon: BookOpen, path: '/programme/knowledge' },
       { label: 'Lecturers', icon: Users, path: '/programme/lecturers' },
       { label: 'Students', icon: GraduationCap, path: '/programme/students' },
       { label: 'Assessments', icon: ClipboardList, path: '/programme/assessments' },
@@ -245,6 +248,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
     { title: 'Services', items: [
       { label: 'Fees & Payments', icon: CreditCard, path: '/student/finance' },
       { label: 'Progression', icon: GraduationCap, path: '/student/progression' },
+      { label: 'Knowledge Library', icon: BookOpen, path: '/student/knowledge' },
       { label: 'University Applications', icon: Globe, path: '/student/international-applications' },
       { label: 'Careers & Internships', icon: Briefcase, path: '/student/career' },
       { label: 'Universities Abroad', icon: GraduationCap, path: '/student/global-progression' },

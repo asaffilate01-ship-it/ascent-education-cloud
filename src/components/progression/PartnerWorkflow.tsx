@@ -1,3 +1,4 @@
+import {uploadAgreement} from '@/lib/partnerDocuments';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -41,9 +42,16 @@ export default function PartnerWorkflow({ student = false }: { student?: boolean
   finally { setBusy(false); }
  }
  async function agreement(e:React.FormEvent<HTMLFormElement>) {
-  e.preventDefault();const form=e.currentTarget;const f=new FormData(form);
-  const saved=await write('international_partner_agreements',{partner_id:f.get('partner'),agreement_type:'recruitment',status:'signed',document_reference:f.get('document'),starts_on:f.get('starts'),ends_on:f.get('ends')||null});
-  if(saved)form.reset();
+  e.preventDefault();if(!tenant||busy)return;const form=e.currentTarget;const f=new FormData(form);setBusy(true);
+  try{
+   const file=f.get('documentFile') as File|null;
+   const document=file?.size?await uploadAgreement(db,tenant,String(f.get('partner')),file):null;
+   const reference=document?.reference||String(f.get('document')||'').trim();
+   if(!reference)throw new Error('Upload a signed PDF or enter a controlled document reference.');
+   const result=await db.from('international_partner_agreements').insert({tenant_id:tenant,partner_id:f.get('partner'),agreement_type:'recruitment',status:'signed',document_reference:reference,document_id:document?.id||null,starts_on:f.get('starts'),ends_on:f.get('ends')||null});
+   if(result.error)throw result.error;
+   toast.success('Signed agreement registered');form.reset();await load();
+  }catch(error){toast.error((error as Error).message||'Agreement could not be registered');}finally{setBusy(false);}
  }
  async function referral(e:React.FormEvent<HTMLFormElement>) {
   e.preventDefault();const form=e.currentTarget;const f=new FormData(form);const route=routes.find(r=>r.id===f.get('route'));const app=applications.find(a=>a.id===f.get('application'));
@@ -58,14 +66,16 @@ export default function PartnerWorkflow({ student = false }: { student?: boolean
   {!student&&<div className="flex flex-wrap gap-2">{['referrals','routes',...(manager?['agreements']:[])].map(t=><Button key={t} variant={tab===t?'default':'outline'} onClick={()=>setTab(t)}>{t}</Button>)}</div>}
   {(student||tab==='routes')&&<div className="space-y-3">{routes.length===0&&<p>No verified pathways are available yet.</p>}{routes.map(r=><article key={r.id} className="rounded border p-3 space-y-2"><h3 className="font-medium">{r.route_name}</h3><p className="text-sm">{r.review_status} · {r.student_visible?'Published':'Internal'}</p>{manager&&!student&&<form className="flex flex-wrap gap-2" onSubmit={async e=>{e.preventDefault();const f=new FormData(e.currentTarget);await write('international_pathway_routes',{review_status:'verified',student_visible:true,evidence_url:f.get('evidence'),evidence_reviewed_at:new Date().toISOString(),verified_by:user?.id},r.id);}}><Input aria-label={`Evidence for ${r.route_name}`} name="evidence" required type="url" placeholder="Institution acceptance evidence URL"/><Button disabled={busy}>Verify and publish</Button><Button type="button" variant="outline" disabled={busy} onClick={()=>void write('international_pathway_routes',{student_visible:false,review_status:'under_review'},r.id)}>Unpublish</Button></form>}</article>)}</div>}
   {!student&&manager&&tab==='agreements'&&<>
-   <p className="text-sm text-muted-foreground">Record the signed document in your controlled institutional document store, then register its reference here. Only current signed agreements allow publication.</p>
+   <p className="text-sm text-muted-foreground">Upload a signed PDF privately, or retain a reference to your controlled institutional document store. Uploading does not verify the signature. Only current signed agreements allow publication.</p>
    <form onSubmit={agreement} className="grid md:grid-cols-2 gap-3">
     <label>Organisation<select name="partner" required className="w-full border rounded p-2"><option value="">Choose organisation</option>{partners.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></label>
-    <label>Signed document reference<Input name="document" required placeholder="Controlled document reference"/></label>
+    <label>Signed PDF (maximum 10 MB)<Input name="documentFile" type="file" accept="application/pdf,.pdf"/></label><label>Existing controlled reference (if not uploading)<Input name="document" placeholder="Controlled document reference"/></label>
     <label>Starts on<Input name="starts" type="date" required/></label><label>Ends on (optional)<Input name="ends" type="date"/></label>
     <Button disabled={busy}>Register signed agreement</Button>
    </form>
-   {agreements.map(a=><article className="border rounded p-3 space-y-2" key={a.id}><p>{partners.find(p=>p.id===a.partner_id)?.name} · {a.status} · {a.starts_on} – {a.ends_on||'Open ended'}</p><p className="text-sm">{a.document_reference}</p><div className="flex gap-2"><Button disabled={busy||a.status!=='signed'} onClick={()=>void write('international_education_partners',{relationship_status:'contracted',agreement_signed_on:a.starts_on},a.partner_id)}>Activate relationship</Button><Button variant="outline" disabled={busy||a.status==='terminated'} onClick={()=>void write('international_partner_agreements',{status:'terminated'},a.id)}>Terminate agreement</Button></div></article>)}
+   {agreements.map(a=><article className="border rounded p-3 space-y-2" key={a.id}><p>{partners.find(p=>p.id===a.partner_id)?.name} · {a.status} · {a.starts_on} – {a.ends_on||'Open ended'}</p><p className="text-sm">{a.document_reference}</p>{a.document_reference?.startsWith('partner-agreements/')&&<Button variant="outline" type="button" disabled={busy} onClick={async()=>{
+    setBusy(true);try{const result=await db.storage.from('partner-agreements').createSignedUrl(a.document_reference!.slice('partner-agreements/'.length),60,{download:true});if(result.error||!result.data)throw new Error('Document unavailable or access denied');window.location.assign(result.data.signedUrl);}catch(e){toast.error((e as Error).message);}finally{setBusy(false);}
+   }}>Download signed PDF</Button>}<div className="flex gap-2"><Button disabled={busy||a.status!=='signed'} onClick={()=>void write('international_education_partners',{relationship_status:'contracted',agreement_signed_on:a.starts_on},a.partner_id)}>Activate relationship</Button><Button variant="outline" disabled={busy||a.status==='terminated'} onClick={()=>void write('international_partner_agreements',{status:'terminated'},a.id)}>Terminate agreement</Button></div></article>)}
   </>}
   {(student||tab==='referrals')&&<>
    {!student&&<form className="grid md:grid-cols-2 gap-3 border rounded p-4" onSubmit={async e=>{
