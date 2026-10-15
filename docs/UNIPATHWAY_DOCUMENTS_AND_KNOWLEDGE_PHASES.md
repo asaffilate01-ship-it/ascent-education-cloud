@@ -47,3 +47,9 @@ Limits: 200,000 characters per document; search queries up to 1,000 characters; 
 5. Complete the remaining release gates in `UNIPATHWAY_RELEASE_2026-10-15.md`: staging lifecycle, provider credentials/connectors, live Factory activation, teaching/payment operations and academic approvals.
 
 No partner messages, applications to providers, live credentials, production migrations or deployment were performed in this phase.
+
+## Search consistency follow-up (15 October 2026)
+
+The learner/staff knowledge search now invalidates in-flight responses when the user edits the query, changes centre, or staff save/review activity changes the corpus. A late reply must never repopulate a withdrawn or superseded excerpt. Search service errors are explicitly distinguished from genuine no-match results. New regression tests cover both behaviours. This is a client consistency safeguard; database RLS and passage withdrawal remain the authorisation controls.
+
+Staging validation remains required: a real browser review/edit/withdraw race with a delayed network response, centre switching, and post-withdraw RPC checks. No claim of live release is made.
