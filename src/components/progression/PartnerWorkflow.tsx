@@ -1,3 +1,4 @@
+import PathwayCatalogue, {type CatalogueRoute} from './PathwayCatalogue';
 import AgreementRenewals from './AgreementRenewals';
 import SupportTasks from './SupportTasks';
 import {workflowRows} from '@/lib/workflowRows';
@@ -13,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 const db: SupabaseClient = supabase;
-type Row = { id: string; submitted_at?:string; created_at?:string; international_application_id?: string; recipient_name?: string; destination_institution?: string; name?: string; partner_id?: string; route_name?: string; programme?: string; student_id?: string; status?: string; review_status?: string; student_visible?: boolean; route_id?: string; external_application_ref?: string; document_reference?: string; starts_on?: string; ends_on?: string };
+type Row = CatalogueRoute & { id: string; submitted_at?:string; created_at?:string; international_application_id?: string; recipient_name?: string; destination_institution?: string; name?: string; partner_id?: string; route_name?: string; programme?: string; student_id?: string; status?: string; review_status?: string; student_visible?: boolean; route_id?: string; external_application_ref?: string; document_reference?: string; starts_on?: string; ends_on?: string };
 export default function PartnerWorkflow({ student = false }: { student?: boolean }) {
  const { user } = useAuth();
  const version=useRef(0);
@@ -79,7 +80,7 @@ export default function PartnerWorkflow({ student = false }: { student?: boolean
   {error&&<div><p role="alert" className="text-destructive">{error}</p><Button variant="outline" onClick={()=>void load()}>Retry workflow</Button></div>}
   {loading?<p>Loading workflow…</p>:!error&&<>
   {!student&&<div className="flex flex-wrap gap-2">{['referrals','routes',...(manager?['agreements']:[])].map(t=><Button key={t} variant={tab===t?'default':'outline'} onClick={()=>setTab(t)}>{t}</Button>)}</div>}
-  {(student||tab==='routes')&&<div className="space-y-3">{routes.length===0&&<p>No verified pathways are available yet.</p>}{routes.map(r=><article key={r.id} className="rounded border p-3 space-y-2"><h3 className="font-medium">{r.route_name}</h3><p className="text-sm">{r.review_status} · {r.student_visible?'Published':'Internal'}</p>{manager&&!student&&<form className="flex flex-wrap gap-2" onSubmit={async e=>{e.preventDefault();const f=new FormData(e.currentTarget);await write('international_pathway_routes',{review_status:'verified',student_visible:true,evidence_url:f.get('evidence'),evidence_reviewed_at:new Date().toISOString(),verified_by:user?.id},r.id);}}><Input aria-label={`Evidence for ${r.route_name}`} name="evidence" required type="url" placeholder="Institution acceptance evidence URL"/><Button disabled={busy}>Verify and publish</Button><Button type="button" variant="outline" disabled={busy} onClick={()=>void write('international_pathway_routes',{student_visible:false,review_status:'under_review'},r.id)}>Unpublish</Button></form>}</article>)}</div>}
+  {(student||tab==='routes')&&<PathwayCatalogue key={`${tenant}-${student}`} routes={routes} student={student} actions={r=>manager&&!student&&<form className="flex flex-wrap gap-2" onSubmit={async e=>{e.preventDefault();const f=new FormData(e.currentTarget);await write('international_pathway_routes',{review_status:'verified',student_visible:true,evidence_url:f.get('evidence'),evidence_reviewed_at:new Date().toISOString(),verified_by:user?.id},r.id);}}><Input aria-label={`Evidence for ${r.route_name}`} name="evidence" required type="url" placeholder="Institution acceptance evidence URL"/><Button disabled={busy}>Verify and publish</Button><Button type="button" variant="outline" disabled={busy} onClick={()=>void write('international_pathway_routes',{student_visible:false,review_status:'under_review'},r.id)}>Unpublish</Button></form>}/> }
   {!student&&manager&&tab==='agreements'&&<>
    <p className="text-sm text-muted-foreground">Upload a signed PDF privately, or retain a reference to your controlled institutional document store. Uploading does not verify the signature. Only current signed agreements allow publication.</p>
    <Button variant="outline" disabled={busy} onClick={()=>void load()}>Refresh agreements</Button>
