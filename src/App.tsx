@@ -393,6 +393,7 @@ function AppRoutes() {
         <Route path="/student/attendance" element={<StudentR><AttendanceDashboard /></StudentR>} />
         <Route path="/student/library" element={<StudentR><StudentLibrary /></StudentR>} />
         <Route path="/student/finance" element={<StudentR><StudentFees /></StudentR>} />
+        <Route path="/student/global-progression" element={<StudentR><GlobalProgression /></StudentR>} />
         <Route path="/student/international-applications" element={<StudentR><GlobalProgression /></StudentR>} />
         <Route path="/student/knowledge" element={<StudentR><KnowledgeLibrary student /></StudentR>} />
         <Route path="/student/progression" element={<StudentR><ProgressionDashboard /></StudentR>} />

@@ -301,6 +301,51 @@ export type EducationTables = {
     };
     Relationships: [];
   };
+  international_support_tasks: {
+    Row: {
+      id: string;
+      tenant_id: string;
+      application_id: string;
+      task_type: string;
+      title: string;
+      owner_id: string | null;
+      due_at: string | null;
+      status: string;
+      notes: string | null;
+      created_at: string;
+      updated_at: string;
+      completed_at: string | null;
+    };
+    Insert: {
+      id?: string;
+      tenant_id: string;
+      application_id: string;
+      task_type: string;
+      title: string;
+      owner_id?: string | null;
+      due_at?: string | null;
+      status?: string;
+      notes?: string | null;
+      created_at?: string;
+      updated_at?: string;
+      completed_at?: string | null;
+    };
+    Update: {
+      id?: string;
+      tenant_id?: string;
+      application_id?: string;
+      task_type?: string;
+      title?: string;
+      owner_id?: string | null;
+      due_at?: string | null;
+      status?: string;
+      notes?: string | null;
+      created_at?: string;
+      updated_at?: string;
+      completed_at?: string | null;
+    };
+    Relationships: [];
+  };
   omniqora_cohort_intelligence: {
     Row: {
       id: string;

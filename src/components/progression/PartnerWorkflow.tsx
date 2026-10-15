@@ -1,3 +1,4 @@
+import SupportTasks from './SupportTasks';
 import {workflowRows} from '@/lib/workflowRows';
 import LearnerPicker from './LearnerPicker';
 import ReferralHistory from './ReferralHistory';
@@ -11,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 const db: SupabaseClient = supabase;
-type Row = { id: string; recipient_name?: string; destination_institution?: string; name?: string; partner_id?: string; route_name?: string; programme?: string; student_id?: string; status?: string; review_status?: string; student_visible?: boolean; route_id?: string; external_application_ref?: string; document_reference?: string; starts_on?: string; ends_on?: string };
+type Row = { id: string; international_application_id?: string; recipient_name?: string; destination_institution?: string; name?: string; partner_id?: string; route_name?: string; programme?: string; student_id?: string; status?: string; review_status?: string; student_visible?: boolean; route_id?: string; external_application_ref?: string; document_reference?: string; starts_on?: string; ends_on?: string };
 export default function PartnerWorkflow({ student = false }: { student?: boolean }) {
  const { user } = useAuth();
  const version=useRef(0);
@@ -100,6 +101,7 @@ export default function PartnerWorkflow({ student = false }: { student?: boolean
     {student&&!['withdrawn','rejected'].includes(r.status||'')&&<Button variant="outline" disabled={busy} onClick={()=>void write('international_partner_referrals',{status:'withdrawn',student_consent_at:null},r.id)}>Withdraw consent and referral</Button>}
     {!student&&r.status==='consented'&&<form className="flex gap-2" onSubmit={async e=>{e.preventDefault();const f=new FormData(e.currentTarget);await write('international_partner_referrals',{status:'submitted',external_application_ref:f.get('reference')},r.id);}}><Input name="reference" required aria-label="Provider submission reference" placeholder="Reference from authorised provider portal"/><Button disabled={busy}>Record manual submission</Button></form>}
     {!student&&['submitted','acknowledged','offer'].includes(r.status||'')&&<div className="flex gap-2">{(r.status==='offer'?['enrolled','rejected']:r.status==='submitted'?['acknowledged','offer','rejected']:['offer','rejected']).map(s=><Button key={s} variant="outline" disabled={busy} onClick={()=>void write('international_partner_referrals',{status:s},r.id)}>{s}</Button>)}</div>}
+    {r.international_application_id&&<SupportTasks key={`support-${tenant}-${r.international_application_id}`} tenant={tenant} application={r.international_application_id} student={student}/>}
     {!student&&<ReferralHistory key={`${tenant}-${r.id}`} tenant={tenant} referral={r.id}/>}
    </article>)}
   </>}
