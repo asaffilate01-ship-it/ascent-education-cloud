@@ -1068,6 +1068,8 @@ export type EducationTables = {
       checked_at: string | null;
       checked_by: string | null;
       notes: string | null;
+      revision: number;
+      valid_until: string | null;
     };
     Insert: {
       id?: string;
@@ -1079,6 +1081,8 @@ export type EducationTables = {
       checked_at?: string | null;
       checked_by?: string | null;
       notes?: string | null;
+      revision?: number;
+      valid_until?: string | null;
     };
     Update: {
       id?: string;
@@ -1090,6 +1094,50 @@ export type EducationTables = {
       checked_at?: string | null;
       checked_by?: string | null;
       notes?: string | null;
+      revision?: number;
+      valid_until?: string | null;
+    };
+    Relationships: [];
+  };
+  production_readiness_reviews: {
+    Row: {
+      id: string;
+      tenant_id: string;
+      check_id: string;
+      revision: number;
+      old_status: string;
+      new_status: string;
+      evidence_reference: string | null;
+      notes: string | null;
+      valid_until: string | null;
+      reviewed_by: string;
+      created_at: string;
+    };
+    Insert: {
+      id?: string;
+      tenant_id: string;
+      check_id: string;
+      revision: number;
+      old_status: string;
+      new_status: string;
+      evidence_reference?: string | null;
+      notes?: string | null;
+      valid_until?: string | null;
+      reviewed_by: string;
+      created_at?: string;
+    };
+    Update: {
+      id?: string;
+      tenant_id?: string;
+      check_id?: string;
+      revision?: number;
+      old_status?: string;
+      new_status?: string;
+      evidence_reference?: string | null;
+      notes?: string | null;
+      valid_until?: string | null;
+      reviewed_by?: string;
+      created_at?: string;
     };
     Relationships: [];
   };

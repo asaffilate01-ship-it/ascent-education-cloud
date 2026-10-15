@@ -1,0 +1,12 @@
+import {render,screen,cleanup,fireEvent,waitFor} from '@testing-library/react';
+import {afterEach,beforeEach,it,expect,vi} from 'vitest';
+const mocks=vi.hoisted(()=>({rows:vi.fn(),rpc:vi.fn(),roles:['centre_director']}));
+vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'staff-1',tenantId:'centre-1',roles:mocks.roles}})}));
+vi.mock('@/integrations/supabase/client',()=>({supabase:{rpc:(...args:unknown[])=>mocks.rpc(...args)}}));
+vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:{children:React.ReactNode})=><main>{children}</main>}));
+vi.mock('@/lib/workflowRows',()=>({workflowRows:(...args:unknown[])=>mocks.rows(...args)}));
+import ProductionReadiness from '@/pages/superadmin/ProductionReadiness';
+afterEach(cleanup);beforeEach(()=>{vi.clearAllMocks();mocks.roles=['centre_director'];mocks.rows.mockImplementation(async(_db,table)=>({data:table==='production_readiness_checks'?[{id:'check-1',tenant_id:'centre-1',check_key:'full_migration_replay',status:'pending',revision:4}]:[],error:null}));});
+it('denies learner access before loading evidence',()=>{mocks.roles=['student'];render(<ProductionReadiness/>);expect(screen.getByText('Centre leadership access required.')).toBeInTheDocument();expect(mocks.rows).not.toHaveBeenCalled();});
+it('fails closed on loading errors',async()=>{mocks.rows.mockResolvedValue({data:[],error:{message:'denied'}});render(<ProductionReadiness/>);expect(await screen.findByRole('alert')).toHaveTextContent('Launch status is unknown');});
+it('sends the observed revision and retains entries after a conflicting review',async()=>{mocks.rpc.mockResolvedValue({error:{message:'Check changed; reload before reviewing'}});render(<ProductionReadiness/>);await screen.findByText('Record a review');fireEvent.change(screen.getByLabelText('Evidence reference'),{target:{value:'report-123'}});fireEvent.click(screen.getByText('Save review'));await waitFor(()=>expect(mocks.rpc).toHaveBeenCalledWith('review_production_check',expect.objectContaining({p_check:'check-1',p_revision:4,p_evidence:'report-123'})));expect(await screen.findByText(/Your entries are retained/)).toBeInTheDocument();expect(screen.getByLabelText('Evidence reference')).toHaveValue('report-123');expect(mocks.rows.mock.calls.every(args=>args[2]==='centre-1')).toBe(true);});
