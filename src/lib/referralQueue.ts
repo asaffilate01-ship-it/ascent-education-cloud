@@ -15,3 +15,19 @@ export function referralNextAction(status?:string):string {
 export function referralMatches(row:{id:string;student_id?:string;recipient_name?:string;external_application_ref?:string;status?:string},route:string,query:string,status:string){
  return (status==='all'||row.status===status)&&[row.id,row.student_id,row.recipient_name,row.external_application_ref,route].some(value=>value?.toLowerCase().includes(query.trim().toLowerCase()));
 }
+export type ReferralTiming={id:string;status?:string;submitted_at?:string|null;created_at?:string|null};
+export function referralSubmissionDays(row:ReferralTiming,now:number){
+ if(!row.submitted_at)return null;const stamp=Date.parse(row.submitted_at);
+ return Number.isFinite(stamp)&&stamp<=now?Math.floor((now-stamp)/86400000):null;
+}
+export function referralFollowUp(row:ReferralTiming,filter:string,now:number){
+ if(filter==='all')return true;
+ if(!['submitted','acknowledged'].includes(row.status||''))return false;
+ const days=referralSubmissionDays(row,now);
+ return filter==='unknown'?days===null:days!==null&&days>=Number(filter);
+}
+export function compareReferralTiming(a:ReferralTiming,b:ReferralTiming,sort:string){
+ const stamp=(r:ReferralTiming)=>{const n=Date.parse((sort==='oldest_submission'?r.submitted_at:r.created_at)||'');return Number.isFinite(n)?n:null;};
+ const x=stamp(a),y=stamp(b);if(x===null||y===null)return x===y?a.id.localeCompare(b.id):x===null?1:-1;
+ return (sort==='oldest_submission'?x-y:y-x)||a.id.localeCompare(b.id);
+}

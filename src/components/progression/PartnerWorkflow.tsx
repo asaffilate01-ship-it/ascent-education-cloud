@@ -3,7 +3,7 @@ import SupportTasks from './SupportTasks';
 import {workflowRows} from '@/lib/workflowRows';
 import LearnerPicker from './LearnerPicker';
 import ReferralHistory from './ReferralHistory';
-import {referralStages, referralNextAction, referralMatches} from '@/lib/referralQueue';
+import {referralStages, referralNextAction, referralMatches,referralSubmissionDays,referralFollowUp,compareReferralTiming} from '@/lib/referralQueue';
 import {uploadAgreement} from '@/lib/partnerDocuments';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 const db: SupabaseClient = supabase;
-type Row = { id: string; international_application_id?: string; recipient_name?: string; destination_institution?: string; name?: string; partner_id?: string; route_name?: string; programme?: string; student_id?: string; status?: string; review_status?: string; student_visible?: boolean; route_id?: string; external_application_ref?: string; document_reference?: string; starts_on?: string; ends_on?: string };
+type Row = { id: string; submitted_at?:string; created_at?:string; international_application_id?: string; recipient_name?: string; destination_institution?: string; name?: string; partner_id?: string; route_name?: string; programme?: string; student_id?: string; status?: string; review_status?: string; student_visible?: boolean; route_id?: string; external_application_ref?: string; document_reference?: string; starts_on?: string; ends_on?: string };
 export default function PartnerWorkflow({ student = false }: { student?: boolean }) {
  const { user } = useAuth();
  const version=useRef(0);
@@ -23,8 +23,11 @@ export default function PartnerWorkflow({ student = false }: { student?: boolean
  const [partners,setPartners] = useState<Row[]>([]),[routes,setRoutes] = useState<Row[]>([]),[agreements,setAgreements] = useState<Row[]>([]),[applications,setApplications] = useState<Row[]>([]),[referrals,setReferrals] = useState<Row[]>([]);
  const [busy,setBusy] = useState(false),[loading,setLoading] = useState(true),[error,setError] = useState('');
  const [tab,setTab] = useState('referrals');
+ const [age,setAge]=useState('all'),[sort,setSort]=useState('newest'),[page,setPage]=useState(0),[now,setNow]=useState(Date.now());
+ useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),60000);return()=>clearInterval(timer);},[]);
  const [caseQuery,setCaseQuery]=useState(''),[caseStatus,setCaseStatus]=useState('all'),[pickerKey,setPickerKey]=useState(0);
- useEffect(()=>{setCaseQuery('');setCaseStatus('all');setPickerKey(k=>k+1);},[tenant]);
+ useEffect(()=>setPage(0),[caseQuery,caseStatus,age,sort]);
+ useEffect(()=>{setAge('all');setSort('newest');setPage(0);setCaseQuery('');setCaseStatus('all');setPickerKey(k=>k+1);},[tenant]);
  const load = useCallback(async () => {
   if(tenant!==currentTenant.current)return;
   const request=++version.current;
@@ -68,6 +71,8 @@ export default function PartnerWorkflow({ student = false }: { student?: boolean
   if(!route||!app)return;
   if(await write('international_partner_referrals',{partner_id:route.partner_id,route_id:route.id,international_application_id:app.id,student_id:app.student_id,status:'draft'}))form.reset();
  }
+ const matching=referrals.filter(r=>student||(referralMatches(r,routes.find(p=>p.id===r.route_id)?.route_name||'',caseQuery,caseStatus)&&referralFollowUp(r,age,now))).sort((a,b)=>compareReferralTiming(a,b,sort));
+ const currentPage=Math.min(page,Math.max(0,Math.ceil(matching.length/20)-1));
  if(!tenant)return <p role="alert">A centre assignment is required.</p>;
  return <section className="surface-card p-5 mb-6 space-y-4">
   <h2 className="font-semibold">{student?'Verified pathways and sharing consent':'Partner agreements and application referrals'}</h2>
@@ -96,9 +101,9 @@ export default function PartnerWorkflow({ student = false }: { student?: boolean
    }}><h3 className="font-medium md:col-span-2">Start a university application</h3><LearnerPicker key={`${tenant}-${pickerKey}`} tenant={tenant} disabled={busy}/><label>Verified pathway<select required name="route" className="w-full border rounded p-2"><option value="">Choose pathway</option>{routes.filter(r=>r.review_status==='verified'&&r.student_visible).map(r=><option key={r.id} value={r.id}>{r.route_name}</option>)}</select></label><label>Intake<Input name="intake" maxLength={100} placeholder="e.g. September 2027"/></label><Button disabled={busy}>Create application and request consent</Button></form>}
    {!student&&<form onSubmit={referral} className="grid md:grid-cols-2 gap-3"><label>Existing university application<select required name="application" className="w-full border rounded p-2"><option value="">Choose application</option>{applications.map(a=><option key={a.id} value={a.id}>{a.programme} · {a.id.slice(0,8)}</option>)}</select></label><label>Verified pathway<select required name="route" className="w-full border rounded p-2"><option value="">Choose pathway</option>{routes.filter(r=>r.review_status==='verified'&&r.student_visible).map(r=><option key={r.id} value={r.id}>{r.route_name}</option>)}</select></label><Button disabled={busy}>Request student consent</Button></form>}
    {referrals.length===0&&<p>No application referrals yet.</p>}
-   {!student&&<div className="space-y-3 rounded border p-4"><h3 className="font-medium">Admissions work queue</h3><div className="flex flex-wrap gap-2"><Input aria-label="Search referrals" placeholder="Pathway, recipient, case ID, learner ID or provider reference" value={caseQuery} onChange={e=>setCaseQuery(e.target.value)}/><select aria-label="Filter referral status" className="border rounded p-2" value={caseStatus} onChange={e=>setCaseStatus(e.target.value)}><option value="all">All stages</option>{referralStages.map(s=><option key={s} value={s}>{s} ({referrals.filter(r=>r.status===s).length})</option>)}</select></div><p className="text-sm text-muted-foreground">Counts reflect this loaded snapshot. Refresh to check for updates.</p><Button type="button" variant="outline" disabled={busy} onClick={()=>void load()}>Refresh workflow</Button></div>}
-   {!student&&referrals.length>0&&!referrals.some(r=>referralMatches(r,routes.find(p=>p.id===r.route_id)?.route_name||'',caseQuery,caseStatus))&&<p role="status">No referrals match these filters.</p>}
-   {referrals.filter(r=>student||referralMatches(r,routes.find(p=>p.id===r.route_id)?.route_name||'',caseQuery,caseStatus)).map(r=><article key={r.id} className="rounded border p-3 space-y-3"><p className="font-medium">{routes.find(p=>p.id===r.route_id)?.route_name||'Pathway unavailable — contact admissions'}</p><p>Recipient: {r.recipient_name||'Contact admissions to verify the recipient'}</p><p>Status: {r.status}</p><p className="text-sm break-all">Case: {r.id}{!student&&` · Learner: ${r.student_id}`}</p>{r.external_application_ref&&<p>Provider reference: {r.external_application_ref}</p>}{!student&&<p className="rounded bg-muted p-3 text-sm">Next action: {referralNextAction(r.status)}</p>}
+   {!student&&<div className="space-y-3 rounded border p-4"><h3 className="font-medium">Admissions work queue</h3><div className="flex flex-wrap gap-2"><Input aria-label="Search referrals" placeholder="Pathway, recipient, case ID, learner ID or provider reference" value={caseQuery} onChange={e=>setCaseQuery(e.target.value)}/><select aria-label="Filter referral status" className="border rounded p-2" value={caseStatus} onChange={e=>setCaseStatus(e.target.value)}><option value="all">All stages</option>{referralStages.map(s=><option key={s} value={s}>{s} ({referrals.filter(r=>r.status===s).length})</option>)}</select><select aria-label="Submission age" className="border rounded p-2" value={age} onChange={e=>setAge(e.target.value)}><option value="all">Any submission age</option><option value="7">Awaiting response · 7+ days</option><option value="14">Awaiting response · 14+ days</option><option value="30">Awaiting response · 30+ days</option><option value="unknown">Awaiting response · date unavailable</option></select><select aria-label="Sort referrals" className="border rounded p-2" value={sort} onChange={e=>setSort(e.target.value)}><option value="newest">Newest created</option><option value="oldest_submission">Oldest submission first</option></select></div><p className="text-sm text-muted-foreground">Age filters cover submitted and acknowledged referrals, measured from recorded submission, not last contact or a provider deadline. Counts reflect this loaded snapshot. Refresh to check for updates.</p><Button type="button" variant="outline" disabled={busy} onClick={()=>void load()}>Refresh workflow</Button></div>}
+   {!student&&referrals.length>0&&!matching.length&&<p role="status">No referrals match these filters.</p>}
+   {matching.slice(currentPage*20,currentPage*20+20).map(r=><article key={r.id} className="rounded border p-3 space-y-3"><p className="font-medium">{routes.find(p=>p.id===r.route_id)?.route_name||'Pathway unavailable — contact admissions'}</p><p>Recipient: {r.recipient_name||'Contact admissions to verify the recipient'}</p><p>Status: {r.status}</p><p className="text-sm break-all">Case: {r.id}{!student&&` · Learner: ${r.student_id}`}</p>{!student&&<p className="text-sm">{referralSubmissionDays(r,now)!==null?`${referralSubmissionDays(r,now)} days since recorded submission`:'Submission date unavailable'}</p>}{r.external_application_ref&&<p>Provider reference: {r.external_application_ref}</p>}{!student&&<p className="rounded bg-muted p-3 text-sm">Next action: {referralNextAction(r.status)}</p>}
     {student&&r.status==='draft'&&<form onSubmit={async e=>{e.preventDefault();await write('international_partner_referrals',{status:'consented',student_consent_at:new Date().toISOString()},r.id);}}><label className="flex gap-2 mb-3"><input type="checkbox" required/>I authorise admissions to share my linked application with {r.recipient_name} for this pathway.</label><Button disabled={busy}>Give consent</Button></form>}
     {student&&!['withdrawn','rejected'].includes(r.status||'')&&<Button variant="outline" disabled={busy} onClick={()=>void write('international_partner_referrals',{status:'withdrawn',student_consent_at:null},r.id)}>Withdraw consent and referral</Button>}
     {!student&&r.status==='consented'&&<form className="flex gap-2" onSubmit={async e=>{e.preventDefault();const f=new FormData(e.currentTarget);await write('international_partner_referrals',{status:'submitted',external_application_ref:f.get('reference')},r.id);}}><Input name="reference" required aria-label="Provider submission reference" placeholder="Reference from authorised provider portal"/><Button disabled={busy}>Record manual submission</Button></form>}
@@ -106,6 +111,7 @@ export default function PartnerWorkflow({ student = false }: { student?: boolean
     {r.international_application_id&&<SupportTasks key={`support-${tenant}-${r.international_application_id}`} tenant={tenant} application={r.international_application_id} student={student}/>}
     {!student&&<ReferralHistory key={`${tenant}-${r.id}`} tenant={tenant} referral={r.id}/>}
    </article>)}
+   {matching.length>0&&<div className="flex items-center gap-3"><Button variant="outline" disabled={currentPage===0} onClick={()=>setPage(currentPage-1)}>Previous referrals</Button><span>{matching.length} matching referrals · page {currentPage+1} of {Math.ceil(matching.length/20)}</span><Button variant="outline" disabled={(currentPage+1)*20>=matching.length} onClick={()=>setPage(currentPage+1)}>Next referrals</Button></div>}
   </>}
   </>}
  </section>;

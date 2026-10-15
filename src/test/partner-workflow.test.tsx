@@ -31,3 +31,6 @@ describe('Student partner workflow',()=>{
   mocks.user.tenantId=undefined;render(<PartnerWorkflow student/>);expect(screen.getByRole('alert')).toHaveTextContent('centre assignment');
  });
 });
+it('combines submission-age filtering with the existing admissions stage controls',async()=>{
+ mocks.user.roles=['admissions_admin'];render(<PartnerWorkflow/>);await screen.findByText('Recipient: Example University');fireEvent.change(screen.getByRole('combobox',{name:'Submission age'}),{target:{value:'7'}});expect(screen.getByRole('status')).toHaveTextContent('No referrals match');fireEvent.change(screen.getByRole('combobox',{name:'Submission age'}),{target:{value:'all'}});expect(screen.getByText('Recipient: Example University')).toBeInTheDocument();expect(screen.getByText('1 matching referrals · page 1 of 1')).toBeInTheDocument();
+});
