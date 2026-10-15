@@ -1,3 +1,4 @@
+import ApplicationHandover from '@/components/progression/ApplicationHandover';
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import {useAuth} from '@/contexts/AuthContext';
 import {supabase} from '@/integrations/supabase/client';
@@ -17,7 +18,8 @@ export default function SupportDesk(){
 function Workspace({tenant,userId}:{tenant:string;userId:string}){
  const [tasks,setTasks]=useState<SupportTask[]>([]),[applications,setApplications]=useState<Application[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState('');
  const [query,setQuery]=useState(''),[status,setStatus]=useState('open'),[due,setDue]=useState('all'),[category,setCategory]=useState('all'),[mine,setMine]=useState(false),[page,setPage]=useState(0),[application,setApplication]=useState('');
- const [now,setNow]=useState(Date.now());const generation=useRef(0);
+ const [now,setNow]=useState(Date.now());const generation=useRef(0);const planRef=useRef<HTMLElement>(null);
+ useEffect(()=>{if(application)planRef.current?.focus();},[application]);
  const load=useCallback(async()=>{
   const token=++generation.current;setLoading(true);setError('');setTasks([]);setApplications([]);
   const current=()=>token===generation.current;
@@ -46,6 +48,7 @@ function Workspace({tenant,userId}:{tenant:string;userId:string}){
  return <div className="space-y-5">
   <div className="grid gap-3 sm:grid-cols-3">{[['Open tasks',tasks.filter(isOpenTask).length],['Overdue',tasks.filter(t=>taskDueGroup(t,now)==='overdue').length],['Due in next 7 days',tasks.filter(t=>taskDueGroup(t,now)==='week').length]].map(([label,count])=><div key={label} className="surface-card p-4"><p className="text-sm text-muted-foreground">{label}</p><p className="text-2xl font-bold">{count}</p></div>)}</div>
   <p className="text-sm text-muted-foreground">Totals cover the loaded centre snapshot. Deadlines use your local time. Refresh to include other staff changes.</p>
+  <ApplicationHandover applications={applications} tasks={tasks} now={now} onOpen={id=>{setApplication(id);planRef.current?.scrollIntoView?.({behavior:'smooth',block:'start'});planRef.current?.focus();}}/>
   <div className="surface-card p-4 grid gap-3 md:grid-cols-3">
    <label>Search support tasks<Input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Task, programme, country, case or learner ID"/></label>
    <label>Status<select className="w-full border rounded p-2" value={status} onChange={e=>setStatus(e.target.value)}>{['open','all','pending','in_progress','completed','cancelled'].map(s=><option value={s} key={s}>{s.replace(/_/g,' ')}</option>)}</select></label>
@@ -65,6 +68,6 @@ function Workspace({tenant,userId}:{tenant:string;userId:string}){
    <SupportTaskEditor task={task} onSaved={()=>void load()}/><ReferralHistory tenant={tenant} referral={task.id} entityTable="international_support_tasks"/>
   </article>;})}
   <div className="flex gap-2"><Button variant="outline" disabled={currentPage===0} onClick={()=>setPage(currentPage-1)}>Previous tasks</Button><Button variant="outline" disabled={currentPage===last} onClick={()=>setPage(currentPage+1)}>Next tasks</Button></div>
-  <section className="surface-card p-4 space-y-3"><h2 className="font-semibold">Open an application’s support plan</h2><label>Application<select className="w-full border rounded p-2" value={application} onChange={e=>setApplication(e.target.value)}><option value="">Choose application</option>{applications.map(a=><option key={a.id} value={a.id}>{a.programme} · {a.destination_country} · {a.id.slice(0,8)} · {a.status}</option>)}</select></label>{application&&cases.has(application)&&<SupportTasks key={application} tenant={tenant} application={application} onChanged={()=>void load()}/>}</section>
+  <section ref={planRef} tabIndex={-1} aria-label="Selected application support plan" className="surface-card p-4 space-y-3"><h2 className="font-semibold">Open an application’s support plan</h2><label>Application<select className="w-full border rounded p-2" value={application} onChange={e=>setApplication(e.target.value)}><option value="">Choose application</option>{applications.map(a=><option key={a.id} value={a.id}>{a.programme} · {a.destination_country} · {a.id.slice(0,8)} · {a.status}</option>)}</select></label>{application&&cases.has(application)&&<SupportTasks key={application} tenant={tenant} application={application} onChanged={()=>void load()}/>}</section>
  </div>;
 }

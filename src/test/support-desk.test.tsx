@@ -36,3 +36,6 @@ it('discards the previous centre snapshot after a tenant switch',async()=>{
  await act(async()=>{pending.forEach(resolve=>resolve({data:[makeTask('old-centre')],error:null}));});
  expect(screen.queryByText('Task old-centre')).not.toBeInTheDocument();expect(screen.getByText('Task new-centre')).toBeInTheDocument();
 });
+it('opens the selected application plan from the handover queue and moves keyboard focus',async()=>{
+ render(<SupportDesk/>);await screen.findByRole('button',{name:'Open support plan for case-1'});fireEvent.click(screen.getByRole('button',{name:'Open support plan for case-1'}));expect(screen.getByRole('combobox',{name:'Application'})).toHaveValue('case-1');expect(screen.getByRole('region',{name:'Selected application support plan'})).toHaveFocus();
+});
