@@ -24,3 +24,7 @@ Never allow retrieval to bypass document/tenant/role permissions.
 
 ## Current integration state
 This repository now contains the local registration/event/intelligence contract. A live central Omniqora Factory connector cannot be completed until the central Omniqora repository/API/credentials are available to this GitHub connection. Do not invent the remote API.
+
+
+## 15 October connection update
+The central repository and event contract have now been inspected. The source sender, local event processor and permission-filtered metadata search are implemented; live configuration and full RAG remain outstanding. See [release handover](UNIPATHWAY_RELEASE_2026-10-15.md).
