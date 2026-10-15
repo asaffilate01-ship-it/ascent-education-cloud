@@ -98,7 +98,7 @@ CREATE INDEX IF NOT EXISTS idx_international_referrals ON public.international_p
 
 -- Publishing requires reviewed route evidence AND an internally recorded contracted/active partner.
 CREATE OR REPLACE FUNCTION public.check_global_pathway_publication()
-RETURNS trigger LANGUAGE plpgsql SET search_path = public AS $
+RETURNS trigger LANGUAGE plpgsql SET search_path = public AS $$
 BEGIN
  IF NEW.student_visible AND NOT EXISTS (
    SELECT 1 FROM public.international_education_partners p
@@ -109,7 +109,7 @@ BEGIN
    RAISE EXCEPTION 'Cannot publish route without approved contractual partner status';
  END IF;
  RETURN NEW;
-END $;
+END $$;
 CREATE TRIGGER check_global_pathway_publication_before_write
  BEFORE INSERT OR UPDATE ON public.international_pathway_routes
  FOR EACH ROW EXECUTE FUNCTION public.check_global_pathway_publication();

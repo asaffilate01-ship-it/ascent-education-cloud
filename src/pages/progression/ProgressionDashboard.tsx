@@ -1,3 +1,4 @@
+import PartnerWorkflow from '@/components/progression/PartnerWorkflow';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
@@ -64,6 +65,7 @@ export default function ProgressionDashboard() {
       title="University Progression"
       subtitle={isStaff ? 'Partner universities, applications, offers, and commissions' : 'Explore partner universities and your progression pathway'}
     >
+      {!isStaff && <PartnerWorkflow student />}
       {/* Stats — staff sees all, students see their own progress */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {isStaff ? (

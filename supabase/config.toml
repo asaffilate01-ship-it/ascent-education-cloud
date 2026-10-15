@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.notify-application]
 verify_jwt = false
+
+[functions.omniqora-factory-dispatch]
+verify_jwt = true

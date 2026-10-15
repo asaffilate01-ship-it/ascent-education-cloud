@@ -18,7 +18,11 @@ Existing UniPathway admissions, the agent portal, finance and `international_uni
 
 Tenant-aware foreign keys prevent a partner, awarding body or route from another tenant being linked. RLS restricts private commercial data; agent/student access to prospects and contracts is denied.
 
-## Next implementation milestones
+## Release follow-up
+
+See [15 October release and connection handover](UNIPATHWAY_RELEASE_2026-10-15.md) for implemented agreement, publication, student-consent, application and manual-referral workflows, database tests and remaining live gates.
+
+## Original phase-1 backlog (superseded where covered by the release follow-up)
 1. Add signed-agreement upload and approval workflow with private storage and audit history; only then can a relationship be moved to contracted/active.
 2. Connect agent and student applications to referral records using server-side checked consent and institution authorisation; institution-scoped partner portal permissions are required before sharing student data.
 3. Introduce credentialed integrations *only with provider-issued access*; most organisations have no confirmed public admissions API. Until then, use secure manual submission and external portals with audit trails.

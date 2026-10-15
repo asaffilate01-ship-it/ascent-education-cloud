@@ -54,6 +54,8 @@ const QADashboard = lazy(() => import("./pages/qa/QADashboard"));
 const FinanceDashboard = lazy(() => import("./pages/finance/FinanceDashboard"));
 const ExamsDashboard = lazy(() => import("./pages/exams/ExamsDashboard"));
 const ProgressionDashboard = lazy(() => import("./pages/progression/ProgressionDashboard"));
+const EducationIntelligence = lazy(() => import("./pages/analytics/EducationIntelligence"));
+const ProductionReadiness = lazy(() => import("./pages/superadmin/ProductionReadiness"));
 const GlobalEducationPartners = lazy(() => import("./pages/progression/GlobalEducationPartners"));
 const AttendanceDashboard = lazy(() => import("./pages/attendance/AttendanceDashboard"));
 const AnalyticsDashboard = lazy(() => import("./pages/analytics/AnalyticsDashboard"));
@@ -262,6 +264,8 @@ function AppRoutes() {
         <Route path="/landlord/subscriptions" element={<Landlord><SuperadminPlatform /></Landlord>} />
         <Route path="/landlord/compliance" element={<Landlord><ComplianceDashboard /></Landlord>} />
         <Route path="/landlord/onboarding" element={<Landlord><TenantOnboarding /></Landlord>} />
+        <Route path="/landlord/education-intelligence" element={<Landlord><EducationIntelligence /></Landlord>} />
+        <Route path="/landlord/readiness" element={<Landlord><ProductionReadiness /></Landlord>} />
         <Route path="/landlord/global-partners" element={<Landlord><GlobalEducationPartners /></Landlord>} />
         <Route path="/landlord/audit" element={<Landlord><AuditLog /></Landlord>} />
         <Route path="/landlord/infrastructure" element={<Landlord><SuperadminPlatform /></Landlord>} />
@@ -276,6 +280,8 @@ function AppRoutes() {
         <Route path="/director/quality" element={<Director><QADashboard /></Director>} />
         <Route path="/director/finance" element={<Director><FinanceDashboard /></Director>} />
         <Route path="/director/agents" element={<Director><AgentDashboard /></Director>} />
+        <Route path="/director/education-intelligence" element={<Director><EducationIntelligence /></Director>} />
+        <Route path="/director/readiness" element={<Director><ProductionReadiness /></Director>} />
         <Route path="/director/global-partners" element={<Director><GlobalEducationPartners /></Director>} />
         <Route path="/director/schedule" element={<Director><ScheduleManager /></Director>} />
         <Route path="/director/branding" element={<Director><TenantBranding /></Director>} />
@@ -383,6 +389,7 @@ function AppRoutes() {
         <Route path="/student/attendance" element={<StudentR><AttendanceDashboard /></StudentR>} />
         <Route path="/student/library" element={<StudentR><StudentLibrary /></StudentR>} />
         <Route path="/student/finance" element={<StudentR><StudentFees /></StudentR>} />
+        <Route path="/student/international-applications" element={<StudentR><GlobalProgression /></StudentR>} />
         <Route path="/student/progression" element={<StudentR><ProgressionDashboard /></StudentR>} />
         <Route path="/student/timeline" element={<StudentR><AcademicTimeline /></StudentR>} />
         <Route path="/student/career" element={<StudentR><StudentCareer /></StudentR>} />

@@ -31,6 +31,8 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Overview', icon: LayoutDashboard, path: '/landlord' },
       { label: 'All Centres', icon: Building2, path: '/landlord/centres' },
       { label: 'Global Partners', icon: Globe, path: '/landlord/global-partners' },
+      { label: 'Education Intelligence', icon: BarChart3, path: '/landlord/education-intelligence' },
+      { label: 'Launch Readiness', icon: BarChart3, path: '/landlord/readiness' },
       { label: 'Platform Users', icon: Users, path: '/landlord/users' },
     ]},
     { title: 'Revenue', items: [
@@ -72,6 +74,8 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Residential', icon: Building2, path: '/residential' },
       { label: 'Agents', icon: Handshake, path: '/director/agents' },
       { label: 'Global Partners', icon: Globe, path: '/director/global-partners' },
+      { label: 'Education Intelligence', icon: BarChart3, path: '/director/education-intelligence' },
+      { label: 'Launch Readiness', icon: BarChart3, path: '/director/readiness' },
       { label: 'Audit Logs', icon: FileText, path: '/audit' },
       { label: 'Report Cards', icon: FileText, path: '/lecturer/report-cards' },
       { label: 'Reports', icon: BarChart3, path: '/director/reports' },
@@ -241,6 +245,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
     { title: 'Services', items: [
       { label: 'Fees & Payments', icon: CreditCard, path: '/student/finance' },
       { label: 'Progression', icon: GraduationCap, path: '/student/progression' },
+      { label: 'University Applications', icon: Globe, path: '/student/international-applications' },
       { label: 'Careers & Internships', icon: Briefcase, path: '/student/career' },
       { label: 'Universities Abroad', icon: GraduationCap, path: '/student/global-progression' },
       { label: 'Student Life', icon: Trophy, path: '/student/student-life' },

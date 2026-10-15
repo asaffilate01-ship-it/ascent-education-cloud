@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import PartnerWorkflow from '@/components/progression/PartnerWorkflow';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -36,6 +37,7 @@ export default function GlobalEducationPartners() {
  const { user } = useAuth();
  const tenantId = user?.tenantId;
  const canManage = user?.roles?.some(r=>['centre_director','superadmin'].includes(r)) ?? false;
+ const requestVersion=useRef(0);
  const [partners,setPartners] = useState<Partner[]>([]);
  const [routes,setRoutes] = useState<Route[]>([]);
  const [loading,setLoading] = useState(true);
@@ -59,20 +61,23 @@ export default function GlobalEducationPartners() {
  const [routeProgramme,setRouteProgramme] = useState('');
  const [routeEntry,setRouteEntry] = useState('');
 
- async function load() {
+ const load=useCallback(async () => {
+  const version=++requestVersion.current;
+  setPartners([]);setRoutes([]);
   if (!tenantId) { setLoading(false); return; }
   setLoading(true);
   const [p,r] = await Promise.all([
    supabase.from('international_education_partners' as any).select('*').eq('tenant_id',tenantId).order('name'),
    supabase.from('international_pathway_routes' as any).select('*').eq('tenant_id',tenantId).order('created_at',{ascending:false})
   ]);
+  if(version!==requestVersion.current)return;
   if(p.error) toast.error('Could not load partner records: '+p.error.message);
   if(r.error) toast.error('Could not load progression routes: '+r.error.message);
   setPartners((p.data||[]) as unknown as Partner[]);
   setRoutes((r.data||[]) as unknown as Route[]);
   setLoading(false);
- }
- useEffect(()=>{ void load(); },[tenantId]);
+ },[tenantId]);
+ useEffect(()=>{ void load(); return ()=>{requestVersion.current++;}; },[load]);
  const filtered = useMemo(()=>partners.filter(p=>
   (kind==='all'||p.partner_kind===kind) && (country==='all'||p.countries?.includes(country)) &&
   [p.name,p.partner_kind,p.relationship_status].join(' ').toLowerCase().includes(search.toLowerCase())
@@ -135,6 +140,7 @@ export default function GlobalEducationPartners() {
   {label:'Verified routes',value:routes.filter(r=>r.review_status==='verified').length,icon:Award}
  ];
  return <DashboardLayout title="Global Education Partnerships" subtitle="Recruitment groups, awarding bodies and verified international study pathways">
+  <PartnerWorkflow />
   <div className="rounded-xl border border-amber-300/40 bg-amber-100/30 dark:bg-amber-900/10 p-4 mb-5 text-sm">
    <strong>Internal research catalogue.</strong> Listings are potential partners, not contracted relationships. Only authorised, evidence-verified programmes may be advertised to students. No platform API or university admissions agreement is implied.
   </div>
@@ -177,7 +183,7 @@ export default function GlobalEducationPartners() {
     <div className="text-xs text-muted-foreground flex flex-wrap gap-1">{p.countries?.map(c=><span key={c} className="bg-muted/60 px-2 py-1 rounded-md">{c}</span>)}</div>
     <div className="text-xs"><span className="font-semibold">Relationship:</span> {label(p.relationship_status)}</div>
     <div className="text-xs"><span className="font-semibold">Accreditation:</span> {label(p.accreditation_status)}</div>
-    {p.website&&<a href={p.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">Official website <ExternalLink className="w-3.5 h-3.5"/></a>}
+    {p.website&&/^https:\/\//i.test(p.website)&&<a href={p.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">Official website <ExternalLink className="w-3.5 h-3.5"/></a>}
     {canManage && <label className="mt-auto text-xs text-muted-foreground">Outreach status
      <select aria-label={`Update ${p.name} outreach status`} className="w-full h-9 mt-1 rounded-md bg-background border px-2" disabled={busy} value={p.relationship_status} onChange={e=>void setStatus(p,e.target.value as Relationship)}>
       {!editableStatuses.includes(p.relationship_status)&&<option value={p.relationship_status}>{label(p.relationship_status)} — contract controlled</option>}
