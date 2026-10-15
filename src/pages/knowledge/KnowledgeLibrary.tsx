@@ -16,7 +16,9 @@ export default function KnowledgeLibrary({student=false}:{student?:boolean}) {
  const [documents,setDocuments]=useState<Document[]>([]),[selected,setSelected]=useState<Document|null>(null);
  const [title,setTitle]=useState(''),[body,setBody]=useState(''),[reference,setReference]=useState(''),[visibility,setVisibility]=useState('student');
  const [query,setQuery]=useState(''),[results,setResults]=useState<Citation[]>([]),[searched,setSearched]=useState(false);
- const [busy,setBusy]=useState(false),[searching,setSearching]=useState(false),[error,setError]=useState('');
+ const [busy,setBusy]=useState(false),[searching,setSearching]=useState(false),[error,setError]=useState(''),[searchError,setSearchError]=useState('');
+ // Ignore late results whenever the query, centre or approved corpus changes.
+ function invalidateSearch(){searchVersion.current++;setResults([]);setSearched(false);setSearching(false);setSearchError('');}
  const load=useCallback(async()=>{
   const id=++version.current;setError('');
   if(!tenant||!manager){setDocuments([]);return;}
@@ -26,32 +28,33 @@ export default function KnowledgeLibrary({student=false}:{student?:boolean}) {
   else setDocuments((result.data||[]) as Document[]);
  },[tenant,manager]);
  function reset(){setSelected(null);setTitle('');setBody('');setReference('');setVisibility('student');}
- useEffect(()=>{reset();setDocuments([]);setResults([]);setSearching(false);setSearched(false);setQuery('');void load();return()=>{version.current++;searchVersion.current++;};},[load]);
+ useEffect(()=>{reset();setDocuments([]);invalidateSearch();setQuery('');void load();return()=>{version.current++;searchVersion.current++;};},[load]);
  async function save(e:React.FormEvent){
-  e.preventDefault();if(!tenant||busy)return;setBusy(true);
+  e.preventDefault();if(!tenant||busy)return;invalidateSearch();setBusy(true);
   try{
    const result=await db.rpc('save_education_knowledge',{p_tenant:tenant,p_title:title,p_text:body,p_visibility:visibility,p_reference:reference,p_document:selected?.id||null,p_expected_revision:selected?.content_revision??null});
    if(result.error)throw result.error;
-   reset();setResults([]);setSearched(false);toast.success('Draft saved. Review and approve before learners can search it.');await load();
+   reset();toast.success('Draft saved. Review and approve before learners can search it.');await load();
   }catch(e){toast.error((e as Error).message||'Document could not be saved');}finally{setBusy(false);}
  }
  async function review(document:Document,decision:'approved'|'withdrawn'){
-  if(busy)return;setBusy(true);
-  try{const result=await db.rpc('review_education_knowledge',{p_document:document.id,p_expected_revision:document.content_revision,p_decision:decision});if(result.error)throw result.error;setResults([]);setSearched(false);toast.success(decision==='approved'?`Approved and indexed ${result.data} passages`:'Document withdrawn from search');await load();}
+  if(busy)return;invalidateSearch();setBusy(true);
+  try{const result=await db.rpc('review_education_knowledge',{p_document:document.id,p_expected_revision:document.content_revision,p_decision:decision});if(result.error)throw result.error;toast.success(decision==='approved'?`Approved and indexed ${result.data} passages`:'Document withdrawn from search');await load();}
   catch(e){toast.error((e as Error).message||'Review could not be saved');}finally{setBusy(false);}
  }
  async function search(e:React.FormEvent){
-  e.preventDefault();if(!query.trim())return;const id=++searchVersion.current;setSearching(true);setResults([]);setSearched(false);
+  e.preventDefault();if(!tenant||!query.trim())return;const id=++searchVersion.current;setSearching(true);setResults([]);setSearched(false);setSearchError('');
   try{const result=await db.rpc('search_education_chunks',{p_query:query.trim(),p_limit:10});if(result.error)throw result.error;if(id!==searchVersion.current)return;setResults((result.data||[]) as Citation[]);setSearched(true);}
-  catch{if(id===searchVersion.current)toast.error('Search is unavailable. Please try again.');}finally{if(id===searchVersion.current)setSearching(false);}
+  catch{if(id===searchVersion.current){setSearchError('Search is unavailable. Please try again.');toast.error('Search is unavailable. Please try again.');}}finally{if(id===searchVersion.current)setSearching(false);}
  }
  return <DashboardLayout title="Education Knowledge Library" subtitle="Search reviewed source passages with document and revision references">
   {!tenant?<p role="alert" className="surface-card p-5">A centre assignment is required.</p>:<>
    <section className="surface-card p-5 mb-6 space-y-4">
     <h2 className="font-semibold">Find guidance in approved materials</h2>
-    <form onSubmit={search} className="flex gap-3"><Input aria-label="Search approved materials" required maxLength={1000} value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search a topic or phrase"/><Button disabled={searching}>{searching?'Searching…':'Search'}</Button></form>
+    <form onSubmit={search} className="flex gap-3"><Input aria-label="Search approved materials" required maxLength={1000} value={query} onChange={e=>{invalidateSearch();setQuery(e.target.value);}} placeholder="Search a topic or phrase"/><Button disabled={searching}>{searching?'Searching…':'Search'}</Button></form>
     <p className="text-xs text-muted-foreground">Results are exact source excerpts. They are not AI-generated answers. Only materials you are permitted to read appear.</p>
-    {searched&&!results.length&&<p role="status">No approved source passages matched. Try another term or ask your programme team.</p>}
+    {searchError&&<p role="alert" className="text-destructive">{searchError}</p>}
+    {searched&&!results.length&&!searchError&&<p role="status">No approved source passages matched. Try another term or ask your programme team.</p>}
     {results.map(c=><article key={`${c.document_id}:${c.revision}:${c.chunk_index}`} className="border rounded-lg p-4 space-y-2"><h3 className="font-semibold">{c.title}</h3><p className="text-xs text-muted-foreground">Revision {c.revision} · Passage {c.chunk_index+1} · {c.source_reference}</p><blockquote className="text-sm whitespace-pre-wrap">{c.excerpt}</blockquote></article>)}
    </section>
    {manager&&<div className="grid xl:grid-cols-2 gap-6">
