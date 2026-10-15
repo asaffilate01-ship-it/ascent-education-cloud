@@ -42,3 +42,8 @@ describe('Admissions operations',()=>{
   expect(referralNextAction('draft')).toContain('Do not share');expect(referralNextAction('withdrawn')).toContain('Sharing consent withdrawn');
  });
 });
+it('scopes agreement history by centre, entity type and agreement ID',async()=>{
+ mocks.query.mockResolvedValue({data:[],error:null});render(<ReferralHistory tenant="centre-1" referral="agreement-1" entityTable="international_partner_agreements"/>);
+ fireEvent.click(screen.getByRole('button',{name:'View agreement history'}));await screen.findByText('No recorded history is available.');
+ expect(mocks.eq).toHaveBeenCalledWith('tenant_id','centre-1');expect(mocks.eq).toHaveBeenCalledWith('entity_table','international_partner_agreements');expect(mocks.eq).toHaveBeenCalledWith('entity_id','agreement-1');
+});
