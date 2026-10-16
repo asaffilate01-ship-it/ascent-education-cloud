@@ -1,4 +1,4 @@
-import {render,screen,fireEvent,cleanup} from '@testing-library/react';
+import {render,screen,fireEvent,cleanup,act} from '@testing-library/react';
 import {afterEach,beforeEach,describe,it,expect,vi} from 'vitest';
 const mocks=vi.hoisted(()=>({roles:['student'],rpc:vi.fn(),rows:vi.fn(),eq:vi.fn()}));
 vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'student-1',tenantId:'tenant-1',roles:mocks.roles}})}));
@@ -21,6 +21,27 @@ describe('Knowledge source search',()=>{
   fireEvent.change(screen.getByRole('textbox',{name:'Search approved materials'}),{target:{value:'unknown'}});fireEvent.click(screen.getByRole('button',{name:'Search'}));
   expect(await screen.findByRole('status')).toHaveTextContent('No approved source passages matched');
  });
+ it('ignores an in-flight search after the learner changes the query',async()=>{
+  let resolveSearch:((result:unknown)=>void)|undefined;
+  mocks.rpc.mockImplementation(()=>new Promise(resolve=>{resolveSearch=resolve;}));
+  render(<KnowledgeLibrary student/>);
+  const input=screen.getByRole('textbox',{name:'Search approved materials'});
+  fireEvent.change(input,{target:{value:'withdrawn topic'}});
+  fireEvent.click(screen.getByRole('button',{name:'Search'}));
+  fireEvent.change(input,{target:{value:'new topic'}});
+  await act(async()=>{resolveSearch?.({data:[{document_id:'revoked',chunk_index:0,revision:1,title:'Withdrawn document',excerpt:'Do not display',source_reference:'WITHDRAWN',rank:1}],error:null});});
+  expect(screen.queryByText('Do not display')).not.toBeInTheDocument();
+  expect(screen.queryByRole('status')).not.toBeInTheDocument();
+ });
+ it('distinguishes search errors from a legitimate zero-result search',async()=>{
+  mocks.rpc.mockResolvedValue({data:null,error:{message:'Unavailable'}});
+  render(<KnowledgeLibrary student/>);
+  fireEvent.change(screen.getByRole('textbox',{name:'Search approved materials'}),{target:{value:'admissions'}});
+  fireEvent.click(screen.getByRole('button',{name:'Search'}));
+  expect(await screen.findByRole('alert')).toHaveTextContent('Search is unavailable');
+  expect(screen.queryByText(/No approved source passages matched/)).not.toBeInTheDocument();
+ });
+
 });
 
 it('loads all document pages and filters the review queue',async()=>{mocks.roles=['centre_director'];const docs=Array.from({length:100},(_,n)=>({id:`d-${n}`,title:`Policy ${n}`,source_text:'Source',content_reference:`REF-${n}`,visibility:'student',approval_status:'approved',content_revision:1}));mocks.rows.mockResolvedValueOnce({data:docs,error:null}).mockResolvedValueOnce({data:[{...docs[0],id:'last',title:'Final draft',approval_status:'draft',visibility:'staff'}],error:null});render(<KnowledgeLibrary/>);await screen.findByText('101 matching documents · 101 in this snapshot');expect(mocks.rows).toHaveBeenLastCalledWith(100,199);expect(mocks.eq).toHaveBeenCalledWith('tenant_id','tenant-1');expect(mocks.eq).toHaveBeenCalledWith('source_type','reviewed_text');fireEvent.change(screen.getByLabelText('Review status'),{target:{value:'draft'}});expect(screen.getByText('Final draft')).toBeInTheDocument();expect(screen.queryByText('Policy 0')).not.toBeInTheDocument();fireEvent.change(screen.getByLabelText('Document audience'),{target:{value:'student'}});expect(screen.getByText('No documents match this review view.')).toBeInTheDocument();});
