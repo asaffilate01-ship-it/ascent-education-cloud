@@ -54,3 +54,7 @@ The application has substantial working source-level workflows, but it is **not 
 5. Validate Factory dispatch and downstream completion with real tenant bindings, then schedule it and prove recovery.
 
 No live environment state or secrets were inspected. No migration, merge, deployment, message or external provider request was performed.
+
+## Subsequent repair pass — 16 October 2026
+
+The intelligence tenant-resolution, cohort-scope, missing-data and source-error defects above have been repaired in source. Attendance now uses recorded marks, unsupported metrics remain unavailable, and tenant-scoped staff authorization precedes service writes. Historical findings above describe the pre-repair state. See [functional verification and remaining gaps](UNIPATHWAY_FUNCTIONAL_CHECK_2026-10-16.md) for exact semantics, test results and unverified runtime areas. Playwright configuration is repaired; browser execution remains blocked by the Chromium download. Production CI now includes the three repaired intelligence functions in a Deno type check against the installed SDK.
