@@ -1,7 +1,8 @@
+import ResidentialReview from './ResidentialReview';
 import { emptyVisitOperations, visitIdentity, serializeResidentialWorkspace, parseResidentialWorkspace, operationsIssues, type VisitOperations } from '@/lib/residentialWorkspace';
 import ResidentialAccommodation from './ResidentialAccommodation';
 import ResidentialSupport from './ResidentialSupport';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { downloadText } from '@/lib/downloadText';
@@ -12,6 +13,10 @@ export default function ResidentialCalendar() {
   const [fileError, setFileError] = useState('');
   const [operations,setOperations]=useState<Record<string,VisitOperations>>({});
   const [selected, setSelected] = useState('1-1');
+  const fingerprint=JSON.stringify({draft,operations});
+  const [savedFingerprint,setSavedFingerprint]=useState(fingerprint);
+  const unsaved=fingerprint!==savedFingerprint;
+  useEffect(()=>{if(!unsaved)return;const warn=(event:BeforeUnloadEvent)=>{event.preventDefault();event.returnValue='';};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn);},[unsaved]);
   const validation = calendarDraftSchema.safeParse(draft);
   const result = validation.success ? scheduleResidentialCalendar(validation.data) : null;
   const active = result?.visits.find(v => `${v.cohort}-${v.visit}` === selected) || result?.visits[0];
@@ -49,7 +54,7 @@ export default function ResidentialCalendar() {
       {result.missing.length > 0 && <p>Unscheduled: {result.missing.map(v => `cohort ${v.cohort}, visit ${v.visit}`).join('; ')}</p>}
     </div>}
     <div className="flex flex-wrap items-end gap-3">
-      <Button disabled={!validation.success || obsolete.length>0 || allocationErrors.length>0} onClick={()=>{try{downloadText('residential-workspace.json',serializeResidentialWorkspace(draft,operations),'application/json');setFileError('');}catch(e){setFileError((e as Error).message);}}}>Save whole workspace</Button>
+      <Button disabled={!validation.success || obsolete.length>0 || allocationErrors.length>0} onClick={()=>{try{downloadText('residential-workspace.json',serializeResidentialWorkspace(draft,operations),'application/json');setSavedFingerprint(fingerprint);setFileError('');}catch(e){setFileError((e as Error).message);}}}>Save whole workspace</Button>
       <label>Open whole workspace<Input type="file" accept=".json,application/json" onChange={async e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;try{if(file.size>3000000)throw Error('Workspace exceeds 3 MB.');const next=parseResidentialWorkspace(await file.text());setDraft(next.calendar);setOperations(next.operations);setSelected('1-1');setFileError('');}catch(err){setFileError((err as Error).message);}}}/></label>
       <Button variant="outline" disabled={!validation.success} onClick={() => downloadText('residential-calendar-draft.json',JSON.stringify(draft,null,2),'application/json')}>Save draft file</Button>
       <Button disabled={!result || !draft.closuresReviewed || !result.fits} onClick={() => downloadText('residential-dated-teaching-and-trips.csv',calendarCsv(draft),'text/csv;charset=utf-8')}>Export dated teaching and trips</Button>
@@ -64,7 +69,9 @@ export default function ResidentialCalendar() {
       }} /></label>
     </div>
     {obsolete.length>0&&<div role="alert"><p>{obsolete.length} saved visit allocations no longer match these dates or headcounts. Restore the previous calendar to recover them, or remove them before saving a combined workspace.</p><Button variant="outline" onClick={()=>setOperations(old=>Object.fromEntries(Object.entries(old).filter(([key])=>!obsolete.includes(key))))}>Remove obsolete visit allocations</Button></div>}
-    {allocationErrors.length>0&&<p role="alert">Resolve support clashes before saving the whole workspace: {allocationErrors.join(' ')}</p>}
+    {allocationErrors.length>0&&<p role="alert">Resolve allocation conflicts before saving the whole workspace: {allocationErrors.join(' ')}</p>}
+    <p role="status">{unsaved ? 'Workspace changed since the last full draft download.' : 'No unsaved workspace edits.'}</p>
+    {validation.success && <ResidentialReview calendar={validation.data} operations={operations} onSelect={setSelected} />}
     <p className="text-sm text-muted-foreground">The whole workspace includes calendar inputs, all entered teaching/support allocations and room plans. Switching visits retains edits; leaving or reloading the page requires a saved file. Opening a workspace replaces this workspace after validation. Calendar-only files below do not include allocations.</p>
     <p className="text-sm text-muted-foreground">Draft files save your planning inputs for reopening; they do not save to the centre database or publish visits. Imported drafts require closure review again. Complete, reviewed calendars can be exported as dated CSV.</p>
     {fileError && <p role="alert">{fileError}</p>}
