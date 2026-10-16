@@ -4,8 +4,7 @@ import { Input } from '@/components/ui/input';
 import { downloadText } from '@/lib/downloadText';
 import type { CalendarVisit } from '@/lib/residentialCalendar';
 import { accommodationSummary,parseAccommodation,validateAccommodation,type AccommodationPlan,type AccommodationRoom,type AccommodationAllocation } from '@/lib/residentialAccommodation';
-export default function ResidentialAccommodation({visit}:{visit:CalendarVisit}){
- const [plan,setPlan]=useState<AccommodationPlan>({version:1,rooms:[],allocations:[]});
+export default function ResidentialAccommodation({visit,plan,onChange:setPlan}:{visit:CalendarVisit;plan:AccommodationPlan;onChange:(plan:AccommodationPlan)=>void}){
  const [error,setError]=useState('');
  const summary=accommodationSummary(visit,plan);
  function update(next:AccommodationPlan){const issues=validateAccommodation(visit,next);if(issues.length){setError(issues.join(' '));return false;}setPlan(next);setError('');return true;}
@@ -20,6 +19,6 @@ export default function ResidentialAccommodation({visit}:{visit:CalendarVisit}){
  <div className="overflow-x-auto"><table className="w-full text-left text-sm"><caption>Room inventory</caption><thead><tr>{['Site / room','Section','Use','Beds','Action'].map(h=><th key={h} className="p-2">{h}</th>)}</tr></thead><tbody>{plan.rooms.map(r=><tr className="border-t" key={r.id}><td className="p-2">{r.site} / {r.id}{r.accessible?' · accessible':''}</td><td>{r.section}</td><td>{r.use}</td><td>{plan.allocations.filter(a=>a.room.trim().toLowerCase()===r.id.trim().toLowerCase()).length}/{r.beds}</td><td><Button variant="ghost" disabled={plan.allocations.some(a=>a.room.toLowerCase()===r.id.toLowerCase())} onClick={()=>update({...plan,rooms:plan.rooms.filter(x=>x.id!==r.id)})}>Remove room {r.id}</Button></td></tr>)}</tbody></table></div>
  {plan.allocations.length>0&&<ul className="space-y-2">{plan.allocations.map((a,i)=><li key={`${a.kind}-${a.person}`} className="flex items-center justify-between gap-2"><span>{a.kind} {a.person} → {a.room}</span><Button variant="ghost" onClick={()=>update({...plan,allocations:plan.allocations.filter((_,index)=>index!==i)})}>Remove allocation {a.person}</Button></li>)}</ul>}
  <div className="flex flex-wrap gap-3"><Button variant="outline" onClick={()=>downloadText(`accommodation-cohort-${visit.cohort}-visit-${visit.visit}.json`,JSON.stringify({visit,plan},null,2),'application/json')}>Save accommodation draft</Button><label>Open accommodation draft<Input type="file" accept=".json,application/json" onChange={async e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;try{if(file.size>150000)throw Error('Draft exceeds 150 KB.');const next=parseAccommodation(await file.text(),visit);update(next);}catch(err){setError((err as Error).message);}}}/></label></div>
- <p className="text-sm text-muted-foreground">Draft room assignments only, not hotel reservations or check-ins. Room suitability and accessibility require confirmation at the property. Save before changing visits; unsaved edits are discarded. Staff cover and transport are planned separately.</p>
+ <p className="text-sm text-muted-foreground">Draft room assignments only, not hotel reservations or check-ins. Room suitability and accessibility require confirmation at the property. Edits stay in this workspace when switching visits. Save the whole workspace before leaving the page. Staff cover and transport are planned separately.</p>
  </section>;
 }

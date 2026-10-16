@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, type Dispatch, type SetStateAction } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { datedTeaching, type CalendarVisit } from '@/lib/residentialCalendar';
 import { parseSupportPlan, teachingKey, validateSupport, type SupportAppointment, type TeachingAllocation } from '@/lib/residentialSupport';
 import { downloadText } from '@/lib/downloadText';
-export default function ResidentialSupport({visit}:{visit:CalendarVisit}) {
-  const [appointments,setAppointments]=useState<SupportAppointment[]>([]);
-  const [allocations,setAllocations]=useState<TeachingAllocation[]>([]);
+export default function ResidentialSupport({visit,data,onChange}:{visit:CalendarVisit;data:{appointments:SupportAppointment[];allocations:TeachingAllocation[]};onChange:(value:{appointments:SupportAppointment[];allocations:TeachingAllocation[]})=>void}) {
+  const {appointments,allocations}=data;
+  const setAppointments:Dispatch<SetStateAction<SupportAppointment[]>>=value=>onChange({...data,appointments:typeof value==='function'?value(appointments):value});
+  const setAllocations:Dispatch<SetStateAction<TeachingAllocation[]>>=value=>onChange({...data,allocations:typeof value==='function'?value(allocations):value});
   const [error,setError]=useState('');
   const sessions=datedTeaching(visit);
   const errors=validateSupport(visit,appointments,allocations);
@@ -29,9 +30,9 @@ export default function ResidentialSupport({visit}:{visit:CalendarVisit}) {
     </form>
     {(error||errors.length>0)&&<p role="alert">{error||errors.join(' ')}</p>}
     <p>{appointments.length} appointments · {appointments.reduce((n,a)=>n+a.minutes,0)/60} tutor-hours allocated · {visit.students*1.5} tutor-hours if every student requests the full allowance.</p>
-    <p className="text-sm text-muted-foreground">Ten simultaneous support places maximum, one tutor per student. Tutor checks cover only allocations entered here. Availability, breaks, overnight duties and other workloads still need staff review. Changing visits discards unsaved support edits; save a draft file first.</p>
+    <p className="text-sm text-muted-foreground">Ten simultaneous support places maximum, one tutor per student. Tutor checks cover only allocations entered here. Availability, breaks, overnight duties and other workloads still need staff review. Edits stay in this workspace when switching visits. Save the whole workspace before leaving the page.</p>
     <div className="flex flex-wrap gap-3"><Button variant="outline" disabled={errors.length>0} onClick={()=>downloadText(`support-cohort-${visit.cohort}-visit-${visit.visit}.json`,JSON.stringify({version:1,visit,appointments,allocations},null,2),'application/json')}>Save support draft</Button>
-      <label>Open support draft<Input type="file" accept=".json,application/json" onChange={async e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;try{if(file.size>150000)throw Error('Plan exceeds 150 KB.');const p=parseSupportPlan(await file.text(),visit);setAppointments(p.appointments);setAllocations(p.allocations);setError('');}catch(err){setError((err as Error).message);}}}/></label></div>
+      <label>Open support draft<Input type="file" accept=".json,application/json" onChange={async e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;try{if(file.size>150000)throw Error('Plan exceeds 150 KB.');const p=parseSupportPlan(await file.text(),visit);onChange({appointments:p.appointments,allocations:p.allocations});setError('');}catch(err){setError((err as Error).message);}}}/></label></div>
     {appointments.length>0&&<div className="overflow-x-auto"><table className="w-full text-left text-sm"><caption>Draft one-to-one appointments, Pakistan local time</caption><thead><tr>{['Student','Tutor','Date','Time','Action'].map(h=><th key={h} className="p-2">{h}</th>)}</tr></thead><tbody>{[...appointments].sort((a,b)=>a.date.localeCompare(b.date)||a.start-b.start).map(a=><tr key={a.id} className="border-t"><td className="p-2">{a.student}</td><td>{a.tutor}</td><td>{a.date}</td><td>{time(a.start)}–{time(a.start+a.minutes)}</td><td><Button variant="ghost" aria-label={`Remove appointment ${a.student} ${a.date} ${time(a.start)}`} onClick={()=>{setAppointments(old=>old.filter(x=>x.id!==a.id));setError('');}}>Remove</Button></td></tr>)}</tbody></table></div>}
   </section>;
 }

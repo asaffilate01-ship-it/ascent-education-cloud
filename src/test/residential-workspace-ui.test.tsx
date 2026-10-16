@@ -1,0 +1,20 @@
+import { render,screen,fireEvent,cleanup } from '@testing-library/react';
+import { afterEach,it,expect,vi } from 'vitest';
+import ResidentialCalendar from '@/components/residential/ResidentialCalendar';
+vi.mock('@/lib/downloadText',()=>({downloadText:vi.fn()}));
+afterEach(cleanup);
+it('retains room allocations when changing visits and warns when calendar edits orphan them',()=>{
+ render(<ResidentialCalendar/>);
+ fireEvent.change(screen.getByLabelText('Room ID'),{target:{value:'R1'}});
+ fireEvent.change(screen.getByLabelText('Accommodation site'),{target:{value:'Residence'}});
+ fireEvent.change(screen.getByLabelText('Beds'),{target:{value:'4'}});
+ fireEvent.click(screen.getByRole('button',{name:'Add room'}));
+ expect(screen.getByRole('button',{name:'Remove room R1'})).toBeInTheDocument();
+ fireEvent.click(screen.getByRole('button',{name:'View cohort 2 visit 1'}));
+ expect(screen.queryByRole('button',{name:'Remove room R1'})).not.toBeInTheDocument();
+ fireEvent.click(screen.getByRole('button',{name:'View cohort 1 visit 1'}));
+ expect(screen.getByRole('button',{name:'Remove room R1'})).toBeInTheDocument();
+ fireEvent.change(screen.getByLabelText('Season starts'),{target:{value:'2027-10-16'}});
+ expect(screen.getByRole('button',{name:'Save whole workspace'})).toBeDisabled();
+ expect(screen.getByText(/saved visit allocations no longer match/)).toBeInTheDocument();
+});
