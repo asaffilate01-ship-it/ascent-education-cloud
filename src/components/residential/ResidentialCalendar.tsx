@@ -1,3 +1,4 @@
+import { emptyVisitOperations, visitIdentity, serializeResidentialWorkspace, parseResidentialWorkspace, operationsIssues, type VisitOperations } from '@/lib/residentialWorkspace';
 import ResidentialAccommodation from './ResidentialAccommodation';
 import ResidentialSupport from './ResidentialSupport';
 import { useState } from 'react';
@@ -9,10 +10,14 @@ import { calendarCsv, calendarDraftSchema, datedTeaching, datedTrips, initialCal
 export default function ResidentialCalendar() {
   const [draft, setDraft] = useState<CalendarDraft>(initialCalendarDraft);
   const [fileError, setFileError] = useState('');
+  const [operations,setOperations]=useState<Record<string,VisitOperations>>({});
   const [selected, setSelected] = useState('1-1');
   const validation = calendarDraftSchema.safeParse(draft);
   const result = validation.success ? scheduleResidentialCalendar(validation.data) : null;
   const active = result?.visits.find(v => `${v.cohort}-${v.visit}` === selected) || result?.visits[0];
+  const activeOperations=active ? operations[visitIdentity(active)] || emptyVisitOperations(active) : null;
+  const obsolete=Object.keys(operations).filter(key=>!result?.visits.some(v=>visitIdentity(v)===key));
+  const allocationErrors=operationsIssues(operations);
   const change = <K extends keyof CalendarDraft>(key: K, value: CalendarDraft[K]) => setDraft(old => ({ ...old, [key]: value, ...(key !== 'closuresReviewed' ? { closuresReviewed: false } : {}) }));
   const updateClosure = (index: number, field: 'label'|'start'|'end', value: string) => change('closures', draft.closures.map((c,i) => i === index ? { ...c, [field]: value } : c));
   const time = (minute: number) => `${Math.floor(minute/60).toString().padStart(2,'0')}:${(minute%60).toString().padStart(2,'0')}`;
@@ -44,6 +49,8 @@ export default function ResidentialCalendar() {
       {result.missing.length > 0 && <p>Unscheduled: {result.missing.map(v => `cohort ${v.cohort}, visit ${v.visit}`).join('; ')}</p>}
     </div>}
     <div className="flex flex-wrap items-end gap-3">
+      <Button disabled={!validation.success || obsolete.length>0 || allocationErrors.length>0} onClick={()=>{try{downloadText('residential-workspace.json',serializeResidentialWorkspace(draft,operations),'application/json');setFileError('');}catch(e){setFileError((e as Error).message);}}}>Save whole workspace</Button>
+      <label>Open whole workspace<Input type="file" accept=".json,application/json" onChange={async e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;try{if(file.size>3000000)throw Error('Workspace exceeds 3 MB.');const next=parseResidentialWorkspace(await file.text());setDraft(next.calendar);setOperations(next.operations);setSelected('1-1');setFileError('');}catch(err){setFileError((err as Error).message);}}}/></label>
       <Button variant="outline" disabled={!validation.success} onClick={() => downloadText('residential-calendar-draft.json',JSON.stringify(draft,null,2),'application/json')}>Save draft file</Button>
       <Button disabled={!result || !draft.closuresReviewed || !result.fits} onClick={() => downloadText('residential-dated-teaching-and-trips.csv',calendarCsv(draft),'text/csv;charset=utf-8')}>Export dated teaching and trips</Button>
       <label>Open draft file<Input type="file" accept=".json,application/json" onChange={async e => {
@@ -56,11 +63,14 @@ export default function ResidentialCalendar() {
         } catch { setFileError('Could not open this draft. Use a valid version 1 calendar JSON file under 100 KB. Your current plan has not changed.'); }
       }} /></label>
     </div>
+    {obsolete.length>0&&<div role="alert"><p>{obsolete.length} saved visit allocations no longer match these dates or headcounts. Restore the previous calendar to recover them, or remove them before saving a combined workspace.</p><Button variant="outline" onClick={()=>setOperations(old=>Object.fromEntries(Object.entries(old).filter(([key])=>!obsolete.includes(key))))}>Remove obsolete visit allocations</Button></div>}
+    {allocationErrors.length>0&&<p role="alert">Resolve support clashes before saving the whole workspace: {allocationErrors.join(' ')}</p>}
+    <p className="text-sm text-muted-foreground">The whole workspace includes calendar inputs, all entered teaching/support allocations and room plans. Switching visits retains edits; leaving or reloading the page requires a saved file. Opening a workspace replaces this workspace after validation. Calendar-only files below do not include allocations.</p>
     <p className="text-sm text-muted-foreground">Draft files save your planning inputs for reopening; they do not save to the centre database or publish visits. Imported drafts require closure review again. Complete, reviewed calendars can be exported as dated CSV.</p>
     {fileError && <p role="alert">{fileError}</p>}
     {result && result.visits.length > 0 && <><div className="overflow-x-auto"><table className="w-full text-left text-sm"><caption>Draft visits — separate accommodation; four teaching groups of up to 50</caption><thead><tr>{['Cohort','Visit','Students','Start','End','Details'].map(h => <th key={h} className="p-2">{h}</th>)}</tr></thead><tbody>{result.visits.map(v => <tr key={`${v.cohort}-${v.visit}`} className="border-t"><td className="p-2">{v.cohort}</td><td>{v.visit}</td><td>{v.students}</td><td>{v.start}</td><td>{v.end}</td><td><Button variant="ghost" aria-label={`View cohort ${v.cohort} visit ${v.visit}`} onClick={() => setSelected(`${v.cohort}-${v.visit}`)}>View</Button></td></tr>)}</tbody></table></div>
-      {active && <ResidentialAccommodation key={`rooms-${active.cohort}-${active.visit}-${active.start}-${active.end}-${active.students}`} visit={active} />}
-      {active && <ResidentialSupport key={`${active.cohort}-${active.visit}-${active.start}-${active.end}-${active.students}`} visit={active} />}
+      {active && <ResidentialAccommodation key={`rooms-${active.cohort}-${active.visit}-${active.start}-${active.end}-${active.students}`} visit={active} plan={activeOperations!.accommodation} onChange={accommodation=>setOperations(old=>({...old,[visitIdentity(active)]:{...activeOperations!,accommodation}}))} />}
+      {active && <ResidentialSupport key={`${active.cohort}-${active.visit}-${active.start}-${active.end}-${active.students}`} visit={active} data={activeOperations!.support} onChange={support=>setOperations(old=>({...old,[visitIdentity(active)]:{...activeOperations!,support}}))} />}
       {active && <div className="space-y-3"><h3 className="font-bold">Cohort {active.cohort}, visit {active.visit}: dated activities</h3><p>Optional private help at full uptake: {active.students * 1.5} tutor-hours for this visit. Support appointments, the annual picnic and evening outing still need separate allocations.</p><ul className="grid gap-2 sm:grid-cols-2">{datedTrips(active).map(t => <li key={`${t.group}-${t.date}`}>Group {t.group}: {t.destination}, {t.date} · {t.students} students · full day</li>)}</ul><div className="overflow-x-auto"><table className="w-full text-left text-sm"><caption>Teaching — Pakistan local time</caption><thead><tr>{['Date','Group','Activity','Time','Students'].map(h => <th key={h} className="p-2">{h}</th>)}</tr></thead><tbody>{datedTeaching(active).map(s => <tr className="border-t" key={`${s.date}-${s.start}`}><td className="p-2">{s.date}</td><td>{s.group}</td><td>{s.kind}</td><td>{time(s.start)}–{time(s.end)}</td><td>{s.students}</td></tr>)}</tbody></table></div></div>}
     </>}
   </section>;
