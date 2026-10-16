@@ -1,211 +1,42 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { BookOpen, AlertCircle, Send, CheckCircle } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { DashboardSkeleton } from '@/components/ui/Skeletons';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
-
-interface ModuleGrade {
-  module: string;
-  assignments: { name: string; grade: number | null; weight: number; assignmentId: string }[];
-  overall: number | null;
-  status: string;
-}
-
-const getGradeClass = (grade: number) => {
-  if (grade >= 70) return 'Distinction';
-  if (grade >= 60) return 'Merit';
-  if (grade >= 40) return 'Pass';
-  return 'Fail';
-};
+import {useSupabaseQuery} from '@/hooks/useSupabaseQuery';
+import {useAuth} from '@/contexts/AuthContext';
+import {Button} from '@/components/ui/button';
+import {useState} from 'react';
 
 export default function StudentGrades() {
-  const [moduleGrades, setModuleGrades] = useState<ModuleGrade[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [appealOpen, setAppealOpen] = useState(false);
-  const [appealTarget, setAppealTarget] = useState<{ module: string; assignment: string; grade: number } | null>(null);
-  const [appeals, setAppeals] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    async function fetchGrades() {
-      setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-
-      const { data: assignments } = await supabase
-        .from('assignments')
-        .select('*, modules(title)')
-        .order('deadline', { ascending: true });
-
-      const submissionsMap: Record<string, any> = {};
-      if (user) {
-        const { data: subs } = await supabase
-          .from('submissions')
-          .select('*')
-          .eq('student_id', user.id);
-        for (const s of subs || []) {
-          submissionsMap[s.assignment_id] = s;
-        }
-      }
-
-      const moduleMap: Record<string, ModuleGrade> = {};
-      for (const a of assignments || []) {
-        const moduleName = (a as any).modules?.title || 'Unknown Module';
-        if (!moduleMap[moduleName]) {
-          moduleMap[moduleName] = { module: moduleName, assignments: [], overall: null, status: 'in_progress' };
-        }
-        const sub = submissionsMap[a.id];
-        moduleMap[moduleName].assignments.push({
-          name: a.title,
-          grade: sub?.grade ?? null,
-          weight: Math.round(100 / (assignments || []).filter((x: any) => (x as any).modules?.title === moduleName).length),
-          assignmentId: a.id,
-        });
-      }
-
-      const grades = Object.values(moduleMap).map((mod) => {
-        const graded = mod.assignments.filter((a) => a.grade !== null);
-        if (graded.length === mod.assignments.length && graded.length > 0) {
-          const totalWeight = graded.reduce((s, a) => s + a.weight, 0);
-          mod.overall = Math.round(graded.reduce((s, a) => s + (a.grade || 0) * a.weight, 0) / totalWeight);
-          mod.status = 'completed';
-        }
-        return mod;
-      });
-
-      setModuleGrades(grades);
-      setLoading(false);
-    }
-    fetchGrades();
-  }, []);
-
-  const handleAppeal = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!appealTarget) return;
-    toast.error('Online appeals are not connected. Contact the centre through its approved appeals process.');
-  };
-
-  if (loading) return <DashboardSkeleton />;
-
-  const completedModules = moduleGrades.filter((m) => m.overall !== null);
-  const avgGrade = completedModules.length > 0
-    ? Math.round(completedModules.reduce((s, m) => s + (m.overall || 0), 0) / completedModules.length)
-    : 0;
-
-  return (
-    <DashboardLayout title="Grades & Results" subtitle="Academic performance across all modules">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="surface-card p-5 text-center">
-          <p className="text-3xl font-bold text-primary">{avgGrade}%</p>
-          <p className="text-xs text-muted-foreground mt-1">Overall Average</p>
-          {avgGrade > 0 && <span className="text-xs font-semibold text-primary">{getGradeClass(avgGrade)}</span>}
-        </div>
-        <div className="surface-card p-5 text-center">
-          <p className="text-3xl font-bold">{completedModules.length}/{moduleGrades.length}</p>
-          <p className="text-xs text-muted-foreground mt-1">Modules Graded</p>
-        </div>
-        <div className="surface-card p-5 text-center">
-          <p className="text-3xl font-bold text-success">{completedModules.filter((m) => (m.overall || 0) >= 70).length}</p>
-          <p className="text-xs text-muted-foreground mt-1">Distinctions</p>
-        </div>
-        <div className="surface-card p-5 text-center">
-          <p className="text-3xl font-bold">120</p>
-          <p className="text-xs text-muted-foreground mt-1">Total Credits</p>
-        </div>
-      </div>
-
-      {/* Grade Appeal Dialog */}
-      <Dialog open={appealOpen} onOpenChange={setAppealOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Appeal Grade</DialogTitle>
-          </DialogHeader>
-          {appealTarget && (
-            <form onSubmit={handleAppeal} className="space-y-4">
-              <div className="surface-data rounded-lg p-3">
-                <p className="text-sm font-medium">{appealTarget.module}</p>
-                <p className="text-xs text-muted-foreground">{appealTarget.assignment} — Current Grade: {appealTarget.grade}%</p>
-              </div>
-              <div>
-                <Label>Reason for Appeal</Label>
-                <Textarea name="reason" required placeholder="Explain why you believe the grade should be reviewed..." rows={4} />
-              </div>
-              <p className="text-[10px] text-muted-foreground">Online appeal submission is not connected. Contact the centre through its approved appeals process; no appeal will be recorded here.</p>
-              <Button type="submit" disabled className="w-full"><Send className="w-4 h-4 mr-2" />Submit Appeal</Button>
-            </form>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <div className="space-y-4">
-        {moduleGrades.map((mod) => (
-          <div key={mod.module} className="surface-card p-5">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                  mod.overall !== null && mod.overall >= 70 ? 'bg-success/10' :
-                  mod.overall !== null ? 'bg-primary/10' : 'bg-secondary'
-                }`}>
-                  <BookOpen className={`w-4 h-4 ${
-                    mod.overall !== null && mod.overall >= 70 ? 'text-success' :
-                    mod.overall !== null ? 'text-primary' : 'text-muted-foreground'
-                  }`} />
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold">{mod.module}</h3>
-                  <p className="text-xs text-muted-foreground capitalize">{mod.status.replace('_', ' ')}</p>
-                </div>
-              </div>
-              {mod.overall !== null && (
-                <div className="text-right">
-                  <p className="text-xl font-bold text-primary">{mod.overall}%</p>
-                  <p className="text-[10px] font-medium text-primary">{getGradeClass(mod.overall)}</p>
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              {mod.assignments.map((a) => (
-                <div key={a.name} className="flex items-center justify-between py-2 px-3 surface-data rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm">{a.name}</span>
-                    <span className="text-[10px] text-muted-foreground">({a.weight}%)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {a.grade !== null ? (
-                      <>
-                        <span className={`text-sm font-semibold ${a.grade >= 70 ? 'text-success' : a.grade >= 60 ? 'text-primary' : 'text-foreground'}`}>
-                          {a.grade}%
-                        </span>
-                        {appeals[a.name] ? (
-                          <span className="text-[10px] text-warning flex items-center gap-1"><AlertCircle className="w-3 h-3" />Under review</span>
-                        ) : (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-[10px] h-6 px-2"
-                            onClick={() => { setAppealTarget({ module: mod.module, assignment: a.name, grade: a.grade! }); setAppealOpen(true); }}
-                          >
-                            Appeal
-                          </Button>
-                        )}
-                      </>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">Pending</span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-        {moduleGrades.length === 0 && (
-          <div className="surface-card p-12 text-center text-muted-foreground text-sm">No grades available yet</div>
-        )}
-      </div>
-    </DashboardLayout>
-  );
+  const {user} = useAuth();
+  return <DashboardLayout title="Grades & Results" subtitle="Your recorded submission results">
+    {!user?.tenantId ? <p role="alert">A centre assignment is required.</p> : <Results key={`${user.id}:${user.tenantId}`} tenant={user.tenantId} student={user.id}/>}
+  </DashboardLayout>;
+}
+function Results({tenant, student}: {tenant: string; student: string}) {
+  const scope = [{column: 'tenant_id', operator: 'eq' as const, value: tenant}];
+  const submissions = useSupabaseQuery('submissions', {filters: [...scope, {column: 'student_id', operator: 'eq', value: student}], orderBy: {column: 'submitted_at', ascending: false}});
+  const assignments = useSupabaseQuery('assignments', {filters: scope});
+  const modules = useSupabaseQuery('modules', {filters: scope});
+  const [page, setPage] = useState(0);
+  const [search, setSearch] = useState('');
+  const sources = [submissions, assignments, modules];
+  if (sources.some(source => source.loading)) return <p role="status">Loading recorded grades…</p>;
+  if (sources.some(source => source.error)) return <div><p role="alert">Results could not be loaded completely. No grade summary is available.</p><Button onClick={() => sources.forEach(source => void source.refetch())}>Retry results</Button></div>;
+  // Match by IDs: identical module/assignment titles must never merge results.
+  const rows = submissions.data.filter(s => s.student_id === student && s.tenant_id === tenant).map(s => {
+    const assignment = assignments.data.find(a => a.id === s.assignment_id);
+    const module = modules.data.find(m => m.id === assignment?.module_id);
+    return {...s, title: assignment?.title || 'Assignment unavailable', module: module?.title || 'Module unavailable'};
+  }).filter(s => `${s.title} ${s.module}`.toLowerCase().includes(search.toLowerCase()));
+  return <div className="space-y-4">
+    <p>These are recorded submission marks, not an official transcript or award decision. Module weighting, credit awards and classification are not inferred from these marks.</p>
+    <p>For a grade appeal, contact the centre through its approved appeals process. Online appeal submission is not connected.</p>
+    <label className="block">Search results<input className="block border rounded p-2" value={search} onChange={e => {setSearch(e.target.value); setPage(0);}}/></label>
+    {!rows.length && <p>No matching submission results.</p>}
+    {rows.slice(page * 20, page * 20 + 20).map(row => <article key={row.id} className="surface-card p-4 space-y-2">
+      <h2 className="font-semibold">{row.title}</h2><p>{row.module}</p>
+      <p>Recorded mark: {row.grade === null ? 'Not graded' : `${row.grade}%`}</p>
+      <p>Submission status: {row.status}</p><p>Submitted: {new Date(row.submitted_at).toLocaleString()}</p>
+      <p>Feedback: {row.feedback || 'Not provided'}</p><p className="text-xs">Submission reference: {row.id}</p>
+    </article>)}
+    <div className="flex gap-2"><Button disabled={!page} onClick={() => setPage(p => p - 1)}>Previous results</Button><Button disabled={(page + 1) * 20 >= rows.length} onClick={() => setPage(p => p + 1)}>Next results</Button></div>
+  </div>;
 }

@@ -45,3 +45,11 @@ The shared hook continues to rely on database RLS for record visibility; this ch
 - No live provider requests, messages, migrations, deployments or merge performed.
 
 See [full page/route/button inventory](UNIPATHWAY_DASHBOARD_INVENTORY.md) and [previous functional verification](UNIPATHWAY_FUNCTIONAL_CHECK_2026-10-16.md). The next acceptance pass needs staging accounts per role, seeded data and actual storage/provider access. All dashboards should not yet be called production-ready.
+
+## Follow-up repairs — learner results and landlord reporting
+
+- Student results now use complete, tenant- and learner-scoped submission reads, with error/retry states and account-change isolation through the shared hook. Results are matched by IDs, so duplicate names do not merge. Zero marks remain visible; missing marks remain unknown. Search and twenty-row pagination are connected.
+- Removed invented equal assignment weights, fixed 120 credits, inferred award classifications and module completion. Recorded marks/feedback are explicitly not an official transcript. Grade release policy and persistent appeals remain separate unresolved workflows.
+- Student dashboard queries active `student_enrolments`, then associated programmes, modules and assignments. Tenant and student filters are explicit; completed submissions are excluded from upcoming due work. Failed dependencies block the summary. This scope covers programme enrolments, not a new unified course/tuition enrolment engine.
+- Landlord invoice-summary export now downloads CSV. Replaced reconstructed historical MRR with recorded paid invoice totals grouped by issue year-month; these are not payment-date cash flows. Application chart groups by creation year-month and describes current status, not historical conversion events. Load failures show retry instead of zero balances.
+- Validation: 147 application tests across 36 files pass; TypeScript, build and lint pass with zero lint errors. Four new regressions cover grade identity/zero/missing/error handling and programme/module query scope plus submitted deadlines. No schema change or live deployment. Remaining browser/provider and persistent workflow gates above still apply.
