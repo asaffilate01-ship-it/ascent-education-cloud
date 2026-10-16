@@ -1,5 +1,6 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -16,6 +17,7 @@ import { motion } from 'framer-motion';
 
 interface ResidentialWeek {
   id: string;
+  tenant_id: string;
   title: string;
   semester: number;
   start_date: string;
@@ -70,6 +72,11 @@ export default function ResidentialWeeks() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [selectedWeek, setSelectedWeek] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [sessionError, setSessionError] = useState('');
+  const [saving, setSaving] = useState(false);
+  const requestVersion = useRef(0);
+  const savingRef = useRef(false);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [bookingForm, setBookingForm] = useState({
     room_type: 'single',
@@ -82,59 +89,71 @@ export default function ResidentialWeeks() {
 
   const isStaff = user?.role && !['student', 'agent'].includes(user.role);
 
-  useEffect(() => {
-    fetchWeeks();
-  }, []);
+  const fetchWeeks = useCallback(async () => {
+    const version = ++requestVersion.current;
+    setWeeks([]); setBookings([]); setSelectedWeek(null); setSessions([]); setLoadError('');
+    setBookingOpen(false);
+    if (!user?.tenantId) { setLoading(false); return; }
+    setLoading(true);
+    try {
+      const [visits, booked] = await Promise.all([
+        supabase.from('residential_weeks').select('*').eq('tenant_id', user.tenantId).order('start_date'),
+        supabase.from('residential_bookings').select('*').eq('tenant_id', user.tenantId).eq('student_id', user.id),
+      ]);
+      if (version !== requestVersion.current) return;
+      if (visits.error || booked.error) throw new Error('Residential records could not be loaded. Please retry.');
+      const rows = (visits.data || []) as ResidentialWeek[];
+      setWeeks(rows); setBookings((booked.data || []) as Booking[]);
+      setSelectedWeek(rows[0]?.id || null);
+    } catch (error) {
+      if (version === requestVersion.current) setLoadError((error as Error).message);
+    } finally { if (version === requestVersion.current) setLoading(false); }
+  }, [user?.id, user?.tenantId]);
 
   useEffect(() => {
-    if (selectedWeek) fetchSessions(selectedWeek);
-  }, [selectedWeek]);
+    void fetchWeeks();
+    return () => { requestVersion.current++; };
+  }, [fetchWeeks]);
 
-  const fetchWeeks = async () => {
-    const { data } = await supabase.from('residential_weeks').select('*').order('start_date');
-    const weekData = (data || []) as ResidentialWeek[];
-    setWeeks(weekData);
-    if (weekData.length > 0) setSelectedWeek(weekData[0].id);
-
-    if (user) {
-      const { data: bk } = await supabase.from('residential_bookings').select('*').eq('student_id', user.id);
-      setBookings((bk || []) as Booking[]);
-    }
-    setLoading(false);
-  };
-
-  const fetchSessions = async (weekId: string) => {
-    const { data } = await supabase
-      .from('residential_sessions')
-      .select('*')
-      .eq('residential_week_id', weekId)
-      .order('start_time');
-    setSessions((data || []) as ResidentialSession[]);
-  };
+  useEffect(() => {
+    let active = true;
+    setSessions([]); setSessionError('');
+    if (!selectedWeek || !user?.tenantId) return;
+    void (async () => {
+      try {
+        const { data, error } = await supabase.from('residential_sessions').select('*')
+          .eq('tenant_id', user.tenantId).eq('residential_week_id', selectedWeek).order('start_time');
+        if (!active) return;
+        if (error) throw error;
+        setSessions((data || []) as ResidentialSession[]);
+      } catch { if (active) setSessionError('Timetable could not be loaded. Select the visit again or refresh.'); }
+    })();
+    return () => { active = false; };
+  }, [selectedWeek, user?.tenantId]);
 
   const handleBook = async () => {
-    if (!user || !selectedWeek) return;
-    const week = weeks.find(w => w.id === selectedWeek);
-    if (!week) return;
-
-    const { error } = await supabase.from('residential_bookings').insert({
-      residential_week_id: selectedWeek,
-      student_id: user.id,
-      tenant_id: week.id, // Will be set properly via context
-      ...bookingForm,
-    });
-
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success('Residential week booked successfully!');
-      setBookingOpen(false);
-      fetchWeeks();
-    }
+    if (!user?.tenantId || user.role !== 'student' || !selectedWeek || savingRef.current) return;
+    const week = weeks.find(w => w.id === selectedWeek && w.tenant_id === user.tenantId);
+    if (!week || week.status !== 'upcoming') return;
+    if (bookings.some(b => b.residential_week_id === selectedWeek && b.status !== 'cancelled')) return;
+    const version = requestVersion.current;
+    savingRef.current = true; setSaving(true);
+    try {
+      const { error } = await supabase.from('residential_bookings').insert({
+        residential_week_id: selectedWeek, student_id: user.id,
+        tenant_id: user.tenantId, ...bookingForm,
+      });
+      if (error) throw error;
+      if (version !== requestVersion.current) return;
+      toast.success('Booking recorded. Confirm accommodation and travel arrangements with the centre.');
+      setBookingOpen(false); await fetchWeeks();
+    } catch (error) {
+      if (version === requestVersion.current) toast.error((error as Error).message);
+    } finally { savingRef.current = false; setSaving(false); }
   };
 
   const activeWeek = weeks.find(w => w.id === selectedWeek);
-  const hasBooking = bookings.some(b => b.residential_week_id === selectedWeek);
+  const hasBooking = bookings.some(b => b.residential_week_id === selectedWeek && b.status !== 'cancelled');
 
   const groupedSessions = sessions.reduce<Record<string, ResidentialSession[]>>((acc, s) => {
     const day = new Date(s.start_time).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -147,9 +166,12 @@ export default function ResidentialWeeks() {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Residential Weeks</h1>
-          <p className="text-muted-foreground">1 week × 2 per year — intensive on-centre sessions for workshops, projects, and exams</p>
+          <p className="text-muted-foreground">OTHM / Qualifi: two 14-day visits annually, with 72 teaching hours and up to 3 private-support hours across both visits. Remaining learning is online.</p>
         </div>
 
+        {user?.roles?.includes('centre_director') && <Button asChild variant="outline"><Link to="/director/residential-planner">Plan cohorts and teaching rotation</Link></Button>}
+        {loading && <p role="status">Loading residential visits…</p>}
+        {loadError && <div role="alert"><p>{loadError}</p><Button onClick={() => void fetchWeeks()}>Retry</Button></div>}
         {/* Week Selector */}
         {weeks.length > 0 && (
           <div className="flex flex-wrap gap-3">
@@ -210,7 +232,7 @@ export default function ResidentialWeeks() {
                 </Card>
               </div>
 
-              {!isStaff && (
+              {user?.role === 'student' && (
                 <Card className="border-primary/20">
                   <CardContent className="pt-6 flex items-center justify-between">
                     <div>
@@ -224,7 +246,7 @@ export default function ResidentialWeeks() {
                     ) : (
                       <Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
                         <DialogTrigger asChild>
-                          <Button>Book My Place</Button>
+                          <Button disabled={activeWeek.status !== 'upcoming'}>Book My Place</Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-md">
                           <DialogHeader>
@@ -269,7 +291,7 @@ export default function ResidentialWeeks() {
                               <Label>Special Needs / Accessibility</Label>
                               <Input placeholder="e.g. Wheelchair access, ground floor" value={bookingForm.special_needs} onChange={e => setBookingForm(f => ({ ...f, special_needs: e.target.value }))} />
                             </div>
-                            <Button onClick={handleBook} className="w-full">Confirm Booking</Button>
+                            <Button disabled={saving} onClick={handleBook} className="w-full">{saving ? 'Recording…' : 'Record booking'}</Button>
                           </div>
                         </DialogContent>
                       </Dialog>
@@ -287,8 +309,8 @@ export default function ResidentialWeeks() {
                       { icon: BookOpen, title: 'Workshops & Seminars', desc: 'Intensive hands-on sessions with your lecturers' },
                       { icon: Users, title: 'Group Projects', desc: 'Collaborative projects with your cohort members' },
                       { icon: Clock, title: 'Tutor Meetings', desc: '1-to-1 sessions with your personal tutor' },
-                      { icon: Building, title: 'Formal Examinations', desc: 'Proctored exams in secure exam halls' },
-                      { icon: BedDouble, title: 'Single-Sex Dormitories', desc: 'Safe, gender-separated accommodation on campus' },
+                      { icon: Building, title: 'Programme Activities', desc: 'Assessment arrangements depend on your qualification' },
+                      { icon: BedDouble, title: 'Single-Sex Dormitories', desc: 'Separate accommodation with male and female sections' },
                       { icon: Utensils, title: 'Halal & Dietary Options', desc: 'Full catering with dietary accommodations' },
                     ].map(item => (
                       <div key={item.title} className="flex gap-3 items-start">
@@ -305,7 +327,8 @@ export default function ResidentialWeeks() {
             </TabsContent>
 
             <TabsContent value="timetable" className="space-y-4">
-              {Object.keys(groupedSessions).length === 0 ? (
+              {sessionError && <p role="alert">{sessionError}</p>}
+              {sessionError ? null : Object.keys(groupedSessions).length === 0 ? (
                 <Card><CardContent className="pt-6 text-center text-muted-foreground">Timetable will be published closer to the residential week dates.</CardContent></Card>
               ) : (
                 Object.entries(groupedSessions).map(([day, daySessions]) => (
@@ -336,72 +359,18 @@ export default function ResidentialWeeks() {
             </TabsContent>
 
             <TabsContent value="accommodation" className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {[
-                  { type: 'Single Room', desc: 'Private en-suite room with study desk, Wi-Fi, and daily housekeeping', icon: BedDouble, price: 'Rs.18,000/night' },
-                  { type: 'Shared Dormitory (Male)', desc: '4-bed male-only dormitory with shared bathroom facilities', icon: Users, price: 'Rs.10,000/night' },
-                  { type: 'Shared Dormitory (Female)', desc: '4-bed female-only dormitory with shared bathroom facilities', icon: Users, price: 'Rs.10,000/night' },
-                ].map(room => (
-                  <Card key={room.type} className="hover:shadow-md transition-shadow">
-                    <CardContent className="pt-6 text-center space-y-3">
-                      <room.icon className="h-10 w-10 mx-auto text-primary" />
-                      <h3 className="font-semibold">{room.type}</h3>
-                      <p className="text-xs text-muted-foreground">{room.desc}</p>
-                      <Badge variant="outline" className="text-primary">{room.price}</Badge>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-              <Card className="border-amber-200 bg-amber-50/30">
-                <CardContent className="pt-6">
-                  <h3 className="font-semibold text-amber-900 mb-2">Safeguarding & Accommodation Policy</h3>
-                  <ul className="text-sm text-amber-800 space-y-1 list-disc list-inside">
-                    <li>All dormitories are strictly single-sex with 24/7 on-site security</li>
-                    <li>CCTV monitoring in all common areas (not bedrooms/bathrooms)</li>
-                    <li>ID verification required at check-in</li>
-                    <li>Quiet hours: 22:00 – 07:00</li>
-                    <li>No visitors permitted in accommodation blocks</li>
-                    <li>Designated safeguarding lead available at all times</li>
-                  </ul>
-                </CardContent>
-              </Card>
+              <Card><CardHeader><CardTitle>Separate adult accommodation</CardTitle></CardHeader><CardContent className="space-y-3">
+                <p>For learners aged 18 and over. Accommodation is separate from the teaching centre, with segregated male and female sections. Residential staff may stay at the same location in separate staff rooms.</p>
+                <p>Room allocation, accessibility, staff cover, transport and prices must be confirmed for your visit. A booking record does not allocate a bed or a teaching shift.</p>
+              </CardContent></Card>
             </TabsContent>
-
             <TabsContent value="meals" className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {[
-                  { plan: 'Full Board', meals: 'Breakfast, Lunch & Dinner', price: 'Rs.14,000/day', features: ['Hot buffet breakfast', 'Lunch with salad bar', 'Three-course dinner', 'Tea/coffee all day'] },
-                  { plan: 'Half Board', meals: 'Breakfast & Dinner', price: 'Rs.10,000/day', features: ['Hot buffet breakfast', 'Three-course dinner', 'Tea/coffee all day'] },
-                  { plan: 'Self Catering', meals: 'Kitchen Access Only', price: 'Rs.0/day', features: ['Shared kitchen facilities', 'Fridge/microwave access', 'Nearby shops within walking distance'] },
-                ].map(meal => (
-                  <Card key={meal.plan}>
-                    <CardContent className="pt-6 space-y-3">
-                      <div className="flex items-center gap-2">
-                        <Utensils className="h-5 w-5 text-primary" />
-                        <h3 className="font-semibold">{meal.plan}</h3>
-                      </div>
-                      <p className="text-sm text-muted-foreground">{meal.meals}</p>
-                      <Badge variant="outline" className="text-primary">{meal.price}</Badge>
-                      <ul className="text-xs space-y-1">
-                        {meal.features.map(f => (
-                          <li key={f} className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-emerald-500" />{f}</li>
-                        ))}
-                      </ul>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-              <Card>
-                <CardContent className="pt-6">
-                  <h3 className="font-semibold mb-2">Dietary Accommodations</h3>
-                  <p className="text-sm text-muted-foreground">All meals can be prepared to meet specific dietary requirements including Halal, Vegetarian, Vegan, Gluten-free, Nut-free, and Kosher. Please specify your requirements when booking.</p>
-                </CardContent>
-              </Card>
+              <Card><CardHeader><CardTitle>Meals and dietary needs</CardTitle></CardHeader><CardContent><p>Record your meal preference and dietary needs when booking. Catering availability, allergen arrangements and charges require confirmation from the centre.</p></CardContent></Card>
             </TabsContent>
           </Tabs>
         )}
 
-        {weeks.length === 0 && !loading && (
+        {weeks.length === 0 && !loading && !loadError && (
           <Card><CardContent className="pt-6 text-center text-muted-foreground">No residential weeks scheduled yet. Check back closer to the academic term.</CardContent></Card>
         )}
       </div>

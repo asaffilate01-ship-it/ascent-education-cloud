@@ -1,4 +1,4 @@
-export type AgreementRecord={id:string;partner_id?:string;status?:string;starts_on?:string;ends_on?:string;document_reference?:string};
+export type AgreementRecord={commission_basis?:string;commission_amount?:number;commission_currency?:string;id:string;partner_id?:string;status?:string;starts_on?:string;ends_on?:string;document_reference?:string};
 export const agreementStates=['expired','expiring','incomplete','scheduled','current','inactive'] as const;
 export type AgreementState=typeof agreementStates[number];
 export const agreementLabels:Record<AgreementState,string>={expired:'Expired',expiring:'Expires within 30 days',incomplete:'Evidence or dates missing',scheduled:'Starts in future',current:'Current dates and reference',inactive:'Not signed / terminated'};

@@ -1,3 +1,4 @@
+import { parseCommissionTerms, describeCommissionTerms } from '@/lib/commissionTerms';
 import PathwayCatalogue, {type CatalogueRoute} from './PathwayCatalogue';
 import AgreementRenewals from './AgreementRenewals';
 import SupportTasks from './SupportTasks';
@@ -58,11 +59,12 @@ export default function PartnerWorkflow({ student = false }: { student?: boolean
  async function agreement(e:React.FormEvent<HTMLFormElement>) {
   e.preventDefault();if(!tenant||busy)return;const form=e.currentTarget;const f=new FormData(form);setBusy(true);
   try{
+   const commissionTerms = parseCommissionTerms(f);
    const file=f.get('documentFile') as File|null;
    const document=file?.size?await uploadAgreement(db,tenant,String(f.get('partner')),file):null;
    const reference=document?.reference||String(f.get('document')||'').trim();
    if(!reference)throw new Error('Upload a signed PDF or enter a controlled document reference.');
-   const result=await db.from('international_partner_agreements').insert({tenant_id:tenant,partner_id:f.get('partner'),agreement_type:'recruitment',status:'signed',document_reference:reference,document_id:document?.id||null,starts_on:f.get('starts'),ends_on:f.get('ends')||null});
+   const result=await db.from('international_partner_agreements').insert({tenant_id:tenant,partner_id:f.get('partner'),agreement_type:'recruitment',...commissionTerms,status:'signed',document_reference:reference,document_id:document?.id||null,starts_on:f.get('starts'),ends_on:f.get('ends')||null});
    if(result.error)throw result.error;
    toast.success('Signed agreement registered');form.reset();await load();
   }catch(error){toast.error((error as Error).message||'Agreement could not be registered');}finally{setBusy(false);}
@@ -88,9 +90,13 @@ export default function PartnerWorkflow({ student = false }: { student?: boolean
     <label>Organisation<select name="partner" required className="w-full border rounded p-2"><option value="">Choose organisation</option>{partners.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></label>
     <label>Signed PDF (maximum 10 MB)<Input name="documentFile" type="file" accept="application/pdf,.pdf"/></label><label>Existing controlled reference (if not uploading)<Input name="document" placeholder="Controlled document reference"/></label>
     <label>Starts on<Input name="starts" type="date" required/></label><label>Ends on (optional)<Input name="ends" type="date"/></label>
+    <label>Commission basis (optional)<select name="commissionBasis" className="w-full border rounded p-2"><option value="">Not recorded</option><option value="flat_per_enrolment">Flat amount per enrolment</option><option value="percentage_of_tuition">Percentage of tuition</option></select></label>
+    <label>Agreed amount or percentage<Input name="commissionAmount" type="number" min="0" step="0.01" /></label>
+    <label>Agreement currency<Input name="commissionCurrency" maxLength={3} placeholder="e.g. GBP" /></label>
+    <p className="text-sm text-muted-foreground">Enter only terms evidenced in the signed agreement. These terms do not create earned revenue, an invoice or a payout. Tiered terms remain in the signed document.</p>
     <Button disabled={busy}>Register signed agreement</Button>
    </form>
-   <AgreementRenewals key={tenant} agreements={agreements} partners={partners} routes={routes} renderAgreement={(a,usable)=><article className="border rounded p-3 space-y-2" key={a.id}><p>{partners.find(p=>p.id===a.partner_id)?.name} · {a.status} · {a.starts_on} – {a.ends_on||'Open ended'}</p><p className="text-sm">{a.document_reference}</p>{a.document_reference?.startsWith('partner-agreements/')&&<Button variant="outline" type="button" disabled={busy} onClick={async()=>{
+   <AgreementRenewals key={tenant} agreements={agreements} partners={partners} routes={routes} renderAgreement={(a,usable)=><article className="border rounded p-3 space-y-2" key={a.id}><p className="text-sm">{describeCommissionTerms(a)}</p><p>{partners.find(p=>p.id===a.partner_id)?.name} · {a.status} · {a.starts_on} – {a.ends_on||'Open ended'}</p><p className="text-sm">{a.document_reference}</p>{a.document_reference?.startsWith('partner-agreements/')&&<Button variant="outline" type="button" disabled={busy} onClick={async()=>{
     setBusy(true);try{const result=await db.storage.from('partner-agreements').createSignedUrl(a.document_reference!.slice('partner-agreements/'.length),60,{download:true});if(result.error||!result.data)throw new Error('Document unavailable or access denied');window.location.assign(result.data.signedUrl);}catch(e){toast.error((e as Error).message);}finally{setBusy(false);}
    }}>Download signed PDF</Button>}<div className="flex gap-2"><Button disabled={busy||!usable} onClick={()=>void write('international_education_partners',{relationship_status:'contracted',agreement_signed_on:a.starts_on},a.partner_id)}>Activate relationship</Button><Button variant="outline" disabled={busy||a.status==='terminated'} onClick={()=>void write('international_partner_agreements',{status:'terminated'},a.id)}>Terminate agreement</Button></div><ReferralHistory tenant={tenant} referral={a.id} entityTable="international_partner_agreements"/></article>}/>
   </>}

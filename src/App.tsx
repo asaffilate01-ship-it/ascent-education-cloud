@@ -106,6 +106,8 @@ const BlogListPage = lazy(() => import("./pages/blog/BlogListPage"));
 const BlogPostPage = lazy(() => import("./pages/blog/BlogPostPage"));
 const StudentOnboarding = lazy(() => import("./pages/onboarding/StudentOnboarding"));
 const LecturerOnboarding = lazy(() => import("./pages/onboarding/LecturerOnboarding"));
+const StudyPriorities = lazy(() => import("./pages/promo/StudyPriorities"));
+const ResidentialPlanner = lazy(() => import("./pages/residential/ResidentialPlanner"));
 const ResidentialWeeks = lazy(() => import("./pages/residential/ResidentialWeeks"));
 const AuditLog = lazy(() => import("./pages/audit/AuditLog"));
 const MyActivityLog = lazy(() => import("./pages/audit/MyActivityLog"));
@@ -223,6 +225,7 @@ function AppRoutes() {
         {/* ========== PUBLIC MARKETING (UniPathway) ========== */}
         <Route path="/" element={<PromoHome />} />
         <Route path="/about" element={<RedirectToTenant suffix="/about" />} />
+        <Route path="/study" element={<StudyPriorities />} />
         <Route path="/courses" element={<RedirectToTenant suffix="/courses" />} />
         <Route path="/tuition" element={<LearningOverview kind="tuition" />} />
         <Route path="/employer-learning" element={<LearningOverview kind="employer" />} />
@@ -289,6 +292,7 @@ function AppRoutes() {
         <Route path="/director/readiness" element={<Director><ProductionReadiness /></Director>} />
         <Route path="/director/application-support" element={<Director><SupportDesk /></Director>} />
         <Route path="/director/global-partners" element={<Director><GlobalEducationPartners /></Director>} />
+        <Route path="/director/residential-planner" element={<Director><ResidentialPlanner /></Director>} />
         <Route path="/director/schedule" element={<Director><ScheduleManager /></Director>} />
         <Route path="/director/branding" element={<Director><TenantBranding /></Director>} />
         <Route path="/director/page-builder" element={<Director><TenantPageBuilder /></Director>} />

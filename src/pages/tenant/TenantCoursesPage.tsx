@@ -15,50 +15,50 @@ interface Course {
   body: string;
   level: string;
   duration: string;
-  credits: number;
+  credits: number | null;
   modules: string[];
   progression: string;
 }
 
-// Fallback catalogue used only if the programme table is unreachable.
-const FALLBACK_COURSES: Course[] = [
-  { id: '1', title: 'Level 5 Diploma in Business Management', body: 'OTHM', level: 'Level 5', duration: '12 months', credits: 120, modules: ['Strategic Management', 'Financial Analysis', 'Marketing Strategy', 'Business Environment', 'Research Methods', 'Operations Management'], progression: 'BA (Hons) Top-Up at UK universities' },
-  { id: '2', title: 'Level 4 Diploma in Business Management', body: 'OTHM', level: 'Level 4', duration: '12 months', credits: 120, modules: ['Business Environment', 'Communication Skills', 'Financial Accounting', 'Management Accounting', 'People Management', 'Business Law'], progression: 'Level 5 Diploma' },
-  { id: '3', title: 'Level 5 Diploma in Computing', body: 'QUALIFI', level: 'Level 5', duration: '12 months', credits: 120, modules: ['Software Engineering', 'Database Design', 'Networking', 'Cyber Security', 'Web Development', 'Project Management'], progression: 'BSc (Hons) Top-Up at UK universities' },
-  { id: '4', title: 'Level 4 Diploma in Computing', body: 'QUALIFI', level: 'Level 4', duration: '12 months', credits: 120, modules: ['Computer Systems', 'Programming Fundamentals', 'Web Technologies', 'Database Systems', 'Networking Basics', 'IT Project'], progression: 'Level 5 Diploma' },
-  { id: '5', title: 'Level 3 Diploma in Accounting', body: 'IAB', level: 'Level 3', duration: '6 months', credits: 60, modules: ['Bookkeeping', 'Financial Statements', 'VAT Returns', 'Payroll'], progression: 'Level 4 Diploma in Accounting' },
-];
-
 export default function TenantCoursesPage() {
   const { slug } = useParams();
   const { brandName, primaryColor } = useTenantBranding();
-  const [courses, setCourses] = useState<Course[]>(FALLBACK_COURSES);
+  const [courses, setCourses] = useState<Course[]>([]);
 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [retry, setRetry] = useState(0);
+  const [bodyFilter, setBodyFilter] = useState('All');
   useEffect(() => {
     let active = true;
+    setCourses([]); setLoading(true); setError('');
     (async () => {
-      const { data } = await supabase
-        .from('programmes')
-        .select('id, title, level, awarding_body, credits, duration, progression_pathway, modules(title, code)')
-        .eq('status', 'active')
-        .order('level', { ascending: true });
-
-      if (!active || !data?.length) return;
-      setCourses(
-        data.map((p: any) => ({
-          id: p.id,
-          title: p.title,
-          body: p.awarding_body,
-          level: p.level,
-          duration: p.duration ?? '12 months',
-          credits: p.credits ?? 0,
-          modules: [...(p.modules ?? [])].sort((a: any, b: any) => String(a.code ?? '').localeCompare(String(b.code ?? ''))).map((m: any) => m.title),
-          progression: typeof p.progression_pathway === 'string' ? p.progression_pathway : '',
-        })),
-      );
+      try {
+        if (!slug) throw new Error('Choose a centre to view its available courses.');
+        const tenant = await supabase.from('tenants_public').select('id').eq('slug', slug).single();
+        if (tenant.error || !tenant.data) throw new Error('The centre could not be loaded.');
+        const rows: Course[] = [];
+        for (let offset = 0; ; offset += 250) {
+          const { data, error } = await supabase.from('programmes')
+            .select('id, title, level, awarding_body, credits, duration, progression_pathway, modules(title, code)')
+            .eq('tenant_id', tenant.data.id).eq('status', 'active').order('id').range(offset, offset + 249);
+          if (!active) return;
+          if (error) throw new Error('Courses could not be loaded. Please retry.');
+          rows.push(...(data || []).map((p: any) => ({
+            id: p.id, title: p.title, body: p.awarding_body || 'Not recorded', level: p.level || '',
+            duration: p.duration || 'Duration to be confirmed', credits: p.credits,
+            modules: [...(p.modules || [])].sort((a: any, b: any) => String(a.code || '').localeCompare(String(b.code || ''))).map((m: any) => m.title),
+            progression: typeof p.progression_pathway === 'string' ? p.progression_pathway : '',
+          })));
+          if (!data || data.length < 250) break;
+        }
+        if (active) setCourses(rows);
+      } catch (e) { if (active) setError((e as Error).message); }
+      finally { if (active) setLoading(false); }
     })();
     return () => { active = false; };
-  }, []);
+  }, [slug, retry]);
+  const visibleCourses = courses.filter(c => bodyFilter === 'All' || c.body.toUpperCase() === bodyFilter);
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -69,7 +69,7 @@ export default function TenantCoursesPage() {
       item: {
         '@type': 'Course',
         name: c.title,
-        description: `${c.level} qualification awarded by ${c.body}, ${c.credits} credits over ${c.duration}.`,
+        description: `${c.level} qualification: ${c.body}. Duration: ${c.duration}.`,
         provider: { '@type': 'Organization', name: 'UniPathway' },
       },
     })),
@@ -77,7 +77,7 @@ export default function TenantCoursesPage() {
 
   return (
     <div className="min-h-dvh bg-background">
-      <Seo title="Programmes & Diplomas — OTHM, QUALIFI & IAB | UniPathway" description="Browse UK-accredited Level 3–5 diplomas in business, computing and accounting. Study 80% online from Pakistan and progress to a university top-up degree." canonical="/courses" jsonLd={jsonLd} />
+      <Seo title="Programmes & Diplomas — OTHM, QUALIFI & IAB | UniPathway" description="Explore recorded qualifications in business, computing and accounting. OTHM and Qualifi plans include two 14-day centre visits annually, with remaining learning online." canonical="/courses" jsonLd={jsonLd} />
       <TenantNav brandName={brandName} primaryColor={primaryColor} activePage="courses" />
 
       {/* Hero */}
@@ -107,8 +107,12 @@ export default function TenantCoursesPage() {
       {/* Course Cards */}
       <section className="py-8 sm:py-12">
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
+          <div className="mb-5 flex flex-wrap gap-2">{['All', 'OTHM', 'QUALIFI', 'IAB'].map(body => <Button key={body} variant={bodyFilter === body ? 'default' : 'outline'} aria-pressed={bodyFilter === body} onClick={() => setBodyFilter(body)}>{body}</Button>)}<Button asChild variant="outline"><Link to="/study">IT, tuition, IELTS and funded enquiries</Link></Button></div>
+          {loading && <p role="status">Loading available programmes…</p>}
+          {error && <div role="alert"><p>{error}</p><Button onClick={() => setRetry(r => r + 1)}>Retry courses</Button></div>}
+          {!loading && !error && !visibleCourses.length && <p>No active programmes match this selection. Ask admissions about upcoming availability.</p>}
           <div className="grid gap-4 md:grid-cols-2">
-            {courses.map((course) => (
+            {visibleCourses.map((course) => (
 
               <article key={course.id} className="surface-card rounded-md p-5 sm:p-7 hover-lift">
                 <div className="flex h-full flex-col gap-4">
@@ -120,8 +124,8 @@ export default function TenantCoursesPage() {
                     <h2 className="text-base sm:text-lg font-bold">{course.title}</h2>
                     <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-2 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {course.duration}</span>
-                      <span className="flex items-center gap-1"><Award className="w-3 h-3" /> {course.credits} credits</span>
-                      <span className="flex items-center gap-1"><Video className="w-3 h-3" /> 80% Online</span>
+                      <span className="flex items-center gap-1"><Award className="w-3 h-3" /> {course.credits == null ? 'Credits to be confirmed' : `${course.credits} credits`}</span>
+                      <span className="flex items-center gap-1"><Video className="w-3 h-3" /> {['OTHM','QUALIFI'].includes(course.body.toUpperCase()) ? 'Online + two 14-day visits annually' : 'Delivery to be confirmed'}</span>
                     </div>
 
                     {/* Modules */}
@@ -138,7 +142,7 @@ export default function TenantCoursesPage() {
                     {course.progression && (
                       <div className="mt-3 flex items-center gap-2 text-xs">
                         <GraduationCap className="w-3.5 h-3.5 text-success" />
-                        <span className="text-muted-foreground">Progresses to:</span>
+                        <span className="text-muted-foreground">Progression guidance:</span>
                         <span className="font-medium text-success">{course.progression}</span>
                       </div>
                     )}
@@ -152,8 +156,8 @@ export default function TenantCoursesPage() {
                       <p className="text-xs text-muted-foreground">Price on Application</p>
                     </div>
                     <Button asChild>
-                      <Link to="/apply">
-                        Apply Now <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                      <Link to={`/tenant/${slug}/contact`}>
+                        Enquire about study <ArrowRight className="w-3.5 h-3.5 ml-1" />
                       </Link>
                     </Button>
                   </div>
@@ -170,9 +174,9 @@ export default function TenantCoursesPage() {
           <h2 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8">Hybrid Delivery Model</h2>
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
             {[
-              { pct: '80%', title: 'Online Learning', desc: 'Live HD video lectures, recorded sessions, digital whiteboard, assignments, and 24/7 learning library access' },
-              { pct: '20%', title: 'Centre-Based', desc: 'Two residential weeks per year for intensive workshops, group projects, tutor meetings, and presentations' },
-              { pct: '100%', title: 'Exams at Centre', desc: 'All formal examinations conducted at approved centres under invigilated conditions with ID verification' },
+              { pct: 'Online', title: 'Between Visits', desc: 'The rest of the OTHM / Qualifi programme is delivered online, according to the confirmed programme timetable.' },
+              { pct: '2 × 14 days', title: 'Annual Centre Visits', desc: 'Four weeks annually for OTHM / Qualifi. Planned centre teaching totals 72 hours plus up to three hours of optional private help.' },
+              { pct: 'By programme', title: 'Assessment and Approval', desc: 'Assessment, entry requirements and the complete delivery plan must be confirmed for your qualification. These residential hours do not represent total qualification learning hours.' },
             ].map((d) => (
               <div key={d.title} className="surface-card p-5 text-center">
                 <p className="text-2xl sm:text-3xl font-bold text-primary mb-2">{d.pct}</p>
@@ -187,8 +191,8 @@ export default function TenantCoursesPage() {
       {/* Footer CTA */}
       <section className="py-10 sm:py-12 text-center px-4">
         <h2 className="text-xl sm:text-2xl font-bold mb-3">Ready to Start Your Pathway?</h2>
-        <p className="text-muted-foreground mb-6 text-sm">Apply today and begin your journey to a UK degree</p>
-        <Link to="/apply"><Button size="lg" className="px-8">Apply Now <ArrowRight className="w-4 h-4 ml-1" /></Button></Link>
+        <p className="text-muted-foreground mb-6 text-sm">Discuss your programme and progression options with admissions</p>
+        <Link to={`/tenant/${slug}/contact`}><Button size="lg" className="px-8">Enquire about study <ArrowRight className="w-4 h-4 ml-1" /></Button></Link>
       </section>
       <PublicFooter />
     </div>
