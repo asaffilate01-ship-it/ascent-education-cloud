@@ -7,7 +7,7 @@ it('requires closure review for export and invalidates review after an edit',()=
   render(<ResidentialCalendar />);
   const button=screen.getByRole('button',{name:'Export dated teaching and trips'});
   expect(button).toBeDisabled();
-  fireEvent.click(screen.getByRole('checkbox'));
+  fireEvent.click(screen.getByRole('checkbox',{name:/I have reviewed Ramadan/}));
   expect(button).toBeEnabled();
   fireEvent.change(screen.getByLabelText('Calendar students'),{target:{value:'500'}});
   expect(button).toBeDisabled();
