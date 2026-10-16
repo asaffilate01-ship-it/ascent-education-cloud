@@ -1,0 +1,8 @@
+import {readdir,readFile,writeFile} from 'node:fs/promises';
+import path from 'node:path';
+async function files(dir){const entries=await readdir(dir,{withFileTypes:true});return (await Promise.all(entries.map(e=>e.isDirectory()?files(path.join(dir,e.name)):[path.join(dir,e.name)]))).flat();}
+const sources=await Promise.all((await files('src')).filter(p=>/\.[jt]sx?$/.test(p)&&!p.includes('/test/')&&!/\.test\./.test(p)).map(async p=>({path:p,text:await readFile(p,'utf8')})));
+const functions=(await readdir('supabase/functions',{withFileTypes:true})).filter(e=>e.isDirectory()&&!e.name.startsWith('_')).map(e=>e.name).sort();
+const rows=functions.map(name=>({name,callers:sources.filter(s=>[...s.text.matchAll(/functions\s*\.\s*invoke\s*\(\s*['"]([^'"]+)['"]/g)].some(m=>m[1]===name)).map(s=>s.path)}));
+const output=['# Edge Function frontend wiring inventory','','Generated with `npm run audit:wiring`. Literal frontend calls only; absence does not prove an endpoint is unused (webhooks, schedules and external callers are outside this scan). Presence does not prove deployment, permissions, credentials or successful execution.','',`Functions: ${rows.length}. With literal frontend callers: ${rows.filter(r=>r.callers.length).length}. Without: ${rows.filter(r=>!r.callers.length).length}.`,'','| Function | Frontend callers |','|---|---|',...rows.map(r=>`| ${r.name} | ${r.callers.length?r.callers.map(p=>'`'+p+'`').join(', '):'None found'} |`),''].join('\n');
+await writeFile('docs/UNIPATHWAY_FUNCTION_WIRING.md',output);console.log(`Audited ${rows.length} functions; ${rows.filter(r=>r.callers.length).length} have literal frontend callers.`);
