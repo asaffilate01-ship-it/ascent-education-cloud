@@ -21,28 +21,32 @@ const fadeUp = {
 
 export default function StudentDashboard() {
   const { user } = useAuth();
-  const { data: assignments, loading: aLoading } = useSupabaseQuery('assignments', {
-    orderBy: { column: 'deadline', ascending: true },
-  });
-  const { data: submissions, loading: sLoading } = useSupabaseQuery('submissions');
-  const { data: modules } = useSupabaseQuery('modules');
-  const { data: programmes } = useSupabaseQuery('programmes');
-
-  const loading = aLoading || sLoading;
-
-  // Compute stats
-  const mySubmissions = useMemo(() =>
-    user?.id ? submissions.filter((s) => s.student_id === user.id) : submissions
-  , [submissions, user]);
+  const scope = [{column: 'tenant_id', operator: 'eq' as const, value: user?.tenantId}];
+  const enrolmentsQuery = useSupabaseQuery('student_enrolments', {enabled: !!user?.tenantId, filters: [...scope, {column: 'student_id', operator: 'eq', value: user?.id}, {column: 'status', operator: 'eq', value: 'active'}]});
+  const programmeIds = [...new Set(enrolmentsQuery.data.map(row => row.programme_id))];
+  const programmesQuery = useSupabaseQuery('programmes', {enabled: programmeIds.length > 0, filters: [...scope, {column: 'id', operator: 'in', value: programmeIds}]});
+  const modulesQuery = useSupabaseQuery('modules', {enabled: programmeIds.length > 0, filters: [...scope, {column: 'programme_id', operator: 'in', value: programmeIds}]});
+  const moduleIds = modulesQuery.data.map(row => row.id);
+  const assignmentsQuery = useSupabaseQuery('assignments', {enabled: moduleIds.length > 0, filters: [...scope, {column: 'module_id', operator: 'in', value: moduleIds}], orderBy: {column: 'deadline', ascending: true}});
+  const submissionsQuery = useSupabaseQuery('submissions', {enabled: !!user?.tenantId, filters: [...scope, {column: 'student_id', operator: 'eq', value: user?.id}]});
+  const {data: assignments} = assignmentsQuery;
+  const {data: modules} = modulesQuery;
+  const {data: programmes} = programmesQuery;
+  const mySubmissions = submissionsQuery.data;
+  const queries = [enrolmentsQuery, programmesQuery, modulesQuery, assignmentsQuery, submissionsQuery];
+  const loading = queries.some(query => query.loading);
 
   const gradedSubmissions = mySubmissions.filter((s) => s.grade !== null);
   const avgGrade = gradedSubmissions.length > 0
     ? Math.round(gradedSubmissions.reduce((sum, s) => sum + (s.grade || 0), 0) / gradedSubmissions.length)
     : 0;
 
-  const upcomingAssignments = assignments.filter((a) => new Date(a.deadline) > new Date());
+  const submittedIds = new Set(mySubmissions.filter(s => ['submitted', 'graded'].includes(s.status)).map(s => s.assignment_id));
+  const upcomingAssignments = assignments.filter((a) => new Date(a.deadline) > new Date() && !submittedIds.has(a.id));
 
+  if (!user?.tenantId) return <DashboardLayout title="My Dashboard"><p role="alert">A centre assignment is required.</p></DashboardLayout>;
   if (loading) return <DashboardSkeleton />;
+  if (queries.some(query => query.error)) return <DashboardLayout title="My Dashboard"><p role="alert">Your learning records could not be loaded completely.</p><Button onClick={() => queries.forEach(query => void query.refetch())}>Retry learning records</Button></DashboardLayout>;
 
   const stats = [
     { label: 'Courses', value: String(programmes.length), icon: BookOpen },
@@ -51,7 +55,7 @@ export default function StudentDashboard() {
       const days = (new Date(a.deadline).getTime() - Date.now()) / 86400000;
       return days <= 7;
     }).length} this week`, changeType: 'negative' as const, icon: ClipboardList },
-    { label: 'Average Grade', value: avgGrade > 0 ? `${avgGrade}%` : '—', change: avgGrade >= 70 ? 'Merit' : avgGrade >= 40 ? 'Pass' : '—', changeType: 'positive' as const, icon: BarChart3 },
+    { label: 'Average Grade', value: gradedSubmissions.length ? `${avgGrade}%` : '—', change: 'recorded submissions', changeType: 'positive' as const, icon: BarChart3 },
   ];
 
   return (

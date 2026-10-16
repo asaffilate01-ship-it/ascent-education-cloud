@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -13,41 +14,49 @@ export function useSupabaseQuery<T extends TableName>(
     enabled?: boolean;
   }
 ) {
-  const [data, setData] = useState<Tables<T>[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {user} = useAuth();
+  const key = JSON.stringify([table, options, user?.id, user?.tenantId, user?.roles]);
+  const currentKey = useRef(key);
+  currentKey.current = key;
+  const generation = useRef(0);
+  const [state, setState] = useState<{key: string; data: Tables<T>[]; loading: boolean; error: string | null}>({key, data: [], loading: options?.enabled !== false, error: null});
 
   const fetchData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      let query = supabase.from(table).select(options?.select || '*');
-
-      if (options?.filters) {
-        for (const f of options.filters) {
-          query = (query as any).filter(f.column, f.operator, f.value);
-        }
-      }
-
-      if (options?.orderBy) {
-        query = query.order(options.orderBy.column, { ascending: options.orderBy.ascending ?? false });
-      }
-
-      const { data: result, error: err } = await query;
-      if (err) throw err;
-      setData((result || []) as Tables<T>[]);
-    } catch (e: any) {
-      setError(e.message);
-      setData([]);
-    } finally {
-      setLoading(false);
+    const token = ++generation.current;
+    const current = () => token === generation.current && currentKey.current === key;
+    if (options?.enabled === false) {
+      setState({key, data: [], loading: false, error: null});
+      return;
     }
-  }, [table, JSON.stringify(options)]);
+    setState({key, data: [], loading: true, error: null});
+    try {
+      const rows: Tables<T>[] = [];
+      for (let offset = 0; current(); offset += 250) {
+        let query = supabase.from(table).select(options?.select || '*');
+        for (const f of options?.filters || []) query = (query as any).filter(f.column, f.operator, f.value);
+        if (options?.orderBy) query = query.order(options.orderBy.column, {ascending: options.orderBy.ascending ?? false});
+        // RLS still controls visibility. The unique ID order makes pagination stable.
+        if (options?.orderBy?.column !== 'id') query = query.order('id', {ascending: true});
+        const {data, error} = await query.range(offset, offset + 249);
+        if (!current()) return;
+        if (error) throw error;
+        if (!data) throw new Error('No data returned');
+        rows.push(...(data as Tables<T>[]));
+        if (data.length < 250) break;
+      }
+      if (current()) setState({key, data: rows, loading: false, error: null});
+    } catch (error) {
+      if (current()) setState({key, data: [], loading: false, error: error instanceof Error ? error.message : 'Data could not be loaded. Please retry.'});
+    }
+  // The serialized key includes all query options and account scope.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
 
   useEffect(() => {
-    if (options?.enabled === false) return;
-    fetchData();
-  }, [fetchData, options?.enabled]);
+    void fetchData();
+    return () => { generation.current++; };
+  }, [fetchData]);
 
-  return { data, loading, error, refetch: fetchData };
+  const visible: {data: Tables<T>[]; loading: boolean; error: string | null} = state.key === key ? state : {data: [], loading: options?.enabled !== false, error: null};
+  return {...visible, refetch: fetchData};
 }

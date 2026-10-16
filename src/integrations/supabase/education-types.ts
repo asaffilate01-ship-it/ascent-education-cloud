@@ -301,6 +301,51 @@ export type EducationTables = {
     };
     Relationships: [];
   };
+  international_support_tasks: {
+    Row: {
+      id: string;
+      tenant_id: string;
+      application_id: string;
+      task_type: string;
+      title: string;
+      owner_id: string | null;
+      due_at: string | null;
+      status: string;
+      notes: string | null;
+      created_at: string;
+      updated_at: string;
+      completed_at: string | null;
+    };
+    Insert: {
+      id?: string;
+      tenant_id: string;
+      application_id: string;
+      task_type: string;
+      title: string;
+      owner_id?: string | null;
+      due_at?: string | null;
+      status?: string;
+      notes?: string | null;
+      created_at?: string;
+      updated_at?: string;
+      completed_at?: string | null;
+    };
+    Update: {
+      id?: string;
+      tenant_id?: string;
+      application_id?: string;
+      task_type?: string;
+      title?: string;
+      owner_id?: string | null;
+      due_at?: string | null;
+      status?: string;
+      notes?: string | null;
+      created_at?: string;
+      updated_at?: string;
+      completed_at?: string | null;
+    };
+    Relationships: [];
+  };
   omniqora_cohort_intelligence: {
     Row: {
       id: string;
@@ -1023,6 +1068,8 @@ export type EducationTables = {
       checked_at: string | null;
       checked_by: string | null;
       notes: string | null;
+      revision: number;
+      valid_until: string | null;
     };
     Insert: {
       id?: string;
@@ -1034,6 +1081,8 @@ export type EducationTables = {
       checked_at?: string | null;
       checked_by?: string | null;
       notes?: string | null;
+      revision?: number;
+      valid_until?: string | null;
     };
     Update: {
       id?: string;
@@ -1045,6 +1094,50 @@ export type EducationTables = {
       checked_at?: string | null;
       checked_by?: string | null;
       notes?: string | null;
+      revision?: number;
+      valid_until?: string | null;
+    };
+    Relationships: [];
+  };
+  production_readiness_reviews: {
+    Row: {
+      id: string;
+      tenant_id: string;
+      check_id: string;
+      revision: number;
+      old_status: string;
+      new_status: string;
+      evidence_reference: string | null;
+      notes: string | null;
+      valid_until: string | null;
+      reviewed_by: string;
+      created_at: string;
+    };
+    Insert: {
+      id?: string;
+      tenant_id: string;
+      check_id: string;
+      revision: number;
+      old_status: string;
+      new_status: string;
+      evidence_reference?: string | null;
+      notes?: string | null;
+      valid_until?: string | null;
+      reviewed_by: string;
+      created_at?: string;
+    };
+    Update: {
+      id?: string;
+      tenant_id?: string;
+      check_id?: string;
+      revision?: number;
+      old_status?: string;
+      new_status?: string;
+      evidence_reference?: string | null;
+      notes?: string | null;
+      valid_until?: string | null;
+      reviewed_by?: string;
+      created_at?: string;
     };
     Relationships: [];
   };

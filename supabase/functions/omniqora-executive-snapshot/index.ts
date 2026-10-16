@@ -1,2 +1,25 @@
-import {corsHeaders,rateLimit,rateLimitResponse,getClientIp} from '../_shared/cors.ts'; import {authenticateRequest} from '../_shared/auth.ts'; import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
-Deno.serve(async(req)=>{if(req.method==='OPTIONS')return new Response(null,{headers:corsHeaders});if(!rateLimit(getClientIp(req),5,60000))return rateLimitResponse();try{const auth=await authenticateRequest(req);if(auth instanceof Response)return auth;const sb=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_ANON_KEY')!,{global:{headers:{Authorization:req.headers.get('Authorization')!}}});const [s,c,i,l,p]=await Promise.all([sb.from('omniqora_student_intelligence').select('*'),sb.from('course_catalogue').select('id').eq('active',true),sb.from('omniqora_interventions').select('id').eq('status','open'),sb.from('lab_sessions').select('id').eq('status','completed'),sb.from('residential_work_placements').select('id').eq('status','completed')]);const students=s.data||[];const avg=(k:string)=>{const xs=students.map((x:any)=>Number(x[k])).filter(Number.isFinite);return xs.length?Math.round(xs.reduce((a:number,b:number)=>a+b,0)/xs.length):null};const row={tenant_id:auth.tenant_id,snapshot_date:new Date().toISOString().slice(0,10),learners:students.length,active_courses:c.data?.length||0,attendance_rate:avg('attendance_score'),engagement_score:avg('engagement_score'),completion_rate:avg('assessment_score'),high_attention:students.filter((x:any)=>Number(x.risk_score)>=70).length,open_interventions:i.data?.length||0,labs_completed:l.data?.length||0,placements_completed:p.data?.length||0};const {data,error}=await sb.from('omniqora_executive_snapshots').upsert(row,{onConflict:'tenant_id,snapshot_date'}).select().single();if(error)throw error;return new Response(JSON.stringify({snapshot:data}),{headers:{...corsHeaders,'Content-Type':'application/json'}})}catch(e){return new Response(JSON.stringify({error:e instanceof Error?e.message:'Unknown error'}),{status:500,headers:{...corsHeaders,'Content-Type':'application/json'}})}})
+import {intelligenceHandler, saveSnapshot, tenantRows, tenantCount} from '../_shared/intelligence.ts';
+import {attendanceRate} from '../_shared/intelligence-core.ts';
+
+Deno.serve(intelligenceHandler(true, async (db, tenant) => {
+  const [enrolled, programmes, attendance, courses, interventions, labs, placements, signals] = await Promise.all([
+    tenantRows(db, 'course_enrolment_requests', tenant, 'id,student_id', {status: 'enrolled'}),
+    tenantRows(db, 'student_enrolments', tenant, 'id,student_id', {status: 'active'}),
+    tenantRows(db, 'attendance_records', tenant, 'id,status,date'),
+    tenantCount(db, 'course_catalogue', tenant, 'active', true),
+    tenantCount(db, 'omniqora_interventions', tenant, 'status', 'open'),
+    tenantCount(db, 'lab_sessions', tenant, 'status', 'completed'),
+    tenantCount(db, 'residential_work_placements', tenant, 'status', 'completed'),
+    tenantRows(db, 'omniqora_student_intelligence', tenant, 'id,student_id,risk_score', {model_version: 'recorded-attendance-v2'}),
+  ]);
+  const now = new Date().toISOString();
+  const members = new Set([...enrolled, ...programmes].map(r => r.student_id));
+  const snapshot = await saveSnapshot(db, 'omniqora_executive_snapshots', {
+    tenant_id: tenant, snapshot_date: now.slice(0, 10), learners: members.size, active_courses: courses,
+    attendance_rate: attendanceRate(attendance.filter(r => r.date <= now.slice(0, 10)) as {status: string}[]),
+    engagement_score: null, completion_rate: null, high_attention: signals.filter(r => members.has(r.student_id) && r.risk_score >= 70).length,
+    open_interventions: interventions, labs_completed: labs, placements_completed: placements,
+    quality_signals: {calculated_at: now, model_version: 'recorded-attendance-v2', attendance_scope: 'All recorded tenant attendance through snapshot date; excused excluded', unavailable_metrics: ['engagement_score', 'completion_rate'], high_attention_scope: 'Active learners with recorded attendance risk >=70; excludes unscored learners; manual review required', learner_scope: 'Distinct active programme or enrolled course learners'},
+  }, 'tenant_id,snapshot_date');
+  return {snapshot};
+}));

@@ -16,6 +16,10 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npx tsc --noEmit -p tsconfig.app.json
       - run: npm run lint
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.9.6
+      - run: npm run check:intelligence
       - run: npm run test:db
       - run: npm run test
       - run: npm run build

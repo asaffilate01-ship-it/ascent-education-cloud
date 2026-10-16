@@ -1,2 +1,22 @@
-import {corsHeaders,rateLimit,rateLimitResponse,getClientIp} from '../_shared/cors.ts'; import {authenticateRequest} from '../_shared/auth.ts'; import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
-Deno.serve(async(req)=>{if(req.method==='OPTIONS')return new Response(null,{headers:corsHeaders});if(!rateLimit(getClientIp(req),20,60000))return rateLimitResponse();try{const auth=await authenticateRequest(req);if(auth instanceof Response)return auth;const {student_id}=await req.json();const sb=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_ANON_KEY')!,{global:{headers:{Authorization:req.headers.get('Authorization')!}}});const {data:events,error}=await sb.from('omniqora_education_events').select('event_type,occurred_at,payload').eq('student_id',student_id).order('occurred_at',{ascending:false}).limit(500);if(error)throw error;const score=(name:string)=>{const xs=(events||[]).filter((e:any)=>e.event_type.startsWith(name));if(!xs.length)return null;return Math.min(100,Math.round(xs.length*8))};const attendance=score('attendance')??score('class');const assessment=score('assessment');const lab=score('lab');const tuition=score('tuition')??score('stemcoach');const career=score('career')??score('placement');const vals=[attendance,assessment,lab,tuition].filter((x):x is number=>x!==null);const engagement=vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length):null;const risk=engagement===null?0:Math.max(0,100-engagement);const factors=[];if(attendance!==null&&attendance<50)factors.push({type:'attendance',severity:'high'});if(assessment!==null&&assessment<50)factors.push({type:'assessment',severity:'high'});const recommendations=factors.map((f:any)=>({action:f.type==='attendance'?'Academic attendance review':'Academic support review',human_review:true}));const {data,error:upErr}=await sb.from('omniqora_student_intelligence').upsert({tenant_id:auth.tenant_id,student_id,risk_score:risk,engagement_score:engagement,attendance_score:attendance,assessment_score:assessment,lab_score:lab,tuition_score:tuition,career_readiness_score:career,factors,recommendations,model_version:'deterministic-v1',human_review_status:risk>=70?'required':'not_required'},{onConflict:'tenant_id,student_id'}).select().single();if(upErr)throw upErr;return new Response(JSON.stringify({intelligence:data}),{headers:{...corsHeaders,'Content-Type':'application/json'}})}catch(e){return new Response(JSON.stringify({error:e instanceof Error?e.message:'Unknown error'}),{status:500,headers:{...corsHeaders,'Content-Type':'application/json'}})}})
+import {intelligenceHandler, saveSnapshot, tenantRows} from '../_shared/intelligence.ts';
+import {attendanceRate, IntelligenceError, uuid} from '../_shared/intelligence-core.ts';
+
+Deno.serve(intelligenceHandler(false, async (db, tenant, body) => {
+  const student_id = uuid(body.student_id);
+  const profile = await db.from('profiles').select('user_id').eq('tenant_id', tenant).eq('user_id', student_id).maybeSingle();
+  if (profile.error) throw new IntelligenceError(503, 'Learner scope could not be verified');
+  if (!profile.data) throw new IntelligenceError(404, 'Learner not found in this tenant');
+  const today = new Date().toISOString().slice(0, 10);
+  const marks = await tenantRows(db, 'attendance_records', tenant, 'id,status,date', {student_id});
+  const attendance = attendanceRate(marks.filter(r => r.date <= today) as {status: string}[]);
+  if (attendance === null) throw new IntelligenceError(422, 'No recorded attendance is available; no risk score was generated');
+  const calculated_at = new Date().toISOString();
+  const intelligence = await saveSnapshot(db, 'omniqora_student_intelligence', {
+    tenant_id: tenant, student_id, attendance_score: attendance, risk_score: 100 - attendance,
+    engagement_score: null, assessment_score: null, lab_score: null, tuition_score: null, career_readiness_score: null,
+    factors: [{type: 'recorded_attendance_only', attendance_rate: attendance, through: today}],
+    recommendations: [{action: 'Review recorded attendance and missing marks; this is not an overall learner risk assessment', human_review: true}],
+    model_version: 'recorded-attendance-v2', human_review_status: 'required', calculated_at,
+  }, 'tenant_id,student_id');
+  return {intelligence};
+}));

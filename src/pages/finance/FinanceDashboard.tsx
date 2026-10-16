@@ -34,7 +34,7 @@ export default function FinanceDashboard() {
   const [exporting, setExporting] = useState(false);
   const { toast } = useToast();
   
-  const { data: invoices, loading, refetch } = useSupabaseQuery('invoices', {
+  const { data: invoices, loading, error, refetch } = useSupabaseQuery('invoices', {
     orderBy: { column: 'created_at', ascending: false },
   });
 
@@ -73,6 +73,7 @@ export default function FinanceDashboard() {
   };
 
   if (loading) return <DashboardSkeleton />;
+  if (error) return <DashboardLayout title="Finance"><p role="alert">Invoice data could not be loaded. Balances are unavailable.</p><Button onClick={() => void refetch()}>Retry invoices</Button></DashboardLayout>;
 
   const totalBilled = invoices.reduce((s, i) => s + Number(i.amount), 0);
   const totalCollected = invoices.reduce((s, i) => s + Number(i.paid), 0);

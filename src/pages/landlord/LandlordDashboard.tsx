@@ -1,3 +1,5 @@
+import {invoiceMonths, directorReport} from '@/lib/dashboardMetrics';
+import {downloadText} from '@/lib/downloadText';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
@@ -17,33 +19,24 @@ const statusVariant = (s: string) => {
 };
 
 export default function LandlordDashboard() {
-  const { data: tenants, loading: tLoading, refetch } = useSupabaseQuery('tenants', {
+  const { data: tenants, loading: tLoading, error: tError, refetch } = useSupabaseQuery('tenants', {
     orderBy: { column: 'created_at', ascending: false },
   });
-  const { data: invoices, loading: iLoading } = useSupabaseQuery('invoices');
-  const { data: applications, loading: aLoading } = useSupabaseQuery('applications');
+  const { data: invoices, loading: iLoading, error: iError, refetch: refreshInvoices } = useSupabaseQuery('invoices');
+  const { data: applications, loading: aLoading, error: aError, refetch: refreshApplications } = useSupabaseQuery('applications');
 
-  // MRR trend
-  const mrrTrend = useMemo(() => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return months.map((m, i) => {
-      const joined = tenants.filter(t => new Date(t.created_at).getMonth() <= i);
-      const mrr = joined.reduce((s, t) => s + Number(t.monthly_revenue || 0), 0);
-      return { month: m, mrr };
-    });
-  }, [tenants]);
-
-  // Enrolment trend
+  const invoiceTrend = useMemo(() => invoiceMonths(invoices), [invoices]);
   const enrolmentTrend = useMemo(() => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return months.map(m => {
-      const mApps = applications.filter(a => new Date(a.created_at).toLocaleString('en', { month: 'short' }) === m);
-      return { month: m, applications: mApps.length, enrolled: mApps.filter(a => a.stage === 'enrolled').length };
+    const months = [...new Set(applications.map(a => a.created_at.slice(0, 7)))].sort();
+    return months.map(month => {
+      const records = applications.filter(a => a.created_at.slice(0, 7) === month);
+      return {month, applications: records.length, enrolled: records.filter(a => a.stage === 'enrolled').length};
     });
   }, [applications]);
 
   const loading = tLoading || iLoading || aLoading;
   if (loading) return <DashboardSkeleton />;
+  if (tError || iError || aError) return <DashboardLayout title="Platform overview"><p role="alert">Platform records could not be loaded completely.</p><Button onClick={() => {void refetch(); void refreshInvoices(); void refreshApplications();}}>Retry platform records</Button></DashboardLayout>;
 
   const totalMRR = tenants.reduce((s, t) => s + Number(t.monthly_revenue || 0), 0);
   const totalStudents = tenants.reduce((s, t) => s + (t.students_count || 0), 0);
@@ -82,7 +75,7 @@ export default function LandlordDashboard() {
       subtitle="Platform owner view — All centres, revenue, and operations"
       actions={
         <div className="flex gap-2">
-          <Button variant="outline" size="sm"><FileText className="w-3.5 h-3.5 mr-1.5" />Export</Button>
+          <Button variant="outline" size="sm" onClick={() => downloadText('platform-invoice-summary.csv', directorReport(invoices), 'text/csv;charset=utf-8')}><FileText className="w-3.5 h-3.5 mr-1.5" />Export invoice summary</Button>
           <OnboardTenantModal onSuccess={refetch} />
         </div>
       }
@@ -90,7 +83,7 @@ export default function LandlordDashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Total Centres" value={tenants.length} change={`${activeTenants} active`} changeType="positive" icon={Building2} />
         <StatCard label="Total Students" value={totalStudents.toLocaleString()} icon={GraduationCap} />
-        <StatCard label="Platform MRR" value={`Rs.${totalMRR.toLocaleString()}`} changeType="positive" icon={CreditCard} />
+        <StatCard label="Recorded current monthly revenue" value={`Rs.${totalMRR.toLocaleString()}`} changeType="positive" icon={CreditCard} />
         <StatCard label="Platform Health" value="99.8%" change="Uptime (30d)" changeType="positive" icon={Shield} />
       </div>
 
@@ -155,22 +148,22 @@ export default function LandlordDashboard() {
       <div className="grid lg:grid-cols-2 gap-4 mb-6">
         <div className="surface-card p-5">
           <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-primary" /> MRR Growth
+            <TrendingUp className="w-4 h-4 text-primary" /> Recorded paid totals by invoice month
           </h3>
           <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={mrrTrend}>
+            <LineChart data={invoiceTrend}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
               <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `Rs.${(v/1000).toFixed(0)}k`} />
-              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} formatter={(v: number) => [`Rs.${v.toLocaleString()}`, 'MRR']} />
-              <Line type="monotone" dataKey="mrr" name="MRR" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ r: 3, fill: 'hsl(var(--primary))' }} />
+              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} formatter={(v: number) => [`Rs.${v.toLocaleString()}`, 'Recorded paid']} />
+              <Line type="monotone" dataKey="collected" name="Recorded paid" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ r: 3, fill: 'hsl(var(--primary))' }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
         <div className="surface-card p-5">
           <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
-            <GraduationCap className="w-4 h-4 text-primary" /> Enrolment Pipeline
+            <GraduationCap className="w-4 h-4 text-primary" /> Current application status by creation month
           </h3>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={enrolmentTrend}>

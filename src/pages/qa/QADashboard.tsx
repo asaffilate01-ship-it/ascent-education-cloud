@@ -1,192 +1,43 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import StatCard from '@/components/ui/StatCard';
-import StatusBadge from '@/components/ui/StatusBadge';
-import { FileCheck, AlertTriangle, Shield, ClipboardList, Eye, FolderOpen } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
-import { DashboardSkeleton } from '@/components/ui/Skeletons';
-import { useMemo } from 'react';
-
-const modVariant = (s: string): 'success' | 'warning' | 'danger' | 'info' | 'neutral' => {
-  if (s === 'graded') return 'success';
-  if (s === 'submitted') return 'info';
-  if (s === 'flagged' || s === 'referred') return 'danger';
-  return 'warning';
-};
-
-const modStatusLabel = (status: string, plagiarism: number | null, aiFlag: boolean): string => {
-  if (plagiarism && plagiarism > 25) return 'flagged';
-  if (aiFlag) return 'referred';
-  if (status === 'graded') return 'approved';
-  if (status === 'submitted') return 'pending';
-  return status;
-};
+import {Button} from '@/components/ui/button';
+import {Dialog, DialogContent, DialogHeader, DialogTitle} from '@/components/ui/dialog';
+import {useSupabaseQuery} from '@/hooks/useSupabaseQuery';
+import {useAuth} from '@/contexts/AuthContext';
+import {useState} from 'react';
+import type {Tables} from '@/integrations/supabase/types';
 
 export default function QADashboard() {
-  const { data: submissions, loading } = useSupabaseQuery('submissions', {
-    orderBy: { column: 'submitted_at', ascending: false },
-  });
-  const { data: assignments } = useSupabaseQuery('assignments');
-  const { data: modules } = useSupabaseQuery('modules');
-  const { data: profiles } = useSupabaseQuery('profiles');
-
-  const assignmentMap = useMemo(() => {
-    const map: Record<string, { title: string; module_id: string | null }> = {};
-    assignments.forEach((a) => { map[a.id] = { title: a.title, module_id: a.module_id }; });
-    return map;
-  }, [assignments]);
-
-  const moduleMap = useMemo(() => {
-    const map: Record<string, string> = {};
-    modules.forEach((m) => { map[m.id] = m.title; });
-    return map;
-  }, [modules]);
-
-  const profileMap = useMemo(() => {
-    const map: Record<string, string> = {};
-    profiles.forEach((p) => { map[p.user_id] = p.full_name; });
-    return map;
-  }, [profiles]);
-
-  if (loading) return <DashboardSkeleton />;
-
-  const reviews = submissions.map((s) => {
-    const assignment = assignmentMap[s.assignment_id];
-    const moduleName = assignment?.module_id ? moduleMap[assignment.module_id] || '—' : '—';
-    const aiFlag = (s.plagiarism_score || 0) > 30;
-    const moderationStatus = modStatusLabel(s.status, s.plagiarism_score, aiFlag);
-
-    return {
-      id: s.id,
-      studentName: s.student_name,
-      module: moduleName,
-      assignment: assignment?.title || '—',
-      lecturer: s.graded_by ? profileMap[s.graded_by] || '—' : '—',
-      grade: s.grade != null ? `${s.grade}%` : '—',
-      plagiarismScore: s.plagiarism_score || 0,
-      aiFlag,
-      moderationStatus,
-    };
-  });
-
-  const pendingCount = reviews.filter((r) => r.moderationStatus === 'pending').length;
-  const flaggedCount = reviews.filter((r) => r.moderationStatus === 'flagged' || r.moderationStatus === 'referred').length;
-  const approvedCount = reviews.filter((r) => r.moderationStatus === 'approved').length;
-
-  return (
-    <DashboardLayout
-      title="Quality Assurance"
-      subtitle="Assessment moderation, compliance, and audit trails"
-    >
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard label="Pending Moderation" value={pendingCount} change="action required" changeType="negative" icon={ClipboardList} />
-        <StatCard label="Flagged/Referred" value={flaggedCount} change="needs review" changeType="negative" icon={AlertTriangle} />
-        <StatCard label="Approved" value={approvedCount} icon={FileCheck} />
-        <StatCard label="Total Submissions" value={submissions.length} icon={Shield} />
+  const {user} = useAuth();
+  return <DashboardLayout title="Quality Assurance" subtitle="Recorded submissions for quality review">
+    {!user?.tenantId ? <p role="alert">A centre assignment is required.</p> : <ReviewQueue key={`${user.id}:${user.tenantId}`} tenant={user.tenantId}/>}
+  </DashboardLayout>;
+}
+function ReviewQueue({tenant}: {tenant: string}) {
+  const filters = [{column: 'tenant_id', operator: 'eq' as const, value: tenant}];
+  const submissions = useSupabaseQuery('submissions', {filters, orderBy: {column: 'submitted_at', ascending: false}});
+  const assignments = useSupabaseQuery('assignments', {filters});
+  const [selected, setSelected] = useState<Tables<'submissions'> | null>(null);
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState('all');
+  const [page, setPage] = useState(0);
+  const failed = submissions.error || assignments.error;
+  const loading = submissions.loading || assignments.loading;
+  const rows = submissions.data.filter(row => (status === 'all' || row.status === status) && `${row.student_name} ${assignments.data.find(a => a.id === row.assignment_id)?.title || ''}`.toLowerCase().includes(search.toLowerCase()));
+  const review = selected && submissions.data.find(row => row.id === selected.id);
+  return <div className="space-y-4">
+    <p>Submission status and recorded similarity scores are shown below. A similarity score does not establish plagiarism or AI use. A graded submission is not proof of moderation approval.</p>
+    <p className="text-sm text-muted-foreground">Automatic sampling, evidence-pack generation and moderation decisions are not connected on this screen.</p>
+    {loading ? <p role="status">Loading review queue…</p> : failed ? <div><p role="alert">The review queue could not be loaded completely.</p><Button onClick={() => {void submissions.refetch(); void assignments.refetch();}}>Retry review queue</Button></div> : <>
+      <div className="flex flex-wrap gap-3">
+        <label>Search submissions<input className="block border rounded p-2" value={search} onChange={e => {setSearch(e.target.value); setPage(0);}}/></label>
+        <label>Submission status<select className="block border rounded p-2" value={status} onChange={e => {setStatus(e.target.value); setPage(0);}}><option value="all">All statuses</option>{[...new Set(submissions.data.map(row => row.status))].map(value => <option key={value}>{value}</option>)}</select></label>
       </div>
-
-      {/* Moderation Queue */}
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-sm font-semibold">Moderation Queue</h2>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="text-xs">Auto-Sample</Button>
-          <Button size="sm" className="text-xs"><FolderOpen className="w-3 h-3 mr-1" /> Generate EV Pack</Button>
-        </div>
-      </div>
-      <div className="surface-card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="surface-data">
-                <th className="text-label text-left px-4 py-3">Student</th>
-                <th className="text-label text-left px-4 py-3">Module</th>
-                <th className="text-label text-left px-4 py-3">Assignment</th>
-                <th className="text-label text-left px-4 py-3">Grade</th>
-                <th className="text-label text-left px-4 py-3">Plagiarism</th>
-                <th className="text-label text-left px-4 py-3">AI Flag</th>
-                <th className="text-label text-left px-4 py-3">Status</th>
-                <th className="text-label text-left px-4 py-3">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {reviews.slice(0, 15).map((r) => (
-                <tr key={r.id} className="border-t border-border/50 hover:bg-secondary/50 transition-default">
-                  <td className="px-4 py-3 text-sm font-medium">{r.studentName}</td>
-                  <td className="px-4 py-3 text-sm">{r.module}</td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground">{r.assignment}</td>
-                  <td className="px-4 py-3 text-sm font-medium">{r.grade}</td>
-                  <td className="px-4 py-3">
-                    <span className={`text-sm font-medium ${r.plagiarismScore > 20 ? 'text-destructive' : r.plagiarismScore > 10 ? 'text-warning' : 'text-success'}`}>
-                      {r.plagiarismScore}%
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    {r.aiFlag ? (
-                      <StatusBadge status="AI Detected" variant="danger" />
-                    ) : (
-                      <span className="text-xs text-muted-foreground">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <StatusBadge status={r.moderationStatus} variant={modVariant(r.moderationStatus)} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <Button variant="outline" size="sm" className="text-xs">
-                      <Eye className="w-3 h-3 mr-1" /> Review
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-              {reviews.length === 0 && (
-                <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center text-sm text-muted-foreground">No submissions to review</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Compliance Checklist */}
-      <div className="grid lg:grid-cols-2 gap-4 mt-6">
-        <div className="surface-card p-5">
-          <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-            <Shield className="w-4 h-4 text-primary" /> Compliance Checklist
-          </h3>
-          <div className="space-y-2">
-            {[
-              { item: 'Plagiarism scan on all submissions', status: submissions.every(s => s.plagiarism_score != null) ? 'Active' : 'Incomplete', ok: submissions.every(s => s.plagiarism_score != null) },
-              { item: 'AI detection enabled', status: 'Active', ok: true },
-              { item: 'Auto-sampling rule (20% of submissions)', status: 'Active', ok: true },
-              { item: 'No grade release without moderation', status: 'Enforced', ok: true },
-              { item: `${pendingCount} submissions pending moderation`, status: pendingCount === 0 ? 'Clear' : `${pendingCount} pending`, ok: pendingCount === 0 },
-            ].map((c) => (
-              <div key={c.item} className="flex items-center justify-between py-1.5">
-                <span className="text-sm">{c.item}</span>
-                <StatusBadge status={c.status} variant={c.ok ? 'success' : 'danger'} />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="surface-card p-5">
-          <h3 className="text-sm font-semibold mb-3">Recent Gradings</h3>
-          <div className="space-y-2">
-            {submissions.filter(s => s.graded_at).slice(0, 5).map((s) => (
-              <div key={s.id} className="py-2 border-b border-border/30 last:border-0">
-                <p className="text-sm">{s.student_name} — {s.grade != null ? `${s.grade}%` : '—'}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Graded {s.graded_at ? new Date(s.graded_at).toLocaleDateString() : '—'}
-                  {s.graded_by ? ` by ${profileMap[s.graded_by] || '—'}` : ''}
-                </p>
-              </div>
-            ))}
-            {submissions.filter(s => s.graded_at).length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-4">No gradings yet</p>
-            )}
-          </div>
-        </div>
-      </div>
-    </DashboardLayout>
-  );
+      <p>{rows.length} matching submissions</p>
+      <div className="surface-card overflow-x-auto"><table className="w-full"><thead><tr><th>Student</th><th>Assignment</th><th>Recorded grade</th><th>Similarity</th><th>Status</th><th>Details</th></tr></thead><tbody>
+        {rows.slice(page * 20, page * 20 + 20).map(row => <tr key={row.id} className="border-t"><td className="p-3">{row.student_name}</td><td>{assignments.data.find(a => a.id === row.assignment_id)?.title || 'Unknown assignment'}</td><td>{row.grade === null ? 'Not graded' : `${row.grade}%`}</td><td>{row.plagiarism_score === null ? 'Not available' : `${row.plagiarism_score}%`}</td><td>{row.status}</td><td><Button variant="outline" onClick={() => setSelected(row)} aria-label={`Review ${row.student_name}`}>Review</Button></td></tr>)}
+      </tbody></table>{!rows.length && <p className="p-4">No matching submissions.</p>}</div>
+      <div className="flex gap-2"><Button disabled={!page} onClick={() => setPage(p => p - 1)}>Previous submissions</Button><Button disabled={(page + 1) * 20 >= rows.length} onClick={() => setPage(p => p + 1)}>Next submissions</Button></div>
+    </>}
+    <Dialog open={!!review && !loading && !failed} onOpenChange={open => {if (!open) setSelected(null);}}><DialogContent><DialogHeader><DialogTitle>Submission review details</DialogTitle></DialogHeader>{review && <div className="space-y-2"><p>Student: {review.student_name}</p><p>Reference: {review.id}</p><p>Submitted: {new Date(review.submitted_at).toLocaleString()}</p><p>Status: {review.status}</p><p>Recorded feedback: {review.feedback || 'Not provided'}</p><p>Read-only review. No moderation decision or grade release is recorded here.</p></div>}</DialogContent></Dialog>
+  </div>;
 }

@@ -1,0 +1,13 @@
+import {render,screen,fireEvent,cleanup} from '@testing-library/react';
+import {afterEach,it,expect} from 'vitest';
+import {agreementState,agreementUsable,type AgreementRecord} from '@/lib/agreementRenewals';
+import AgreementRenewals from '@/components/progression/AgreementRenewals';
+const now=Date.parse('2026-10-15T23:59:00Z');
+const agreement={id:'a',partner_id:'p',status:'signed',starts_on:'2026-01-01',ends_on:'2026-10-15',document_reference:'doc'};
+afterEach(cleanup);
+it('keeps the end date inclusive and expires on the next UTC day',()=>{expect(agreementState(agreement,now)).toBe('expiring');expect(agreementState(agreement,now+60000)).toBe('expired');});
+it('distinguishes future, incomplete, terminated and open-ended agreements',()=>{expect(agreementState({...agreement,starts_on:'2026-11-01',ends_on:'2026-12-01'},now)).toBe('scheduled');expect(agreementState({...agreement,document_reference:' '},now)).toBe('incomplete');expect(agreementState({...agreement,status:'terminated'},now)).toBe('inactive');expect(agreementState({...agreement,ends_on:undefined},now)).toBe('current');expect(agreementState({...agreement,starts_on:'2026-02-30'},now)).toBe('incomplete');});
+it('does not allow activation for expired or future contracts',()=>{expect(agreementUsable({...agreement,ends_on:'2026-10-14'},now)).toBe(false);expect(agreementUsable({...agreement,starts_on:'2027-01-01',ends_on:undefined},now)).toBe(false);});
+function show(agreements:AgreementRecord[]){return render(<AgreementRenewals agreements={agreements} partners={[{id:'p',name:'Example University'}]} routes={[{id:'r',partner_id:'p',route_name:'Business degree',student_visible:true}]} renderAgreement={a=><p>{a.id}</p>}/>);}
+it('identifies affected pathways but accounts for a replacement agreement',()=>{const view=show([{...agreement,ends_on:'2001-01-01',starts_on:'2000-01-01'}]);expect(screen.getByRole('alert')).toHaveTextContent('Business degree');view.unmount();show([{...agreement,ends_on:undefined}]);expect(screen.queryByRole('alert')).not.toBeInTheDocument();});
+it('filters by organisation and renewal state with paginated results',()=>{show(Array.from({length:21},(_,n)=>({...agreement,id:`agreement-${n.toString().padStart(2,'0')}`,ends_on:undefined})));expect(screen.queryByText('agreement-20')).not.toBeInTheDocument();fireEvent.click(screen.getByText('Next agreements'));expect(screen.getByText('agreement-20')).toBeInTheDocument();fireEvent.change(screen.getByLabelText('Search agreements'),{target:{value:'Example'}});expect(screen.getByText('Page 1 of 2')).toBeInTheDocument();fireEvent.change(screen.getByLabelText('Filter agreement renewal status'),{target:{value:'expired'}});expect(screen.getByRole('status')).toHaveTextContent('No agreements match');});

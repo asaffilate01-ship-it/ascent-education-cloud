@@ -1,12 +1,12 @@
 import {render,screen,fireEvent,cleanup,act} from '@testing-library/react';
 import {afterEach,beforeEach,describe,it,expect,vi} from 'vitest';
-const mocks=vi.hoisted(()=>({roles:['student'],rpc:vi.fn()}));
+const mocks=vi.hoisted(()=>({roles:['student'],rpc:vi.fn(),rows:vi.fn(),eq:vi.fn()}));
 vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'student-1',tenantId:'tenant-1',roles:mocks.roles}})}));
 vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:{children:React.ReactNode})=><main>{children}</main>}));
 vi.mock('sonner',()=>({toast:{success:vi.fn(),error:vi.fn()}}));
-vi.mock('@/integrations/supabase/client',()=>({supabase:{rpc:(...args:unknown[])=>mocks.rpc(...args)}}));
+vi.mock('@/integrations/supabase/client',()=>({supabase:{from:()=>{const chain={select:()=>chain,eq:(...args:unknown[])=>{mocks.eq(...args);return chain;},order:()=>chain,range:(...args:unknown[])=>mocks.rows(...args)};return chain;},rpc:(...args:unknown[])=>mocks.rpc(...args)}}));
 import KnowledgeLibrary from '@/pages/knowledge/KnowledgeLibrary';
-afterEach(cleanup);beforeEach(()=>{mocks.roles=['student'];mocks.rpc.mockReset();});
+afterEach(cleanup);beforeEach(()=>{mocks.roles=['student'];mocks.rpc.mockReset();mocks.rows.mockReset();mocks.eq.mockReset();});
 describe('Knowledge source search',()=>{
  it('shows exact text and citations without staff publishing controls',async()=>{
   mocks.rpc.mockResolvedValue({data:[{document_id:'doc-1',chunk_index:1,revision:3,title:'Handbook',excerpt:'Use the institutional LMS for support.',source_reference:'POL-2026',rank:1}],error:null});
@@ -43,3 +43,6 @@ describe('Knowledge source search',()=>{
  });
 
 });
+
+it('loads all document pages and filters the review queue',async()=>{mocks.roles=['centre_director'];const docs=Array.from({length:100},(_,n)=>({id:`d-${n}`,title:`Policy ${n}`,source_text:'Source',content_reference:`REF-${n}`,visibility:'student',approval_status:'approved',content_revision:1}));mocks.rows.mockResolvedValueOnce({data:docs,error:null}).mockResolvedValueOnce({data:[{...docs[0],id:'last',title:'Final draft',approval_status:'draft',visibility:'staff'}],error:null});render(<KnowledgeLibrary/>);await screen.findByText('101 matching documents · 101 in this snapshot');expect(mocks.rows).toHaveBeenLastCalledWith(100,199);expect(mocks.eq).toHaveBeenCalledWith('tenant_id','tenant-1');expect(mocks.eq).toHaveBeenCalledWith('source_type','reviewed_text');fireEvent.change(screen.getByLabelText('Review status'),{target:{value:'draft'}});expect(screen.getByText('Final draft')).toBeInTheDocument();expect(screen.queryByText('Policy 0')).not.toBeInTheDocument();fireEvent.change(screen.getByLabelText('Document audience'),{target:{value:'student'}});expect(screen.getByText('No documents match this review view.')).toBeInTheDocument();});
+it('hides partial documents if a later page fails',async()=>{mocks.roles=['centre_director'];mocks.rows.mockResolvedValueOnce({data:Array.from({length:100},(_,n)=>({id:`d-${n}`,title:'Partial document'})),error:null}).mockResolvedValueOnce({data:null,error:{message:'denied'}});render(<KnowledgeLibrary/>);expect(await screen.findByRole('alert')).toHaveTextContent('could not be loaded completely');expect(screen.queryByText('Partial document')).not.toBeInTheDocument();});

@@ -1,3 +1,4 @@
+import {useAuth} from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
@@ -5,50 +6,36 @@ import { GraduationCap, Users, CreditCard, Shield, BookOpen, FileCheck, Handshak
 import { Button } from '@/components/ui/button';
 import { useState, useMemo } from 'react';
 import AddStudentModal from '@/components/modals/AddStudentModal';
-import { useToast } from '@/hooks/use-toast';
+import {invoiceMonths, attendanceWeeks, directorReport} from '@/lib/dashboardMetrics';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 export default function CentreDirectorDashboard() {
+  const {user} = useAuth();
+  const scope = {enabled: !!user?.tenantId, filters: [{column: 'tenant_id', operator: 'eq' as const, value: user?.tenantId}]};
   const [addStudentOpen, setAddStudentOpen] = useState(false);
-  const { toast } = useToast();
 
-  const { data: programmes, loading: progLoading } = useSupabaseQuery('programmes');
-  const { data: applications, loading: appLoading } = useSupabaseQuery('applications');
-  const { data: invoices, loading: invLoading } = useSupabaseQuery('invoices');
-  const { data: attendance, loading: attLoading } = useSupabaseQuery('attendance_records');
 
-  // Revenue trend by month
-  const revenueTrend = useMemo(() => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return months.map(m => {
-      const mInvs = invoices.filter(i => new Date(i.issued_date).toLocaleString('en', { month: 'short' }) === m);
-      return {
-        month: m,
-        billed: mInvs.reduce((s, i) => s + Number(i.amount), 0),
-        collected: mInvs.reduce((s, i) => s + Number(i.paid), 0),
-      };
-    });
-  }, [invoices]);
+  const { data: programmes, loading: progLoading, error: progError, refetch: progRefresh } = useSupabaseQuery('programmes', scope);
+  const { data: applications, loading: appLoading, error: appError, refetch: appRefresh } = useSupabaseQuery('applications', scope);
+  const { data: invoices, loading: invLoading, error: invError, refetch: invRefresh } = useSupabaseQuery('invoices', scope);
+  const { data: attendance, loading: attLoading, error: attError, refetch: attRefresh } = useSupabaseQuery('attendance_records', scope);
 
-  // Attendance rate by week
-  const attendanceTrend = useMemo(() => {
-    const weeks: Record<string, { present: number; total: number }> = {};
-    attendance.forEach((a, i) => {
-      const wk = `W${Math.floor(i / 7) + 1}`;
-      if (!weeks[wk]) weeks[wk] = { present: 0, total: 0 };
-      weeks[wk].total++;
-      if (a.status === 'present' || a.status === 'late') weeks[wk].present++;
-    });
-    return Object.entries(weeks).slice(0, 8).map(([week, d]) => ({
-      week,
-      rate: d.total > 0 ? Math.round((d.present / d.total) * 100) : 0,
-    }));
-  }, [attendance]);
+  const revenueTrend = useMemo(() => invoiceMonths(invoices), [invoices]);
+  const attendanceTrend = useMemo(() => attendanceWeeks(attendance), [attendance]);
+  const exportReport = () => {
+    const url = URL.createObjectURL(new Blob([directorReport(invoices)], {type: 'text/csv;charset=utf-8'}));
+    const link = document.createElement('a'); link.href = url;
+    link.download = `centre-invoice-summary-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
 
   const loading = progLoading || appLoading || invLoading || attLoading;
+  if (!user?.tenantId) return <DashboardLayout title="Centre Director"><p role="alert">A centre assignment is required.</p></DashboardLayout>;
   if (loading) return <DashboardSkeleton />;
+  if (progError || appError || invError || attError) return <DashboardLayout title="Centre Director"><p role="alert">Dashboard data could not be loaded completely.</p><Button onClick={() => {void progRefresh(); void appRefresh(); void invRefresh(); void attRefresh();}}>Retry dashboard</Button></DashboardLayout>;
 
   const totalStudents = programmes.reduce((s, p) => s + (p.enrolled || 0), 0);
   const totalRevenue = invoices.reduce((s, i) => s + Number(i.paid), 0);
@@ -81,7 +68,7 @@ export default function CentreDirectorDashboard() {
       subtitle="Full operations view"
       actions={
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={() => toast({ title: 'Report Generated', description: 'Monthly report has been downloaded.' })}>Generate Report</Button>
+          <Button size="sm" variant="outline" onClick={exportReport}>Download invoice summary</Button>
           <Button size="sm" onClick={() => setAddStudentOpen(true)}>+ Add Student</Button>
         </div>
       }
@@ -158,7 +145,7 @@ export default function CentreDirectorDashboard() {
       <div className="grid lg:grid-cols-2 gap-4 mb-6">
         <div className="surface-card p-5">
           <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-primary" /> Revenue Trend
+            <TrendingUp className="w-4 h-4 text-primary" /> Invoice totals by issue month
           </h3>
           <ResponsiveContainer width="100%" height={220}>
             <AreaChart data={revenueTrend}>
