@@ -64,7 +64,7 @@ export function datedTrips(visit: CalendarVisit) {
   const rotation = buildResidentialRotation();
   return ['A','B','C','D'].flatMap((group,i) => visit.students > i*50 ? groupTripDays(rotation,group).map((day,index) => ({ group, date: dateString(dateNumber(visit.start)+day-1), destination: index === 0 ? 'Lahore' : 'Islamabad', students: Math.min(50,visit.students-i*50) })) : []);
 }
-const csvCell = (value: string | number) => `"${String(value).replaceAll('"','""')}"`;
+const csvCell = (value: string | number) => `"${String(value).replace(/"/g,'""')}"`;
 export function calendarCsv(draft: CalendarDraft) {
   const { visits } = scheduleResidentialCalendar(draft);
   const rows: (string | number)[][] = [['Cohort','Visit','Group','Date','Activity','Start (Pakistan local)','End (Pakistan local)','Students']];
