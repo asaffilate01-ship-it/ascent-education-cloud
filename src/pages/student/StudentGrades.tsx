@@ -60,7 +60,7 @@ export default function StudentGrades() {
         const sub = submissionsMap[a.id];
         moduleMap[moduleName].assignments.push({
           name: a.title,
-          grade: sub?.grade || null,
+          grade: sub?.grade ?? null,
           weight: Math.round(100 / (assignments || []).filter((x: any) => (x as any).modules?.title === moduleName).length),
           assignmentId: a.id,
         });
@@ -85,11 +85,7 @@ export default function StudentGrades() {
   const handleAppeal = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!appealTarget) return;
-    const fd = new FormData(e.currentTarget);
-    const reason = fd.get('reason') as string;
-    setAppeals(prev => ({ ...prev, [appealTarget.assignment]: true }));
-    setAppealOpen(false);
-    toast.success('Grade appeal submitted. The QA team will review your request.');
+    toast.error('Online appeals are not connected. Contact the centre through its approved appeals process.');
   };
 
   if (loading) return <DashboardSkeleton />;
@@ -137,8 +133,8 @@ export default function StudentGrades() {
                 <Label>Reason for Appeal</Label>
                 <Textarea name="reason" required placeholder="Explain why you believe the grade should be reviewed..." rows={4} />
               </div>
-              <p className="text-[10px] text-muted-foreground">Appeals are reviewed by the QA/IQA team within 10 working days. You will be notified of the outcome.</p>
-              <Button type="submit" className="w-full"><Send className="w-4 h-4 mr-2" />Submit Appeal</Button>
+              <p className="text-[10px] text-muted-foreground">Online appeal submission is not connected. Contact the centre through its approved appeals process; no appeal will be recorded here.</p>
+              <Button type="submit" disabled className="w-full"><Send className="w-4 h-4 mr-2" />Submit Appeal</Button>
             </form>
           )}
         </DialogContent>

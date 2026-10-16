@@ -1,3 +1,4 @@
+import {downloadText} from '@/lib/downloadText';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Briefcase, FileText, GraduationCap, Globe, ChevronRight, ExternalLink, Download, Sparkles, MapPin, Calendar, Star, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -45,8 +46,10 @@ export default function StudentCareer() {
 
   const handleCvGenerate = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const fields = new FormData(e.currentTarget);
+    downloadText('unipathway-cv-draft.txt', [...fields.entries()].map(([name, value]) => `${name.toUpperCase()}\n${String(value)}`).join('\n\n'));
     setCvOpen(false);
-    toast.success('CV generated! Check your downloads for the PDF.');
+    toast.success('CV text draft downloaded. Review it before sharing.');
   };
 
   const handleApplyUni = (uni: any) => {
@@ -85,7 +88,7 @@ export default function StudentCareer() {
               <div><Label>Professional Summary</Label><Textarea name="summary" rows={3} placeholder="Brief professional summary..." /></div>
               <div><Label>Skills (comma-separated)</Label><Input name="skills" placeholder="Excel, Communication, Data Analysis" /></div>
               <div><Label>Work Experience</Label><Textarea name="experience" rows={3} placeholder="Role, Company, Duration..." /></div>
-              <Button type="submit" className="w-full"><Download className="w-4 h-4 mr-2" />Generate CV</Button>
+              <Button type="submit" className="w-full"><Download className="w-4 h-4 mr-2" />Download CV text draft</Button>
             </form>
           </DialogContent>
         </Dialog>

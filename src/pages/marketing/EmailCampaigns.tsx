@@ -1,3 +1,4 @@
+import {downloadText} from '@/lib/downloadText';
 import { useState, useMemo } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,16 +30,8 @@ interface Campaign {
   createdAt: string;
 }
 
-// Demo campaigns (will be replaced with DB data when email infra is set up)
-const DEMO_CAMPAIGNS: Campaign[] = [
-  { id: '1', name: 'Welcome Series - New Students', subject: 'Welcome to UniPathway! Here\'s what to expect', status: 'active', audience: 'New Students', sentCount: 245, openRate: 68, clickRate: 24, createdAt: '2026-03-01' },
-  { id: '2', name: 'Fee Reminder - Instalment Due', subject: 'Your instalment payment is due in 3 days', status: 'scheduled', audience: 'Students with pending fees', sentCount: 0, openRate: 0, clickRate: 0, scheduledAt: '2026-03-20', createdAt: '2026-03-15' },
-  { id: '3', name: 'Re-Engagement - Inactive Students', subject: 'We miss you! Your course progress is waiting', status: 'draft', audience: 'Students inactive > 14 days', sentCount: 0, openRate: 0, clickRate: 0, createdAt: '2026-03-10' },
-  { id: '4', name: 'Intake Announcement - Sept 2026', subject: 'New intake now open - Level 4 & 5 programmes', status: 'sent', audience: 'All leads', sentCount: 1240, openRate: 42, clickRate: 12, createdAt: '2026-02-15' },
-];
-
 export default function EmailCampaigns() {
-  const [campaigns] = useState<Campaign[]>(DEMO_CAMPAIGNS);
+  const [campaigns] = useState<Campaign[]>([]);
   const [tab, setTab] = useState('all');
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState('');
@@ -87,10 +80,11 @@ export default function EmailCampaigns() {
         </Button>
       }
     >
+      <p role="status" className="mb-4">Campaign storage and delivery are not connected. Drafts can be downloaded; delivery and open-rate statistics are unavailable.</p>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Total Campaigns" value={String(campaigns.length)} icon={Mail} />
-        <StatCard label="Emails Sent" value={totalSent.toLocaleString()} icon={Send} />
-        <StatCard label="Avg Open Rate" value={`${Math.round(avgOpen)}%`} icon={BarChart3} change="Industry avg: 35%" changeType="positive" />
+        <StatCard label="Emails Sent" value="Unavailable" icon={Send} />
+        <StatCard label="Avg Open Rate" value="Unavailable" icon={BarChart3} />
         <StatCard label="Active Sequences" value={String(campaigns.filter(c => c.status === 'active').length)} icon={Clock} />
       </div>
 
@@ -128,8 +122,8 @@ export default function EmailCampaigns() {
                 {generating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Brain className="w-3.5 h-3.5" />}
                 AI Generate Content
               </Button>
-              <Button size="sm" onClick={() => { toast.success('Campaign saved as draft'); setShowCreate(false); }} className="text-xs">
-                Save Draft
+              <Button size="sm" disabled={!newName.trim() || !newSubject.trim()} onClick={() => { downloadText('campaign-draft.txt', `Campaign: ${newName}\nAudience: ${newAudience}\nSubject: ${newSubject}\n\n${generatedContent}`); toast.success('Draft downloaded. It has not been saved or sent by the platform.'); }} className="text-xs">
+                Download Draft
               </Button>
             </div>
             {generatedContent && (

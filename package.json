@@ -17,7 +17,8 @@
     "native:android": "cap open android",
     "test:db": "node scripts/test-partnership-db.mjs",
     "audit:wiring": "node scripts/audit-function-wiring.mjs",
-    "check:intelligence": "deno check --config deno.intelligence.json supabase/functions/omniqora-student-intelligence/index.ts supabase/functions/omniqora-cohort-intelligence/index.ts supabase/functions/omniqora-executive-snapshot/index.ts"
+    "check:intelligence": "deno check --config deno.intelligence.json supabase/functions/omniqora-student-intelligence/index.ts supabase/functions/omniqora-cohort-intelligence/index.ts supabase/functions/omniqora-executive-snapshot/index.ts",
+    "audit:dashboards": "node scripts/audit-dashboards.mjs"
   },
   "dependencies": {
     "@fontsource/manrope": "^5.3.0",
