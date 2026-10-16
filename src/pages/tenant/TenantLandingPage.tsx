@@ -19,7 +19,7 @@ const DEFAULT_THEME: TenantTheme = {
   faviconUrl: '',
   fontFamily: 'Inter',
   heroTitle: 'Your Gateway to Global Qualifications',
-  heroSubtitle: 'Study OTHM, QUALIFI & IAB accredited Level 3–5 diplomas 80% online. Progress to universities in the UK, USA, Australia, Canada, Germany & beyond.',
+  heroSubtitle: 'Study OTHM, QUALIFI & IAB accredited Level 3–5 diplomas primarily online. Progress to universities in the UK, USA, Australia, Canada, Germany & beyond.',
   heroImageUrl: '',
   customDomain: '',
   brandName: 'UniPathway',
@@ -47,7 +47,7 @@ export default function TenantLandingPage() {
           faviconUrl: '',
           fontFamily: 'Inter',
           heroTitle: `Your Gateway to Global Qualifications`,
-          heroSubtitle: 'Study internationally recognised diplomas from Pakistan. 80% online, 20% in-centre. Progress to UK, USA, Australia, Canada & Germany. Save 50–70% vs studying abroad.',
+          heroSubtitle: 'Study internationally recognised diplomas from Pakistan. Online learning with two 14-day centre visits annually for OTHM / Qualifi. Progress to UK, USA, Australia, Canada & Germany. Save 50–70% vs studying abroad.',
           heroImageUrl: '',
           customDomain: t.custom_domain || '',
           brandName: t.brand_name || t.name,
@@ -61,7 +61,7 @@ export default function TenantLandingPage() {
   if (loading) {
     return (
       <div className="min-h-dvh flex items-center justify-center bg-background">
-        <Seo title="UniPathway — UK & Germany Study Pathways from Pakistan" description="OTHM, QUALIFI and IAB accredited Level 3–5 diplomas studied 80% online, with progression to universities in the UK, Germany, USA, Australia and Canada." canonical="/" />
+        <Seo title="UniPathway — UK & Germany Study Pathways from Pakistan" description="OTHM, QUALIFI and IAB accredited Level 3–5 diplomas studied primarily online, with progression to universities in the UK, Germany, USA, Australia and Canada." canonical="/" />
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
@@ -139,7 +139,7 @@ export default function TenantLandingPage() {
                 {[
                   { value: '342+', label: 'Students' },
                   { value: '50–70%', label: 'Cost Savings' },
-                  { value: '80%', label: 'Online' },
+                  { value: '2 × 14', label: 'Centre days / year' },
                   { value: '95%', label: 'Pass Rate' },
                 ].map((s) => (
                   <div key={s.label}>
@@ -195,8 +195,8 @@ export default function TenantLandingPage() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               { icon: GraduationCap, title: 'Globally Recognised Qualifications', desc: 'Study OTHM, QUALIFI, and IAB accredited courses — recognised by universities across the UK, USA, Canada, Australia, and beyond.' },
-              { icon: Video, title: '80% Online Learning', desc: 'Join HD live lectures from home. Interactive whiteboard, breakout rooms, and all sessions recorded for 24/7 playback.' },
-              { icon: MapPin, title: '20% In-Centre Experience', desc: 'Attend 2 residential weeks per year for workshops, presentations, tutor meetings, and formal examinations.' },
+              { icon: Video, title: 'Online Learning Between Visits', desc: 'Join HD live lectures from home. Interactive whiteboard, breakout rooms, and all sessions recorded for 24/7 playback.' },
+              { icon: MapPin, title: 'Two 14-Day Visits Annually', desc: 'Attend two 14-day residential visits per year for workshops, presentations, tutor meetings, and formal examinations.' },
               { icon: Target, title: 'Global University Progression', desc: 'Clear academic pathways to top-up your diploma to a full bachelor\'s degree at partner universities in UK, USA, Australia, Canada & Germany.' },
               { icon: Shield, title: 'Full QA Compliance', desc: 'Every assignment is moderated, plagiarism-checked, and verified to meet awarding body standards.' },
               { icon: Users, title: 'Career Support', desc: 'Access job listings, CV builder, and employer partner internships through our integrated career portal.' },
@@ -292,7 +292,7 @@ export default function TenantLandingPage() {
               { icon: Plane, title: 'Just 1 Year Abroad', desc: 'Fly out only for the final top-up year. Experience international campus life, build global networks, and graduate in person — all in 12 months.' },
               { icon: Globe, title: 'Global Career Options', desc: 'A UK/Australian/Canadian degree opens doors worldwide. Access post-study work visas (UK Graduate Route — currently 2 years, reducing to 18 months from 2027; Australia 2–4 year; Canada 3-year PGWP).' },
               { icon: Shield, title: 'UK-Regulated Quality', desc: 'Your Level 4 & 5 qualifications are regulated by Ofqual and recognised by OTHM, QUALIFI & IAB — the same standards as studying in the UK.' },
-              { icon: Star, title: 'No Compromise on Learning', desc: 'HD live lectures, recorded sessions, virtual classrooms, e-library access, dedicated tutors, and 2 residential weeks per year for in-person experience.' },
+              { icon: Star, title: 'No Compromise on Learning', desc: 'HD live lectures, recorded sessions, virtual classrooms, e-library access, dedicated tutors, and two 14-day residential visits per year for in-person experience.' },
             ].map((b) => (
               <motion.div key={b.title} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
                 className="surface-card p-6 border border-border/50 hover:shadow-lg transition-all"
@@ -523,7 +523,7 @@ export default function TenantLandingPage() {
                 {[
                   'Laptop or desktop computer (min 8 GB RAM recommended)',
                   'Reliable internet connection (min 10 Mbps)',
-                  '2 × 5-day intensive residential workshops per academic year at our campus',
+                  '2 × 14-day centre visits per academic year for OTHM / Qualifi, with separate accommodation',
                   'Passport / CNIC copy and academic transcripts (verified during enrolment)',
                   'All qualifications and ID documents will be verified before admission',
                 ].map((req) => (
@@ -738,7 +738,7 @@ export default function TenantLandingPage() {
           <div className="max-w-3xl mx-auto">
             {[
               { step: '1', title: 'Enrol in Pakistan', desc: 'Apply online, get accepted within 48 hours, and begin your studies.' },
-              { step: '2', title: 'Study Level 3 → Level 4 → Level 5', desc: '80% online live lectures + 20% in-centre residential workshops and exams.' },
+              { step: '2', title: 'Study Level 3 → Level 4 → Level 5', desc: 'Online learning plus two 14-day centre visits annually for OTHM / Qualifi; assessment follows programme requirements.' },
               { step: '3', title: 'Gain Internship Experience', desc: 'Access corporate internships across Pakistan in your chosen field.' },
               { step: '4', title: 'Transfer to International University', desc: 'Progress to partner universities in UK, Canada, Australia, or UAE.' },
               { step: '5', title: 'Graduate Abroad', desc: 'Complete your final year on campus and receive the same degree as full-time students.' },

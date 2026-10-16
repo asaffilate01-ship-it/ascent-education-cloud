@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button';
 import logo from '@/assets/unipathway-logo.png';
 
 export const studyLinks = [
+  { label: 'All study options', detail: 'OTHM, Qualifi, accountancy, IT and more', to: '/study', icon: BookOpen },
   { label: 'Qualifications in Pakistan', detail: 'Diplomas and progression', to: '/courses', icon: GraduationCap },
   { label: 'Years 9–12 tuition', detail: 'School support and exam preparation', to: '/tuition', icon: School },
   { label: 'Employer learning', detail: 'Skills for teams and organisations', to: '/employer-learning', icon: BriefcaseBusiness },
-  { label: 'UK & Germany pathways', detail: 'Plan your next step abroad', to: '/pathways', icon: Globe2 },
+  { label: 'Global university progression', detail: 'Plan your next step abroad', to: '/pathways', icon: Globe2 },
 ];
 
 export default function PublicNav() {

@@ -74,6 +74,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Documents', icon: FolderOpen, path: '/director/documents' },
       { label: 'Email Campaigns', icon: Megaphone, path: '/director/email-campaigns' },
       { label: 'Residential', icon: Building2, path: '/residential' },
+      { label: 'Residential Planner', icon: Calendar, path: '/director/residential-planner' },
       { label: 'Agents', icon: Handshake, path: '/director/agents' },
       { label: 'Global Partners', icon: Globe, path: '/director/global-partners' },
       { label: 'Application Support', icon: ClipboardList, path: '/director/application-support' },
