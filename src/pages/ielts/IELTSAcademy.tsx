@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import IELTSReadingLab from '@/components/ielts/IELTSReadingLab';
+import IELTSListeningLab from '@/components/ielts/IELTSListeningLab';
 import {
   IELTS_SKILLS, IELTS_UNITS, IELTS_OFFICIAL_RESOURCES,
   type IeltsTrack, type IeltsSkill, unitPrompt,
@@ -126,6 +127,18 @@ export default function IELTSAcademy() {
     }catch(e){toast.error((e as Error).message||'Could not submit practice');}
     finally{setBusy(false);}
   }
+  async function saveListeningDrill(summary:string):Promise<void>{
+    if(!tenant||!student||!activePlan||teacher||busy)throw new Error('Create a student study plan before saving practice.');
+    setBusy(true);
+    try {
+      const result=await db.from('ielts_practice_submissions').insert({
+        tenant_id:tenant,student_id:student,track:activeTrack,unit_week:2,skill:'listening',answer_text:summary
+      });
+      if(result.error)throw result.error;
+      toast.success('Listening practice saved.');
+      await reload();
+    }finally{setBusy(false);}
+  }
   async function saveReadingDrill(summary:string):Promise<void>{
     if(!tenant||!student||!activePlan||teacher||busy)throw new Error('Create a student study plan before saving practice.');
     setBusy(true);
@@ -223,6 +236,7 @@ export default function IELTSAcademy() {
            <div className="flex flex-wrap items-center justify-between gap-2"><span className="text-xs uppercase font-bold tracking-widest text-primary">Week {selectedUnit.week} of 8 · {selectedUnit.skill}</span><span className="text-sm text-muted-foreground">Suggested activity {selectedUnit.minutes} min</span></div>
            <h3 className="text-2xl font-bold">{selectedUnit.title}</h3><p className="text-muted-foreground">{selectedUnit.focus}</p>
            <div className="rounded-xl border p-4 space-y-3"><h4 className="font-semibold">Learning outcomes</h4><ul className="list-disc pl-5 space-y-2 text-sm">{selectedUnit.learningObjectives.map(x=><li key={x}>{x}</li>)}</ul></div>
+           {!teacher&&selectedWeek===2&&<IELTSListeningLab available={!!activePlan&&!busy} onSave={saveListeningDrill}/>}
            {!teacher&&selectedWeek===3&&<IELTSReadingLab track={activeTrack} available={!!activePlan&&!busy} onSave={saveReadingDrill}/>}
            <div className="space-y-2"><h4 className="font-semibold">Lesson notes</h4><p className="text-sm leading-7 whitespace-pre-wrap">{selectedUnit.teachingNotes}</p></div>
            <div className="rounded-xl bg-secondary/60 p-4 space-y-3"><h4 className="font-semibold">Original {activeTrack==='academic'?'Academic':'General Training'} practice task</h4><p className="text-sm leading-7 whitespace-pre-wrap">{unitPrompt(selectedUnit,activeTrack)}</p></div>
