@@ -16,9 +16,8 @@ await db.exec([
  'CREATE TABLE public.user_roles(user_id uuid,tenant_id uuid,role public.app_role);',
  "CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('test.uid',true),'')::uuid $$;",
  "CREATE FUNCTION public.same_tenant(t uuid) RETURNS boolean LANGUAGE sql STABLE AS $$ SELECT t=nullif(current_setting('test.tenant',true),'')::uuid $$;",
- "CREATE FUNCTION public.has_role(u uuid,r public.app_role) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $$ SELECT EXISTS(SELECT 1 FROM public.user_roles r WHERE r.user_id=u AND r.tenant_id=nullif(current_setting('test.tenant',true),'')::uuid AND r.role=r) $$;"
+ "CREATE FUNCTION public.has_role(u uuid,needed public.app_role) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $ SELECT EXISTS(SELECT 1 FROM public.user_roles x WHERE x.user_id=u AND x.tenant_id=nullif(current_setting('test.tenant',true),'')::uuid AND x.role=needed) $;"
 ].join('\n'));
-await db.exec("CREATE OR REPLACE FUNCTION public.has_role(u uuid,needed public.app_role) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $$ SELECT EXISTS(SELECT 1 FROM public.user_roles x WHERE x.user_id=u AND x.tenant_id=nullif(current_setting('test.tenant',true),'')::uuid AND x.role=needed) $$;");
 await db.exec(readFileSync('supabase/migrations/20261017204000_staff_and_partner_readiness.sql','utf8'));
 await db.query('INSERT INTO public.tenants(id) VALUES($1),($2)',[T,OTHER]);
 await db.query('INSERT INTO auth.users(id) VALUES($1),($2),($3),($4)',[MANAGER,LECTURER,STUDENT,OUTSIDER]);
