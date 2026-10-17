@@ -38,6 +38,7 @@ export default function AdmissionsCRM() {
   const [search, setSearch] = useState('');
   const [stageFilter, setStageFilter] = useState<string>('all');
   const [destFilter, setDestFilter] = useState<string>('all');
+  const [sourceFilter, setSourceFilter] = useState<string>('all');
   const { data: applications, loading, refetch } = useSupabaseQuery('applications', {
     orderBy: { column: 'updated_at', ascending: false },
   });
@@ -46,10 +47,12 @@ export default function AdmissionsCRM() {
 
   const filtered = applications.filter((app) => {
     if (stageFilter !== 'all' && app.stage !== stageFilter) return false;
+    const source = (app.source || '').toLowerCase();
+    if (sourceFilter === 'ielts' && source !== 'ielts_preparation') return false;
+    if (sourceFilter === 'university' && !source.startsWith('university_progression_')) return false;
     if (destFilter !== 'all') {
-      const d = (app as any).destination
-        || ((app.source || '').startsWith('consultancy_') ? (app.source as string).replace('consultancy_', '') : 'pakistan');
-      if (d !== destFilter) return false;
+      const d = (app as any).destination || (source.startsWith('consultancy_') ? source.replace('consultancy_', '') : source.startsWith('university_progression_') ? source.replace('university_progression_', '') : 'pakistan');
+      if (String(d).toLowerCase() !== destFilter) return false;
     }
     if (search) {
       const q = search.toLowerCase();
@@ -57,7 +60,8 @@ export default function AdmissionsCRM() {
         app.student_name.toLowerCase().includes(q) ||
         app.email.toLowerCase().includes(q) ||
         (app.programme_name || '').toLowerCase().includes(q) ||
-        (app.counsellor || '').toLowerCase().includes(q)
+        (app.counsellor || '').toLowerCase().includes(q) ||
+        source.includes(q)
       );
     }
     return true;
@@ -145,6 +149,14 @@ export default function AdmissionsCRM() {
             ))}
           </SelectContent>
         </Select>
+        <Select value={sourceFilter} onValueChange={setSourceFilter}>
+          <SelectTrigger className="w-[160px] h-8 text-xs"><SelectValue placeholder="Lead source" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All lead sources</SelectItem>
+            <SelectItem value="ielts">IELTS enquiries</SelectItem>
+            <SelectItem value="university">University progression</SelectItem>
+          </SelectContent>
+        </Select>
         <Select value={destFilter} onValueChange={setDestFilter}>
           <SelectTrigger className="w-[150px] h-8 text-xs">
             <SelectValue placeholder="Destination" />
@@ -154,6 +166,9 @@ export default function AdmissionsCRM() {
             <SelectItem value="pakistan">🇵🇰 Pakistan</SelectItem>
             <SelectItem value="germany">🇩🇪 Germany</SelectItem>
             <SelectItem value="uk">🇬🇧 UK</SelectItem>
+            <SelectItem value="usa">🇺🇸 USA</SelectItem>
+            <SelectItem value="canada">🇨🇦 Canada</SelectItem>
+            <SelectItem value="australia">🇦🇺 Australia</SelectItem>
           </SelectContent>
         </Select>
       </div>
