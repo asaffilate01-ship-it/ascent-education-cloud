@@ -58,7 +58,7 @@ CREATE POLICY "international service staff lifecycle" ON public.international_se
  ));
 GRANT SELECT,UPDATE ON public.international_service_enrolments TO authenticated;
 
-CREATE FUNCTION public.activate_international_service_from_lead(p_enquiry uuid,p_student uuid)
+CREATE FUNCTION public.activate_international_service_from_lead(p_enquiry uuid,p_student uuid,p_billing_mode text DEFAULT 'complimentary')
 RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
 DECLARE lead public.applications; expected_service text; account_email text;
  service_id uuid; finance_class text;
@@ -89,10 +89,16 @@ BEGIN
  IF lead.user_id IS NOT NULL AND lead.user_id<>p_student THEN
   RAISE EXCEPTION 'This enquiry is already associated with another user' USING ERRCODE='42501';
  END IF;
- finance_class:=CASE WHEN EXISTS(
+ IF p_billing_mode NOT IN ('complimentary','included') THEN
+  RAISE EXCEPTION 'Only documented included or complimentary counselling is currently available' USING ERRCODE='22023';
+ END IF;
+ IF p_billing_mode='included' AND NOT EXISTS(
   SELECT 1 FROM public.student_enrolments se WHERE se.student_id=p_student
    AND se.tenant_id=lead.tenant_id AND se.status='active'
- ) THEN 'included' ELSE 'complimentary' END;
+ ) THEN
+  RAISE EXCEPTION 'Bundled services require an active academic course enrolment' USING ERRCODE='42501';
+ END IF;
+ finance_class:=p_billing_mode;
  SELECT id INTO service_id FROM public.international_service_enrolments
    WHERE tenant_id=lead.tenant_id AND enquiry_id=lead.id;
  IF service_id IS NOT NULL THEN
@@ -107,8 +113,8 @@ BEGIN
  UPDATE public.applications SET user_id=p_student WHERE id=lead.id AND tenant_id=lead.tenant_id;
  RETURN service_id;
 END $$;
-REVOKE ALL ON FUNCTION public.activate_international_service_from_lead(uuid,uuid) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.activate_international_service_from_lead(uuid,uuid) TO authenticated;
+REVOKE ALL ON FUNCTION public.activate_international_service_from_lead(uuid,uuid,text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.activate_international_service_from_lead(uuid,uuid,text) TO authenticated;
 
 COMMENT ON TABLE public.international_service_enrolments IS
  'Centre-approved counselling/IELTS service enrolment; not an OTHM or Qualifi course, admission offer, or paid purchase.';
