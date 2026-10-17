@@ -185,6 +185,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
     { items: [
       { label: 'Dashboard', icon: LayoutDashboard, path: '/exams' },
       { label: 'Schedule', icon: Calendar, path: '/exams/schedule' },
+       { label: 'IELTS Mocks', icon: GraduationCap, path: '/exams/ielts' }
       { label: 'Rooms', icon: Monitor, path: '/exams/rooms' },
       { label: 'Seating', icon: Users, path: '/exams/seating' },
       { label: 'Entry Log', icon: UserCheck, path: '/exams/entry' },
