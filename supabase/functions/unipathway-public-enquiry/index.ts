@@ -53,7 +53,7 @@ Deno.serve(async(req:Request)=>{
    const created=await admin.from('applications').insert({
      tenant_id:t.data.id,
      student_name:name,email,phone:phone||null,
-     source:kind==='ielts'?'ielts_preparation':'university_progression',
+     source:kind==='ielts'?'ielts_preparation':'university_progression_'+destination.toLowerCase(),
      stage:'lead',
      programme_name:classification,
      notes
