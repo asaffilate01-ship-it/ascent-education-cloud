@@ -17,6 +17,7 @@ await db.exec([
 'CREATE TABLE public.profiles(user_id uuid PRIMARY KEY,tenant_id uuid);',
 'CREATE TABLE public.user_roles(user_id uuid,tenant_id uuid,role public.app_role);',
 'CREATE TABLE public.applications(id uuid PRIMARY KEY,tenant_id uuid, email text,source text,user_id uuid);',
+'GRANT SELECT,UPDATE ON public.applications TO authenticated;',
 'CREATE TABLE public.student_enrolments(student_id uuid,tenant_id uuid,status text);',
 "CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('test.uid',true),'')::uuid $$;",
 "CREATE FUNCTION public.same_tenant(t uuid) RETURNS boolean LANGUAGE sql STABLE AS $$ SELECT t=nullif(current_setting('test.tenant',true),'')::uuid $$;",
