@@ -18,9 +18,10 @@ CREATE TABLE public.ielts_unit_completions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
   student_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  track text NOT NULL CHECK (track IN ('academic','general')),
   unit_week smallint NOT NULL CHECK (unit_week BETWEEN 1 AND 8),
   completed_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE(tenant_id,student_id,unit_week)
+  UNIQUE(tenant_id,student_id,track,unit_week)
 );
 
 CREATE TABLE public.ielts_practice_submissions (
