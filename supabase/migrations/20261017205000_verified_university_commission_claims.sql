@@ -98,10 +98,34 @@ BEGIN
    AND NOT (OLD.status='received' AND NEW.status='reversed') THEN
     RAISE EXCEPTION 'Closed financial evidence is immutable' USING ERRCODE='42501';
   END IF;
+  IF (NEW.university_enrolment_evidence IS DISTINCT FROM OLD.university_enrolment_evidence
+      OR NEW.reviewed_by IS DISTINCT FROM OLD.reviewed_by OR NEW.verified_at IS DISTINCT FROM OLD.verified_at)
+      AND NOT (OLD.status='draft' AND NEW.status='verified' AND NEW.reviewed_by IS NOT DISTINCT FROM OLD.reviewed_by
+        AND NEW.verified_at IS NOT DISTINCT FROM OLD.verified_at) THEN
+    RAISE EXCEPTION 'University verification can only be recorded during draft review' USING ERRCODE='42501';
+  END IF;
+  IF NEW.invoice_reference IS DISTINCT FROM OLD.invoice_reference
+      AND NOT (OLD.status='verified' AND NEW.status='invoiced') THEN
+    RAISE EXCEPTION 'Invoice reference is immutable outside invoicing transition' USING ERRCODE='42501';
+  END IF;
+  IF (NEW.received_amount IS DISTINCT FROM OLD.received_amount OR
+      NEW.received_on IS DISTINCT FROM OLD.received_on OR NEW.receipt_reference IS DISTINCT FROM OLD.receipt_reference)
+      AND NOT (OLD.status='invoiced' AND NEW.status='received'
+        AND NEW.received_amount IS NOT DISTINCT FROM OLD.received_amount
+        AND NEW.received_on IS NOT DISTINCT FROM OLD.received_on) THEN
+    RAISE EXCEPTION 'Receipt information is immutable outside payment confirmation' USING ERRCODE='42501';
+  END IF;
+  IF NEW.reversal_reference IS DISTINCT FROM OLD.reversal_reference
+      AND NOT (OLD.status='received' AND NEW.status='reversed') THEN
+    RAISE EXCEPTION 'Reversal reference is immutable outside reversal' USING ERRCODE='42501';
+  END IF;
   IF OLD.status='draft' AND NEW.status='verified' THEN
    NEW.reviewed_by:=auth.uid();NEW.verified_at:=now();
   END IF;
   IF OLD.status='verified' AND NEW.status='invoiced' THEN NEW.invoiced_at:=now(); END IF;
+  IF OLD.status='invoiced' AND NEW.status='received' THEN
+    NEW.received_amount:=NEW.commission_due;NEW.received_on:=current_date;
+  END IF;
  END IF;
  NEW.updated_at:=now();
  RETURN NEW;
