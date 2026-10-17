@@ -21,6 +21,22 @@ CREATE TABLE public.education_staff_credentials (
 );
 CREATE INDEX education_credential_tenant ON public.education_staff_credentials(tenant_id,staff_id,status,expires_on);
 
+-- A manager cannot attach a credential to someone in a different centre or to a student-only account.
+CREATE FUNCTION public.guard_staff_training_ownership()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $
+BEGIN
+ IF NOT EXISTS(SELECT 1 FROM public.profiles p JOIN public.user_roles r
+  ON r.user_id=p.user_id AND r.tenant_id=p.tenant_id
+  WHERE p.tenant_id=NEW.tenant_id AND p.user_id=NEW.staff_id
+   AND r.role<>'student'::public.app_role) THEN
+  RAISE EXCEPTION 'Credential must belong to a staff account in this centre' USING ERRCODE='42501';
+ END IF;
+ RETURN NEW;
+END $;
+CREATE TRIGGER staff_training_ownership BEFORE INSERT OR UPDATE ON public.education_staff_credentials
+ FOR EACH ROW EXECUTE FUNCTION public.guard_staff_training_ownership();
+REVOKE ALL ON FUNCTION public.guard_staff_training_ownership() FROM PUBLIC;
+
 CREATE FUNCTION public.guard_education_credential()
 RETURNS trigger LANGUAGE plpgsql SET search_path=public AS $$
 BEGIN
