@@ -68,6 +68,9 @@ FOR EACH ROW EXECUTE FUNCTION public.guard_ielts_learner_identity();
 CREATE FUNCTION public.guard_ielts_practice_integrity()
 RETURNS trigger LANGUAGE plpgsql SET search_path = public AS $$
 BEGIN
+  IF NEW.teacher_band IS NOT NULL AND NEW.skill <> 'writing' THEN
+    RAISE EXCEPTION 'Only Writing may receive a tutor-estimated practice band' USING ERRCODE='42501';
+  END IF;
   IF TG_OP='INSERT' THEN
     IF NEW.teacher_band IS NOT NULL OR NEW.teacher_feedback IS NOT NULL OR
        NEW.reviewed_by IS NOT NULL OR NEW.reviewed_at IS NOT NULL THEN
@@ -79,7 +82,7 @@ BEGIN
        ROW(OLD.tenant_id,OLD.student_id,OLD.track,OLD.skill,OLD.unit_week,OLD.answer_text,OLD.submitted_at) THEN
       RAISE EXCEPTION 'Submitted work is immutable' USING ERRCODE='42501';
     END IF;
-    IF NEW.teacher_band IS NOT NULL THEN
+    IF nullif(btrim(coalesce(NEW.teacher_feedback,'')),'') IS NOT NULL THEN
       NEW.reviewed_by := auth.uid();
       NEW.reviewed_at := now();
     ELSE
