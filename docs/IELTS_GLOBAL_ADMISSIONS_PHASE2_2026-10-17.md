@@ -21,7 +21,7 @@ Continue in the existing UniPathway LMS, serving OTHM/Qualifi learners and exter
 ## External student and university counselling
 - Public form offers IELTS and university enquiries for UK, USA, Canada, Australia, Germany and Pakistan. Select current or external student; no OTHM/Qualifi purchase required.
 - Dedicated UniPathway public-enquiry Edge Function validates inputs and explicit privacy acknowledgement, resolves the UniPathway tenant server-side and writes into the existing applications admissions pipeline as an unconverted lead.
-- Admissions staff can view enquiry sources labelled ielts_preparation and university_progression.
+- Admissions staff can filter enquiry sources labelled ielts_preparation and university_progression_[country], with country-specific destination filters.
 - Partner prospects start unverified. Pakistan added to destinations; next outreach action, follow-up date and notes can be saved.
 - Progression UI no longer assumes that a university is contracted or pays a particular commission. OTHM/Qualifi course acceptance, lead attribution and commission rights all require institution-level approval and evidence.
 
