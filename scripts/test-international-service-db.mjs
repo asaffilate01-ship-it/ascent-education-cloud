@@ -19,7 +19,8 @@ await db.exec([
 'CREATE TABLE public.applications(id uuid PRIMARY KEY,tenant_id uuid, email text,source text,user_id uuid);',
 'CREATE TABLE public.student_enrolments(student_id uuid,tenant_id uuid,status text);',
 "CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('test.uid',true),'')::uuid $$;",
-"CREATE FUNCTION public.same_tenant(t uuid) RETURNS boolean LANGUAGE sql STABLE AS $$ SELECT t=nullif(current_setting('test.tenant',true),'')::uuid $$;"
+"CREATE FUNCTION public.same_tenant(t uuid) RETURNS boolean LANGUAGE sql STABLE AS $ SELECT t=nullif(current_setting('test.tenant',true),'')::uuid $;",
+"CREATE FUNCTION public.has_role(u uuid,r public.app_role) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $ SELECT EXISTS(SELECT 1 FROM public.user_roles ur WHERE ur.user_id=u AND ur.tenant_id=nullif(current_setting('test.tenant',true),'')::uuid AND ur.role=r) $;"
 ].join('\n'));
 await db.exec(readFileSync('supabase/migrations/20261017201000_international_service_activation.sql','utf8'));
 await db.query('INSERT INTO public.tenants(id) VALUES($1),($2)',[T,OTHER]);
