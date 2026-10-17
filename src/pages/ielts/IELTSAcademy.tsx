@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { BookOpen, CheckCircle2, ChevronRight, GraduationCap, Headphones, Loader2, Mic, PencilLine, Target, ExternalLink } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -154,6 +155,7 @@ export default function IELTSAcademy() {
            <p className="text-xs uppercase font-semibold tracking-widest text-primary">Learn · Practise · Improve</p>
            <h2 className="text-2xl font-bold">Prepare with purpose. Practise with feedback.</h2>
            <p className="text-sm text-muted-foreground">Eight guided weeks across Listening, Reading, Writing and Speaking. Learn online and use your UniPathway live classes for human coaching. IELTS exam booking is through an authorised test provider.</p>
+           <Button variant="outline" size="sm" asChild><Link to={teacher?'/lecturer/classroom':'/student/classroom'}>Open live classroom</Link></Button>
          </div>
          <div className="rounded-xl bg-secondary/70 p-4 text-sm space-y-1">
            <p className="font-medium">Independent exam preparation</p>
