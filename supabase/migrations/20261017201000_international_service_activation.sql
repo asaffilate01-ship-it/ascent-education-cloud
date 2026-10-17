@@ -42,18 +42,19 @@ ALTER TABLE public.international_service_enrolments ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "international service student read" ON public.international_service_enrolments FOR SELECT TO authenticated
  USING(public.same_tenant(tenant_id) AND student_id=auth.uid());
 CREATE POLICY "international service staff read" ON public.international_service_enrolments FOR SELECT TO authenticated
- USING(public.same_tenant(tenant_id) AND EXISTS(
- SELECT 1 FROM public.user_roles r WHERE r.user_id=auth.uid() AND r.tenant_id=international_service_enrolments.tenant_id
- AND r.role IN ('admissions_admin'::public.app_role,'centre_director'::public.app_role,'superadmin'::public.app_role)
+ USING(public.same_tenant(tenant_id) AND (
+ public.has_role(auth.uid(),'admissions_admin'::public.app_role)
+ OR public.has_role(auth.uid(),'centre_director'::public.app_role)
+ OR public.has_role(auth.uid(),'superadmin'::public.app_role)
  ));
 CREATE POLICY "international service staff lifecycle" ON public.international_service_enrolments FOR UPDATE TO authenticated
- USING(public.same_tenant(tenant_id) AND EXISTS(
- SELECT 1 FROM public.user_roles r WHERE r.user_id=auth.uid() AND r.tenant_id=international_service_enrolments.tenant_id
- AND r.role IN ('centre_director'::public.app_role,'superadmin'::public.app_role)
+ USING(public.same_tenant(tenant_id) AND (
+ public.has_role(auth.uid(),'centre_director'::public.app_role)
+ OR public.has_role(auth.uid(),'superadmin'::public.app_role)
  ))
- WITH CHECK(public.same_tenant(tenant_id) AND EXISTS(
- SELECT 1 FROM public.user_roles r WHERE r.user_id=auth.uid() AND r.tenant_id=international_service_enrolments.tenant_id
- AND r.role IN ('centre_director'::public.app_role,'superadmin'::public.app_role)
+ WITH CHECK(public.same_tenant(tenant_id) AND (
+ public.has_role(auth.uid(),'centre_director'::public.app_role)
+ OR public.has_role(auth.uid(),'superadmin'::public.app_role)
  ));
 GRANT SELECT,UPDATE ON public.international_service_enrolments TO authenticated;
 
