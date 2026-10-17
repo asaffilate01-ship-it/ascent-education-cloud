@@ -37,6 +37,9 @@ CREATE FUNCTION public.guard_academic_progression_evidence()
 RETURNS trigger LANGUAGE plpgsql SET search_path=public AS $$
 DECLARE changed boolean := false;
 BEGIN
+ IF TG_OP='INSERT' AND (NEW.review_status<>'proposed' OR NEW.student_visible) THEN
+  RAISE EXCEPTION 'Academic evidence must enter as an unpublished proposal' USING ERRCODE='42501';
+ END IF;
  IF TG_OP='UPDATE' THEN
   IF NEW.id IS DISTINCT FROM OLD.id OR NEW.tenant_id IS DISTINCT FROM OLD.tenant_id
      OR NEW.created_at IS DISTINCT FROM OLD.created_at THEN
@@ -45,11 +48,11 @@ BEGIN
   changed:=ROW(NEW.awarding_body,NEW.qualification_name,NEW.qualification_level,
    NEW.destination_country,NEW.destination_institution,NEW.destination_programme,
    NEW.entry_stage,NEW.grade_requirements,NEW.english_requirements,
-   NEW.source_kind,NEW.source_url)
+   NEW.source_kind,NEW.source_url,NEW.recheck_due)
    IS DISTINCT FROM ROW(OLD.awarding_body,OLD.qualification_name,OLD.qualification_level,
    OLD.destination_country,OLD.destination_institution,OLD.destination_programme,
    OLD.entry_stage,OLD.grade_requirements,OLD.english_requirements,
-   OLD.source_kind,OLD.source_url);
+   OLD.source_kind,OLD.source_url,OLD.recheck_due);
   IF changed AND OLD.review_status='verified' THEN
    NEW.review_status:='under_review';
    NEW.student_visible:=false;
@@ -58,7 +61,7 @@ BEGIN
   END IF;
  END IF;
  IF NEW.review_status='verified'
-   AND (TG_OP='INSERT' OR OLD.review_status IS DISTINCT FROM NEW.review_status) THEN
+   AND TG_OP='UPDATE' AND OLD.review_status IS DISTINCT FROM NEW.review_status THEN
   IF NEW.source_url IS NULL OR length(btrim(NEW.source_url))<12
    OR (NEW.recheck_due IS NOT NULL AND NEW.recheck_due<current_date) THEN
    RAISE EXCEPTION 'A current original official evidence URL is required for verification';
