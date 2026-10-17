@@ -18,7 +18,8 @@ vi.mock('@/integrations/supabase/client',()=>({supabase:{from:()=>{
   select:()=>chain,
   eq:(k:string,v:unknown)=>{mocks.filters.push([k,v]);return chain;},
   order:()=>chain,
-  limit:async()=>({data:[mocks.row],error:null}),
+  limit:()=>chain,
+  then:(resolve:(value:{data:(typeof mocks.row)[];error:null})=>unknown)=>Promise.resolve({data:[mocks.row],error:null}).then(resolve),
  };
  return chain;
 }}}));
