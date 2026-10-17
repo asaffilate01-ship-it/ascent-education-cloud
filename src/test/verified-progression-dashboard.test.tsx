@@ -29,7 +29,7 @@ afterEach(cleanup);
 it('only queries verified and published routes, scopes student applications, and hides invented commissions',async()=>{
  render(<MemoryRouter><ProgressionDashboard/></MemoryRouter>);
  expect(await screen.findByText('Verified Example University')).toBeInTheDocument();
- expect(screen.getByText('Business Top Up')).toBeInTheDocument();
+ expect(screen.getAllByText('Business Top Up').length).toBeGreaterThan(0);
  expect(screen.getByText('Student consent workflow')).toBeInTheDocument();
  expect(mocks.filters).toContainEqual({table:'international_pathway_routes',key:'review_status',value:'verified'});
  expect(mocks.filters).toContainEqual({table:'international_pathway_routes',key:'student_visible',value:true});
