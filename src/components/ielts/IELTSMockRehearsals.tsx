@@ -181,7 +181,7 @@ export default function IELTSMockRehearsals({track}:{track?:Mode}){
        onChange={e=>setAssessment(v=>({...v,[field]:e.target.value}))}/>
      </label>)}
     </div>
-    {(['writing_observations','speaking_observations','tutor_next_steps'] as const).map(field=><label key={field} className="text-sm font-semibold block">{field.replaceAll('_',' ')}
+    {(['writing_observations','speaking_observations','tutor_next_steps'] as const).map(field=><label key={field} className="text-sm font-semibold block">{field.replace(/_/g,' ')}
        <Textarea rows={3} maxLength={5000} className="mt-1" value={assessment[field]}
         onChange={e=>setAssessment(v=>({...v,[field]:e.target.value}))}/>
      </label>)}
