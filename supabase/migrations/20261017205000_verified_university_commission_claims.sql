@@ -58,7 +58,7 @@ BEGIN
    OR (a.ends_on IS NOT NULL AND a.ends_on<NEW.enrolment_confirmed_on)) THEN
   RAISE EXCEPTION 'A signed eligible recruitment agreement is required' USING ERRCODE='42501';
  END IF;
- IF TG_OP='INSERT' AND (a.commission_currency IS NULL OR a.commission_currency !~ '^[A-Z]{3}
+ IF TG_OP='INSERT' AND (a.commission_currency IS NULL OR a.commission_currency !~ '^[A-Z]{3}$'
   OR a.commission_amount IS NULL OR a.commission_basis NOT IN ('flat_per_enrolment','percentage_of_tuition')) THEN
   RAISE EXCEPTION 'Agreement lacks a directly calculable evidenced commission term' USING ERRCODE='22023';
  END IF;
