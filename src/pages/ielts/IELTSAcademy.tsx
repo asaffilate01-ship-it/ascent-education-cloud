@@ -13,6 +13,7 @@ import IELTSReadingLab from '@/components/ielts/IELTSReadingLab';
 import IELTSListeningLab from '@/components/ielts/IELTSListeningLab';
 import IELTSSpeakingPractice from '@/components/ielts/IELTSSpeakingPractice';
 import IELTSSpeakingTutorQueue from '@/components/ielts/IELTSSpeakingTutorQueue';
+import IELTSReadinessPanel from '@/components/ielts/IELTSReadinessPanel';
 import {
   IELTS_SKILLS, IELTS_UNITS, IELTS_OFFICIAL_RESOURCES,
   type IeltsTrack, type IeltsSkill, unitPrompt,
@@ -207,6 +208,7 @@ export default function IELTSAcademy() {
          <Button onClick={()=>void savePlan()} disabled={busy}>{activePlan?'Update study plan':'Start IELTS preparation'}</Button>
          {activePlan&&<p className="text-xs text-muted-foreground">Changing test type starts a separate set of weekly completions. Existing submitted work remains visible in its original test type.</p>}
        </section>}
+       {!teacher&&activePlan&&student&&<IELTSReadinessPanel tenant={tenant} student={student} track={activeTrack} submissions={mySubmissions} onSelectWeek={setSelectedWeek}/>}
        {teacher && tab==='review'?<div className="space-y-5"><section className="surface-card p-5 space-y-4">
          <h3 className="font-semibold">Tutor review queue · latest 100 centre submissions</h3>
          <p className="text-sm text-muted-foreground">Only score a genuine Writing response with evidence against the official writing descriptors. Speaking reflections cannot be band-scored from typed text.</p>
