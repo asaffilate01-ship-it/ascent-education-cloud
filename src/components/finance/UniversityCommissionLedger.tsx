@@ -109,3 +109,4 @@ export default function UniversityCommissionLedger({tenant}:{tenant:string}){
   {!claims.length&&<p className="text-sm text-muted-foreground">No contract-backed commission claims have been recorded.</p>}
   <Button size="sm" variant="outline" disabled={busy} onClick={()=>void reload()}><RefreshCcw className="h-4 w-4 mr-1"/>Refresh claims</Button>
  </section>;
+}
