@@ -67,7 +67,7 @@ export default function ProgressionDashboard(){
    <section className="surface-card p-5 mb-5 space-y-3">
      <div className="flex gap-3 items-start"><ShieldCheck className="w-6 h-6 text-primary shrink-0"/><div className="space-y-1">
        <h2 className="font-semibold">University pathways with verified evidence</h2>
-       <p className="text-sm text-muted-foreground">This directory displays only routes whose evidence has been reviewed and whose institutional agreement is recorded as current. Entry depends on the university’s own assessment of the learner and qualification; admission is never guaranteed. Unverified OTHM and Qualifi progression proposals are kept private from students.</p>
+       <p className="text-sm text-muted-foreground">Two distinct directories appear here: evidence-reviewed academic recognition for particular OTHM/Qualifi qualifications, and recruitment pathways supported by a current university agreement. Neither guarantees admission, credit transfer or a visa. Unreviewed proposals stay private from students.</p>
        <p className="text-xs text-muted-foreground">Referral commission is never presumed from a progression listing. Finance must use the actual signed agreement and settlement evidence.</p>
      </div></div>
      {isStaff&&<Button variant="outline" asChild><Link to={partnersLink}>Manage institutions, contracts and proposals</Link></Button>}
