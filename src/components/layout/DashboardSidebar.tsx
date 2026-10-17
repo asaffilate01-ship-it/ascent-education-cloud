@@ -55,6 +55,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Dashboard', icon: LayoutDashboard, path: '/director' },
       { label: 'Admissions', icon: UserPlus, path: '/director/admissions' },
       { label: 'Programmes', icon: BookOpen, path: '/director/programmes' },
+      { label: 'IELTS Academy', icon: GraduationCap, path: '/director/ielts' },
       { label: 'Staff', icon: Users, path: '/director/staff' },
       { label: 'Students', icon: GraduationCap, path: '/director/students' },
     ]},
@@ -110,6 +111,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
     { items: [
       { label: 'Dashboard', icon: LayoutDashboard, path: '/lecturer' },
       { label: 'Teaching', icon: BookOpen, path: '/lecturer/teaching' },
+      { label: 'IELTS Academy', icon: GraduationCap, path: '/lecturer/ielts' },
       { label: 'Live Classroom', icon: Video, path: '/lecturer/classroom' },
       { label: 'IT Labs', icon: Cloud, path: '/lecturer/labs' },
       { label: 'Lesson Plans', icon: BookOpen, path: '/lesson-plans' },
@@ -233,6 +235,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
     { title: 'Learning', items: [
       { label: 'Dashboard', icon: LayoutDashboard, path: '/student' },
       { label: 'Courses', icon: BookOpen, path: '/student/courses' },
+      { label: 'IELTS Preparation', icon: GraduationCap, path: '/student/ielts' },
       { label: 'Live Classroom', icon: Video, path: '/student/classroom' },
       { label: 'Lesson Archive', icon: Library, path: '/student/lesson-archive' },
       { label: 'Microsoft 365', icon: Mail, path: '/student/microsoft' },
