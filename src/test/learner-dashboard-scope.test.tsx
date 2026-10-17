@@ -4,6 +4,9 @@ import {afterEach, it, expect, vi} from 'vitest';
 const mocks = vi.hoisted(() => ({query: vi.fn()}));
 vi.mock('@/contexts/AuthContext', () => ({useAuth: () => ({user: {id: 'learner', tenantId: 'centre', name: 'Learner'}})}));
 vi.mock('@/hooks/useSupabaseQuery', () => ({useSupabaseQuery: (...args: unknown[]) => mocks.query(...args)}));
+// The integration panel is tested in its own contract suite; keep this
+// learner-dashboard unit test independent of live Supabase credentials.
+vi.mock('@/components/student/STEMCoachLearningAccess', () => ({default: () => null}));
 vi.mock('@/components/layout/DashboardLayout', () => ({default: ({children}: {children: React.ReactNode}) => <main>{children}</main>}));
 import StudentDashboard from '@/pages/student/StudentDashboard';
 afterEach(cleanup);

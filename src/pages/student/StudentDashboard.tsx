@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
 import { useMemo } from 'react';
 import ProgressTracker from '@/components/student/ProgressTracker';
+import STEMCoachLearningAccess from '@/components/student/STEMCoachLearningAccess';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
@@ -123,6 +124,8 @@ export default function StudentDashboard() {
           </div>
         </div>
       </div>
+
+      <STEMCoachLearningAccess enrolled={enrolmentsQuery.data.length > 0} />
 
       {/* Progress Tracker */}
       <div className="mb-6">
