@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.omniqora-factory-dispatch]
 verify_jwt = true
+
+[functions.unipathway-public-enquiry]
+verify_jwt = false
