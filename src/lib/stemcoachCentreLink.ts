@@ -9,9 +9,11 @@ const STEMCOACH_ORIGINS = new Set([
 
 export function stemcoachCentreJoinUrl(slug: string, configuredOrigin?: string | null): string | null {
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length < 3 || slug.length > 40) return null;
+  // No default: operator must validate and configure an approved production host.
+  if (!configuredOrigin?.trim()) return null;
   let url: URL;
   try {
-    url = new URL(configuredOrigin?.trim() || "https://stemcoach.lovable.app");
+    url = new URL(configuredOrigin.trim());
   } catch {
     return null;
   }

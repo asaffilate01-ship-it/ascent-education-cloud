@@ -14,3 +14,5 @@ This phase ships a centre-scoped, operator-verified launch into the existing STE
 Staging acceptance: unverified centre, missing active enrolment, foreign centre/profile mismatch, anonymous caller, disabled binding, unauthorised table write, malicious URL, missing RPC, and verified active learner.
 
 Next phases: explicit board/course mapping, audited one-time signed federation handoff, replay-safe revocation, verified entitlements and optional consented, minimal learning progress events via Omniqora. No provider integration, migration deployment, or publication was performed just by merging this code.
+
+Operator note: Only a verified published STEMCoach HTTPS origin explicitly configured in VITE_STEMCOACH_APP_URL is accepted. Never infer production from a Lovable preview; missing URL must hide the link.
