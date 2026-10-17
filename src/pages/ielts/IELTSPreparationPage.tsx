@@ -3,6 +3,7 @@ import { ArrowRight, BookOpen, CheckCircle2, GraduationCap, Headphones, Mic, Pen
 import PublicNav from '@/components/PublicNav';
 import PublicFooter from '@/components/PublicFooter';
 import Seo from '@/components/Seo';
+import InternationalEnquiryForm from '@/components/enquiry/InternationalEnquiryForm';
 import { Button } from '@/components/ui/button';
 import { IELTS_UNITS, IELTS_SKILLS } from '@/lib/ieltsCurriculum';
 
@@ -17,7 +18,7 @@ export default function IELTSPreparationPage() {
             <span className="text-label text-primary">UNIPATHWAY · ENGLISH LANGUAGE ACADEMY</span>
             <h1 className="text-4xl md:text-6xl font-extrabold leading-tight tracking-tight mt-4">IELTS preparation, built around your goals.</h1>
             <p className="text-lg text-muted-foreground mt-5 max-w-2xl">Academic and General Training pathways with guided study, practice assignments, tutor feedback and exam techniques. A flexible part of UniPathway’s learning platform in Pakistan and online.</p>
-            <div className="flex flex-wrap gap-3 mt-8"><Button size="lg" asChild><Link to="/register">Explore enrolment <ArrowRight className="ml-2 w-4 h-4"/></Link></Button><Button size="lg" variant="outline" asChild><Link to="/contact">Ask about IELTS classes</Link></Button></div>
+            <div className="flex flex-wrap gap-3 mt-8"><Button size="lg" asChild><Link to="/register">Explore enrolment <ArrowRight className="ml-2 w-4 h-4"/></Link></Button><Button size="lg" variant="outline" asChild><a href="#ielts-enquiry">Ask about IELTS classes</a></Button></div>
             <p className="text-xs text-muted-foreground mt-5">Students studying OTHM or Qualifi programmes and external students can use the same UniPathway IELTS academy. Course access and any fees are confirmed at enrolment.</p>
           </div>
           <div className="surface-card p-7 rounded-2xl space-y-4">
@@ -41,6 +42,7 @@ export default function IELTSPreparationPage() {
         <div className="space-y-3"><ShieldCheck className="text-primary w-7 h-7"/><h2 className="text-2xl font-bold">Independent, transparent teaching</h2><p className="text-sm text-muted-foreground">UniPathway provides IELTS exam preparation, not the official examination. Assessments in this course are practice activities and teacher estimates; results are not issued by an official IELTS test provider and no band score, visa or university admission is guaranteed.</p></div>
         <div className="space-y-3"><CheckCircle2 className="text-primary w-7 h-7"/><h2 className="text-2xl font-bold">Link preparation with university planning</h2><p className="text-sm text-muted-foreground">Students can explore academic qualifications, degree progression and admissions counselling separately. OTHM and Qualifi are distinct qualification pathways and do not award or endorse this independent IELTS preparation course.</p><Button variant="outline" asChild><Link to="/pathways">Explore study destinations <ArrowRight className="ml-2 w-4 h-4"/></Link></Button></div>
       </section>
+      <section className="max-w-5xl mx-auto px-5 sm:px-8 pb-16"><InternationalEnquiryForm kind="ielts" /></section>
     </main><PublicFooter />
   </div>;
 }
