@@ -255,7 +255,8 @@ export default function IELTSAcademy() {
            </div>:<div className="border rounded-xl p-4 text-sm text-muted-foreground"><GraduationCap className="w-5 h-5 mb-2"/> Save your Academic or General Training plan to enable practice submissions and track your learning.</div>}
          </section>
        </div>}
-       <section className="surface-card p-5 space-y-3">
+       <IELTSMockRehearsals track={activeTrack}/>
+        <section className="surface-card p-5 space-y-3">
          <h3 className="font-semibold flex items-center gap-2"><BookOpen className="w-4 h-4" /> Official format and practice resources</h3>
          <p className="text-sm text-muted-foreground">Open these official websites for licensed sample materials and the current examiner descriptors. UniPathway’s written learning activities are independent originals.</p>
          <div className="grid gap-2 sm:grid-cols-2">{IELTS_OFFICIAL_RESOURCES.map(x=><a key={x.url} href={x.url} target="_blank" rel="noopener noreferrer" className="rounded-lg border p-3 text-sm font-medium hover:bg-accent/50 flex items-center justify-between gap-2">{x.label}<ExternalLink className="w-4 h-4 shrink-0"/></a>)}</div>
