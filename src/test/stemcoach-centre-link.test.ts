@@ -8,7 +8,8 @@ const dashboard = readFileSync("src/pages/student/StudentDashboard.tsx", "utf8")
 
 describe("UniPathway verified STEMCoach centre link", () => {
   it("allows only exact trusted HTTPS destinations and valid institution slugs", () => {
-    expect(stemcoachCentreJoinUrl("lahore-tuition"))
+    expect(stemcoachCentreJoinUrl("lahore-tuition")).toBeNull();
+    expect(stemcoachCentreJoinUrl("lahore-tuition", "https://stemcoach.lovable.app"))
       .toBe("https://stemcoach.lovable.app/join-institution?code=lahore-tuition");
     expect(stemcoachCentreJoinUrl("lahore-tuition", "https://stemcoach.app"))
       .toBe("https://stemcoach.app/join-institution?code=lahore-tuition");
