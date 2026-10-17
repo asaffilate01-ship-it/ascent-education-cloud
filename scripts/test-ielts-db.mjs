@@ -63,9 +63,17 @@ const practiceId=await as(LEARNER,CENTRE,async()=>{
  assert.equal(t.rows[0].n,2);checks++;
  return v.rows[0].id;
 });
+const readingId=await as(LEARNER,CENTRE,async()=>{
+ const v=await db.query("INSERT INTO public.ielts_practice_submissions(tenant_id,student_id,track,unit_week,skill,answer_text) VALUES($1,$2,'academic',3,'reading','Micro-drill reading summary, not an IELTS band') RETURNING id",[CENTRE,LEARNER]);
+ assert.equal(v.rows.length,1);checks++;
+ return v.rows[0].id;
+});
 await as(TUTOR,CENTRE,async()=>{
  const v=await db.query("UPDATE public.ielts_practice_submissions SET teacher_band=6.5,teacher_feedback='Develop the overview and compare the main trends.' WHERE id=$1 RETURNING reviewed_by,reviewed_at",[practiceId]);
  assert.equal(v.rows[0].reviewed_by,TUTOR);assert.ok(v.rows[0].reviewed_at);checks++;
+ await expectDenied(()=>db.query("UPDATE public.ielts_practice_submissions SET teacher_band=7,teacher_feedback='Not a Writing score' WHERE id=$1",[readingId]));
+ const narrative=await db.query("UPDATE public.ielts_practice_submissions SET teacher_feedback='Review the specific passage evidence before answering.' WHERE id=$1 RETURNING reviewed_by,reviewed_at",[readingId]);
+ assert.equal(narrative.rows[0].reviewed_by,TUTOR);assert.ok(narrative.rows[0].reviewed_at);checks++;
  await expectDenied(()=>db.query("UPDATE public.ielts_practice_submissions SET answer_text='Changed by teacher' WHERE id=$1",[practiceId]));
  await expectDenied(()=>db.query("INSERT INTO public.ielts_practice_submissions(tenant_id,student_id,track,unit_week,skill,answer_text) VALUES($1,$2,'academic',5,'writing','Tutor must not impersonate the learner')",[CENTRE,LEARNER]));
 });
