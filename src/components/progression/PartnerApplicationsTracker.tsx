@@ -9,6 +9,7 @@ const countries=['Pakistan','UK','USA','Canada','Australia','Germany','Global'];
 const programmes=[['ielts_registration_partner','IELTS registration partner'],['ielts_test_venue','IELTS test venue'],['university_recruitment_agent','University recruitment agency'],['academic_articulation','Academic progression agreement'],['education_agent_network','Agency recruitment network'],['other','Other']] as const;
 export default function PartnerApplicationsTracker({tenant,manager}:{tenant:string;manager:boolean}){
  const [items,setItems]=useState<Entry[]>([]),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ const [approvalEvidence,setApprovalEvidence]=useState<Record<string,string>>({});
  const [draft,setDraft]=useState({organisation_name:'',country:'Pakistan',programme:'ielts_registration_partner',official_application_url:'',next_action:'',next_action_at:''});
  async function refresh(){
   const r=await db.from('education_partner_applications').select('id,organisation_name,country,programme,stage,official_application_url,next_action,next_action_at,approval_reference').eq('tenant_id',tenant).order('created_at',{ascending:false}).limit(200);
@@ -27,9 +28,12 @@ export default function PartnerApplicationsTracker({tenant,manager}:{tenant:stri
  }
  async function advance(item:Entry,stage:string){
   if(!manager||busy)return;
-  if(stage==='approved')return setError('Documented approvals require separate evidence review; contact the centre director to record that evidence.');
+  if(stage==='approved'&&(!approvalEvidence[item.id]||approvalEvidence[item.id].trim().length<8))
+    return setError('Verify original third-party decision and enter its written approval reference.');
   setBusy(true);setError('');
-  const r=await db.from('education_partner_applications').update({stage}).eq('id',item.id).eq('tenant_id',tenant);
+  const changes:Record<string,unknown>={stage};
+  if(stage==='approved')changes.approval_reference=approvalEvidence[item.id].trim();
+  const r=await db.from('education_partner_applications').update(changes).eq('id',item.id).eq('tenant_id',tenant);
   if(r.error)setError(r.error.message);else await refresh();
   setBusy(false);
  }
@@ -51,6 +55,12 @@ export default function PartnerApplicationsTracker({tenant,manager}:{tenant:stri
    <p className="text-xs text-muted-foreground">{item.country} · {item.programme.replace(/_/g,' ')} · {item.stage}</p>
    <p className="text-sm">Next action: {item.next_action||'Not recorded'}</p>
    {item.official_application_url&&<a className="text-sm text-primary underline" href={item.official_application_url} target="_blank" rel="noopener noreferrer">Official application page</a>}
+   {manager&&item.stage==='due_diligence'&&<div className="space-y-2">
+    <label className="text-xs font-semibold block">Verified provider approval reference
+      <Input className="mt-1" value={approvalEvidence[item.id]||''} maxLength={500} onChange={e=>setApprovalEvidence(v=>({...v,[item.id]:e.target.value}))}/>
+    </label>
+    <Button type="button" size="sm" variant="outline" disabled={busy||!approvalEvidence[item.id]?.trim()} onClick={()=>void advance(item,'approved')}>Record evidenced approval</Button>
+   </div>}
    {manager&&<select className="block w-full rounded border p-2 bg-background text-sm" disabled={busy} value={item.stage} onChange={e=>void advance(item,e.target.value)}>
      {['research','contacted','submitted','due_diligence','rejected','withdrawn','expired',...(item.stage==='approved'?['approved']:[])].map(s=><option key={s}>{s}</option>)}
    </select>}
