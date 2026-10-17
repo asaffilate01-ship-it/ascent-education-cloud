@@ -12,6 +12,7 @@ let checks=0;
 await db.exec(`
  CREATE ROLE authenticated;
  CREATE SCHEMA auth;
+ GRANT USAGE ON SCHEMA auth TO authenticated;
  CREATE TABLE auth.users(id uuid PRIMARY KEY);
  CREATE TYPE public.app_role AS ENUM('student','lecturer','centre_director','programme_leader','superadmin');
  CREATE TABLE public.tenants(id uuid PRIMARY KEY);
