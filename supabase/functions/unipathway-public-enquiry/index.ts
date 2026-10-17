@@ -2,7 +2,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { corsHeaders, getClientIp, rateLimit, rateLimitResponse } from '../_shared/cors.ts';
 
 // Dedicated public enquiry endpoint for UniPathway. No student records are returned.
-// In-memory throttling is a first defence; add a distributed quota + anti-bot check before launch.
+// Cloudflare Turnstile verification and a durable, service-role-only per-email quota
+// are required. A missing configuration fails closed, never falls back to an open form.
 const json=(body:Record<string,unknown>,status=200)=>new Response(JSON.stringify(body),{
  status,headers:{...corsHeaders,'Content-Type':'application/json','Cache-Control':'no-store'}
 });
@@ -11,10 +12,37 @@ const testTypes=['academic','general','unsure'];
 const origins=['current_student','external_student'];
 const priorities=['OTHM','Qualifi','Direct entry','Unsure'];
 const text=(v:unknown,max:number)=>typeof v==='string'?v.trim().slice(0,max):'';
+type TurnstileReply={ success?:boolean; hostname?:string; action?:string };
+async function validateChallenge(token:string):Promise<boolean|null>{
+ const secret=Deno.env.get('TURNSTILE_SECRET_KEY');
+ const allowed=(Deno.env.get('TURNSTILE_ALLOWED_HOSTNAMES')||'')
+  .split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
+ if(!secret||!allowed.length)return null; // Environment not ready; reject all.
+ const form=new FormData();
+ form.set('secret',secret);form.set('response',token);
+ try{
+  const response=await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify',{
+   method:'POST',body:form,signal:AbortSignal.timeout(7000)
+  });
+  if(!response.ok)return false;
+  const checked=await response.json() as TurnstileReply;
+  return checked.success===true && checked.action==='unipathway-enquiry' &&
+   allowed.includes((checked.hostname||'').toLowerCase());
+ }catch{return false;}
+}
+async function digestApplicantEmail(email:string):Promise<string|null>{
+ const pepper=Deno.env.get('ENQUIRY_QUOTA_PEPPER');
+ if(!pepper||pepper.length<32)return null; // Required secret, not client-accessible.
+ const bytes=new TextEncoder().encode(pepper+':'+email.toLowerCase().trim());
+ const hash=await crypto.subtle.digest('SHA-256',bytes);
+ return [...new Uint8Array(hash)].map(n=>n.toString(16).padStart(2,'0')).join('');
+}
 
 Deno.serve(async(req:Request)=>{
  if(req.method==='OPTIONS')return new Response(null,{headers:corsHeaders});
  if(req.method!=='POST')return json({error:'Method not allowed'},405);
+ const bodyBytes=Number(req.headers.get('content-length')||0);
+ if(bodyBytes>16000)return json({error:'Request exceeds maximum allowed size'},413);
  if(!rateLimit(getClientIp(req),4,60_000))return rateLimitResponse();
  let body:Record<string,unknown>;
  try{const parsed=await req.json();if(!parsed||typeof parsed!=='object'||Array.isArray(parsed))return json({error:'Invalid request'},400);body=parsed;}
@@ -34,10 +62,25 @@ Deno.serve(async(req:Request)=>{
     || (kind==='university'&&!priorities.includes(priority))){
    return json({error:'Please choose a valid study route.'},400);
  }
+ const challengeToken=text(body.captcha_token,2500);
+ if(challengeToken.length<20)return json({error:'Complete the security challenge and retry.'},403);
+ const accepted=await validateChallenge(challengeToken);
+ if(accepted===null)return json({error:'The enquiry service is not configured for secure submissions.'},503);
+ if(!accepted)return json({error:'Security verification failed. Please retry.'},403);
  try{
    const url=Deno.env.get('SUPABASE_URL'),secret=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
    if(!url||!secret)return json({error:'Enquiries are temporarily unavailable.'},503);
    const admin=createClient(url,secret,{auth:{persistSession:false,autoRefreshToken:false}});
+   const hashed=await digestApplicantEmail(email);
+   if(!hashed)return json({error:'Secure enquiry throttling is not configured.'},503);
+   const quota=await admin.rpc('consume_unipathway_enquiry_quota',{
+    p_digest:hashed,p_limit:4
+   });
+   if(quota.error){
+    console.error('UniPathway enquiry quota unavailable',quota.error.code);
+    return json({error:'Please try again later.'},503);
+   }
+   if(quota.data!==true)return json({error:'Too many enquiries. Please try again later.'},429);
    const t=await admin.from('tenants').select('id').eq('slug','unipathway').maybeSingle();
    if(t.error||!t.data?.id)return json({error:'Admissions are temporarily unavailable; please try again later.'},503);
    const classification=kind==='ielts'?'IELTS '+testType:'University '+destination+' / '+priority;
