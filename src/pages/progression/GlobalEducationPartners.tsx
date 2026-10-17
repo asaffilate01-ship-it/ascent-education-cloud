@@ -1,4 +1,5 @@
 import PartnerWorkflow from '@/components/progression/PartnerWorkflow';
+import AcademicEvidenceDirectory from '@/components/progression/AcademicEvidenceDirectory';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -147,6 +148,7 @@ export default function GlobalEducationPartners() {
  ];
  return <DashboardLayout title="Global Education Partnerships" subtitle="Recruitment groups, awarding bodies and verified international study pathways">
   <PartnerWorkflow />
+   {tenantId&&<div className="mb-5"><AcademicEvidenceDirectory tenant={tenantId} manager={canManage}/></div>}
   <div className="rounded-xl border border-amber-300/40 bg-amber-100/30 dark:bg-amber-900/10 p-4 mb-5 text-sm">
    <strong>Internal research catalogue.</strong> Listings are potential partners, not contracted relationships. Only authorised, evidence-verified programmes may be advertised to students. No platform API or university admissions agreement is implied. Pakistan university referral commissions are not assumed: they require a signed agreement and proof of eligibility.
   </div>
