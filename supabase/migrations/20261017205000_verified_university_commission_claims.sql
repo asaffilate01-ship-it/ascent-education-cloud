@@ -1,4 +1,8 @@
 -- Controlled commission claims against actual signed university recruiting agreements.
+-- Finance users can inspect only enrolled referral evidence in their own centre.
+CREATE POLICY "finance enrolled referral read" ON public.international_partner_referrals FOR SELECT TO authenticated
+ USING(public.same_tenant(tenant_id) AND public.has_role(auth.uid(),'finance_officer'::public.app_role));
+
 -- Claims are NOT invoices, payouts or realised revenue until evidenced and reconciled.
 CREATE TABLE public.university_commission_claims (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
