@@ -19,6 +19,7 @@ await db.exec([
 'CREATE TABLE public.applications(id uuid PRIMARY KEY,tenant_id uuid, email text,source text,user_id uuid);',
 'GRANT SELECT,UPDATE ON public.applications TO authenticated;',
 'CREATE TABLE public.student_enrolments(student_id uuid,tenant_id uuid,status text);',
+'GRANT INSERT ON public.student_enrolments TO authenticated;',
 "CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('test.uid',true),'')::uuid $$;",
 "CREATE FUNCTION public.same_tenant(t uuid) RETURNS boolean LANGUAGE sql STABLE AS $$ SELECT t=nullif(current_setting('test.tenant',true),'')::uuid $$;",
 "CREATE FUNCTION public.has_role(u uuid,r public.app_role) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $$ SELECT EXISTS(SELECT 1 FROM public.user_roles ur WHERE ur.user_id=u AND ur.tenant_id=nullif(current_setting('test.tenant',true),'')::uuid AND ur.role=r) $$;"
@@ -58,7 +59,7 @@ await as(STAFF,T,async()=>{
  const lead=await db.query('SELECT user_id FROM public.applications WHERE id=$1',[LEAD]);
  assert.equal(lead.rows[0].user_id,STUDENT);checks++;
  await db.query("INSERT INTO public.student_enrolments(student_id,tenant_id,status) VALUES($1,$2,'active')",[STUDENT,T]);
- const next=await db.query('SELECT public.activate_international_service_from_lead($1,$2) AS id',[INTERNAL_LEAD,STUDENT]);
+ const next=await db.query('SELECT public.activate_international_service_from_lead($1,$2,$3) AS id',[INTERNAL_LEAD,STUDENT,'included']);
  assert.ok(next.rows[0].id);checks++;
  const internal=await db.query('SELECT billing_mode,service_type FROM public.international_service_enrolments WHERE id=$1',[next.rows[0].id]);
  assert.equal(internal.rows[0].billing_mode,'included');
