@@ -12,6 +12,7 @@ const mocks=vi.hoisted(()=>({
 vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'learner-1',tenantId:'centre-1',roles:['student']}})}));
 vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:{children:React.ReactNode})=><main>{children}</main>}));
 vi.mock('@/components/progression/PartnerWorkflow',()=>({default:()=> <div>Student consent workflow</div>}));
+vi.mock('@/components/progression/AcademicEvidenceDirectory',()=>({default:()=> <div>Academic evidence directory</div>}));
 vi.mock('@/integrations/supabase/client',()=>({supabase:{from:(table:string)=>{
  const chain={
   select:()=>chain,
