@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useState } from 'react';
 import AddLeadModal from '@/components/modals/AddLeadModal';
 import KanbanBoard from '@/components/admissions/KanbanBoard';
+import ServiceActivationQueue from '@/components/admissions/ServiceActivationQueue';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
 
@@ -109,6 +110,8 @@ export default function AdmissionsCRM() {
         <StatCard label="Offers Issued" value={String(offers)} icon={Award} />
         <StatCard label="Enrolled" value={String(enrolled)} icon={TrendingUp} />
       </div>
+
+      <ServiceActivationQueue />
 
       {/* Pipeline Funnel */}
       <div className="surface-card p-5 mb-6">
