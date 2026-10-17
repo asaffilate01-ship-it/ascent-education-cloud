@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { corsHeaders, getClientIp, rateLimit, rateLimitResponse } from '../_shared/cors.ts';
+import { acceptedTurnstileOutcome } from '../_shared/unipathway-turnstile.ts';
 
 // Dedicated public enquiry endpoint for UniPathway. No student records are returned.
 // Cloudflare Turnstile verification and a durable, service-role-only per-email quota
@@ -12,7 +13,6 @@ const testTypes=['academic','general','unsure'];
 const origins=['current_student','external_student'];
 const priorities=['OTHM','Qualifi','Direct entry','Unsure'];
 const text=(v:unknown,max:number)=>typeof v==='string'?v.trim().slice(0,max):'';
-type TurnstileReply={ success?:boolean; hostname?:string; action?:string };
 async function validateChallenge(token:string):Promise<boolean|null>{
  const secret=Deno.env.get('TURNSTILE_SECRET_KEY');
  const allowed=(Deno.env.get('TURNSTILE_ALLOWED_HOSTNAMES')||'')
@@ -25,9 +25,8 @@ async function validateChallenge(token:string):Promise<boolean|null>{
    method:'POST',body:form,signal:AbortSignal.timeout(7000)
   });
   if(!response.ok)return false;
-  const checked=await response.json() as TurnstileReply;
-  return checked.success===true && checked.action==='unipathway-enquiry' &&
-   allowed.includes((checked.hostname||'').toLowerCase());
+  const checked=await response.json() as unknown;
+  return acceptedTurnstileOutcome(checked,allowed);
  }catch{return false;}
 }
 async function digestApplicantEmail(email:string):Promise<string|null>{
