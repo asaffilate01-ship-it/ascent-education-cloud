@@ -18,6 +18,7 @@
     "test:db": "node scripts/test-partnership-db.mjs && node scripts/test-ielts-db.mjs",
     "audit:wiring": "node scripts/audit-function-wiring.mjs",
     "check:intelligence": "deno check --config deno.intelligence.json supabase/functions/omniqora-student-intelligence/index.ts supabase/functions/omniqora-cohort-intelligence/index.ts supabase/functions/omniqora-executive-snapshot/index.ts",
+    "check:enquiry": "deno check --config deno.intelligence.json supabase/functions/unipathway-public-enquiry/index.ts",
     "audit:dashboards": "node scripts/audit-dashboards.mjs"
   },
   "dependencies": {
