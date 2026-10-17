@@ -28,7 +28,7 @@ const KINDS: { value: PartnerKind; label: string }[] = [
  { value:'university',label:'Universities' },
  { value:'language_provider',label:'Language providers' },
 ];
-const COUNTRIES = ['UK','USA','Canada','Australia','Germany','France','Malta','UAE','Ireland','Europe','New Zealand'];
+const COUNTRIES = ['Pakistan','UK','USA','Canada','Australia','Germany','France','Malta','UAE','Ireland','Europe','New Zealand'];
 const editableStatuses: Relationship[] = ['prospect','contacted','application_submitted','due_diligence','suspended','rejected'];
 const label = (s: string) => s.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
 const cleanSlug = (s: string) => s.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,70);
@@ -51,6 +51,9 @@ export default function GlobalEducationPartners() {
  const [newKind,setNewKind] = useState<PartnerKind>('recruitment_group');
  const [newCountries,setNewCountries] = useState('UK');
  const [newUrl,setNewUrl] = useState('');
+ const [newNextAction,setNewNextAction] = useState('');
+ const [newFollowUpDate,setNewFollowUpDate] = useState('');
+ const [newNotes,setNewNotes] = useState('');
  const [showRouteForm,setShowRouteForm] = useState(false);
  const [routePartnerId,setRoutePartnerId] = useState('');
  const [routeAwarder,setRouteAwarder] = useState('');
@@ -98,12 +101,15 @@ export default function GlobalEducationPartners() {
   setBusy(true);
   const {error}=await supabase.from('international_education_partners' as any).insert({
    tenant_id:tenantId, name,slug,partner_kind:newKind,relationship_status:'prospect',
-   countries:newCountries.split(',').map(x=>x.trim()).filter(Boolean), website:url||null,
+   countries:[...new Set(newCountries.split(',').map(x=>x.trim()).filter(Boolean))], website:url||null,
+   next_action:newNextAction.trim()||null,
+   next_action_at:newFollowUpDate?new Date(newFollowUpDate+'T12:00:00Z').toISOString():null,
+   notes:newNotes.trim()||null,owner_id:user?.id||null,
   } as any);
   setBusy(false);
   if(error) return toast.error(error.message);
   toast.success('Added as an unverified prospective partner');
-  setNewName('');setNewUrl('');setShowPartnerForm(false);await load();
+  setNewName('');setNewUrl('');setNewNextAction('');setNewFollowUpDate('');setNewNotes('');setShowPartnerForm(false);await load();
  };
  const setStatus = async (partner:Partner,status:Relationship) => {
   if(!canManage||!tenantId)return;
@@ -142,7 +148,7 @@ export default function GlobalEducationPartners() {
  return <DashboardLayout title="Global Education Partnerships" subtitle="Recruitment groups, awarding bodies and verified international study pathways">
   <PartnerWorkflow />
   <div className="rounded-xl border border-amber-300/40 bg-amber-100/30 dark:bg-amber-900/10 p-4 mb-5 text-sm">
-   <strong>Internal research catalogue.</strong> Listings are potential partners, not contracted relationships. Only authorised, evidence-verified programmes may be advertised to students. No platform API or university admissions agreement is implied.
+   <strong>Internal research catalogue.</strong> Listings are potential partners, not contracted relationships. Only authorised, evidence-verified programmes may be advertised to students. No platform API or university admissions agreement is implied. Pakistan university referral commissions are not assumed: they require a signed agreement and proof of eligibility.
   </div>
   {!tenantId && <div role="alert" className="surface-card p-5 mb-5 text-sm">Your user profile has no tenant assignment. Ask the platform administrator to assign a centre before managing partnerships.</div>}
   <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">{counts.map(c=><div key={c.label} className="surface-card p-4"><div className="flex items-center justify-between text-xs text-muted-foreground">{c.label}<c.icon className="w-4 h-4"/></div><p className="text-2xl font-semibold mt-2">{loading?'…':c.value}</p></div>)}</div>
@@ -151,13 +157,17 @@ export default function GlobalEducationPartners() {
     <button role="tab" aria-selected={tab==='partners'} onClick={()=>setTab('partners')} className={`text-sm px-4 py-2 rounded-md ${tab==='partners'?'bg-background shadow font-semibold':'text-muted-foreground'}`}>Organisations</button>
     <button role="tab" aria-selected={tab==='routes'} onClick={()=>setTab('routes')} className={`text-sm px-4 py-2 rounded-md ${tab==='routes'?'bg-background shadow font-semibold':'text-muted-foreground'}`}>Study pathways</button>
    </div>
-   {canManage&&tenantId&&<Button size="sm" onClick={()=>tab==='partners'?setShowPartnerForm(v=>!v):setShowRouteForm(v=>!v)}><Plus className="h-4 w-4 mr-2"/> {tab==='partners'?'Add organisation':'Propose pathway'}</Button>}
+   {canManage&&tenantId&&<Button size="sm" variant="outline" onClick={()=>{setTab('partners');setKind('university');setCountry('Pakistan');setNewKind('university');setNewCountries('Pakistan');setShowPartnerForm(true);}}><Globe2 className="h-4 w-4 mr-2"/> Pakistan university outreach</Button>}
+    {canManage&&tenantId&&<Button size="sm" onClick={()=>tab==='partners'?setShowPartnerForm(v=>!v):setShowRouteForm(v=>!v)}><Plus className="h-4 w-4 mr-2"/> {tab==='partners'?'Add organisation':'Propose pathway'}</Button>}
   </div>
   {canManage && showPartnerForm && tab==='partners' && <form onSubmit={addPartner} className="surface-card p-5 mb-4 grid md:grid-cols-2 gap-3">
    <label className="text-xs font-medium">Organisation name <Input required value={newName} onChange={e=>setNewName(e.target.value)}/></label>
    <label className="text-xs font-medium">Type <select className="w-full h-10 rounded-md bg-background border px-3" value={newKind} onChange={e=>setNewKind(e.target.value as PartnerKind)}>{KINDS.map(k=><option key={k.value} value={k.value}>{k.label}</option>)}</select></label>
    <label className="text-xs font-medium">Countries (comma separated) <Input value={newCountries} onChange={e=>setNewCountries(e.target.value)}/></label>
    <label className="text-xs font-medium">Website (optional) <Input type="url" placeholder="https://" value={newUrl} onChange={e=>setNewUrl(e.target.value)}/></label>
+    <label className="text-xs font-medium">Next outreach action (optional) <Input maxLength={200} placeholder="Contact university partnerships office" value={newNextAction} onChange={e=>setNewNextAction(e.target.value)}/></label>
+    <label className="text-xs font-medium">Follow-up date (optional) <Input type="date" value={newFollowUpDate} onChange={e=>setNewFollowUpDate(e.target.value)}/></label>
+    <label className="text-xs font-medium md:col-span-2">Internal research notes <Input maxLength={1500} placeholder="Record course recognition and whether commission is formally offered." value={newNotes} onChange={e=>setNewNotes(e.target.value)}/></label>
    <div className="md:col-span-2"><Button size="sm" type="submit" disabled={busy}>Save unverified prospect</Button></div>
   </form>}
   {canManage && showRouteForm && tab==='routes' && <form onSubmit={addRoute} className="surface-card p-5 mb-4 grid md:grid-cols-2 gap-3">
@@ -183,6 +193,7 @@ export default function GlobalEducationPartners() {
     <div className="text-xs text-muted-foreground flex flex-wrap gap-1">{p.countries?.map(c=><span key={c} className="bg-muted/60 px-2 py-1 rounded-md">{c}</span>)}</div>
     <div className="text-xs"><span className="font-semibold">Relationship:</span> {label(p.relationship_status)}</div>
     <div className="text-xs"><span className="font-semibold">Accreditation:</span> {label(p.accreditation_status)}</div>
+     {p.next_action&&<p className="text-xs rounded-md bg-secondary p-2"><strong>Next action:</strong> {p.next_action}</p>}
     {p.website&&/^https:\/\//i.test(p.website)&&<a href={p.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">Official website <ExternalLink className="w-3.5 h-3.5"/></a>}
     {canManage && <label className="mt-auto text-xs text-muted-foreground">Outreach status
      <select aria-label={`Update ${p.name} outreach status`} className="w-full h-9 mt-1 rounded-md bg-background border px-2" disabled={busy} value={p.relationship_status} onChange={e=>void setStatus(p,e.target.value as Relationship)}>
