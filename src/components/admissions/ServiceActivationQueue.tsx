@@ -22,6 +22,7 @@ export default function ServiceActivationQueue(){
  const [candidates,setCandidates]=useState<Account[]>([]);
  const [selectedLead,setSelectedLead]=useState<Lead|null>(null);
  const [candidateId,setCandidateId]=useState('');
+ const [billingMode,setBillingMode]=useState<'complimentary'|'included'>('complimentary');
  const [busy,setBusy]=useState(false);
  const [loading,setLoading]=useState(false);
  const [error,setError]=useState('');
@@ -48,7 +49,7 @@ export default function ServiceActivationQueue(){
  const visible=leads.filter(x=>status==='all'||(status==='pending'?!linked.has(x.id):linked.has(x.id)));
  async function openMatch(lead:Lead){
   if(!tenant||busy)return;
-  setError('');setSelectedLead(lead);setCandidates([]);setCandidateId('');setBusy(true);
+  setError('');setSelectedLead(lead);setCandidates([]);setCandidateId('');setBillingMode('complimentary');setBusy(true);
   try{
    // Exact email only; the database RPC independently checks the confirmed Auth email.
    const r=await db.from('profiles').select('user_id,full_name,email')
@@ -64,10 +65,10 @@ export default function ServiceActivationQueue(){
   setError('');setBusy(true);
   try{
    const r=await db.rpc('activate_international_service_from_lead',{
-    p_enquiry:selectedLead.id,p_student:candidateId
+    p_enquiry:selectedLead.id,p_student:candidateId,p_billing_mode:billingMode
    });
    if(r.error)throw r.error;
-   setSelectedLead(null);setCandidates([]);setCandidateId('');
+   setSelectedLead(null);setCandidates([]);setCandidateId('');setBillingMode('complimentary');
    await fetchRows();
   }catch(e){setError(e instanceof Error?e.message:'Could not activate learner service.');}
   finally{setBusy(false);}
@@ -122,6 +123,12 @@ export default function ServiceActivationQueue(){
        <option value="">Select a registered learner</option>
        {candidates.map(c=><option key={c.user_id} value={c.user_id}>{c.full_name} · {c.email}</option>)}
       </select>
+    </label>
+    <label className="text-sm font-semibold block">Agreed service arrangement
+     <select className="block bg-background border rounded p-2 mt-1" value={billingMode} onChange={e=>setBillingMode(e.target.value as 'complimentary'|'included')}>
+      <option value="complimentary">Complimentary counselling / IELTS preparation</option>
+      <option value="included">Included in an existing UniPathway course (requires active enrolment)</option>
+     </select>
     </label>
     {!candidates.length&&<p className="text-sm text-muted-foreground">No matching verified account appears in this centre. Ask the applicant to register using the same email, then refresh.</p>}
     <div className="flex gap-2">
