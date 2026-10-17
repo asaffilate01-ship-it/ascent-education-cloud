@@ -362,6 +362,7 @@ function AppRoutes() {
 
         {/* ========== EXAMS ========== */}
         <Route path="/exams" element={<Exams><ExamsDashboard /></Exams>} />
+        <Route path="/exams/ielts" element={<Exams><IELTSAcademy /></Exams>} />
         <Route path="/exams/schedule" element={<Exams><ExamsDashboard /></Exams>} />
         <Route path="/exams/rooms" element={<Exams><ExamsDashboard /></Exams>} />
         <Route path="/exams/seating" element={<Exams><ExamsDashboard /></Exams>} />
