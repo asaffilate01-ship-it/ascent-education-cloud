@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import TurnstileChallenge from '@/components/enquiry/TurnstileChallenge';
 
 const destinations=['UK','USA','Canada','Australia','Germany','Pakistan'];
 type Kind='ielts'|'university';
@@ -24,11 +25,14 @@ export default function InternationalEnquiryForm({kind}:{kind:Kind}){
  const [busy,setBusy]=useState(false);
  const [sent,setSent]=useState(false);
  const [error,setError]=useState('');
+ const [captchaToken,setCaptchaToken]=useState('');
+ const [captchaRefresh,setCaptchaRefresh]=useState(0);
  const update=<K extends keyof Form>(key:K,value:Form[K])=>setForm(prev=>({...prev,[key]:value}));
  async function submit(event:React.FormEvent<HTMLFormElement>){
   event.preventDefault();if(busy)return;
   setError('');
   if(!form.consent)return setError('Please read and acknowledge the privacy notice.');
+  if(!captchaToken)return setError('Complete the security verification first.');
   if(form.name.trim().length<2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())){
     return setError('Please enter your name and a valid email address.');
   }
@@ -40,12 +44,13 @@ export default function InternationalEnquiryForm({kind}:{kind:Kind}){
         phone:form.phone.trim(),student_origin:form.student_origin,
         destination:form.destination,test_type:form.test_type,
         prior_qualification:form.prior_qualification,message:form.message.trim(),consent:form.consent,
+        captcha_token:captchaToken,
       }
     });
     if(result.error||!result.data?.ok)throw new Error(result.data?.error||'Enquiry service unavailable. Please try again.');
     setSent(true);
   }catch(e){setError(e instanceof Error?e.message:'Could not send your enquiry; please retry.');}
-  finally{setBusy(false);}
+  finally{setCaptchaToken('');setCaptchaRefresh(n=>n+1);setBusy(false);}
  }
  const university=kind==='university';
  return <section id={university?'progression-enquiry':'ielts-enquiry'} className="surface-card p-5 sm:p-7 space-y-4 scroll-mt-12" aria-label={university?'University admissions enquiry':'IELTS preparation enquiry'}>
@@ -53,7 +58,7 @@ export default function InternationalEnquiryForm({kind}:{kind:Kind}){
     <CheckCircle2 className="w-12 h-12 text-success mx-auto"/>
     <h3 className="font-bold text-xl">Enquiry received</h3>
     <p className="text-sm text-muted-foreground">Your enquiry has been saved for the UniPathway admissions team. A counsellor can discuss the next steps; no booking or university admission has been confirmed.</p>
-    <Button type="button" variant="outline" onClick={()=>{setForm(initial);setSent(false);setError('');}}>Send another enquiry</Button>
+    <Button type="button" variant="outline" onClick={()=>{setForm(initial);setSent(false);setError('');setCaptchaToken('');setCaptchaRefresh(n=>n+1);}}>Send another enquiry</Button>
   </div>:<>
     <div>
       <p className="text-xs uppercase font-bold tracking-widest text-primary">Speak to our admissions team</p>
@@ -97,8 +102,9 @@ export default function InternationalEnquiryForm({kind}:{kind:Kind}){
         <input type="checkbox" className="mt-1 accent-primary" required checked={form.consent} onChange={e=>update('consent',e.target.checked)}/>
         <span>I have read the <Link to="/privacy" className="underline text-primary">Privacy Policy</Link> and agree to UniPathway using these details to respond to my enquiry. I understand the service cannot guarantee an IELTS band score, a university place or a visa.</span>
       </label>
+      <TurnstileChallenge onToken={setCaptchaToken} resetSignal={captchaRefresh}/>
       {error&&<p role="alert" className="text-sm text-destructive md:col-span-2">{error}</p>}
-      <div className="md:col-span-2"><Button type="submit" disabled={busy}>{busy?<Loader2 className="w-4 h-4 animate-spin mr-2"/>:<Send className="w-4 h-4 mr-2"/>} {busy?'Sending…':'Request counselling'}</Button></div>
+      <div className="md:col-span-2"><Button type="submit" disabled={busy||!captchaToken}>{busy?<Loader2 className="w-4 h-4 animate-spin mr-2"/>:<Send className="w-4 h-4 mr-2"/>} {busy?'Sending…':'Request counselling'}</Button></div>
     </form>
   </>}
  </section>;
