@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Award, CheckCircle2, FileText, Globe2, GraduationCap, ShieldCheck } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PartnerWorkflow from '@/components/progression/PartnerWorkflow';
+import AcademicEvidenceDirectory from '@/components/progression/AcademicEvidenceDirectory';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -77,14 +78,15 @@ export default function ProgressionDashboard(){
     <div className="space-y-5">
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {[
-          {label:'Published verified routes',value:routes.length,icon:Globe2},
+          {label:'Published contracted routes',value:routes.length,icon:Globe2},
           {label:isStaff?'Centre applications':'Your applications',value:applications.length,icon:FileText},
           {label:'Offers recorded',value:offers,icon:Award},
           {label:'Enrolments recorded',value:enrolled,icon:CheckCircle2}
         ].map(item=><div className="surface-card p-4 flex gap-3 items-center" key={item.label}><item.icon className="w-6 h-6 text-primary"/><div><p className="text-2xl font-bold">{item.value}</p><p className="text-xs text-muted-foreground">{item.label}</p></div></div>)}
       </div>
+      <AcademicEvidenceDirectory tenant={tenant} student={!isStaff} manager={user?.roles.includes('superadmin')||user?.roles.includes('centre_director')||false}/>
       <section className="surface-card p-5 space-y-4">
-        <div className="flex items-start justify-between gap-3 flex-wrap"><div><h2 className="text-lg font-semibold">Published progression routes</h2><p className="text-sm text-muted-foreground">Filter by destination to find relevant OTHM, Qualifi and other verified pathways.</p></div>
+        <div className="flex items-start justify-between gap-3 flex-wrap"><div><h2 className="text-lg font-semibold">Contract-backed recruitment pathways</h2><p className="text-sm text-muted-foreground">These pathways require a current recruitment agreement. Academic recognition evidence is shown separately above and does not imply commission rights.</p></div>
           <select className="rounded-lg border bg-background px-3 py-2 text-sm" value={country} aria-label="Filter university routes by country" onChange={e=>setCountry(e.target.value)}>
            {DESTINATIONS.map(c=><option key={c} value={c}>{c}</option>)}
           </select>
