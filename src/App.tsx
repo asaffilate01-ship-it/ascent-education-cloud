@@ -32,6 +32,7 @@ const PathwaysCompare = lazy(() => import("./pages/tenant/PathwaysCompare"));
 const DestinationApply = lazy(() => import("./pages/tenant/apply/DestinationApply"));
 const IELTSPreparationPage = lazy(() => import("./pages/ielts/IELTSPreparationPage"));
 const IELTSAcademy = lazy(() => import("./pages/ielts/IELTSAcademy"));
+const IELTSMockOpsPage = lazy(() => import("./pages/ielts/IELTSMockOpsPage"));
 
 // Tenant admin
 const TenantAdminDashboard = lazy(() => import("./pages/tenant/TenantAdminDashboard"));
@@ -362,7 +363,7 @@ function AppRoutes() {
 
         {/* ========== EXAMS ========== */}
         <Route path="/exams" element={<Exams><ExamsDashboard /></Exams>} />
-        <Route path="/exams/ielts" element={<Exams><IELTSAcademy /></Exams>} />
+        <Route path="/exams/ielts" element={<Exams><IELTSMockOpsPage /></Exams>} />
         <Route path="/exams/schedule" element={<Exams><ExamsDashboard /></Exams>} />
         <Route path="/exams/rooms" element={<Exams><ExamsDashboard /></Exams>} />
         <Route path="/exams/seating" element={<Exams><ExamsDashboard /></Exams>} />
