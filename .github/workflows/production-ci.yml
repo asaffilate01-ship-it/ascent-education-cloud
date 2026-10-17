@@ -20,6 +20,7 @@ jobs:
         with:
           deno-version: v2.9.6
       - run: npm run check:intelligence
+      - run: npm run check:enquiry
       - run: npm run test:db
       - run: npm run test
       - run: npm run build
