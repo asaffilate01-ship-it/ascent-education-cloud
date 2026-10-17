@@ -38,7 +38,8 @@ await as(MANAGER,T,async()=>{
 });
 await as(LECTURER,T,async()=>{
  const r=await db.query('SELECT id FROM public.education_staff_credentials');assert.equal(r.rows.length,1);checks++;
- await denied(()=>db.query("UPDATE public.education_staff_credentials SET status='reviewed' WHERE id=$1",[credential]));
+ const blocked=await db.query("UPDATE public.education_staff_credentials SET status='reviewed' WHERE id=$1 RETURNING id",[credential]);
+ assert.equal(blocked.rows.length,0,'RLS must block lecturer approval');checks++;
 });
 await as(STUDENT,T,async()=>{
  const r=await db.query('SELECT id FROM public.education_staff_credentials');assert.equal(r.rows.length,0);checks++;
