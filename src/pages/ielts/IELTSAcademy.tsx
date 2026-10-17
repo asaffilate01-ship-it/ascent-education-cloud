@@ -11,6 +11,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import IELTSReadingLab from '@/components/ielts/IELTSReadingLab';
 import IELTSListeningLab from '@/components/ielts/IELTSListeningLab';
+import IELTSSpeakingPractice from '@/components/ielts/IELTSSpeakingPractice';
+import IELTSSpeakingTutorQueue from '@/components/ielts/IELTSSpeakingTutorQueue';
 import {
   IELTS_SKILLS, IELTS_UNITS, IELTS_OFFICIAL_RESOURCES,
   type IeltsTrack, type IeltsSkill, unitPrompt,
@@ -205,7 +207,7 @@ export default function IELTSAcademy() {
          <Button onClick={()=>void savePlan()} disabled={busy}>{activePlan?'Update study plan':'Start IELTS preparation'}</Button>
          {activePlan&&<p className="text-xs text-muted-foreground">Changing test type starts a separate set of weekly completions. Existing submitted work remains visible in its original test type.</p>}
        </section>}
-       {teacher && tab==='review'?<section className="surface-card p-5 space-y-4">
+       {teacher && tab==='review'?<div className="space-y-5"><section className="surface-card p-5 space-y-4">
          <h3 className="font-semibold">Tutor review queue · latest 100 centre submissions</h3>
          <p className="text-sm text-muted-foreground">Only score a genuine Writing response with evidence against the official writing descriptors. Speaking reflections cannot be band-scored from typed text.</p>
          {submissions.length===0?<p>No learner practice has been submitted yet.</p>:<div className="space-y-2">{submissions.map(s=><button key={s.id} type="button" onClick={()=>openReview(s)} className="w-full text-left rounded-xl border p-4 flex items-center justify-between gap-3 hover:bg-accent/50">
@@ -223,7 +225,7 @@ export default function IELTSAcademy() {
            :<p className="text-xs text-muted-foreground">No numerical practice band is available for this text-based reflection.</p>}
            <div className="flex gap-2"><Button disabled={busy} onClick={()=>void saveReview()}>Save feedback</Button><Button variant="outline" onClick={()=>setReview(null)}>Cancel</Button></div>
          </div>}
-       </section>:<div className="grid gap-5 lg:grid-cols-[260px_1fr]">
+       </section><IELTSSpeakingTutorQueue tenant={tenant}/></div>:<div className="grid gap-5 lg:grid-cols-[260px_1fr]">
          <nav className="surface-card p-3 space-y-1 self-start" aria-label="IELTS weekly curriculum">
            <p className="text-xs uppercase font-semibold text-muted-foreground tracking-wider px-2 py-2">Eight-week curriculum</p>
            {IELTS_UNITS.map(unit=><button key={unit.week} type="button" onClick={()=>setSelectedWeek(unit.week)}
@@ -237,7 +239,8 @@ export default function IELTSAcademy() {
            <h3 className="text-2xl font-bold">{selectedUnit.title}</h3><p className="text-muted-foreground">{selectedUnit.focus}</p>
            <div className="rounded-xl border p-4 space-y-3"><h4 className="font-semibold">Learning outcomes</h4><ul className="list-disc pl-5 space-y-2 text-sm">{selectedUnit.learningObjectives.map(x=><li key={x}>{x}</li>)}</ul></div>
            {!teacher&&selectedWeek===2&&<IELTSListeningLab available={!!activePlan&&!busy} onSave={saveListeningDrill}/>}
-           {!teacher&&selectedWeek===3&&<IELTSReadingLab track={activeTrack} available={!!activePlan&&!busy} onSave={saveReadingDrill}/>}
+           {!teacher&&selectedWeek===3&&<IELTSReadingLab track={activeTrack} available={!!activePlan&&!busy} onSave={saveReadingDrill}/>} 
+            {!teacher&&selectedWeek===6&&student&&<IELTSSpeakingPractice key={`${tenant}-${student}`} tenant={tenant} student={student} track={activeTrack} enabled={!!activePlan&&!busy}/>}
            <div className="space-y-2"><h4 className="font-semibold">Lesson notes</h4><p className="text-sm leading-7 whitespace-pre-wrap">{selectedUnit.teachingNotes}</p></div>
            <div className="rounded-xl bg-secondary/60 p-4 space-y-3"><h4 className="font-semibold">Original {activeTrack==='academic'?'Academic':'General Training'} practice task</h4><p className="text-sm leading-7 whitespace-pre-wrap">{unitPrompt(selectedUnit,activeTrack)}</p></div>
            {teacher?<div className="rounded-xl border p-4 space-y-2"><h4 className="font-semibold">Teacher checklist</h4><ul className="list-disc pl-5 space-y-2 text-sm">{selectedUnit.teacherChecklist.map(x=><li key={x}>{x}</li>)}</ul></div>
