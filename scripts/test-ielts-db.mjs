@@ -72,7 +72,10 @@ await as(TUTOR,CENTRE,async()=>{
 await as(LEARNER,CENTRE,async()=>{
  const v=await db.query("SELECT teacher_band,teacher_feedback FROM public.ielts_practice_submissions WHERE id=$1",[practiceId]);
  assert.equal(Number(v.rows[0].teacher_band),6.5);checks++;
- await expectDenied(()=>db.query("UPDATE public.ielts_practice_submissions SET teacher_band=9 WHERE id=$1",[practiceId]));
+ const deniedUpdate=await db.query("UPDATE public.ielts_practice_submissions SET teacher_band=9 WHERE id=$1 RETURNING id",[practiceId]);
+ assert.equal(deniedUpdate.rows.length,0,'RLS must prevent student grade writes');checks++;
+ const unchanged=await db.query("SELECT teacher_band FROM public.ielts_practice_submissions WHERE id=$1",[practiceId]);
+ assert.equal(Number(unchanged.rows[0].teacher_band),6.5);checks++;
 });
 await as(OUTSIDER,OTHER,async()=>{
  const a=await db.query("SELECT id FROM public.ielts_practice_submissions");
