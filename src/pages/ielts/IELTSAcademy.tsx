@@ -14,6 +14,7 @@ import IELTSListeningLab from '@/components/ielts/IELTSListeningLab';
 import IELTSSpeakingPractice from '@/components/ielts/IELTSSpeakingPractice';
 import IELTSSpeakingTutorQueue from '@/components/ielts/IELTSSpeakingTutorQueue';
 import IELTSReadinessPanel from '@/components/ielts/IELTSReadinessPanel';
+import IELTSMockRehearsals from '@/components/ielts/IELTSMockRehearsals';
 import {
   IELTS_SKILLS, IELTS_UNITS, IELTS_OFFICIAL_RESOURCES,
   type IeltsTrack, type IeltsSkill, unitPrompt,
