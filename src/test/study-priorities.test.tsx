@@ -11,7 +11,7 @@ describe('study priorities discovery', () => {
     expect(screen.queryByRole('heading', { name: 'OTHM qualifications' })).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Search subjects and training'), { target: { value: '' } });
     fireEvent.click(screen.getByRole('button', { name: 'Funding' }));
-    expect(screen.getByRole('status')).toHaveTextContent('2 study options');
+    expect(screen.getByText('2 study options')).toHaveAttribute('role', 'status');
     expect(screen.getByText(/Scheme, provider approval, eligibility/)).toBeInTheDocument();
     expect(screen.getByText('Canada', { exact: true })).toBeInTheDocument();
   });
