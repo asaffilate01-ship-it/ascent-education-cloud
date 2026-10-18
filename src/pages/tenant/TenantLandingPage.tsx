@@ -13,7 +13,7 @@ import { openCookiePreferences } from '@/components/CookieConsent';
 import Seo from '@/components/Seo';
 
 const DEFAULT_THEME: TenantTheme = {
-  primaryColor: '#b91c1c',
+  primaryColor: '#0B2D5B',
   accentColor: '#16a34a',
   logoUrl: '',
   faviconUrl: '',
@@ -291,7 +291,7 @@ export default function TenantLandingPage() {
               { icon: Heart, title: 'Family & Support', desc: 'Stay close to family during the crucial first 2 years. Enjoy home-cooked meals, familiar surroundings, and zero culture shock while studying.' },
               { icon: Plane, title: 'Just 1 Year Abroad', desc: 'Fly out only for the final top-up year. Experience international campus life, build global networks, and graduate in person — all in 12 months.' },
               { icon: Globe, title: 'Global Career Options', desc: 'A UK/Australian/Canadian degree opens doors worldwide. Access post-study work visas (UK Graduate Route — currently 2 years, reducing to 18 months from 2027; Australia 2–4 year; Canada 3-year PGWP).' },
-              { icon: Shield, title: 'UK-Regulated Quality', desc: 'Your Level 4 & 5 qualifications are regulated by Ofqual and recognised by OTHM, QUALIFI & IAB — the same standards as studying in the UK.' },
+              { icon: Shield, title: 'UK-Regulated Quality', desc: 'Our planned qualification pathways focus on UK-regulated awarding-body programmes. Centre approval, authorised units and delivery arrangements must be confirmed for each programme.' },
               { icon: Star, title: 'No Compromise on Learning', desc: 'HD live lectures, recorded sessions, virtual classrooms, e-library access, dedicated tutors, and two 14-day residential visits per year for in-person experience.' },
             ].map((b) => (
               <motion.div key={b.title} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
@@ -769,7 +769,7 @@ export default function TenantLandingPage() {
           <div className="text-center mb-14">
             <span className="text-xs font-bold uppercase tracking-widest mb-3 block" style={{ color: pc }}>Career Ready</span>
             <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground">Career & Employability Support</h2>
-            <p className="text-muted-foreground mt-3 max-w-xl mx-auto">Every student receives comprehensive career support — because your qualification should lead to a real career.</p>
+            <p className="text-muted-foreground mt-3 max-w-xl mx-auto">We aim to provide career preparation and employer introductions as our verified Pakistan internship and jobs network develops.</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-5">
             {[
@@ -844,7 +844,7 @@ export default function TenantLandingPage() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               { icon: Heart, title: 'Your Child Stays Home', desc: 'No need to send your child abroad at 16–18. They study from the safety of your home for 2 years, with the same quality as UK universities.' },
-              { icon: Shield, title: 'UK-Regulated & Accredited', desc: 'All qualifications are Ofqual-regulated and recognised worldwide. Your child receives the exact same degree as students studying in the UK.' },
+              { icon: Shield, title: 'UK-Regulated & Accredited', desc: 'Planned OTHM and Qualifi qualifications are regulated diploma pathways, not university degrees. Recognition, progression and credit transfer are assessed by receiving institutions.' },
               { icon: Banknote, title: 'Save Rs. 2.5+ Crore', desc: 'Instead of spending Rs. 3–4 Crore on a full 3-year degree abroad, save 50–70% by studying the first 2 years at home.' },
               { icon: Briefcase, title: 'Real Internships & Jobs', desc: 'We provide internship placements across Pakistan — in corporate offices, IT firms, accounting practices, and healthcare organisations.' },
               { icon: Globe, title: 'Global Degree, Global Career', desc: 'After the final year abroad, your child has a UK/Australian/Canadian degree with access to post-study work visas (UK Graduate Route currently 2 years, reducing to 18 months from 2027).' },
