@@ -32,7 +32,6 @@ export default function PromoHome() {
       <section className="relative overflow-hidden border-b border-border bg-gradient-to-b from-secondary/60 to-background">
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-5 pb-14 pt-8 sm:px-8 md:pt-12 lg:grid-cols-[1fr_1.05fr] lg:gap-16 lg:pb-24 lg:pt-16">
           <div className="animate-page-enter">
-            <span className="inline-flex items-center gap-2 rounded-full border border-success/25 bg-success/10 px-3 py-1 text-xs font-bold text-success"><span className="size-1.5 rounded-full bg-success" />Now enrolling for September 2026</span>
             <h1 className="mt-5 max-w-2xl text-[2.5rem] font-extrabold leading-[1.05] sm:text-6xl lg:text-7xl">Learn here.<br /><span className="text-success">Go further.</span></h1>
             <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">Years 8–12 tuition, UK and international qualifications, AI, tech and accountancy, IELTS and German — plus university and career guidance for Pakistan and abroad.</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row"><Button size="lg" className="h-12 rounded-full px-7 shadow-surface-lg" asChild><Link to="/study">Explore learning <ArrowRight /></Link></Button><Button size="lg" variant="outline" className="h-12 rounded-full bg-card px-7" asChild><Link to="/contact">Talk to an adviser</Link></Button></div>
