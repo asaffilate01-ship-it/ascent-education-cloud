@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { BookOpen, Globe2, Home, LogIn, Send } from 'lucide-react';
-import { isMobileTabActive } from '@/components/MobileBottomNav';
+import { isMobileTabActive } from '@/lib/mobileTabRoutes';
 
 const items = [
   { label: 'Home', to: '/', icon: Home },
