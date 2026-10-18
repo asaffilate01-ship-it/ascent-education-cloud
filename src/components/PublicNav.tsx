@@ -11,7 +11,7 @@ export const studyLinks = [
   { label: 'Years 8–12 tuition & STEMCoach', detail: 'Matric, Intermediate/FSc, Cambridge; online and in-centre', to: '/tuition', icon: School },
   { label: 'IELTS preparation', detail: 'Academic and General Training practice', to: '/ielts-preparation', icon: BookOpen },
   { label: 'German language courses', detail: 'A1–C1, Goethe, TestDaF, telc and DSH preparation', to: '/german-preparation', icon: BookOpen },
-  { label: 'AI, tech & accounting', detail: 'Coding, cyber security, cloud, finance and IFA/ACCA prep', to: '/study', icon: BookOpen },
+  { label: 'AI, tech & accounting', detail: 'Coding, cyber security, cloud, finance and IFA/ACCA prep', to: '/study#technology-training', icon: BookOpen },
   { label: 'Employer learning', detail: 'Skills for teams and organisations', to: '/employer-learning', icon: BriefcaseBusiness },
   { label: 'Education consultancy', detail: 'Universities, admissions, counselling and career guidance', to: '/pathways', icon: Globe2 },
   { label: 'Pakistan funded skills', detail: 'PSDF, PITB e-Rozgaar, WDD SEHR and NAVTTC', to: '/funded-courses', icon: BriefcaseBusiness },
@@ -44,7 +44,7 @@ export default function PublicNav() {
         <div className="group relative" onMouseEnter={() => setStudyOpen(true)} onMouseLeave={() => setStudyOpen(false)}>
           <Button variant="ghost" aria-haspopup="true" aria-expanded={studyOpen} onClick={() => setStudyOpen(!studyOpen)} className="gap-1 font-semibold">Study <ChevronDown className="size-4" /></Button>
           {studyOpen && <div className="absolute left-0 top-full w-[540px] pt-2"><div className="grid max-h-[min(75vh,620px)] grid-cols-2 gap-2 overflow-y-auto rounded-md border border-border bg-card p-3 shadow-surface-xl">
-            {studyLinks.map(({ label, detail, to, icon: Icon }) => <Link key={to} to={to} className="group/item flex gap-3 rounded-md p-3 transition-colors hover:bg-secondary"><Icon className="mt-0.5 size-5 shrink-0 text-success" /><span><span className="block text-sm font-bold text-foreground">{label}</span><span className="mt-1 block text-xs text-muted-foreground">{detail}</span></span></Link>)}
+            {studyLinks.map(({ label, detail, to, icon: Icon }) => <Link key={label} to={to} className="group/item flex gap-3 rounded-md p-3 transition-colors hover:bg-secondary"><Icon className="mt-0.5 size-5 shrink-0 text-success" /><span><span className="block text-sm font-bold text-foreground">{label}</span><span className="mt-1 block text-xs text-muted-foreground">{detail}</span></span></Link>)}
           </div></div>}
         </div>
         <div className="group relative" onMouseEnter={() => setDestinationsOpen(true)} onMouseLeave={() => setDestinationsOpen(false)}>
