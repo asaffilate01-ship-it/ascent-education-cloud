@@ -197,6 +197,10 @@
   }
 }
 
+@media (max-width: 1023px) {
+  #root { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }
+}
+
 @layer utilities {
   /* ═══ PREMIUM SURFACE SYSTEM ═══ */
   .surface-card {
