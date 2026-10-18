@@ -8,10 +8,10 @@ import image from '@/assets/tenant-hero.jpg';
 
 type Kind = 'tuition' | 'employer';
 const content = {
-  tuition: { eyebrow: 'For school learners', title: 'Years 9–12 tuition, built around progress.', description: 'Subject support, live teaching, revision and exam preparation in a connected learning experience.', icon: School, details: [
-    { icon: BookOpen, title: 'Subject learning', text: 'Support across maths, sciences and technology subjects, according to the available track.' },
-    { icon: Users, title: 'Live support', text: 'Teaching, homework guidance and revision alongside independent study.' },
-    { icon: GraduationCap, title: 'Exam preparation', text: 'Quizzes, mock assessments and progress feedback to help learners focus.' },
+  tuition: { eyebrow: 'For school learners', title: 'Years 8–12 tuition — online and in centre.', description: 'Maths, English, Biology, Chemistry, Physics and Technology with live online and in-centre tuition, revision and examination preparation.', icon: School, details: [
+    { icon: BookOpen, title: 'Subject learning', text: 'Years 8–12: maths, English, biology, chemistry, physics and technology, subject to centre availability.' },
+    { icon: Users, title: 'Live support', text: 'Live online teaching and scheduled in-centre support, with homework, revision and learner feedback.' },
+    { icon: GraduationCap, title: 'Exam preparation', text: 'Quizzes, mock assessments, progress feedback and access to STEMCoach for registered learners, subject to account activation.' },
   ] },
   employer: { eyebrow: 'For organisations', title: 'Learning that moves your team forward.', description: 'Short courses and tailored employer learning designed to connect skills development with the working day.', icon: BriefcaseBusiness, details: [
     { icon: BookOpen, title: 'Skills courses', text: 'Explore practical learning formats suited to employees and teams.' },
