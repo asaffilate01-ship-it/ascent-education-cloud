@@ -17,7 +17,7 @@ const roles: UserRole[] = [
 ];
 
 describe('UniPathway native mobile navigation', () => {
-  it('shows Lovable's five public tabs, including application and study abroad', () => {
+  it("shows Lovable's five public tabs, including application and study abroad", () => {
     expect(PUBLIC_BOTTOM_NAV.map(item => item.path)).toEqual(['/', '/study', '/apply', '/pathways', '/login']);
     expect(getBottomNavItems(null, '/study')).toBe(PUBLIC_BOTTOM_NAV);
     expect(getBottomNavItems('student', '/pathways')).toBe(PUBLIC_BOTTOM_NAV);
