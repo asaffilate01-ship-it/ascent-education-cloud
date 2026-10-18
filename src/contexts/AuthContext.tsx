@@ -133,7 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setRole = (role: UserRole) => {
-    if (user) setUser({ ...user, role });
+    if (user && user.roles.includes(role)) setUser({ ...user, role });
   };
 
   const logout = async () => {
