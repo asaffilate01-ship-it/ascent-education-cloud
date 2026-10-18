@@ -25,3 +25,22 @@ jobs:
       - run: npm run test:db
       - run: npm run test
       - run: npm run build
+
+  browser-acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VITE_SUPABASE_URL: https://unipathway-browser-ci.invalid
+      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_synthetic_ci_only
+      VITE_TURNSTILE_SITE_KEY: ci-only-no-real-challenge
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npx playwright install --with-deps chromium
+      - name: Check public IELTS, external university intake and anonymous access in Chromium
+        run: npx playwright test e2e/unipathway-ielts-admissions.spec.ts e2e/public-smoke.spec.ts
+
