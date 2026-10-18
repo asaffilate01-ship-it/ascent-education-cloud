@@ -5,11 +5,11 @@ import { lovable } from '@/integrations/lovable/index';
 import { Button } from '@/components/ui/button';
 import { Eye, EyeOff, ArrowRight, CheckCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import unipathwayLogo from '@/assets/unipathway-logo.png';
+import BrandLogo from '@/components/BrandLogo';
 
 const ACCOUNT_TYPES = [
   { key: 'student', label: 'Student', desc: 'I want to study', role: 'student' },
-  { key: 'agent', label: 'Agent', desc: 'I recruit students', role: 'agent' },
+  { key: 'agent', label: 'Agent', desc: 'Apply for verified recruitment-agent access', role: 'agent' },
 ] as const;
 
 export default function RegisterPage() {
@@ -67,7 +67,7 @@ export default function RegisterPage() {
 
     // Role is auto-assigned server-side via database trigger based on account_type metadata
 
-    toast.success('Account created! Please check your email to verify your account.');
+    toast.success(accountType === 'agent' ? 'Account created. Recruitment access requires staff approval. Verify your email and contact admissions for onboarding.' : 'Account created! Please check your email to verify your account.');
     navigate('/login');
   };
 
@@ -88,14 +88,14 @@ export default function RegisterPage() {
       <div className="hidden lg:flex lg:w-1/2 gradient-primary relative flex-col justify-between p-12">
         <div>
           <div className="flex items-center gap-3 mb-16">
-            <img src={unipathwayLogo} alt="UniPathway" className="h-12 w-auto" />
+            <span className="inline-flex rounded-xl bg-white p-2"><BrandLogo className="h-12" showTagline /></span>
           </div>
           <h1 className="text-4xl font-bold text-primary-foreground leading-tight max-w-md">
             Join UniPathway
           </h1>
           <p className="text-primary-foreground/70 mt-4 text-lg max-w-md leading-relaxed">
             {accountType === 'student' && 'Start your journey to UK qualifications today.'}
-            {accountType === 'agent' && 'Recruit students and earn commissions with UniPathway.'}
+            {accountType === 'agent' && 'Apply for recruitment-agent approval; commission payments require signed agreements and verified referrals.'}
             
           </p>
         </div>
@@ -117,7 +117,7 @@ export default function RegisterPage() {
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
           <div className="lg:hidden flex items-center gap-2 mb-8">
-            <img src={unipathwayLogo} alt="UniPathway" className="h-10 w-auto" />
+            <BrandLogo className="h-11" showTagline />
           </div>
 
           {step === 'type' ? (
@@ -154,7 +154,7 @@ export default function RegisterPage() {
               <h2 className="text-2xl font-bold mb-1">
                 Register as {ACCOUNT_TYPES.find(t => t.key === accountType)?.label}
               </h2>
-              <p className="text-muted-foreground text-sm mb-6">Enter your details below</p>
+              <p className="text-muted-foreground text-sm mb-6">{accountType === 'agent' ? 'Agent applications begin with a standard account. Staff approval is required before recruitment features are available.' : 'Enter your details below'}</p>
 
               {/* Google Sign-In */}
               <Button
