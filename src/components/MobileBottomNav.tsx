@@ -7,6 +7,7 @@ import {
   Mail, HeartHandshake, CalendarDays, ClipboardCheck,
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { isPublicMobilePath } from '@/lib/mobileTabRoutes';
 import type { UserRole } from '@/types/platform';
 import type { LucideIcon } from 'lucide-react';
 
@@ -136,17 +137,7 @@ export const BOTTOM_NAV: Record<UserRole, BottomNavItem[]> = {
   ],
 };
 
-export const isPublicMobilePath = (path: string) =>
-  path === '/' || /^\/(?:study|courses|tuition|employer-learning|ielts-preparation|pathways|germany|uk|about|contact|blog|privacy|terms|cookies|disclaimer|login|register|forgot-password|reset-password|apply)(?:\/|$)/.test(path) ||
-  /^\/tenant\/[a-z0-9-]+(?:\/(?:courses|about|contact|germany|uk|pathways|apply)(?:\/|$))?$/.test(path);
-
-export const isMobileTabActive = (target: string, current: string): boolean => {
-  if (target === '/') return current === '/' || /^\/tenant\/[^/]+\/?$/.test(current);
-  if (target === '/pathways') return /^\/(?:pathways|uk|germany)(?:\/|$)/.test(current) ||
-    /^\/tenant\/[^/]+\/(?:pathways|uk|germany)(?:\/|$)/.test(current);
-  if (target === '/contact') return /^\/tenant\/[^/]+\/contact(?:\/|$)/.test(current) || current === '/contact';
-  return current === target || current.startsWith(target + '/');
-};
+export { isMobileTabActive, isPublicMobilePath } from '@/lib/mobileTabRoutes';
 
 export function getBottomNavItems(role: UserRole | null, path: string): BottomNavItem[] {
   if (!role || isPublicMobilePath(path)) return PUBLIC_BOTTOM_NAV;
