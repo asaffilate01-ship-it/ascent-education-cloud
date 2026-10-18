@@ -7,11 +7,16 @@ import PublicBottomNav from '@/components/PublicBottomNav';
 
 export const studyLinks = [
   { label: 'All study options', detail: 'OTHM, Qualifi, accountancy, IT and more', to: '/study', icon: BookOpen },
-  { label: 'Qualifications in Pakistan', detail: 'Diplomas and progression', to: '/courses', icon: GraduationCap },
-  { label: 'School tuition & STEMCoach', detail: 'English, maths, chemistry, biology, physics and online tutoring', to: '/tuition', icon: School },
+  { label: 'UK & international qualifications', detail: 'Browse planned OTHM and Qualifi diplomas and awarding-body details', to: '/qualifications', icon: GraduationCap },
+  { label: 'Years 8–12 tuition & STEMCoach', detail: 'Matric, Intermediate/FSc, Cambridge; online and in-centre', to: '/tuition', icon: School },
   { label: 'IELTS preparation', detail: 'Academic and General Training practice', to: '/ielts-preparation', icon: BookOpen },
+  { label: 'German language courses', detail: 'A1–C1, Goethe, TestDaF, telc and DSH preparation', to: '/german-preparation', icon: BookOpen },
+  { label: 'AI, tech & accounting', detail: 'Coding, cyber security, cloud, finance and IFA/ACCA prep', to: '/study#technology-training', icon: BookOpen },
   { label: 'Employer learning', detail: 'Skills for teams and organisations', to: '/employer-learning', icon: BriefcaseBusiness },
-  { label: 'Education consultancy', detail: 'University admissions, pathway guidance and agent enquiries', to: '/pathways', icon: Globe2 },
+  { label: 'Education consultancy', detail: 'Universities, admissions, counselling and career guidance', to: '/pathways', icon: Globe2 },
+  { label: 'Pakistan funded skills', detail: 'PSDF, PITB e-Rozgaar, WDD SEHR and NAVTTC', to: '/funded-courses', icon: BriefcaseBusiness },
+  { label: 'Pakistan careers & internships', detail: 'Planned employer partnerships and practical placements', to: '/careers', icon: BriefcaseBusiness },
+  { label: 'Overseas student support', detail: 'Accommodation, banking, work and graduate guidance', to: '/student-support', icon: Globe2 },
 ];
 
 export const destinationLinks = [
@@ -38,8 +43,8 @@ export default function PublicNav() {
         <Link to="/" className="rounded-md px-3 py-2 text-sm font-semibold text-foreground hover:bg-accent">Home</Link>
         <div className="group relative" onMouseEnter={() => setStudyOpen(true)} onMouseLeave={() => setStudyOpen(false)}>
           <Button variant="ghost" aria-haspopup="true" aria-expanded={studyOpen} onClick={() => setStudyOpen(!studyOpen)} className="gap-1 font-semibold">Study <ChevronDown className="size-4" /></Button>
-          {studyOpen && <div className="absolute left-0 top-full w-[490px] pt-2"><div className="grid grid-cols-2 gap-2 rounded-md border border-border bg-card p-3 shadow-surface-xl">
-            {studyLinks.map(({ label, detail, to, icon: Icon }) => <Link key={to} to={to} className="group/item flex gap-3 rounded-md p-3 transition-colors hover:bg-secondary"><Icon className="mt-0.5 size-5 shrink-0 text-success" /><span><span className="block text-sm font-bold text-foreground">{label}</span><span className="mt-1 block text-xs text-muted-foreground">{detail}</span></span></Link>)}
+          {studyOpen && <div className="absolute left-0 top-full w-[540px] pt-2"><div className="grid max-h-[min(75vh,620px)] grid-cols-2 gap-2 overflow-y-auto rounded-md border border-border bg-card p-3 shadow-surface-xl">
+            {studyLinks.map(({ label, detail, to, icon: Icon }) => <Link key={label} to={to} className="group/item flex gap-3 rounded-md p-3 transition-colors hover:bg-secondary"><Icon className="mt-0.5 size-5 shrink-0 text-success" /><span><span className="block text-sm font-bold text-foreground">{label}</span><span className="mt-1 block text-xs text-muted-foreground">{detail}</span></span></Link>)}
           </div></div>}
         </div>
         <div className="group relative" onMouseEnter={() => setDestinationsOpen(true)} onMouseLeave={() => setDestinationsOpen(false)}>

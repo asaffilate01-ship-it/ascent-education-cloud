@@ -37,3 +37,27 @@ test.describe('public production smoke', () => {
     await expect(tabs.getByRole('link', { name: 'Abroad' })).toHaveAttribute('aria-current', 'page');
   });
 });
+
+test('page navigation starts at top instead of carrying old scroll positions', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  const tabs = page.getByRole('navigation', { name: 'Quick navigation' });
+  await expect(tabs).toBeVisible();
+  const consent = page.getByRole('dialog', { name: 'Cookie preferences' });
+  if (await consent.isVisible()) await consent.getByRole('button', { name: 'Reject all' }).click();
+
+  await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'auto' }));
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(100);
+  await tabs.getByRole('link', { name: 'Study' }).click();
+  await expect(page).toHaveURL(/\/study(?:\/?$|\?)/);
+  await expect(page.getByRole('heading', { name: 'Qualifications, skills and your next step.' })).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(10);
+});
+
+test('new public service and awarding body routes render at the beginning', async ({ page }) => {
+  for (const route of ['/qualifications', '/german-preparation', '/funded-courses', '/careers', '/student-support']) {
+    await page.goto(route);
+    await expect(page.locator('main h1').first()).toBeVisible();
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(10);
+  }
+});

@@ -1,15 +1,19 @@
-/** Business planning defaults, not awarding-body approval or live availability. */
+/** Proposed teaching priorities. Listing here is not equivalent to current centre approval, enrolment availability or a funded place. */
 export const programmePriorities = [
-  { id: 'othm', title: 'OTHM qualifications', category: 'Primary', description: 'Online learning with two 14-day centre visits per academic year.', to: '/courses' },
-  { id: 'qualifi', title: 'Qualifi qualifications', category: 'Primary', description: 'Online learning with two 14-day centre visits per academic year.', to: '/courses' },
-  { id: 'accountancy', title: 'Accountancy', category: 'Primary', description: 'Accounting, bookkeeping and professional skills. Check the available programme and awarding body.', to: '/courses' },
-  { id: 'it', title: 'IT training', category: 'Primary', description: 'Technical skills, practical learning and digital career development.', to: '/contact' },
-  { id: 'tuition', title: 'Subject tuition', category: 'Tuition and English', description: 'English, maths, chemistry, biology and physics tuition.', to: '/tuition' },
-  { id: 'ielts', title: 'IELTS training', category: 'Tuition and English', description: 'English-language preparation for your next study step. Test booking and exam fees are separate unless confirmed.', to: '/contact' },
-  { id: 'funded', title: 'Pakistan-funded courses', category: 'Funding', description: 'Enquire about funded opportunities in Pakistan. Scheme, provider approval, eligibility and available places must be confirmed.', to: '/contact' },
-  { id: 'international', title: 'International opportunities', category: 'Funding', description: 'Explore international study and funding enquiries; availability depends on the programme and partner.', to: '/contact' },
+  { id: 'othm', title: 'OTHM qualifications', category: 'Primary', description: 'Explore planned UK-regulated diploma pathways in business, accounting, IT, health and social care, logistics, law and hospitality. Blended model where approved.', to: '/qualifications?body=OTHM' },
+  { id: 'qualifi', title: 'Qualifi qualifications', category: 'Primary', description: 'Explore planned UK-regulated qualifications in business, accounting, AI, cyber security, IT, healthcare, hospitality and education.', to: '/qualifications?body=Qualifi' },
+  { id: 'accountancy', title: 'Accounting and finance', category: 'Primary', description: 'Accounting, bookkeeping, corporate finance, professional skills and IFA/ACCA examination preparation. Exam registration is separate.', to: '/study#accounting-finance' },
+  { id: 'it', title: 'AI, coding and cyber skills', category: 'Primary', description: 'Practical AI and machine learning, Python/Django, full-stack coding, cyber essentials, cyber security, cloud and DevOps.', to: '/study#technology-training' },
+  { id: 'tuition', title: 'Subject tuition', category: 'Tuition and English', description: 'Online and in-centre Years 8–12 tuition: maths, biology, chemistry, physics, English and technology. Matric, Intermediate/FSc and Cambridge O/A Level pathways.', to: '/tuition' },
+  { id: 'ielts', title: 'IELTS training', category: 'Tuition and English', description: 'IELTS Academic and General Training preparation, practice tests and tutor-led English tuition; formal examination booking is separate.', to: '/ielts-preparation' },
+  { id: 'german', title: 'German language and university preparation', category: 'Tuition and English', description: 'German A1–C1 language courses and preparation for Goethe, TestDaF, telc and DSH requirements, subject to destination and exam centre.', to: '/german-preparation' },
+  { id: 'funded', title: 'Pakistan-funded courses', category: 'Funding', description: 'Browse independent PSDF, e-Rozgaar, WDD SEHR and NAVTTC schemes. Scheme, provider approval, eligibility and available places must be confirmed.', to: '/funded-courses' },
+  { id: 'international', title: 'International opportunities', category: 'Funding', description: 'Explore Pakistan and international study funding enquiries and scholarships. Individual eligibility and partner availability must be confirmed.', to: '/pathways' },
+  { id: 'careers', title: 'Pakistan internships and jobs', category: 'Careers', description: 'Build experience through verified placements and employer introductions in finance, technology, law, healthcare, retail and hospitality.', to: '/careers' },
+  { id: 'support', title: 'Study abroad and settling-in support', category: 'Careers', description: 'University applications, accommodation, practical settling-in information and access to qualified immigration advice where required.', to: '/student-support' },
 ] as const;
-export const progressionDestinations = ['UK', 'USA', 'Australia', 'Canada', 'Germany'] as const;
+
+export const progressionDestinations = ['Pakistan', 'UK', 'USA', 'Germany', 'Canada', 'Australia'] as const;
 export const residentialModel = {
   visitsPerYear: 2, daysPerVisit: 14, teachingHoursPerYear: 72,
   supportHoursPerYear: 3, teachingCapacity: 50, supportCapacity: 10,
