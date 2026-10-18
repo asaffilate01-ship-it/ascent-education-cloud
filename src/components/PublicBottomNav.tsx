@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { BookOpen, Globe2, Home, LogIn, Send } from 'lucide-react';
+import { isMobileTabActive } from '@/components/MobileBottomNav';
 
 const items = [
   { label: 'Home', to: '/', icon: Home },
@@ -16,7 +17,7 @@ export default function PublicBottomNav() {
     <nav aria-label="Quick navigation" className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 backdrop-blur-xl lg:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <ul className="mx-auto grid h-16 max-w-md grid-cols-5 items-center">
         {items.map(({ label, to, icon: Icon, primary }) => {
-          const active = to === '/' ? pathname === '/' : pathname.startsWith(to);
+          const active = isMobileTabActive(to, pathname);
           return (
             <li key={to} className="flex justify-center">
               {primary ? (
