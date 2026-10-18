@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { ArrowRight, BookOpen, BriefcaseBusiness, ChevronDown, Globe2, GraduationCap, Menu, School, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import BrandLogo from '@/components/BrandLogo';
+import PublicBottomNav from '@/components/PublicBottomNav';
 
 export const studyLinks = [
   { label: 'All study options', detail: 'OTHM, Qualifi, accountancy, IT and more', to: '/study', icon: BookOpen },
@@ -30,9 +31,9 @@ export default function PublicNav() {
   const { pathname } = useLocation();
   useEffect(() => { setOpen(false); setStudyOpen(false); setDestinationsOpen(false); }, [pathname]);
 
-  return <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-xl">
-    <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-5 px-5 sm:px-8 lg:h-24">
-      <Link to="/" aria-label="UniPathway home" className="shrink-0"><BrandLogo className="h-12 lg:h-14" /></Link>
+  return <><PublicBottomNav /><header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-xl">
+    <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-5 px-5 sm:px-8 lg:h-28">
+      <Link to="/" aria-label="UniPathway home" className="shrink-0"><BrandLogo className="h-12 lg:h-24" /></Link>
       <nav aria-label="Main navigation" className="hidden items-center gap-1 lg:flex">
         <Link to="/" className="rounded-md px-3 py-2 text-sm font-semibold text-foreground hover:bg-accent">Home</Link>
         <div className="group relative" onMouseEnter={() => setStudyOpen(true)} onMouseLeave={() => setStudyOpen(false)}>
@@ -62,5 +63,5 @@ export default function PublicNav() {
       <div className="mt-4 grid grid-cols-2 gap-2">{[['About','/about'],['Contact','/contact']].map(([label,to]) => <Link key={to} to={to} className="rounded-md py-2 text-sm font-semibold">{label}</Link>)}</div>
       <div className="mt-5 flex gap-2"><Button variant="outline" className="flex-1" asChild><Link to="/login">Sign in</Link></Button><Button className="flex-1" asChild><Link to="/apply">Apply now</Link></Button></div>
     </nav>}
-  </header>;
+  </header></>;
 }
