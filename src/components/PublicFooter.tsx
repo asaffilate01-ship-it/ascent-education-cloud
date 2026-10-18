@@ -1,13 +1,30 @@
 import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import BrandLogo from '@/components/BrandLogo';
-import { studyLinks } from './PublicNav';
+import { destinationLinks, studyLinks } from './PublicNav';
 
 export default function PublicFooter() {
-  return <footer className="border-t border-border bg-secondary/50 pt-12 pb-28 lg:pb-12">
-    <div className="mx-auto grid max-w-7xl gap-10 px-5 sm:px-8 md:grid-cols-[2fr_1fr_1fr]">
-      <div><Link to="/"><BrandLogo className="h-16" showTagline /></Link><p className="mt-4 max-w-sm text-sm text-muted-foreground">Qualifications, school tuition, employer learning and global progression — connected through one learning experience.</p><p className="mt-5 text-xs text-muted-foreground">UniPathway is a trading name of iTechLounge GmbH in Germany and iTechLounge Ltd in the UK and rest of the world.</p></div>
-      <div><h2 className="font-bold">Explore</h2><div className="mt-4 grid gap-3 text-sm text-muted-foreground">{studyLinks.map(item => <Link className="hover:text-foreground" key={item.label} to={item.to}>{item.label}</Link>)}<Link to="/about">About</Link><Link to="/contact">Contact</Link></div></div>
-      <div><h2 className="font-bold">Information</h2><div className="mt-4 grid gap-3 text-sm text-muted-foreground"><Link to="/blog">Blog</Link><Link to="/privacy">Privacy</Link><Link to="/terms">Terms</Link><Link to="/cookies">Cookie policy</Link><Link to="/disclaimer">Disclaimer</Link></div></div>
-    </div><div className="mx-auto mt-10 max-w-7xl border-t border-border px-5 pt-6 text-xs text-muted-foreground sm:px-8">© {new Date().getFullYear()} UNIPATHWAY.PK</div>
+  return <footer className="border-t border-border bg-card pb-28 lg:pb-0">
+    <div className="mx-auto max-w-7xl px-5 sm:px-8">
+      <div className="-translate-y-0 flex flex-col items-start justify-between gap-5 border-b border-border py-10 md:flex-row md:items-center">
+        <div><h2 className="text-2xl font-bold sm:text-3xl">Ready to take your next step?</h2><p className="mt-2 text-sm text-muted-foreground">Speak to an adviser about courses, tuition or studying abroad.</p></div>
+        <div className="flex flex-wrap gap-2"><Button variant="outline" className="rounded-full" asChild><Link to="/contact">Contact us</Link></Button><Button className="rounded-full" asChild><Link to="/apply">Apply now <ArrowRight /></Link></Button></div>
+      </div>
+      <div className="grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr]">
+        <div><Link to="/" aria-label="UniPathway home"><BrandLogo className="h-16" /></Link><p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">Qualifications, school tuition, employer learning and global progression — connected through one learning experience.</p></div>
+        <FooterCol title="Learn" links={studyLinks.slice(0, 7).map(l => [l.label, l.to])} />
+        <FooterCol title="Study abroad" links={destinationLinks.map(l => [l.label, l.to])} />
+        <FooterCol title="Company" links={[['About', '/about'], ['Contact', '/contact'], ['Blog', '/blog'], ['Careers & internships', '/careers'], ['Sign in', '/login']]} />
+      </div>
+      <div className="flex flex-col gap-3 border-t border-border py-6 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
+        <div><p>© {new Date().getFullYear()} UNIPATHWAY.PK</p><p className="mt-1">UniPathway is a trading name of iTechLounge GmbH in Germany and iTechLounge Ltd in the UK and rest of the world.</p></div>
+        <div className="flex flex-wrap gap-x-5 gap-y-2">{[['Privacy', '/privacy'], ['Terms', '/terms'], ['Cookies', '/cookies'], ['Disclaimer', '/disclaimer']].map(([l, to]) => <Link key={to} to={to} className="hover:text-foreground">{l}</Link>)}</div>
+      </div>
+    </div>
   </footer>;
+}
+
+function FooterCol({ title, links }: { title: string; links: string[][] }) {
+  return <div><h3 className="text-label text-foreground">{title}</h3><ul className="mt-4 grid gap-2.5 text-sm text-muted-foreground">{links.map(([l, to]) => <li key={to + l}><Link to={to} className="transition-colors hover:text-foreground">{l}</Link></li>)}</ul></div>;
 }
