@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="22 52 216 248" role="img" aria-label="UniPathway upward pathway mark">
+<title>UniPathway — a path to progress</title>
+<defs><linearGradient id="navy" x1="0" y1="0" x2="0.7" y2="1"><stop stop-color="#0B2D5B"/><stop offset="1" stop-color="#062A60"/></linearGradient><linearGradient id="green" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#16A34A"/><stop offset="1" stop-color="#087E55"/></linearGradient></defs>
+<path d="M32 100 L32 225 L37 215 L50 202 L75 187 L75 119 L69 114 L55 107 Z" fill="url(#navy)"/>
+<path d="M182 145 L173 153 L160 161 L86 193 L55 214 L42 229 L37 242 L37 252 L47 269 L60 280 L77 287 L70 271 L68 252 L71 239 L79 224 L93 209 L102 202 L162 165 Z" fill="url(#navy)"/>
+<path d="M210 118 L202 140 L194 153 L183 166 L163 184 L127 209 L109 229 L104 240 L102 255 L106 274 L117 293 L138 292 L159 286 L173 279 L184 271 L200 252 L206 239 L210 222 Z" fill="url(#green)"/>
+<path d="M226 59 L171 99 L204 102 L226 125 Z" fill="url(#green)"/>
+<path d="M187 108 L180 110 L159 121 L143 133 L143 161 L162 153 L174 145 L185 134 L187 130 Z" fill="url(#green)"/>
+</svg>
