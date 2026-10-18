@@ -112,6 +112,11 @@ const BlogPostPage = lazy(() => import("./pages/blog/BlogPostPage"));
 const StudentOnboarding = lazy(() => import("./pages/onboarding/StudentOnboarding"));
 const LecturerOnboarding = lazy(() => import("./pages/onboarding/LecturerOnboarding"));
 const StudyPriorities = lazy(() => import("./pages/promo/StudyPriorities"));
+const QualificationsCatalogue = lazy(() => import("./pages/promo/QualificationsCatalogue"));
+const GermanPreparation = lazy(() => import("./pages/promo/GermanPreparation"));
+const FundedCourses = lazy(() => import("./pages/promo/FundedCourses"));
+const Careers = lazy(() => import("./pages/promo/Careers"));
+const StudentSupport = lazy(() => import("./pages/promo/StudentSupport"));
 const ResidentialPlanner = lazy(() => import("./pages/residential/ResidentialPlanner"));
 const ResidentialWeeks = lazy(() => import("./pages/residential/ResidentialWeeks"));
 const AuditLog = lazy(() => import("./pages/audit/AuditLog"));
@@ -231,6 +236,11 @@ function AppRoutes() {
         <Route path="/" element={<PromoHome />} />
         <Route path="/about" element={<RedirectToTenant suffix="/about" />} />
         <Route path="/study" element={<StudyPriorities />} />
+        <Route path="/qualifications" element={<QualificationsCatalogue />} />
+        <Route path="/german-preparation" element={<GermanPreparation />} />
+        <Route path="/funded-courses" element={<FundedCourses />} />
+        <Route path="/careers" element={<Careers />} />
+        <Route path="/student-support" element={<StudentSupport />} />
         <Route path="/courses" element={<RedirectToTenant suffix="/courses" />} />
         <Route path="/tuition" element={<LearningOverview kind="tuition" />} />
         <Route path="/employer-learning" element={<LearningOverview kind="employer" />} />
