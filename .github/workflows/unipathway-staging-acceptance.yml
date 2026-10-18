@@ -1,0 +1,31 @@
+name: UniPathway Staging Acceptance (Manual)
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type UNIPATHWAY_STAGING_ONLY to confirm no production database may be touched'
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  staging-read-only:
+    if: inputs.confirmation == 'UNIPATHWAY_STAGING_ONLY'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    environment: unipathway-staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Confirm staging and run read-only two-tenant acceptance
+        run: node scripts/verify-unipathway-staging.mjs
+        env:
+          STAGING_RUN_ACK: ${{ inputs.confirmation }}
+          STAGING_PROJECT_REF: ${{ vars.UNIPATHWAY_STAGING_PROJECT_REF }}
+          STAGING_SUPABASE_URL: ${{ secrets.UNIPATHWAY_STAGING_URL }}
+          STAGING_SUPABASE_ANON_KEY: ${{ secrets.UNIPATHWAY_STAGING_ANON_KEY }}
+          STAGING_FIXTURES_JSON: ${{ secrets.UNIPATHWAY_STAGING_FIXTURES_JSON }}

@@ -30,6 +30,9 @@ const GermanyPathway = lazy(() => import("./pages/tenant/GermanyPathway"));
 const UKPathway = lazy(() => import("./pages/tenant/UKPathway"));
 const PathwaysCompare = lazy(() => import("./pages/tenant/PathwaysCompare"));
 const DestinationApply = lazy(() => import("./pages/tenant/apply/DestinationApply"));
+const IELTSPreparationPage = lazy(() => import("./pages/ielts/IELTSPreparationPage"));
+const IELTSAcademy = lazy(() => import("./pages/ielts/IELTSAcademy"));
+const IELTSMockOpsPage = lazy(() => import("./pages/ielts/IELTSMockOpsPage"));
 
 // Tenant admin
 const TenantAdminDashboard = lazy(() => import("./pages/tenant/TenantAdminDashboard"));
@@ -59,6 +62,7 @@ const EducationIntelligence = lazy(() => import("./pages/analytics/EducationInte
 const ProductionReadiness = lazy(() => import("./pages/superadmin/ProductionReadiness"));
 const SupportDesk = lazy(() => import("./pages/progression/SupportDesk"));
 const GlobalEducationPartners = lazy(() => import("./pages/progression/GlobalEducationPartners"));
+const EducationPartnershipReadiness = lazy(() => import("./pages/progression/EducationPartnershipReadiness"));
 const AttendanceDashboard = lazy(() => import("./pages/attendance/AttendanceDashboard"));
 const AnalyticsDashboard = lazy(() => import("./pages/analytics/AnalyticsDashboard"));
 const MarketingDashboard = lazy(() => import("./pages/marketing/MarketingDashboard"));
@@ -234,6 +238,7 @@ function AppRoutes() {
         <Route path="/uk" element={<RedirectToTenant suffix="/uk" />} />
         <Route path="/pathways" element={<RedirectToTenant suffix="/pathways" />} />
         <Route path="/apply" element={<Navigate to="/tenant/unipathway/apply/uk" replace />} />
+        <Route path="/ielts-preparation" element={<IELTSPreparationPage />} />
         <Route path="/apply/:destination" element={<ApplyRedirect />} />
         <Route path="/tenant/:slug/apply" element={<Navigate to="/tenant/unipathway/apply/uk" replace />} />
 
@@ -274,6 +279,7 @@ function AppRoutes() {
         <Route path="/landlord/readiness" element={<Landlord><ProductionReadiness /></Landlord>} />
         <Route path="/landlord/application-support" element={<Landlord><SupportDesk /></Landlord>} />
         <Route path="/landlord/global-partners" element={<Landlord><GlobalEducationPartners /></Landlord>} />
+        <Route path="/landlord/education-partnerships" element={<Landlord><EducationPartnershipReadiness /></Landlord>} />
         <Route path="/landlord/audit" element={<Landlord><AuditLog /></Landlord>} />
         <Route path="/landlord/infrastructure" element={<Landlord><SuperadminPlatform /></Landlord>} />
         <Route path="/landlord/settings" element={<Landlord><SettingsPage /></Landlord>} />
@@ -282,6 +288,7 @@ function AppRoutes() {
         <Route path="/director" element={<Director><CentreDirectorDashboard /></Director>} />
         <Route path="/director/admissions" element={<Director><AdmissionsCRM /></Director>} />
         <Route path="/director/programmes" element={<Director><ProgrammeManagement /></Director>} />
+        <Route path="/director/ielts" element={<Director><IELTSAcademy /></Director>} />
         <Route path="/director/staff" element={<Director><StaffManagement /></Director>} />
         <Route path="/director/students" element={<Director><StudentManagement /></Director>} />
         <Route path="/director/quality" element={<Director><QADashboard /></Director>} />
@@ -292,6 +299,7 @@ function AppRoutes() {
         <Route path="/director/readiness" element={<Director><ProductionReadiness /></Director>} />
         <Route path="/director/application-support" element={<Director><SupportDesk /></Director>} />
         <Route path="/director/global-partners" element={<Director><GlobalEducationPartners /></Director>} />
+        <Route path="/director/education-partnerships" element={<Director><EducationPartnershipReadiness /></Director>} />
         <Route path="/director/residential-planner" element={<Director><ResidentialPlanner /></Director>} />
         <Route path="/director/schedule" element={<Director><ScheduleManager /></Director>} />
         <Route path="/director/branding" element={<Director><TenantBranding /></Director>} />
@@ -308,6 +316,7 @@ function AppRoutes() {
         <Route path="/admissions/eligibility" element={<Admissions><AdmissionsCRM /></Admissions>} />
         <Route path="/admissions/application-support" element={<Admissions><SupportDesk /></Admissions>} />
         <Route path="/admissions/global-partners" element={<Admissions><GlobalEducationPartners /></Admissions>} />
+        <Route path="/admissions/education-partnerships" element={<Admissions><EducationPartnershipReadiness /></Admissions>} />
         <Route path="/admissions/offers" element={<Admissions><AdmissionsCRM /></Admissions>} />
         <Route path="/admissions/counselling" element={<Admissions><MessagingInbox /></Admissions>} />
         <Route path="/admissions/reports" element={<Admissions><AnalyticsDashboard /></Admissions>} />
@@ -315,6 +324,7 @@ function AppRoutes() {
         {/* ========== LECTURER ========== */}
         <Route path="/lecturer" element={<LecturerR><LecturerDashboard /></LecturerR>} />
         <Route path="/lecturer/teaching" element={<LecturerR><LecturerTeaching /></LecturerR>} />
+        <Route path="/lecturer/ielts" element={<LecturerR><IELTSAcademy /></LecturerR>} />
         <Route path="/lecturer/classroom" element={<LecturerR><LiveClassroom /></LecturerR>} />
         <Route path="/lecturer/report-cards" element={<LecturerR><ReportCardGenerator /></LecturerR>} />
         <Route path="/lecturer/marking" element={<LecturerR><LecturerMarking /></LecturerR>} />
@@ -357,6 +367,7 @@ function AppRoutes() {
 
         {/* ========== EXAMS ========== */}
         <Route path="/exams" element={<Exams><ExamsDashboard /></Exams>} />
+        <Route path="/exams/ielts" element={<Exams><IELTSMockOpsPage /></Exams>} />
         <Route path="/exams/schedule" element={<Exams><ExamsDashboard /></Exams>} />
         <Route path="/exams/rooms" element={<Exams><ExamsDashboard /></Exams>} />
         <Route path="/exams/seating" element={<Exams><ExamsDashboard /></Exams>} />
@@ -393,6 +404,7 @@ function AppRoutes() {
         {/* ========== STUDENT ========== */}
         <Route path="/student" element={<StudentR><StudentDashboard /></StudentR>} />
         <Route path="/student/courses" element={<StudentR><StudentCourses /></StudentR>} />
+        <Route path="/student/ielts" element={<StudentR><IELTSAcademy /></StudentR>} />
         <Route path="/student/classroom" element={<StudentR><LiveClassroom /></StudentR>} />
         <Route path="/student/microsoft" element={<StudentR><MicrosoftAccountCentre /></StudentR>} />
         <Route path="/student/lesson-archive" element={<StudentR><LessonArchive /></StudentR>} />

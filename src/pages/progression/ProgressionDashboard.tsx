@@ -1,212 +1,119 @@
-import PartnerWorkflow from '@/components/progression/PartnerWorkflow';
+import { useCallback,useEffect,useMemo,useRef,useState } from 'react';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { Link } from 'react-router-dom';
+import { Award, CheckCircle2, FileText, Globe2, GraduationCap, ShieldCheck } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import StatCard from '@/components/ui/StatCard';
-import StatusBadge from '@/components/ui/StatusBadge';
-import { GraduationCap, Award, CreditCard, Globe, FileText, Loader2, ExternalLink } from 'lucide-react';
-import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
+import PartnerWorkflow from '@/components/progression/PartnerWorkflow';
+import AcademicEvidenceDirectory from '@/components/progression/AcademicEvidenceDirectory';
 import { Button } from '@/components/ui/button';
-import { useState, useMemo } from 'react';
-import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
-const STAFF_ROLES = ['superadmin', 'centre_director', 'programme_leader', 'admissions_admin', 'marketing_officer'];
+const db:SupabaseClient=supabase;
+const STAFF_ROLES=['centre_director','superadmin','admissions_admin','programme_leader'];
+const DESTINATIONS=['All','UK','USA','Canada','Australia','Germany','Pakistan'];
+type Route={
+ id:string;destination_country:string;destination_institution:string;destination_programme:string;
+ route_name:string;qualification_name:string|null;qualification_level:string|null;entry_stage:string|null;
+};
+type Application={id:string;student_id:string;programme:string;destination_country:string;status:string;intake:string|null};
+function statusName(x:string){return x.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());}
 
-export default function ProgressionDashboard() {
-  const { user } = useAuth();
-  const [selectedCountry, setSelectedCountry] = useState<string>('All');
+export default function ProgressionDashboard(){
+ const {user}=useAuth();
+ const tenant=user?.tenantId;
+ const isStaff=user?.roles.some(role=>STAFF_ROLES.includes(role))??false;
+ const [routes,setRoutes]=useState<Route[]>([]);
+ const [applications,setApplications]=useState<Application[]>([]);
+ const [loading,setLoading]=useState(true);
+ const [error,setError]=useState('');
+ const [country,setCountry]=useState('All');
+ const request=useRef(0);
+ const load=useCallback(async()=>{
+   const version=++request.current;
+   setRoutes([]);setApplications([]);setError('');
+   if(!tenant||!user?.id){setLoading(false);return;}
+   setLoading(true);
+   try{
+     const apps=db.from('international_university_applications')
+       .select('id,student_id,programme,destination_country,status,intake').eq('tenant_id',tenant);
+     if(!isStaff) apps.eq('student_id',user.id);
+     const results=await Promise.all([
+       db.from('international_pathway_routes')
+        .select('id,route_name,qualification_name,qualification_level,destination_country,destination_institution,destination_programme,entry_stage')
+        .eq('tenant_id',tenant).eq('review_status','verified').eq('student_visible',true)
+        .order('destination_country').order('destination_institution').limit(200),
+       apps.order('updated_at',{ascending:false}).limit(200),
+     ]);
+     if(request.current!==version)return;
+     if(results.some(r=>r.error))throw new Error('The pathway or application records could not be loaded.');
+     setRoutes((results[0].data||[]) as Route[]);
+     setApplications((results[1].data||[]) as Application[]);
+   }catch(e){
+     if(request.current===version)setError(e instanceof Error?e.message:'Unable to load verified progression routes');
+   }finally{
+     if(request.current===version)setLoading(false);
+   }
+ },[tenant,user?.id,isStaff]);
+ useEffect(()=>{void load();return()=>{request.current++;};},[load]);
+ const displayed=useMemo(()=>routes.filter(route=>
+   country==='All'||route.destination_country.toLowerCase()===country.toLowerCase()),[routes,country]);
+ const offers=applications.filter(a=>a.status==='offer').length;
+ const enrolled=applications.filter(a=>a.status==='enrolled').length;
+ const partnersLink=user?.roles.includes('superadmin')?'/landlord/global-partners':
+  user?.roles.includes('admissions_admin')?'/admissions/global-partners':'/director/global-partners';
 
-  const isStaff = user?.roles?.some(r => STAFF_ROLES.includes(r)) ?? false;
-
-  const { data: universities, loading: unisLoading } = useSupabaseQuery('partner_universities' as any, {
-    orderBy: { column: 'country', ascending: true },
-  });
-
-  const { data: applications, loading: appsLoading } = useSupabaseQuery('applications', {
-    orderBy: { column: 'created_at', ascending: false },
-  });
-  const { data: programmes, loading: progsLoading } = useSupabaseQuery('programmes');
-
-  const loading = appsLoading || progsLoading || unisLoading;
-  const unis = (universities || []) as any[];
-
-  const eligible = (applications || []).filter(a => ['qualified', 'applied', 'under_review', 'conditional_offer', 'unconditional_offer', 'deposit_paid', 'enrolled'].includes(a.stage)).length;
-  const applied = (applications || []).filter(a => !['lead', 'contacted', 'qualified', 'lost'].includes(a.stage)).length;
-  const offered = (applications || []).filter(a => ['conditional_offer', 'unconditional_offer', 'deposit_paid', 'enrolled'].includes(a.stage)).length;
-  const enrolled = (applications || []).filter(a => a.stage === 'enrolled').length;
-
-  const countries = ['All', 'UK', 'Australia', 'Canada', 'USA'];
-  const filteredUnis = selectedCountry === 'All'
-    ? unis
-    : unis.filter((u: any) => u.country === selectedCountry);
-
-  const commissionRanges = useMemo(() => {
-    const byCountry: Record<string, { flag: string; commissions: string[] }> = {};
-    unis.forEach((u: any) => {
-      if (!byCountry[u.country]) byCountry[u.country] = { flag: u.flag, commissions: [] };
-      if (u.commission) byCountry[u.country].commissions.push(u.commission);
-    });
-    return Object.entries(byCountry).map(([country, data]) => ({
-      country,
-      flag: data.flag,
-      count: unis.filter((u: any) => u.country === country).length,
-      range: data.commissions.length > 1
-        ? `${data.commissions[0]} – ${data.commissions[data.commissions.length - 1]}`
-        : data.commissions[0] || 'TBC',
-    }));
-  }, [unis]);
-
-  const handleReferStudent = (uni: any) => {
-    window.open(uni.url, '_blank', 'noopener,noreferrer');
-    toast.success(`Opening ${uni.name} referral portal — commission: ${uni.commission}/student`);
-  };
-
-  return (
-    <DashboardLayout
-      title="University Progression"
-      subtitle={isStaff ? 'Partner universities, applications, offers, and commissions' : 'Explore partner universities and your progression pathway'}
-    >
-      {!isStaff && <PartnerWorkflow student />}
-      {/* Stats — staff sees all, students see their own progress */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {isStaff ? (
-          <>
-            <StatCard label="Eligible Students" value={loading ? '...' : String(eligible)} icon={GraduationCap} />
-            <StatCard label="Applications Sent" value={loading ? '...' : String(applied)} change={eligible > 0 ? `${Math.round((applied / eligible) * 100)}% of eligible` : ''} changeType="positive" icon={FileText} />
-            <StatCard label="Offers Received" value={loading ? '...' : String(offered)} change={applied > 0 ? `${Math.round((offered / applied) * 100)}% success` : ''} changeType="positive" icon={Award} />
-            <StatCard label="Enrolled" value={loading ? '...' : String(enrolled)} icon={CreditCard} />
-          </>
-        ) : (
-          <>
-            <StatCard label="Partner Universities" value={loading ? '...' : String(unis.length)} icon={Globe} />
-            <StatCard label="Countries" value={String(countries.length - 1)} icon={GraduationCap} />
-            <StatCard label="Your Applications" value={loading ? '...' : String(applied)} icon={FileText} />
-            <StatCard label="Offers" value={loading ? '...' : String(offered)} icon={Award} />
-          </>
-        )}
+ return <DashboardLayout title="University Progression" subtitle="Evidence-reviewed destinations and student applications">
+   <section className="surface-card p-5 mb-5 space-y-3">
+     <div className="flex gap-3 items-start"><ShieldCheck className="w-6 h-6 text-primary shrink-0"/><div className="space-y-1">
+       <h2 className="font-semibold">University pathways with verified evidence</h2>
+       <p className="text-sm text-muted-foreground">Two distinct directories appear here: evidence-reviewed academic recognition for particular OTHM/Qualifi qualifications, and recruitment pathways supported by a current university agreement. Neither guarantees admission, credit transfer or a visa. Unreviewed proposals stay private from students.</p>
+       <p className="text-xs text-muted-foreground">Referral commission is never presumed from a progression listing. Finance must use the actual signed agreement and settlement evidence.</p>
+     </div></div>
+     {isStaff&&<Button variant="outline" asChild><Link to={partnersLink}>Manage institutions, contracts and proposals</Link></Button>}
+   </section>
+   {!tenant?<p role="alert" className="surface-card p-5">A centre assignment is required to see student-specific pathways.</p>:
+    loading?<div className="surface-card p-6" role="status">Loading verified pathways and applications…</div>:
+    error?<div className="surface-card p-5 space-y-3"><p role="alert">{error}</p><Button onClick={()=>void load()}>Retry</Button></div>:
+    <div className="space-y-5">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {[
+          {label:'Published contracted routes',value:routes.length,icon:Globe2},
+          {label:isStaff?'Centre applications':'Your applications',value:applications.length,icon:FileText},
+          {label:'Offers recorded',value:offers,icon:Award},
+          {label:'Enrolments recorded',value:enrolled,icon:CheckCircle2}
+        ].map(item=><div className="surface-card p-4 flex gap-3 items-center" key={item.label}><item.icon className="w-6 h-6 text-primary"/><div><p className="text-2xl font-bold">{item.value}</p><p className="text-xs text-muted-foreground">{item.label}</p></div></div>)}
       </div>
-
-      {/* Partner Universities */}
-      <div className="surface-card p-5 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold">Partner Universities ({unis.length})</h3>
-          <div className="flex gap-1">
-            {countries.map(c => (
-              <button
-                key={c}
-                onClick={() => setSelectedCountry(c)}
-                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-default ${
-                  selectedCountry === c
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary text-muted-foreground hover:bg-accent'
-                }`}
-              >
-                {c === 'All' ? 'All' : c === 'UK' ? '🇬🇧 UK' : c === 'Australia' ? '🇦🇺 AUS' : c === 'Canada' ? '🇨🇦 CAN' : '🇺🇸 USA'}
-              </button>
-            ))}
-          </div>
+      <AcademicEvidenceDirectory tenant={tenant} student={!isStaff} manager={user?.roles.includes('superadmin')||user?.roles.includes('centre_director')||false}/>
+      <section className="surface-card p-5 space-y-4">
+        <div className="flex items-start justify-between gap-3 flex-wrap"><div><h2 className="text-lg font-semibold">Contract-backed recruitment pathways</h2><p className="text-sm text-muted-foreground">These pathways require a current recruitment agreement. Academic recognition evidence is shown separately above and does not imply commission rights.</p></div>
+          <select className="rounded-lg border bg-background px-3 py-2 text-sm" value={country} aria-label="Filter university routes by country" onChange={e=>setCountry(e.target.value)}>
+           {DESTINATIONS.map(c=><option key={c} value={c}>{c}</option>)}
+          </select>
         </div>
-        {unisLoading ? (
-          <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {filteredUnis.map((u: any) => (
-              <div key={u.id} className="surface-data p-4 rounded-lg hover:shadow-lg transition-default group relative overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-[2px] gradient-primary opacity-0 group-hover:opacity-100 transition-default" />
-                <div className="flex items-start justify-between mb-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">{u.flag}</span>
-                    <div>
-                      <p className="text-sm font-semibold group-hover:text-primary transition-default">{u.name}</p>
-                      <p className="text-[10px] text-muted-foreground">{u.programme}</p>
-                    </div>
-                  </div>
-                  <a href={u.url} target="_blank" rel="noopener noreferrer" className="p-1 hover:bg-accent rounded transition-default">
-                    <ExternalLink className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
-                  </a>
-                </div>
-                <div className="flex items-center justify-between mt-3 text-xs">
-                  {isStaff ? (
-                    <>
-                      <span className="text-muted-foreground">{enrolled} students referred</span>
-                      <span className="font-semibold text-primary">{u.commission || 'TBC'}/student</span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-muted-foreground">{u.country}</span>
-                      <span className="text-muted-foreground">{u.intake || 'Multiple intakes'}</span>
-                    </>
-                  )}
-                </div>
-                {isStaff && (
-                  <Button size="sm" variant="outline" className="w-full mt-3 text-xs" onClick={() => handleReferStudent(u)}>
-                    Refer Student
-                  </Button>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Applications Table — staff only */}
-      {isStaff && (
-        <div className="surface-card p-5 mb-6">
-          <h3 className="text-sm font-semibold mb-4">Student Applications</h3>
-          {appsLoading ? (
-            <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="surface-data">
-                    <th className="text-label text-left px-4 py-3">Student</th>
-                    <th className="text-label text-left px-4 py-3">Programme</th>
-                    <th className="text-label text-left px-4 py-3">Level</th>
-                    <th className="text-label text-left px-4 py-3">Source</th>
-                    <th className="text-label text-left px-4 py-3">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(applications || []).slice(0, 20).map((a) => (
-                    <tr key={a.id} className="border-t border-border/50 hover:bg-accent/50 transition-default">
-                      <td className="px-4 py-3 text-sm font-medium">{a.student_name}</td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground">{a.programme_name || '—'}</td>
-                      <td className="px-4 py-3 text-sm">{a.level || '—'}</td>
-                      <td className="px-4 py-3 text-sm">{a.source || '—'}</td>
-                      <td className="px-4 py-3">
-                        <StatusBadge
-                          status={a.stage.replace(/_/g, ' ')}
-                          variant={a.stage === 'enrolled' ? 'success' : ['conditional_offer', 'unconditional_offer'].includes(a.stage) ? 'info' : a.stage === 'lost' ? 'danger' : 'warning'}
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                  {(applications || []).length === 0 && (
-                    <tr><td colSpan={5} className="text-center py-8 text-sm text-muted-foreground">No applications yet</td></tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Commission Rates — staff only */}
-      {isStaff && (
-        <div className="surface-card p-5">
-          <h3 className="text-sm font-semibold mb-3">Commission Rates by Country</h3>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {commissionRanges.map((c) => (
-              <div key={c.country} className="surface-data p-4 rounded-lg text-center">
-                <p className="text-2xl mb-1">{c.flag}</p>
-                <p className="text-sm font-semibold">{c.country}</p>
-                <p className="text-xs text-primary font-medium mt-1">{c.range}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">{c.count} partners</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </DashboardLayout>
-  );
+        {displayed.length?<div className="grid gap-3 md:grid-cols-2">
+          {displayed.map(route=><article key={route.id} className="rounded-xl border p-4 space-y-2">
+            <span className="inline-flex items-center gap-1 text-xs text-success"><ShieldCheck className="w-3.5 h-3.5"/> Verified and published</span>
+            <h3 className="font-semibold">{route.destination_institution}</h3>
+            <p className="text-sm">{route.destination_programme}</p>
+            <p className="text-sm text-muted-foreground">{route.destination_country} · {route.qualification_name||'Qualification assessed individually'} {route.qualification_level||''}</p>
+            <p className="text-xs text-muted-foreground">Expected entry stage: {route.entry_stage||'Institution to confirm'}</p>
+          </article>)}
+        </div>:<div className="rounded-xl bg-secondary/60 p-6 text-sm text-muted-foreground">
+           There are currently no verified, published routes matching this destination in your centre. Prospective university listings must not be advertised as confirmed agreements.
+        </div>}
+        {routes.length===200&&<p className="text-xs text-muted-foreground">Showing the first 200 published routes; contact admissions for the full catalogue.</p>}
+      </section>
+      {!isStaff&&<PartnerWorkflow student/>}
+      <section className="surface-card p-5 space-y-3">
+        <h2 className="text-lg font-semibold">Application tracker</h2>
+        {applications.length? <div className="space-y-2">{applications.map(app=><article key={app.id} className="rounded-lg border p-3 flex items-center justify-between gap-3 flex-wrap">
+          <div><p className="text-sm font-semibold">{app.programme}</p><p className="text-xs text-muted-foreground">{app.destination_country} · {app.intake||'Intake to be confirmed'}</p></div>
+          <span className="text-xs px-3 py-1.5 bg-secondary rounded-full">{statusName(app.status)}</span>
+        </article>)}</div>:<p className="text-sm text-muted-foreground">No university application cases have been recorded yet.</p>}
+        {!isStaff&&<Button variant="outline" asChild><Link to="/student/international-applications"><GraduationCap className="w-4 h-4 mr-2"/> University application support</Link></Button>}
+        {applications.length===200&&<p className="text-xs text-muted-foreground">Showing the 200 most recent application cases.</p>}
+      </section>
+    </div>}
+ </DashboardLayout>;
 }

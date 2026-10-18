@@ -11,6 +11,8 @@ import CreateInvoiceModal from '@/components/modals/CreateInvoiceModal';
 import RecordPaymentModal from '@/components/modals/RecordPaymentModal';
 import ExpenseManagement from '@/components/finance/ExpenseManagement';
 import ReferralIncomeTracker from '@/components/finance/ReferralIncomeTracker';
+import UniversityCommissionLedger from '@/components/finance/UniversityCommissionLedger';
+import {useAuth} from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
@@ -25,6 +27,7 @@ const statusVariant = (s: string): 'success' | 'warning' | 'danger' | 'info' | '
 };
 
 export default function FinanceDashboard() {
+  const {user}=useAuth();
   const [invoiceOpen, setInvoiceOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
@@ -211,7 +214,12 @@ export default function FinanceDashboard() {
         </TabsContent>
 
         <TabsContent value="referrals">
-          <ReferralIncomeTracker tenantId={invoices?.[0]?.tenant_id || null} />
+          {user?.tenantId?<UniversityCommissionLedger tenant={user.tenantId}/>:<p role="alert">A centre assignment is required to review university commission claims.</p>}
+          <details className="surface-card p-4">
+            <summary className="cursor-pointer text-sm font-semibold">Legacy manually entered referral records (not contract-verified income)</summary>
+            <p className="text-xs text-muted-foreground mt-2 mb-3">Historical entries are unverified and excluded from the signed-agreement commission ledger above. Do not combine currencies or report these as earned university commissions.</p>
+            <ReferralIncomeTracker tenantId={user?.tenantId||null}/>
+          </details>
         </TabsContent>
       </Tabs>
 

@@ -36,7 +36,8 @@ Deno.serve(async (req) => {
       const { data: staff } = await admin
         .from("user_roles")
         .select("user_id, role")
-        .in("role", ["admissions_admin", "centre_director"]);
+        .in("role", ["admissions_admin", "centre_director"])
+        .eq("tenant_id", tenantId);
 
       const rows = (staff ?? []).map((s: { user_id: string }) => ({
         user_id: s.user_id,
