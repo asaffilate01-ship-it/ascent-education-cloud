@@ -46,7 +46,7 @@ test('page navigation starts at top instead of carrying old scroll positions', a
   const consent = page.getByRole('dialog', { name: 'Cookie preferences' });
   if (await consent.isVisible()) await consent.getByRole('button', { name: 'Reject all' }).click();
 
-  await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
+  await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'auto' }));
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(100);
   await tabs.getByRole('link', { name: 'Study' }).click();
   await expect(page).toHaveURL(/\/study(?:\/?$|\?)/);
