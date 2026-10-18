@@ -25,4 +25,10 @@ export default tseslint.config(
       "@typescript-eslint/no-require-imports": "warn",
     },
   },
+  // Lovable regenerates this auth broker: its mutable timeout handle deliberately
+  // starts unassigned. Keep all security checks enabled; suppress only this rule.
+  {
+    files: ["src/integrations/supabase/previewAuthStorage.ts"],
+    rules: { "prefer-const": "off" },
+  },
 );
