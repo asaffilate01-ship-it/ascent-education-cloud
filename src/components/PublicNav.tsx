@@ -7,7 +7,7 @@ import PublicBottomNav from '@/components/PublicBottomNav';
 
 export const studyLinks = [
   { label: 'All study options', detail: 'OTHM, Qualifi, accountancy, IT and more', to: '/study', icon: BookOpen },
-  { label: 'OTHM & Qualifi qualifications', detail: 'Explore planned UK diploma programmes and awarding-body details', to: '/qualifications', icon: GraduationCap },
+  { label: 'UK & international qualifications', detail: 'Browse planned OTHM and Qualifi diplomas and awarding-body details', to: '/qualifications', icon: GraduationCap },
   { label: 'Years 8–12 tuition & STEMCoach', detail: 'Matric, Intermediate/FSc, Cambridge; online and in-centre', to: '/tuition', icon: School },
   { label: 'IELTS preparation', detail: 'Academic and General Training practice', to: '/ielts-preparation', icon: BookOpen },
   { label: 'German language courses', detail: 'A1–C1, Goethe, TestDaF, telc and DSH preparation', to: '/german-preparation', icon: BookOpen },
