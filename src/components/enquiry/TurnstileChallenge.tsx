@@ -71,7 +71,7 @@ export default function TurnstileChallenge({onToken,resetSignal}:{onToken:(token
    {siteKey&&<div ref={target} aria-label="Human verification challenge" className="min-h-16"/>}
    {status==='loading'&&<p role="status" className="text-xs text-muted-foreground">Preparing secure form verification…</p>}
    {status==='unconfigured'&&<p role="alert" className="text-sm text-destructive">
-    Online enquiries are not available until UniPathway configures its security challenge. Please contact admissions through the published contact details.
+    Secure online submission is being prepared. You can still contact our admissions team through the contact page while verification is unavailable.
    </p>}
    {status==='unavailable'&&<p role="alert" className="text-sm text-destructive">
     Verification could not be completed. Please reload this page or contact admissions.
