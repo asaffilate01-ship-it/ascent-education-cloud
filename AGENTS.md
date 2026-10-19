@@ -2,3 +2,5 @@
 - Use the root public homepage to route visitors to qualifications, tuition, employer learning and pathways; keep academy management pages separate because they require signed-in context.
 - Use bundled Sora/Manrope fonts with semantic theme tokens for the selected UniPathway editorial visual direction, so public and app typography stay consistent without external font requests.
 - Ship the public backend settings in a committed `.env.production` (excluded from .gitignore) so publish builds always receive VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY and VITE_SUPABASE_PROJECT_ID — the auto-generated `.env` is gitignored and publish builds have silently missed it, blanking the live site.
+- Register the app-shell worker only through appServiceWorker in unframed production outside preview hosts; remove stale app registrations in previews and use network-first HTML so editor updates are not hidden by offline copies.
+- Redirect the legacy /index address to the root public homepage so saved preview addresses open the current experience.

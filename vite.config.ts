@@ -18,13 +18,21 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
+      injectRegister: null,
+      devOptions: { enabled: false },
       includeAssets: ["favicon.ico", "robots.txt", "og-image.png"],
       workbox: {
         importScripts: ["purge-private-cache.js"],
+        navigateFallback: null,
         navigateFallbackDenylist: [/^\/~oauth/],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,jpg,webp}"],
+        globPatterns: ["**/*.{js,css,ico,png,svg,woff2,jpg,webp}"],
         runtimeCaching: [
+          {
+            urlPattern: ({ request, url, sameOrigin }) => request.mode === 'navigate' && sameOrigin && !url.pathname.startsWith('/~oauth'),
+            handler: "NetworkFirst",
+            options: { cacheName: "app-navigations", networkTimeoutSeconds: 10, expiration: { maxEntries: 20 } },
+          },
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: "CacheFirst",

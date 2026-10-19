@@ -240,6 +240,7 @@ function AppRoutes() {
       <Routes>
         {/* ========== PUBLIC MARKETING (UniPathway) ========== */}
         <Route path="/" element={<PromoHome />} />
+        <Route path="/index" element={<Navigate to="/" replace />} />
         <Route path="/about" element={<RedirectToTenant suffix="/about" />} />
         <Route path="/study" element={<StudyPriorities />} />
         <Route path="/tech-academy" element={<AcademyPage kind="tech" />} />
