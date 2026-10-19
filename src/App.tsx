@@ -114,6 +114,9 @@ const BlogPostPage = lazy(() => import("./pages/blog/BlogPostPage"));
 const StudentOnboarding = lazy(() => import("./pages/onboarding/StudentOnboarding"));
 const LecturerOnboarding = lazy(() => import("./pages/onboarding/LecturerOnboarding"));
 const StudyPriorities = lazy(() => import("./pages/promo/StudyPriorities"));
+const SchoolPartnerships = lazy(() => import("./pages/promo/SchoolPartnerships"));
+const FoundationScholarships = lazy(() => import("./pages/promo/FoundationScholarships"));
+const OpportunityFundDashboard = lazy(() => import("./pages/director/OpportunityFundDashboard"));
 const AcademyPage = lazy(() => import("./pages/promo/AcademyPage"));
 const StudyDestinationPage = lazy(() => import("./pages/promo/StudyDestinationPage"));
 const BeautyAcademy = lazy(() => import("./pages/promo/BeautyAcademy"));
@@ -242,6 +245,8 @@ function AppRoutes() {
         <Route path="/" element={<PromoHome />} />
         <Route path="/about" element={<RedirectToTenant suffix="/about" />} />
         <Route path="/study" element={<StudyPriorities />} />
+        <Route path="/school-partners" element={<SchoolPartnerships />} />
+        <Route path="/scholarships" element={<FoundationScholarships />} />
         <Route path="/tech-academy" element={<AcademyPage kind="tech" />} />
         <Route path="/finance-academy" element={<AcademyPage kind="finance" />} />
         <Route path="/pakistan" element={<StudyDestinationPage destination={studyDestinations.pakistan} />} />
@@ -302,6 +307,7 @@ function AppRoutes() {
         <Route path="/landlord/knowledge" element={<Landlord><KnowledgeLibrary /></Landlord>} />
         <Route path="/landlord/education-intelligence" element={<Landlord><EducationIntelligence /></Landlord>} />
         <Route path="/landlord/readiness" element={<Landlord><ProductionReadiness /></Landlord>} />
+        <Route path="/landlord/opportunity-fund" element={<Landlord><OpportunityFundDashboard /></Landlord>} />
         <Route path="/landlord/beauty-accreditation" element={<Landlord><BeautyAccreditationDashboard /></Landlord>} />
         <Route path="/landlord/application-support" element={<Landlord><SupportDesk /></Landlord>} />
         <Route path="/landlord/global-partners" element={<Landlord><GlobalEducationPartners /></Landlord>} />
@@ -325,6 +331,7 @@ function AppRoutes() {
         <Route path="/director/knowledge" element={<Director><KnowledgeLibrary /></Director>} />
         <Route path="/director/education-intelligence" element={<Director><EducationIntelligence /></Director>} />
         <Route path="/director/readiness" element={<Director><ProductionReadiness /></Director>} />
+        <Route path="/director/opportunity-fund" element={<Director><OpportunityFundDashboard /></Director>} />
         <Route path="/director/application-support" element={<Director><SupportDesk /></Director>} />
         <Route path="/director/global-partners" element={<Director><GlobalEducationPartners /></Director>} />
         <Route path="/director/education-partnerships" element={<Director><EducationPartnershipReadiness /></Director>} />
@@ -411,7 +418,7 @@ function AppRoutes() {
         <Route path="/finance/payments" element={<Finance><FinanceDashboard /></Finance>} />
         <Route path="/finance/instalments" element={<Finance><FinanceDashboard /></Finance>} />
         <Route path="/finance/commissions" element={<Finance><FinanceDashboard /></Finance>} />
-        <Route path="/finance/scholarships" element={<Finance><FinanceDashboard /></Finance>} />
+        <Route path="/finance/scholarships" element={<Finance><OpportunityFundDashboard /></Finance>} />
         <Route path="/finance/reports" element={<Finance><AnalyticsDashboard /></Finance>} />
 
         {/* ========== MARKETING ========== */}
