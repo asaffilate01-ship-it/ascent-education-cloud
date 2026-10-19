@@ -34,12 +34,16 @@ export default function PathwaysCompare() {
       <main className="mx-auto max-w-6xl space-y-10 px-4 py-10 sm:px-6 lg:px-8 lg:py-16">
         <header className="max-w-3xl">
           <p className="text-sm font-bold uppercase tracking-wide text-success">Study abroad & university admissions</p>
-          <h1 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-5xl">Find your next university pathway</h1>
+          <h1 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-5xl">University progression, built on real learning</h1>
           <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-            Considering university studies overseas from Pakistan? Choose an international destination and tell us about your qualifications. We can help you explore entry requirements, diploma progression where applicable, and your application options.
+            UniPathway teaches and trains learners in Pakistan through tuition, qualifications, digital and professional skills, and language preparation. We then help them research universities, strengthen entry evidence, plan applications and prepare for the next stage of student life. Choose a destination to begin.
           </p>
         </header>
 
+        <div className="grid gap-4 md:grid-cols-2">
+          <section className="rounded-xl border bg-secondary/40 p-5"><p className="font-semibold">Explore all European countries</p><p className="mt-2 text-sm text-muted-foreground">Not limited to Germany: compare all EU destinations, study languages, academic subject themes and example institutions without leaving UniPathway.</p><Button asChild variant="outline" className="mt-3"><Link to="/europe">Explore European study pathways <ArrowRight className="ml-2 size-4"/></Link></Button></section>
+          <section className="rounded-xl border bg-secondary/40 p-5"><p className="font-semibold">Learn and train with UniPathway first</p><p className="mt-2 text-sm text-muted-foreground">Years 8–12 tuition, UK and international diploma planning, accounting, AI, coding, language courses and practical skills form the foundation of our progression service.</p><Button asChild variant="outline" className="mt-3"><Link to="/study">Explore our teaching and training <ArrowRight className="ml-2 size-4"/></Link></Button></section>
+        </div>
         <div className="rounded-xl border bg-secondary/40 p-5">
           <p className="font-semibold">Looking for university study within Pakistan instead?</p>
           <p className="mt-2 text-sm text-muted-foreground">Explore Pakistani universities, HEC-recognised campuses, local degree progression, scholarships, vocational training and career opportunities separately from international study.</p>

@@ -120,6 +120,8 @@ const OpportunityFundDashboard = lazy(() => import("./pages/director/Opportunity
 const UniversityProgressionDirectory = lazy(() => import("./pages/promo/UniversityProgressionDirectory"));
 const AcademyPage = lazy(() => import("./pages/promo/AcademyPage"));
 const StudyDestinationPage = lazy(() => import("./pages/promo/StudyDestinationPage"));
+const EuropeStudyDirectory = lazy(() => import("./pages/promo/EuropeStudyDirectory"));
+const EuropeanCountryPage = lazy(() => import("./pages/promo/EuropeStudyDirectory").then(m => ({ default: m.EuropeanCountryPage })));
 const BeautyAcademy = lazy(() => import("./pages/promo/BeautyAcademy"));
 const BeautyAccreditationDashboard = lazy(() => import("./pages/director/BeautyAccreditationDashboard"));
 const QualificationsCatalogue = lazy(() => import("./pages/promo/QualificationsCatalogue"));
@@ -248,6 +250,8 @@ function AppRoutes() {
         <Route path="/index" element={<Navigate to="/" replace />} />
         <Route path="/about" element={<RedirectToTenant suffix="/about" />} />
         <Route path="/study" element={<StudyPriorities />} />
+        <Route path="/europe" element={<EuropeStudyDirectory />} />
+        <Route path="/europe/:slug" element={<EuropeanCountryPage />} />
         <Route path="/school-partners" element={<SchoolPartnerships />} />
         <Route path="/scholarships" element={<FoundationScholarships />} />
         <Route path="/university-progression" element={<UniversityProgressionDirectory />} />
