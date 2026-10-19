@@ -42,6 +42,8 @@ await as(DIRECTOR,TENANT,async()=>{
  candidate=r.rows[0].id;checks++;
  const deny=await db.query("UPDATE public.unipathway_foundation_scholarship_cases SET status='approved',awarded_pkr=50 WHERE id=$1 RETURNING id",[candidate]);
  assert.equal(deny.rows.length,0);checks++;
+ const staged=await db.query("UPDATE public.unipathway_foundation_scholarship_cases SET status='panel_review' WHERE id=$1 RETURNING id",[candidate]);
+ assert.equal(staged.rows.length,1);checks++;
 });
 await as(EMPLOYER,TENANT,async()=>{
  const p=await db.query('SELECT id FROM public.unipathway_foundation_scholarship_cases');
@@ -52,6 +54,14 @@ await as(EMPLOYER,TENANT,async()=>{
 await as(LEARNER,TENANT,async()=>{
  const r=await db.query('SELECT id FROM public.unipathway_foundation_scholarship_cases');
  assert.equal(r.rows.length,0);checks++;
+});
+await as(REVIEWER,TENANT,async()=>{
+ const signed=await db.query("INSERT INTO public.unipathway_foundation_case_reviews(tenant_id,scholarship_case_id,reviewer_id,recommendation,merit_assessment,financial_need_assessment,review_evidence_reference) VALUES($1,$2,$3,'eligible','Academic records independently reviewed','Household financial need reviewed against policy','PRIVATE-REVIEW-EVIDENCE') RETURNING id",[TENANT,candidate,REVIEWER]);
+ assert.equal(signed.rows.length,1);checks++;
+});
+await as(ADMIN,TENANT,async()=>{
+ const opened=await db.query("UPDATE public.unipathway_foundation_programmes SET status='open' WHERE id=$1 RETURNING id",[fund]);
+ assert.equal(opened.rows.length,1);checks++;
 });
 await as(ADMIN,TENANT,async()=>{
  await blocked(()=>db.query("UPDATE public.unipathway_foundation_scholarship_cases SET status='approved',awarded_pkr=200,independently_reviewed_by=$1,selection_policy_reference='PRIVATE-POLICY',selection_notes='Reviewed',approved_by=$2,approved_at=now() WHERE id=$3",[REVIEWER,ADMIN,candidate]));
