@@ -1,3 +1,4 @@
 - Keep public marketing pages on a shared PublicNav/PublicFooter and leave dashboard-only pages behind their existing role guards, so visitors can explore without gaining staff access.
 - Use the root public homepage to route visitors to qualifications, tuition, employer learning and pathways; keep academy management pages separate because they require signed-in context.
 - Use bundled Sora/Manrope fonts with semantic theme tokens for the selected UniPathway editorial visual direction, so public and app typography stay consistent without external font requests.
+- Ship the public backend settings in a committed `.env.production` (excluded from .gitignore) so publish builds always receive VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY and VITE_SUPABASE_PROJECT_ID — the auto-generated `.env` is gitignored and publish builds have silently missed it, blanking the live site.
