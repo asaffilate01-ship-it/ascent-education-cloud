@@ -11,7 +11,7 @@ interface Course {
 }
 
 interface Props {
-  track: 'german' | 'english';
+  track: 'german' | 'english' | 'french' | 'italian' | 'spanish';
 }
 
 const GERMAN: Course[] = [
@@ -31,12 +31,31 @@ const ENGLISH: Course[] = [
   { code: 'TOEFL', title: 'TOEFL iBT Preparation', hours: '40 hours · 5 weeks', mode: 'Live online', fee: 'Rs.20,000', desc: 'Integrated and independent task drills. Test booking and certification are through ETS.', prep: true },
 ];
 
+const EUROPEAN: Record<'french'|'italian'|'spanish',Course[]> = {
+ french: [
+  {code:'FR-A1-A2',title:'French A1–A2 — Foundations',hours:'Schedule to be confirmed',mode:'Live online / in-centre subject to availability',fee:'Ask for current quote',desc:'Everyday French, pronunciation, grammar, listening, reading and speaking.'},
+  {code:'FR-B1-B2',title:'French B1–B2 — Academic readiness',hours:'Schedule to be confirmed',mode:'Live online / in-centre subject to availability',fee:'Ask for current quote',desc:'Extended writing, presentations, academic reading and programme interviews.'},
+  {code:'FR-C1',title:'French C1 and DELF/DALF/TCF preparation',hours:'Schedule to be confirmed',mode:'Tutor-led preparation where available',fee:'Ask for current quote',desc:'Explore the language evidence required by your chosen French or Belgian institution; external tests booked separately.',prep:true}
+ ],
+ italian: [
+  {code:'IT-A1-A2',title:'Italian A1–A2 — Foundations',hours:'Schedule to be confirmed',mode:'Live online / in-centre subject to availability',fee:'Ask for current quote',desc:'Essential Italian, pronunciation, conversation and cultural context.'},
+  {code:'IT-B1-B2',title:'Italian B1–B2 — University preparation',hours:'Schedule to be confirmed',mode:'Live online / in-centre subject to availability',fee:'Ask for current quote',desc:'Academic reading, writing and spoken communication for Italian-taught study.'},
+  {code:'IT-C1',title:'Italian C1 and CILS/CELI preparation',hours:'Schedule to be confirmed',mode:'Tutor-led preparation where available',fee:'Ask for current quote',desc:'Exam practice and university language evidence planning; certifications issued only by authorised centres.',prep:true}
+ ],
+ spanish: [
+  {code:'ES-A1-A2',title:'Spanish A1–A2 — Foundations',hours:'Schedule to be confirmed',mode:'Live online / in-centre subject to availability',fee:'Ask for current quote',desc:'Pronunciation, practical Spanish, core grammar, listening and conversation.'},
+  {code:'ES-B1-B2',title:'Spanish B1–B2 — Spanish university readiness',hours:'Schedule to be confirmed',mode:'Live online / in-centre subject to availability',fee:'Ask for current quote',desc:'University vocabulary, reading, essays, discussions and academic interviews.'},
+  {code:'ES-C1',title:'Spanish C1 and DELE/SIELE preparation',hours:'Schedule to be confirmed',mode:'Tutor-led preparation where available',fee:'Ask for current quote',desc:'Prepare for acceptable Spanish-language evidence for your specific university and degree. DELE/SIELE exams are separate.',prep:true}
+ ]
+};
+const EUROPEAN_LABELS={french:'French',italian:'Italian',spanish:'Spanish'} as const;
+
 export default function LanguageAcademy({ track }: Props) {
-  const list = track === 'german' ? GERMAN : ENGLISH;
-  const title = track === 'german' ? 'German Language Academy — A1 to B2 and Exam Preparation' : 'English Language Academy — Academic English and Exam Preparation';
+  const list = track === 'german' ? GERMAN : track === 'english' ? ENGLISH : EUROPEAN[track];
+  const title = track === 'german' ? 'German Language Academy — A1 to B2 and Exam Preparation' : track === 'english' ? 'English Language Academy — Academic English and Exam Preparation' : `${EUROPEAN_LABELS[track]} Language Academy — A1 to C1 and university preparation`;
   const subtitle = track === 'german'
     ? 'Live-taught German at every CEFR level required for higher education in Germany, plus dedicated preparation for TestDaF, telc and Goethe exams.'
-    : 'Academic English for university readiness, plus dedicated preparation for IELTS Academic, PTE Academic and TOEFL iBT.';
+    : track === 'english' ? 'Academic English for university readiness, plus dedicated preparation for IELTS Academic, PTE Academic and TOEFL iBT.' : `Explore ${EUROPEAN_LABELS[track]} courses from A1 to C1, academic-language practice and external examination preparation. University entry and accepted language tests depend on the specific programme; availability and fees are confirmed before enrolment.`;
 
   return (
     <section className="space-y-6">
@@ -71,7 +90,7 @@ export default function LanguageAcademy({ track }: Props) {
       </div>
 
       <p className="text-xs text-muted-foreground italic">
-        Fees are indicative and payable in Pakistani Rupees to the Pakistan-registered operator. Official examinations, certification and results are the sole responsibility of the awarding exam body.
+        Published fees are indicative, and new language-course pricing is available on enquiry. Official examinations, certification and results are the sole responsibility of the awarding exam body.
       </p>
     </section>
   );
