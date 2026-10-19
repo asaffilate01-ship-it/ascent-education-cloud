@@ -9,10 +9,10 @@ import { Input } from '@/components/ui/input';
 import { vocationalSectors, vocationalTracks } from '@/lib/vocationalTracks';
 
 const providers=[
- {name:'Punjab Skills Development Fund (PSDF)',category:'General IT and vocational training',description:'Review eligibility, official trainee intakes, institutes and course offerings. A vacancy must be confirmed with PSDF.',url:'https://www.psdf.org.pk/'},
- {name:'PITB e-Rozgaar',category:'Freelancing and digital careers',description:'Explore officially announced freelancing and online-earning training programmes.',url:'https://eearn.pitb.gov.pk/'},
- {name:'Punjab WDD SEHR',category:'Women-focused vocational training',description:'Check current women-only skill, beauty, entrepreneurship or technology intakes and district eligibility.',url:'https://wdd.punjab.gov.pk/SEHR'},
- {name:'NAVTTC',category:'National vocational qualifications',description:'National trades, NVQF guidance, current announcements, institute search and candidate registration.',url:'https://navttc.gov.pk/programs/'},
+ {name:'Punjab Skills Development Fund (PSDF)',category:'General IT and vocational training',description:'Review eligibility, official trainee intakes, institutes and course offerings. A vacancy must be confirmed with PSDF.'},
+ {name:'PITB e-Rozgaar',category:'Freelancing and digital careers',description:'Explore officially announced freelancing and online-earning training programmes.'},
+ {name:'Punjab WDD SEHR',category:'Women-focused vocational training',description:'Check current women-only skill, beauty, entrepreneurship or technology intakes and district eligibility.'},
+ {name:'NAVTTC',category:'National vocational qualifications',description:'National trades, NVQF guidance, current announcements, institute search and candidate registration.'},
 ];
 export default function FundedCourses(){
  const [search,setSearch]=useState(''),[sector,setSector]=useState('All');
