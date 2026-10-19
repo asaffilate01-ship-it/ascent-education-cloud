@@ -114,6 +114,7 @@ const BlogPostPage = lazy(() => import("./pages/blog/BlogPostPage"));
 const StudentOnboarding = lazy(() => import("./pages/onboarding/StudentOnboarding"));
 const LecturerOnboarding = lazy(() => import("./pages/onboarding/LecturerOnboarding"));
 const StudyPriorities = lazy(() => import("./pages/promo/StudyPriorities"));
+const UniversityProgressionDirectory = lazy(() => import("./pages/promo/UniversityProgressionDirectory"));
 const AcademyPage = lazy(() => import("./pages/promo/AcademyPage"));
 const StudyDestinationPage = lazy(() => import("./pages/promo/StudyDestinationPage"));
 const BeautyAcademy = lazy(() => import("./pages/promo/BeautyAcademy"));
@@ -244,6 +245,7 @@ function AppRoutes() {
         <Route path="/index" element={<Navigate to="/" replace />} />
         <Route path="/about" element={<RedirectToTenant suffix="/about" />} />
         <Route path="/study" element={<StudyPriorities />} />
+        <Route path="/university-progression" element={<UniversityProgressionDirectory />} />
         <Route path="/tech-academy" element={<AcademyPage kind="tech" />} />
         <Route path="/finance-academy" element={<AcademyPage kind="finance" />} />
         <Route path="/pakistan" element={<StudyDestinationPage destination={studyDestinations.pakistan} />} />
