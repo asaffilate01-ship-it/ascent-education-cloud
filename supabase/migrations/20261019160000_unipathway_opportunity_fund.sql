@@ -100,7 +100,8 @@ CREATE POLICY "Fund leadership reviews protected scholarship cases"
  USING(public.has_role(auth.uid(),'superadmin'::public.app_role) OR
   (tenant_id=public.get_user_tenant_id(auth.uid()) AND
    (public.has_role(auth.uid(),'centre_director'::public.app_role) OR
-    public.has_role(auth.uid(),'admissions_admin'::public.app_role))));
+    public.has_role(auth.uid(),'admissions_admin'::public.app_role) OR
+    public.has_role(auth.uid(),'finance_officer'::public.app_role))));
 CREATE POLICY "Centre directors can submit documented draft cases"
  ON public.unipathway_foundation_scholarship_cases FOR INSERT TO authenticated
  WITH CHECK(tenant_id=public.get_user_tenant_id(auth.uid()) AND
@@ -120,6 +121,47 @@ CREATE POLICY "Fund superadmin manages final awards"
  WITH CHECK(public.has_role(auth.uid(),'superadmin'::public.app_role) AND
   (status<>'approved' OR approved_by=auth.uid()));
 
+-- Independently signed review evidence, never a UUID typed by the approver.
+CREATE TABLE IF NOT EXISTS public.unipathway_foundation_case_reviews(
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+ tenant_id uuid NOT NULL REFERENCES public.tenants(id),
+ scholarship_case_id uuid NOT NULL REFERENCES public.unipathway_foundation_scholarship_cases(id),
+ reviewer_id uuid NOT NULL DEFAULT auth.uid(),
+ recommendation text NOT NULL CHECK(recommendation IN('eligible','needs_information','not_eligible')),
+ merit_assessment text NOT NULL CHECK(length(trim(merit_assessment)) BETWEEN 10 AND 2000),
+ financial_need_assessment text NOT NULL CHECK(length(trim(financial_need_assessment)) BETWEEN 10 AND 2000),
+ review_evidence_reference text NOT NULL CHECK(length(trim(review_evidence_reference))>0),
+ reviewed_at timestamptz NOT NULL DEFAULT now(),
+ UNIQUE(scholarship_case_id,reviewer_id)
+);
+ALTER TABLE public.unipathway_foundation_case_reviews ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Authorised fund staff read scoped scholarship reviews"
+ ON public.unipathway_foundation_case_reviews FOR SELECT TO authenticated
+ USING(public.has_role(auth.uid(),'superadmin'::public.app_role) OR
+  (tenant_id=public.get_user_tenant_id(auth.uid()) AND
+   (public.has_role(auth.uid(),'centre_director'::public.app_role) OR
+    public.has_role(auth.uid(),'finance_officer'::public.app_role))));
+CREATE POLICY "Independent reviewer signs their own case review"
+ ON public.unipathway_foundation_case_reviews FOR INSERT TO authenticated
+ WITH CHECK(reviewer_id=auth.uid() AND tenant_id=public.get_user_tenant_id(auth.uid()) AND
+  (public.has_role(auth.uid(),'centre_director'::public.app_role) OR
+   public.has_role(auth.uid(),'finance_officer'::public.app_role)));
+CREATE OR REPLACE FUNCTION public.unipathway_validate_signed_scholarship_review()
+ RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path TO public
+ AS $review_check$
+ BEGIN
+  IF NOT EXISTS(SELECT 1 FROM public.unipathway_foundation_scholarship_cases c
+    WHERE c.id=NEW.scholarship_case_id AND c.tenant_id=NEW.tenant_id
+     AND c.created_by<>NEW.reviewer_id AND c.status='panel_review')
+  THEN RAISE EXCEPTION 'Independent review requires an open panel case in the same tenant'; END IF;
+  RETURN NEW;
+ END;$review_check$;
+CREATE TRIGGER trg_unipathway_case_review_signature
+ BEFORE INSERT ON public.unipathway_foundation_case_reviews
+ FOR EACH ROW EXECUTE FUNCTION public.unipathway_validate_signed_scholarship_review();
+REVOKE ALL ON public.unipathway_foundation_case_reviews FROM anon;
+GRANT SELECT,INSERT ON public.unipathway_foundation_case_reviews TO authenticated;
+
 -- Verify tenant ownership, dual human review, confirmed funding and spending.
 -- Lock the parent programme to serialize simultaneous award decisions.
 CREATE OR REPLACE FUNCTION public.unipathway_verify_scholarship_case()
@@ -134,6 +176,18 @@ CREATE OR REPLACE FUNCTION public.unipathway_verify_scholarship_case()
   IF TG_OP='UPDATE' AND (OLD.tenant_id<>NEW.tenant_id OR OLD.programme_id<>NEW.programme_id OR OLD.applicant_reference<>NEW.applicant_reference)
   THEN RAISE EXCEPTION 'Scholarship case identity cannot be reassigned'; END IF;
   IF NEW.status='approved' THEN
+   IF NOT EXISTS(SELECT 1 FROM public.unipathway_foundation_programmes p
+     WHERE p.id=NEW.programme_id AND p.tenant_id=NEW.tenant_id AND p.status='open') THEN
+     RAISE EXCEPTION 'Funding programme must be open before any award';
+   END IF;
+   IF NOT EXISTS(
+      SELECT 1 FROM public.unipathway_foundation_case_reviews r
+      WHERE r.scholarship_case_id=NEW.id AND r.tenant_id=NEW.tenant_id
+        AND r.reviewer_id=NEW.independently_reviewed_by
+        AND r.reviewer_id<>auth.uid() AND r.recommendation='eligible'
+        AND r.reviewed_at<=NEW.approved_at
+   ) THEN RAISE EXCEPTION 'A real, independent positive case review is required';
+   END IF;
    SELECT COALESCE(SUM(s.verified_received_pkr),0) INTO _received
      FROM public.unipathway_foundation_sponsorships s
      WHERE s.tenant_id=NEW.tenant_id AND s.programme_id=NEW.programme_id;
