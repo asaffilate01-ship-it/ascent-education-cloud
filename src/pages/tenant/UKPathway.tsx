@@ -4,6 +4,8 @@ import LanguageAcademy from '@/components/tenant/LanguageAcademy';
 import DestinationHero from '@/components/tenant/DestinationHero';
 import { GraduationCap, Wallet, ShieldCheck, FileCheck2, Briefcase, Building2 } from 'lucide-react';
 import Seo from '@/components/Seo';
+import { StudyDestinationSections } from '@/pages/promo/StudyDestinationPage';
+import { studyDestinations } from '@/lib/studyDestinations';
 
 export default function UKPathway() {
   return (
@@ -19,7 +21,7 @@ export default function UKPathway() {
         bullets={[
           'One-year taught master’s across most disciplines',
           'Foundation and top-up routes for HSSC and Level 4/5 diploma holders',
-          'Graduate Route post-study work — currently 2 years (planned reduction to 18 months from 2027)',
+          'Graduate and post-study immigration routes depend on current GOV.UK eligibility rules',
           'Applications handled directly with the licensed Student sponsor institution',
         ]}
         destination="uk"
@@ -27,6 +29,7 @@ export default function UKPathway() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-14">
         <ComplianceDisclosure destination="uk" />
+        <StudyDestinationSections destination={studyDestinations.uk} compact />
 
         {/* Study levels */}
         <section>
@@ -36,7 +39,7 @@ export default function UKPathway() {
             {[
               { icon: Building2, title: 'Foundation year', desc: 'For HSSC holders who need an academic bridge before Year 1 of a UK bachelor’s.' },
               { icon: GraduationCap, title: 'Bachelor’s (3 years)', desc: 'For A-Level holders or Foundation graduates. Direct entry to Year 1 of a UK undergraduate degree.' },
-              { icon: GraduationCap, title: 'Top-up (final year)', desc: 'Complete UniPathway Level 4 & 5 in Pakistan, then progress to Year 3 at a partner UK university for a full bachelor’s.' },
+              { icon: GraduationCap, title: 'Top-up (final year)', desc: 'Level 4/5 diploma holders can ask a UK university to assess possible advanced standing or a top-up route; admission and credit recognition are not automatic.' },
               { icon: GraduationCap, title: 'Master’s (1 year)', desc: 'For bachelor holders. One-year taught master’s across business, computing, health, engineering and more.' },
             ].map((s, i) => (
               <div key={i} className="surface-card p-5 rounded-xl border border-border/50">
@@ -56,7 +59,7 @@ export default function UKPathway() {
             <ul className="space-y-2.5 text-sm text-muted-foreground">
               <li><strong className="text-foreground">HSSC (Pakistan):</strong> typically requires a Foundation year for bachelor’s entry.</li>
               <li><strong className="text-foreground">A-Levels (3 subjects):</strong> direct entry to Year 1 of a UK bachelor’s, subject to institution grades.</li>
-              <li><strong className="text-foreground">UniPathway Level 4 & 5 (240 credits):</strong> progression into Year 3 (top-up) at partner UK universities.</li>
+              <li><strong className="text-foreground">UniPathway Level 4 & 5 (240 credits):</strong> may be considered individually for advanced standing or top-up entry after institutional review.</li>
               <li><strong className="text-foreground">Pakistani 4-year bachelor’s:</strong> generally recognised for direct master’s entry.</li>
               <li><strong className="text-foreground">Pakistani 2-year bachelor’s:</strong> normally requires a bridging Level 6 or pre-master’s.</li>
             </ul>
@@ -97,7 +100,7 @@ export default function UKPathway() {
             <Briefcase className="w-6 h-6 text-primary mb-3" />
             <h3 className="text-lg font-bold mb-3">Graduate Route (post-study work)</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Successful UK bachelor’s or master’s graduates may apply for the <strong className="text-foreground">Graduate Route</strong> to work or look for work in the UK. The route is currently <strong className="text-foreground">2 years</strong>, with a planned reduction to <strong className="text-foreground">18 months from 2027</strong>. PhD graduates: 3 years.
+              Successful UK bachelor’s or master’s graduates may apply for the <strong className="text-foreground">Graduate Route</strong> to work or look for work in the UK. Duration, eligibility and work conditions must be checked against current official Graduate visa guidance; no immigration outcome is guaranteed.
             </p>
             <p className="text-xs text-muted-foreground italic mt-4">Rules and durations must be checked on GOV.UK at the time of graduation.</p>
           </div>
