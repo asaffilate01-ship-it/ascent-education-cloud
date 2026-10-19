@@ -5,7 +5,7 @@ export const isPublicMobilePath = (path: string) =>
 
 export const isMobileTabActive = (target: string, current: string): boolean => {
   if (target === '/') return current === '/' || /^\/tenant\/[^/]+\/?$/.test(current);
-  if (target === '/pathways') return /^\/(?:pathways|uk|germany|usa|canada|australia|pakistan)(?:\/|$)/.test(current) ||
+  if (target === '/pathways') return /^\/(?:pathways|uk|germany|usa|canada|australia)(?:\/|$)/.test(current) ||
     /^\/tenant\/[^/]+\/(?:pathways|uk|germany)(?:\/|$)/.test(current);
   if (target === '/contact') return /^\/tenant\/[^/]+\/contact(?:\/|$)/.test(current) || current === '/contact';
   return current === target || current.startsWith(target + '/');
