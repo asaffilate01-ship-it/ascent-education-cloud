@@ -1,5 +1,4 @@
 import TenantNav from '@/components/TenantNav';
-import ComplianceDisclosure from '@/components/tenant/ComplianceDisclosure';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Seo from '@/components/Seo';
