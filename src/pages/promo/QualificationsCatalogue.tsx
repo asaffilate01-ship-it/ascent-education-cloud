@@ -45,16 +45,15 @@ export default function QualificationsCatalogue() {
         {filtered.map(q=><article key={q.body+q.name} className="flex flex-col rounded-xl border bg-card p-5">
           <span className="text-xs font-bold text-success">{q.body} · Level {q.level}</span>
           <h2 className="mt-2 text-lg font-bold">{q.name}</h2><p className="mt-2 text-sm text-muted-foreground">{q.category}</p>
-          <div className="mt-auto flex flex-wrap gap-3 pt-5 text-sm"><a href={q.source} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-semibold text-primary underline-offset-4 hover:underline">Official details <ArrowUpRight className="size-4"/></a><Link to="/contact" className="font-semibold text-success hover:underline">Ask admissions</Link></div>
+          <div className="mt-auto flex flex-wrap gap-3 pt-5 text-sm"><Link to="/contact" className="inline-flex items-center gap-1 font-semibold text-success hover:underline">Ask admissions</Link></div>
         </article>)}
         {filtered.length===0&&<p>No matching qualifications. Try a different subject or search.</p>}
       </section>
       <section className="rounded-xl border bg-secondary/40 p-6">
         <BookOpenCheck className="size-7 text-success"/><h2 className="mt-3 text-xl font-bold">Teaching, curriculum and university progression</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Approved awarding-body unit specifications and assessment rules will determine the final modules, credits, assignment briefs and delivery method. Our planned model includes online study and two 14-day centre-based academic visits where permitted. A Level 4 or 5 diploma is not itself a UK university degree and admission or advanced standing is subject to the receiving university.</p>
-        <div className="mt-4 flex flex-wrap gap-4 text-sm">
-          {(Object.entries(officialAwardingBodies) as [AwardingBody,{url:string;label:string}][]).map(([body,info])=><a key={body} href={info.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">{info.label} ↗</a>)}
-        </div><Button asChild className="mt-5"><Link to="/university-progression">Explore university progression <GraduationCap className="ml-2 size-4"/></Link></Button>
+        <div className="mt-4 flex flex-wrap gap-4 text-sm text-muted-foreground"><span>OTHM · Level 3–7 diploma titles</span><span>Qualifi · Level 3–7 diploma titles</span></div>
+        <Button asChild className="mt-5"><Link to="/university-progression">Explore university progression <GraduationCap className="ml-2 size-4"/></Link></Button>
       </section>
     </main><PublicFooter/>
   </div>;
