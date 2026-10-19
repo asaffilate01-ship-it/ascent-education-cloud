@@ -11,8 +11,9 @@ const offers=[
   {icon:MonitorSmartphone,title:'Technology Academy',description:'Applied AI, coding, Python, cybersecurity, Cyber Essentials awareness, data analytics, cloud infrastructure and DevOps.',to:'/tech-academy'},
   {icon:BriefcaseBusiness,title:'Accounting & Finance',description:'Bookkeeping, financial reporting, taxation, management accounting and preparation for IFA and ACCA professional exams.',to:'/finance-academy'},
   {icon:HeartHandshake,title:'Women’s Beauty & Aesthetics',description:'Planned female-focused skincare, make-up and salon courses with CIBTAC centre and CPD UK review processes.',to:'/beauty-aesthetics'},
-  {icon:Globe2,title:'University & Language Guidance',description:'Pakistan, UK, Germany, USA, Canada and Australia admissions guidance, IELTS and German-language preparation.',to:'/pathways'},
+  {icon:Globe2,title:'University & Language Guidance',description:'Pakistan, UK, USA, Canada, Australia, and research guidance for European countries, with IELTS, German and academic preparation.',to:'/pathways'},
   {icon:HeartHandshake,title:'Skills & Careers',description:'Pakistan-funded vocational course links, practical employability training and planned employer-supported internships.',to:'/careers'},
+  {icon:Globe2,title:'Explore Europe',description:'Discover university research options throughout the European Union, plus additional non-EU European destinations, with teaching and language preparation.',to:'/europe'},
 ];
 const trust=[
  {title:'Transparent qualification status',text:'Qualifications, awarding-body status, institution partnerships and centre permissions are checked and recorded individually; marketing language does not replace an approval.'},
@@ -21,18 +22,18 @@ const trust=[
 ];
 export default function TenantAboutPage(){
  return <div className="public-site min-h-dvh bg-background text-foreground">
-  <Seo title="About UniPathway | Learning, Qualifications & Global Progression" description="Discover UniPathway's online and in-centre tuition, UK and international qualifications, technology and finance academies, IELTS, career support and international university guidance." canonical="/about"/>
+  <Seo title="About UniPathway — Teaching, Training & Global Progression" description="UniPathway focuses on online and in-centre teaching, internationally relevant qualifications, professional training, languages and university and career progression." canonical="/about"/>
   <PublicNav/>
   <main>
    <section className="relative overflow-hidden border-b border-border bg-[#F3F6FA] py-16 dark:bg-slate-950 sm:py-24">
     <div className="mx-auto grid max-w-7xl gap-8 px-5 sm:px-8 lg:grid-cols-[1.3fr_0.7fr] lg:items-center">
      <div><p className="text-xs font-bold uppercase tracking-[0.15em] text-[#118848]">About UniPathway</p><h1 className="mt-4 max-w-3xl text-4xl font-extrabold tracking-tight text-[#0B2D5B] dark:text-white sm:text-5xl">Learn here. <span className="text-[#16A34A]">Go further.</span></h1>
-      <p className="mt-5 max-w-3xl text-lg leading-relaxed text-slate-700 dark:text-slate-200">UniPathway is developing a joined-up educational experience for learners in Pakistan: school tuition, British qualification pathways, professional and technical skills, university applications, career preparation and continuing support.</p>
-      <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-600 dark:text-slate-300">Our goal is to combine accessible online education with structured teaching, practical experience and clear information—without promising an award, funded place, employer placement or visa before it is independently confirmed.</p>
+      <p className="mt-5 max-w-3xl text-lg leading-relaxed text-slate-700 dark:text-slate-200">UniPathway is built around education and training. We support learners in Pakistan through online and in-centre tuition, UK and international qualification pathways, practical technology and accounting courses, language preparation and career development—alongside advice about universities in Pakistan and overseas.</p>
+      <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-600 dark:text-slate-300">Our role extends beyond submitting university applications. We help students study, build evidence of their skills, prepare for assessments, compare academic pathways, and plan practical next steps. Awarding-body permissions, university relationships and availability are verified individually; admission, funding, employment and visa results are never guaranteed.</p>
       <div className="mt-7 flex flex-wrap gap-3"><Button asChild size="lg"><Link to="/study">Explore learning <ArrowRight className="ml-1 size-4"/></Link></Button><Button variant="outline" asChild size="lg"><Link to="/contact">Contact admissions</Link></Button></div>
      </div>
      <div className="rounded-2xl border border-[#0B2D5B]/10 bg-white p-6 text-[#0B2D5B] shadow-sm dark:bg-card dark:text-foreground">
-      <GraduationCap className="size-9 text-[#16A34A]"/><h2 className="mt-4 text-xl font-bold">Local learning, international ambition</h2><p className="mt-3 text-sm leading-relaxed text-slate-700 dark:text-muted-foreground">Choose learning in Pakistan and explore international progression through transparent academic guidance, language preparation, verified qualification mapping and support with applications.</p>
+      <GraduationCap className="size-9 text-[#16A34A]"/><h2 className="mt-4 text-xl font-bold">Learn locally. Develop practical skills. Progress with confidence.</h2><p className="mt-3 text-sm leading-relaxed text-slate-700 dark:text-muted-foreground">The centre model brings scheduled in-person sessions together with online teaching and an LMS. After subject tuition and training, learners can research Pakistani, European and global universities, language requirements, scholarships and careers with informed guidance.</p>
       <div className="mt-5 flex flex-wrap gap-2">{['Pakistan','United Kingdom','Germany','United States','Canada','Australia'].map(c=><span key={c} className="rounded-full border px-3 py-1 text-xs font-semibold">{c}</span>)}</div>
      </div>
     </div>
