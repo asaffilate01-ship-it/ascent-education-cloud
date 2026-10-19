@@ -51,9 +51,8 @@ export default function PathwaysCompare() {
             University admissions depend on your exact qualification, grades, language requirements, the course and the institution. UK diplomas do not guarantee admission or credit transfer. We'll verify your intended route before describing it as confirmed.
           </p>
           {selectedUniversity&&<p className="mt-3 rounded-lg border bg-card p-3 text-sm"><strong>University to discuss:</strong> {selectedUniversity}. We will need the exact OTHM or Qualifi certificate and the programme you wish to enter before checking your route.</p>}
-          {('guide' in destination) && <Button asChild variant="outline" className="mt-4"><Link to={destination.guide}>Read {destination.label} study guide <ArrowRight className="ml-2 size-4" /></Link></Button>
+          <Button asChild variant="outline" className="mt-4"><Link to={destination.guide}>Read {destination.label} study guide <ArrowRight className="ml-2 size-4" /></Link></Button>
           <Button asChild className="mt-4 ml-2" variant="outline"><Link to="/university-progression">Compare named progression universities</Link></Button>
-          {!('guide' in destination) && <p className="mt-3 text-sm font-medium">We can review your individual options for this destination using the enquiry form below.</p>}
         </section>}
 
         <section className="space-y-4" aria-labelledby="support-title">
