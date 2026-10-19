@@ -4,8 +4,10 @@ import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Seo from '@/components/Seo';
 import InternationalEnquiryForm from '@/components/enquiry/InternationalEnquiryForm';
+import { getProgressionInstitutions } from '@/lib/universityProgressionDirectory';
 import { ArrowRight, BookOpenCheck, GraduationCap, MessageSquareText } from 'lucide-react';
 
+const publishedInstitutions = getProgressionInstitutions();
 const DESTINATIONS = [
   { key: 'UK', label: 'United Kingdom', symbol: '🇬🇧', guide: '/uk' },
   { key: 'Germany', label: 'Germany', symbol: '🇩🇪', guide: '/germany' },
@@ -18,6 +20,12 @@ export default function PathwaysCompare() {
   const [params, setParams] = useSearchParams();
   const requested = params.get('destination');
   const destination = DESTINATIONS.find(item => item.key === requested);
+  const chosenUniversity = publishedInstitutions.find(
+    entry => entry.name === params.get('university') && entry.country === requested
+  );
+  const requestedBody = params.get('body');
+  const chosenBody = chosenUniversity?.records.some(r=>r.body===requestedBody) &&
+    (requestedBody==='OTHM'||requestedBody==='Qualifi') ? requestedBody : undefined;
   if (requested === 'Pakistan') return <Navigate to="/pakistan" replace />;
   return (
     <div className="min-h-dvh bg-background text-foreground">
@@ -69,8 +77,12 @@ export default function PathwaysCompare() {
         </section>
 
         <section aria-labelledby="enquiry-title" className="space-y-4">
+          {chosenUniversity && <div className="rounded-xl border bg-card p-4 text-sm" role="status">
+            <p className="font-bold">Selected university: {chosenUniversity.name}</p>
+            <p className="mt-1 text-muted-foreground">The chosen institution is on an awarding-body progression list for particular qualifications; UniPathway will verify your own course, grades and admission options.</p>
+          </div>}
           <div><span className="text-xs font-bold uppercase tracking-wider text-success">Step 3</span><h2 id="enquiry-title" className="mt-1 text-2xl font-bold">Ask us about your options</h2><p className="mt-2 text-muted-foreground">{destination ? `You've selected ${destination.label}. Mention this destination in your enquiry so our team can assist.` : 'Not sure where to study? Tell us your qualifications and goals.'}</p></div>
-          <InternationalEnquiryForm kind="university" defaultDestination={destination?.key} />
+          <InternationalEnquiryForm kind="university" defaultDestination={destination?.key} defaultUniversity={chosenUniversity?.name} defaultQualification={chosenBody}/>
         </section>
         <div className="border-t pt-6"><p className="mb-4 text-xs leading-relaxed text-muted-foreground">University admission, recognition of prior learning and financial support are assessed case by case. Training of our advisers is not university accreditation or approval by the British Council. We only claim recruitment-partner status after checking signed, current institutional agreements.</p><ComplianceDisclosure /></div>
       </main>
