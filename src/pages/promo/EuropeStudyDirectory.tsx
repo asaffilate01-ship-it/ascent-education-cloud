@@ -1,6 +1,6 @@
 import {useMemo,useState} from 'react';
 import {Link,useParams} from 'react-router-dom';
-import {ArrowRight,BookOpenCheck,CheckCircle2,GraduationCap,Globe2,Languages,MapPinned,Search,ShieldCheck,Users} from 'lucide-react';
+import {ArrowRight,BookOpenCheck,CheckCircle2,GraduationCap,Languages,MapPinned,Search,ShieldCheck} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import PublicNav from '@/components/PublicNav';
