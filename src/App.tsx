@@ -11,6 +11,7 @@ import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { lazy, Suspense } from "react";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import { studyDestinations } from "@/lib/studyDestinations";
 import ScrollToTop from "@/components/ScrollToTop";
 const AIChatWidgetLazy = lazy(() => import("@/components/AIChatWidget"));
 
@@ -81,6 +82,7 @@ const StudentGrades = lazy(() => import("./pages/student/StudentGrades"));
 const StudentLibrary = lazy(() => import("./pages/student/StudentLibrary"));
 const StudentCareer = lazy(() => import("./pages/student/StudentCareer"));
 const CareerMarketplace = lazy(() => import("./pages/careers/CareerMarketplace"));
+const EmployerPartnershipsPage = lazy(() => import("./pages/director/EmployerPartnershipsPage"));
 const GlobalProgression = lazy(() => import("./pages/progression/GlobalProgression"));
 const StudentLife = lazy(() => import("./pages/student/StudentLife"));
 const StudentFees = lazy(() => import("./pages/student/StudentFees"));
@@ -112,6 +114,10 @@ const BlogPostPage = lazy(() => import("./pages/blog/BlogPostPage"));
 const StudentOnboarding = lazy(() => import("./pages/onboarding/StudentOnboarding"));
 const LecturerOnboarding = lazy(() => import("./pages/onboarding/LecturerOnboarding"));
 const StudyPriorities = lazy(() => import("./pages/promo/StudyPriorities"));
+const AcademyPage = lazy(() => import("./pages/promo/AcademyPage"));
+const StudyDestinationPage = lazy(() => import("./pages/promo/StudyDestinationPage"));
+const BeautyAcademy = lazy(() => import("./pages/promo/BeautyAcademy"));
+const BeautyAccreditationDashboard = lazy(() => import("./pages/director/BeautyAccreditationDashboard"));
 const QualificationsCatalogue = lazy(() => import("./pages/promo/QualificationsCatalogue"));
 const GermanPreparation = lazy(() => import("./pages/promo/GermanPreparation"));
 const FundedCourses = lazy(() => import("./pages/promo/FundedCourses"));
@@ -236,6 +242,13 @@ function AppRoutes() {
         <Route path="/" element={<PromoHome />} />
         <Route path="/about" element={<RedirectToTenant suffix="/about" />} />
         <Route path="/study" element={<StudyPriorities />} />
+        <Route path="/tech-academy" element={<AcademyPage kind="tech" />} />
+        <Route path="/finance-academy" element={<AcademyPage kind="finance" />} />
+        <Route path="/pakistan" element={<StudyDestinationPage destination={studyDestinations.pakistan} />} />
+        <Route path="/usa" element={<StudyDestinationPage destination={studyDestinations.usa} />} />
+        <Route path="/canada" element={<StudyDestinationPage destination={studyDestinations.canada} />} />
+        <Route path="/australia" element={<StudyDestinationPage destination={studyDestinations.australia} />} />
+        <Route path="/beauty-aesthetics" element={<BeautyAcademy />} />
         <Route path="/qualifications" element={<QualificationsCatalogue />} />
         <Route path="/german-preparation" element={<GermanPreparation />} />
         <Route path="/funded-courses" element={<FundedCourses />} />
@@ -280,6 +293,7 @@ function AppRoutes() {
         {/* ========== LANDLORD ========== */}
         <Route path="/landlord" element={<Landlord><LandlordDashboard /></Landlord>} />
         <Route path="/landlord/centres" element={<Landlord><LandlordDashboard /></Landlord>} />
+        <Route path="/landlord/employers" element={<Landlord><EmployerPartnershipsPage /></Landlord>} />
         <Route path="/landlord/users" element={<Landlord><StaffManagement /></Landlord>} />
         <Route path="/landlord/finance" element={<Landlord><FinanceDashboard /></Landlord>} />
         <Route path="/landlord/subscriptions" element={<Landlord><SuperadminPlatform /></Landlord>} />
@@ -288,6 +302,7 @@ function AppRoutes() {
         <Route path="/landlord/knowledge" element={<Landlord><KnowledgeLibrary /></Landlord>} />
         <Route path="/landlord/education-intelligence" element={<Landlord><EducationIntelligence /></Landlord>} />
         <Route path="/landlord/readiness" element={<Landlord><ProductionReadiness /></Landlord>} />
+        <Route path="/landlord/beauty-accreditation" element={<Landlord><BeautyAccreditationDashboard /></Landlord>} />
         <Route path="/landlord/application-support" element={<Landlord><SupportDesk /></Landlord>} />
         <Route path="/landlord/global-partners" element={<Landlord><GlobalEducationPartners /></Landlord>} />
         <Route path="/landlord/education-partnerships" element={<Landlord><EducationPartnershipReadiness /></Landlord>} />
@@ -299,9 +314,11 @@ function AppRoutes() {
         <Route path="/director" element={<Director><CentreDirectorDashboard /></Director>} />
         <Route path="/director/admissions" element={<Director><AdmissionsCRM /></Director>} />
         <Route path="/director/programmes" element={<Director><ProgrammeManagement /></Director>} />
+        <Route path="/director/beauty-accreditation" element={<Director><BeautyAccreditationDashboard /></Director>} />
         <Route path="/director/ielts" element={<Director><IELTSAcademy /></Director>} />
         <Route path="/director/staff" element={<Director><StaffManagement /></Director>} />
         <Route path="/director/students" element={<Director><StudentManagement /></Director>} />
+        <Route path="/director/employers" element={<Director><EmployerPartnershipsPage /></Director>} />
         <Route path="/director/quality" element={<Director><QADashboard /></Director>} />
         <Route path="/director/finance" element={<Director><FinanceDashboard /></Director>} />
         <Route path="/director/agents" element={<Director><AgentDashboard /></Director>} />
@@ -323,6 +340,7 @@ function AppRoutes() {
         {/* ========== ADMISSIONS ========== */}
         <Route path="/admissions" element={<Admissions><AdmissionsCRM /></Admissions>} />
         <Route path="/admissions/applications" element={<Admissions><AdmissionsCRM /></Admissions>} />
+        <Route path="/admissions/employers" element={<Admissions><EmployerPartnershipsPage /></Admissions>} />
         <Route path="/admissions/documents" element={<Admissions><AdmissionsCRM /></Admissions>} />
         <Route path="/admissions/eligibility" element={<Admissions><AdmissionsCRM /></Admissions>} />
         <Route path="/admissions/application-support" element={<Admissions><SupportDesk /></Admissions>} />
@@ -357,6 +375,7 @@ function AppRoutes() {
 
         {/* ========== PROGRAMME LEADER ========== */}
         <Route path="/programme" element={<Programme><ProgrammeManagement /></Programme>} />
+        <Route path="/programme/beauty-accreditation" element={<Programme><BeautyAccreditationDashboard /></Programme>} />
         <Route path="/programme/knowledge" element={<Programme><KnowledgeLibrary /></Programme>} />
         <Route path="/programme/modules" element={<Programme><LecturerTeaching /></Programme>} />
         <Route path="/programme/lecturers" element={<Programme><StaffManagement /></Programme>} />
@@ -430,6 +449,7 @@ function AppRoutes() {
         <Route path="/student/progression" element={<StudentR><ProgressionDashboard /></StudentR>} />
         <Route path="/student/timeline" element={<StudentR><AcademicTimeline /></StudentR>} />
         <Route path="/student/career" element={<StudentR><StudentCareer /></StudentR>} />
+        <Route path="/student/opportunities" element={<StudentR><CareerMarketplace /></StudentR>} />
         <Route path="/student/support" element={<StudentR><MessagingInbox /></StudentR>} />
         <Route path="/student/labs" element={<StudentR><ITLabsDashboard /></StudentR>} />
         <Route path="/student/quizzes" element={<StudentR><QuizDashboard /></StudentR>} />
