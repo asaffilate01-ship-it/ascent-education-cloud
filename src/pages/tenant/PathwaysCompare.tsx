@@ -9,10 +9,10 @@ import { ArrowRight, BookOpenCheck, GraduationCap, MessageSquareText } from 'luc
 const DESTINATIONS = [
   { key: 'UK', label: 'United Kingdom', symbol: '🇬🇧', guide: '/uk' },
   { key: 'Germany', label: 'Germany', symbol: '🇩🇪', guide: '/germany' },
-  { key: 'USA', label: 'United States', symbol: '🇺🇸', guide: '/usa' }
-  { key: 'Australia', label: 'Australia', symbol: '🇦🇺', guide: '/australia' }
-  { key: 'Canada', label: 'Canada', symbol: '🇨🇦', guide: '/canada' }
-  { key: 'Pakistan', label: 'Pakistan', symbol: '🇵🇰', guide: '/pakistan' }
+  { key: 'USA', label: 'United States', symbol: '🇺🇸', guide: '/usa' },
+  { key: 'Australia', label: 'Australia', symbol: '🇦🇺', guide: '/australia' },
+  { key: 'Canada', label: 'Canada', symbol: '🇨🇦', guide: '/canada' },
+  { key: 'Pakistan', label: 'Pakistan', symbol: '🇵🇰', guide: '/pakistan' },
 ] as const;
 
 export default function PathwaysCompare() {
