@@ -135,6 +135,8 @@ test('Pakistan universities are under domestic Study, not the Study Abroad menu'
 
 test('selected overseas university and awarding body stay in UniPathway enquiry',async({page})=>{
   await page.goto('/university-progression');
+  const consent=page.getByRole('dialog',{name:'Cookie preferences'});
+  if(await consent.isVisible())await consent.getByRole('button',{name:'Reject all'}).click();
   await expect(page.getByRole('heading',{name:/Find universities that list OTHM or Qualifi/i})).toBeVisible();
   await expect(page.locator('main a[href^="http"]')).toHaveCount(0);
   await page.getByRole('button',{name:'USA',exact:true}).click();
@@ -149,6 +151,8 @@ test('selected overseas university and awarding body stay in UniPathway enquiry'
 
 test('Canada is not falsely advertised as an existing OTHM or Qualifi university agreement',async({page})=>{
  await page.goto('/university-progression');
+ const consent=page.getByRole('dialog',{name:'Cookie preferences'});
+ if(await consent.isVisible())await consent.getByRole('button',{name:'Reject all'}).click();
  await page.getByRole('button',{name:'Canada',exact:true}).click();
  await expect(page.getByRole('heading',{name:/Canada: qualification-specific review required/i})).toBeVisible();
  await expect(page.getByRole('status').filter({hasText:'0 named universities'})).toBeVisible();
@@ -156,6 +160,8 @@ test('Canada is not falsely advertised as an existing OTHM or Qualifi university
 
 test('study Explore options buttons navigate to working academy and qualification routes',async({page})=>{
  await page.goto('/study');
+ const consent=page.getByRole('dialog',{name:'Cookie preferences'});
+ if(await consent.isVisible())await consent.getByRole('button',{name:'Reject all'}).click();
  await page.locator('article').filter({has:page.getByRole('heading',{name:'Accounting and finance',exact:true})}).getByRole('link',{name:'Explore options'}).click();
  await expect(page).toHaveURL(/\/finance-academy/);
  await expect(page.locator('main h1').first()).toBeVisible();
