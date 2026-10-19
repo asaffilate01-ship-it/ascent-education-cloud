@@ -10,7 +10,9 @@ import mobileImage from '@/assets/promo-shot-mobile.jpg';
 
 const pathways = [
   { title: 'UK & international qualifications', caption: 'Online LMS plus two 14-day centre visits for eligible programmes', to: '/qualifications', icon: GraduationCap, number: '01' },
-  { title: 'AI, Tech & Accountancy', caption: 'Digital skills and IFA / ACCA exam preparation', to: '/study', icon: School, number: '02' },
+  { title: 'Technology Academy', caption: 'AI, coding, cybersecurity, cloud and DevOps', to: '/tech-academy', icon: School, number: '02' },
+  { title: 'Accounting & Finance Academy', caption: 'Bookkeeping, analysis and IFA / ACCA exam preparation', to: '/finance-academy', icon: GraduationCap, number: '09' },
+  { title: 'Women’s Beauty & Aesthetics', caption: 'CIBTAC centre approval plans and CPD short-course learning', to: '/beauty-aesthetics', icon: GraduationCap, number: '10' },
   { title: 'Years 8–12 Tuition', caption: 'Online and in-centre maths, English, biology, chemistry, physics and tech', to: '/tuition', icon: BriefcaseBusiness, number: '03' },
   { title: 'University & Career Guidance', caption: 'Pakistan, UK, USA, Germany, Canada and Australia', to: '/pathways', icon: Globe2, number: '04' },
   { title: 'IELTS Preparation', caption: 'Academic & General Training with guided practice', to: '/ielts-preparation', icon: BookOpen, number: '05' },
@@ -33,7 +35,7 @@ export default function PromoHome() {
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-5 pb-14 pt-8 sm:px-8 md:pt-12 lg:grid-cols-[1fr_1.05fr] lg:gap-16 lg:pb-24 lg:pt-16">
           <div className="animate-page-enter">
             <h1 className="mt-5 max-w-2xl text-[2.5rem] font-extrabold leading-[1.05] sm:text-6xl lg:text-7xl">Learn here.<br /><span className="text-success">Go further.</span></h1>
-            <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">Years 8–12 tuition, UK and international qualifications, AI, tech and accountancy, IELTS and German — plus university and career guidance for Pakistan and abroad.</p>
+            <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">Years 8–12 tuition, UK and international qualifications, AI, tech, finance and women’s beauty training, IELTS and German — plus university and career guidance in Pakistan and abroad.</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row"><Button size="lg" className="h-12 rounded-full px-7 shadow-surface-lg" asChild><Link to="/study">Explore learning <ArrowRight /></Link></Button><Button size="lg" variant="outline" className="h-12 rounded-full bg-card px-7" asChild><Link to="/contact">Talk to an adviser</Link></Button></div>
             <dl className="mt-10 grid max-w-lg grid-cols-3 divide-x divide-border rounded-2xl border border-border bg-card/80 py-4 shadow-surface-lg">{[['8+', 'Learning areas'], ['6', 'Destinations'], ['L3–7', 'Qualifications']].map(([v, l]) => <div key={l} className="px-4 text-center"><dt className="sr-only">{l}</dt><dd className="stat-value text-xl sm:text-2xl">{v}</dd><p className="mt-0.5 text-[11px] font-semibold text-muted-foreground sm:text-xs">{l}</p></div>)}</dl>
           </div>
