@@ -40,8 +40,7 @@ await as(DIRECTOR,TENANT,async()=>{
  await blocked(()=>db.query("INSERT INTO public.unipathway_foundation_scholarship_cases(tenant_id,programme_id,applicant_reference,academic_stage,age_category,applicant_requested_pkr) VALUES($1,$2,'APPL-MINOR-001','HSSC','minor',150)",[TENANT,fund]));
  const r=await db.query("INSERT INTO public.unipathway_foundation_scholarship_cases(tenant_id,programme_id,applicant_reference,academic_stage,age_category,guardian_consent_reference,applicant_consent_reference,academic_score,academic_evidence_reference,financial_need_band,financial_evidence_reference,applicant_requested_pkr,status) VALUES($1,$2,'APPL-MINOR-001','HSSC','minor','GUARDIAN-CONSENT','APPLICANT-CONSENT',87,'ACADEMIC-REF','high','FINANCIAL-PRIVATE',150,'draft') RETURNING id",[TENANT,fund]);
  candidate=r.rows[0].id;checks++;
- const deny=await db.query("UPDATE public.unipathway_foundation_scholarship_cases SET status='approved',awarded_pkr=50 WHERE id=$1 RETURNING id",[candidate]);
- assert.equal(deny.rows.length,0);checks++;
+ await blocked(()=>db.query("UPDATE public.unipathway_foundation_scholarship_cases SET status='approved',awarded_pkr=50 WHERE id=$1 RETURNING id",[candidate]));
  const staged=await db.query("UPDATE public.unipathway_foundation_scholarship_cases SET status='panel_review' WHERE id=$1 RETURNING id",[candidate]);
  assert.equal(staged.rows.length,1);checks++;
 });
