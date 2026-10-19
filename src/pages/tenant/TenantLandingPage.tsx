@@ -11,6 +11,7 @@ import SocialIcons from '@/components/SocialIcons';
 import unipathwayLogo from '@/assets/unipathway-logo.png';
 import { openCookiePreferences } from '@/components/CookieConsent';
 import Seo from '@/components/Seo';
+import PromoHome from '@/pages/promo/PromoHome';
 
 const DEFAULT_THEME: TenantTheme = {
   primaryColor: '#0B2D5B',
@@ -25,7 +26,16 @@ const DEFAULT_THEME: TenantTheme = {
   brandName: 'UniPathway',
 };
 
+/** The UniPathway tenant URL uses the same verified public homepage as "/".
+ * Preserve other tenants' legacy landing templates without exposing their claims
+ * on UniPathway's canonical tenant route.
+ */
 export default function TenantLandingPage() {
+  const { slug } = useParams<{ slug: string }>();
+  return slug === 'unipathway' ? <PromoHome /> : <LegacyTenantLandingPage />;
+}
+
+function LegacyTenantLandingPage() {
   const { slug } = useParams<{ slug: string }>();
   const [theme, setTheme] = useState<TenantTheme>(DEFAULT_THEME);
   const [loading, setLoading] = useState(true);
