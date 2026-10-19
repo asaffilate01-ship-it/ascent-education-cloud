@@ -4,28 +4,61 @@ on:
     branches: [main]
   push:
     branches: [main]
+permissions:
+  contents: read
 jobs:
-  web:
+  typecheck:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
+        with: {node-version: 24, cache: npm}
       - run: npm ci --ignore-scripts
       - run: npx tsc --noEmit -p tsconfig.app.json
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 24, cache: npm}
+      - run: npm ci --ignore-scripts
       - run: npm run lint
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 24, cache: npm}
+      - run: npm ci --ignore-scripts
+      - run: npm run test
+  database-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 24, cache: npm}
+      - run: npm ci --ignore-scripts
+      - run: npm run test:db
+  edge-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 24, cache: npm}
+      - run: npm ci --ignore-scripts
       - uses: denoland/setup-deno@v2
-        with:
-          deno-version: v2.9.6
+        with: {deno-version: v2.9.6}
       - run: npm run check:intelligence
       - run: npm run check:enquiry
       - run: npm run test:enquiry
-      - run: npm run test:db
-      - run: npm run test
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 24, cache: npm}
+      - run: npm ci --ignore-scripts
       - run: npm run build
-
   browser-acceptance:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -36,11 +69,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
+        with: {node-version: 24, cache: npm}
       - run: npm ci --ignore-scripts
       - run: npx playwright install --with-deps chromium
-      - name: Check public IELTS, external university intake and anonymous access in Chromium
+      - name: Chromium acceptance for public, progression and protected routes
         run: npx playwright test e2e/unipathway-ielts-admissions.spec.ts e2e/public-smoke.spec.ts
-
