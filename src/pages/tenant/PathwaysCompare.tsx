@@ -9,10 +9,10 @@ import { ArrowRight, BookOpenCheck, GraduationCap, MessageSquareText } from 'luc
 const DESTINATIONS = [
   { key: 'UK', label: 'United Kingdom', symbol: '🇬🇧', guide: '/uk' },
   { key: 'Germany', label: 'Germany', symbol: '🇩🇪', guide: '/germany' },
-  { key: 'USA', label: 'United States', symbol: '🇺🇸' },
-  { key: 'Australia', label: 'Australia', symbol: '🇦🇺' },
-  { key: 'Canada', label: 'Canada', symbol: '🇨🇦' },
-  { key: 'Pakistan', label: 'Pakistan', symbol: '🇵🇰' },
+  { key: 'USA', label: 'United States', symbol: '🇺🇸', guide: '/usa' },
+  { key: 'Australia', label: 'Australia', symbol: '🇦🇺', guide: '/australia' },
+  { key: 'Canada', label: 'Canada', symbol: '🇨🇦', guide: '/canada' },
+  { key: 'Pakistan', label: 'Pakistan', symbol: '🇵🇰', guide: '/pakistan' },
 ] as const;
 
 export default function PathwaysCompare() {
@@ -65,7 +65,7 @@ export default function PathwaysCompare() {
 
         <section aria-labelledby="enquiry-title" className="space-y-4">
           <div><span className="text-xs font-bold uppercase tracking-wider text-success">Step 3</span><h2 id="enquiry-title" className="mt-1 text-2xl font-bold">Ask us about your options</h2><p className="mt-2 text-muted-foreground">{destination ? `You've selected ${destination.label}. Mention this destination in your enquiry so our team can assist.` : 'Not sure where to study? Tell us your qualifications and goals.'}</p></div>
-          <InternationalEnquiryForm kind="university" />
+          <InternationalEnquiryForm kind="university" defaultDestination={destination?.key} />
         </section>
         <div className="border-t pt-6"><p className="mb-4 text-xs leading-relaxed text-muted-foreground">University admission, recognition of prior learning and financial support are assessed case by case. Training of our advisers is not university accreditation or approval by the British Council. We only claim recruitment-partner status after checking signed, current institutional agreements.</p><ComplianceDisclosure /></div>
       </main>
