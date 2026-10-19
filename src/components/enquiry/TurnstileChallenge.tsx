@@ -66,13 +66,11 @@ export default function TurnstileChallenge({onToken,resetSignal}:{onToken:(token
    }
   };
  },[siteKey,onToken,resetSignal]);
+ if(!siteKey)return null;
  return <div className="md:col-span-2 space-y-2" role="group" aria-label="Security verification">
-   <p className="text-sm font-semibold">Security verification *</p>
-   {siteKey&&<div ref={target} aria-label="Human verification challenge" className="min-h-16"/>}
+    <p className="text-sm font-semibold">Security verification *</p>
+   <div ref={target} aria-label="Human verification challenge" className="min-h-16"/>
    {status==='loading'&&<p role="status" className="text-xs text-muted-foreground">Preparing secure form verification…</p>}
-   {status==='unconfigured'&&<p role="alert" className="text-sm text-destructive">
-    Secure online submission is being prepared. You can still contact our admissions team through the contact page while verification is unavailable.
-   </p>}
    {status==='unavailable'&&<p role="alert" className="text-sm text-destructive">
     Verification could not be completed. Please reload this page or contact admissions.
    </p>}

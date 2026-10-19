@@ -1,5 +1,4 @@
 import TenantNav from '@/components/TenantNav';
-import ComplianceDisclosure from '@/components/tenant/ComplianceDisclosure';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Seo from '@/components/Seo';
@@ -88,7 +87,7 @@ export default function PathwaysCompare() {
           <div><span className="text-xs font-bold uppercase tracking-wider text-success">Step 3</span><h2 id="enquiry-title" className="mt-1 text-2xl font-bold">Ask us about your options</h2><p className="mt-2 text-muted-foreground">{destination ? `You've selected ${destination.label}. Mention this destination in your enquiry so our team can assist.` : 'Not sure where to study? Tell us your qualifications and goals.'}</p></div>
           <InternationalEnquiryForm kind="university" defaultDestination={destination?.key} defaultUniversity={chosenUniversity?.name} defaultQualification={chosenBody}/>
         </section>
-        <div className="border-t pt-6"><p className="mb-4 text-xs leading-relaxed text-muted-foreground">University admission, recognition of prior learning and financial support are assessed case by case. Training of our advisers is not university accreditation or approval by the British Council. We only claim recruitment-partner status after checking signed, current institutional agreements.</p><ComplianceDisclosure /></div>
+        <div className="border-t pt-6"><p className="text-xs leading-relaxed text-muted-foreground">University admission, recognition of prior learning and financial support are assessed case by case.</p></div>
       </main>
     </div>
   );
