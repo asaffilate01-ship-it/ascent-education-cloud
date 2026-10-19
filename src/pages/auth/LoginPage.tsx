@@ -81,14 +81,14 @@ export default function LoginPage() {
             Your Gateway to Global Qualifications
           </h1>
           <p className="text-primary-foreground/70 mt-4 text-lg max-w-md leading-relaxed">
-            Study OTHM, QUALIFI and IAB accredited diplomas online and progress to universities in the UK, Germany and beyond.
+            Study UK-regulated diplomas online and progress to universities in the UK, Germany and beyond.
           </p>
         </div>
         <div className="space-y-4">
           {[
             { stat: '13', label: 'Specialized Portals' },
             { stat: '20+', label: 'Platform Modules' },
-            { stat: 'OTHM · QUALIFI · IAB', label: 'Accreditation Support' },
+            { stat: 'UK diplomas', label: 'Accreditation Support' },
           ].map((s) => (
             <div key={s.label} className="flex items-center gap-3">
               <span className="text-2xl font-bold text-primary-foreground">{s.stat}</span>

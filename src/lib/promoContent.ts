@@ -97,7 +97,7 @@ export const COPY: Record<Locale, Copy> = {
     faqTitle: 'Frequently asked questions',
     faqs: [
       { q: 'Who is UniPathway for?', a: 'Colleges and training centres delivering accredited UK diplomas, and the students, lecturers, agents and partners around them.' },
-      { q: 'Which qualifications are supported?', a: 'OTHM, QUALIFI and IAB accredited Level 3 to Level 5 diplomas, with mapped progression to university top-up degrees.' },
+      { q: 'Which qualifications are supported?', a: 'UK-regulated Level 3 to Level 5 diplomas (see the Qualifications page for awarding bodies), with mapped progression to university top-up degrees.' },
       { q: 'Is the platform white-label?', a: 'Yes. Each centre gets its own branding, landing page, domain and isolated data.' },
       { q: 'How is delivery structured?', a: '80% online study with 20% in-person residential weeks, including scheduling and accommodation logistics.' },
       { q: 'Can we take payments?', a: 'Yes — card checkout, invoices, instalment plans and local payment methods with automated reconciliation.' },
@@ -160,7 +160,7 @@ export const COPY: Record<Locale, Copy> = {
     faqTitle: 'Häufige Fragen',
     faqs: [
       { q: 'Für wen ist UniPathway?', a: 'Für Colleges und Bildungszentren mit akkreditierten britischen Diplomen sowie deren Studierende, Dozenten, Agenturen und Partner.' },
-      { q: 'Welche Abschlüsse werden unterstützt?', a: 'Von OTHM, QUALIFI und IAB akkreditierte Diplome der Stufen 3 bis 5 mit klarem Übergang zu Top-up-Studiengängen.' },
+      { q: 'Welche Abschlüsse werden unterstützt?', a: 'Britisch regulierte Diplome der Stufen 3 bis 5 (Vergabestellen siehe Seite Qualifikationen) mit klarem Übergang zu Top-up-Studiengängen.' },
       { q: 'Ist die Plattform White-Label?', a: 'Ja. Jedes Zentrum erhält eigenes Branding, eine eigene Landingpage, Domain und getrennte Daten.' },
       { q: 'Wie läuft der Unterricht ab?', a: '80% Online-Studium und 20% Präsenzwochen, inklusive Terminplanung und Unterbringung.' },
       { q: 'Können Zahlungen abgewickelt werden?', a: 'Ja — Kartenzahlung, Rechnungen, Ratenpläne und lokale Zahlungsarten mit automatischem Abgleich.' },
