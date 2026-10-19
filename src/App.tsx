@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, Navigate, useParams } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate, useLocation, useParams } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -225,7 +225,8 @@ function LoadingFallback() {
 // UniPathway marketing lives at /tenant/unipathway; expose clean URLs that
 // redirect into the tenant tree so the marketing pages still see :slug.
 function RedirectToTenant({ suffix = "" }: { suffix?: string }) {
-  return <Navigate to={`/tenant/unipathway${suffix}`} replace />;
+  const { search, hash } = useLocation();
+  return <Navigate to={`/tenant/unipathway${suffix}${search}${hash}`} replace />;
 }
 function ApplyRedirect() {
   const { destination } = useParams();
