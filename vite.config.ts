@@ -29,7 +29,7 @@ export default defineConfig(({ mode }) => ({
         globPatterns: ["**/*.{js,css,ico,png,svg,woff2,jpg,webp}"],
         runtimeCaching: [
           {
-            urlPattern: ({ request, url }) => request.mode === 'navigate' && url.origin === self.location.origin && !url.pathname.startsWith('/~oauth'),
+            urlPattern: ({ request, url, sameOrigin }) => request.mode === 'navigate' && sameOrigin && !url.pathname.startsWith('/~oauth'),
             handler: "NetworkFirst",
             options: { cacheName: "app-navigations", networkTimeoutSeconds: 10, expiration: { maxEntries: 20 } },
           },
