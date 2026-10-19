@@ -30,12 +30,14 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
     { title: 'Platform', items: [
       { label: 'Overview', icon: LayoutDashboard, path: '/landlord' },
       { label: 'All Centres', icon: Building2, path: '/landlord/centres' },
+      { label: 'Employer Partnerships', icon: Briefcase, path: '/landlord/employers' },
       { label: 'Global Partners', icon: Globe, path: '/landlord/global-partners' },
       { label: 'Partnership Readiness', icon: GraduationCap, path: '/landlord/education-partnerships' },
       { label: 'Application Support', icon: ClipboardList, path: '/landlord/application-support' },
       { label: 'Education Intelligence', icon: BarChart3, path: '/landlord/education-intelligence' },
       { label: 'Knowledge Library', icon: BookOpen, path: '/landlord/knowledge' },
       { label: 'Launch Readiness', icon: BarChart3, path: '/landlord/readiness' },
+      { label: 'CIBTAC / CPD Accreditation', icon: Award, path: '/landlord/beauty-accreditation' },
       { label: 'Platform Users', icon: Users, path: '/landlord/users' },
     ]},
     { title: 'Revenue', items: [
@@ -56,9 +58,11 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Dashboard', icon: LayoutDashboard, path: '/director' },
       { label: 'Admissions', icon: UserPlus, path: '/director/admissions' },
       { label: 'Programmes', icon: BookOpen, path: '/director/programmes' },
+      { label: 'CIBTAC / CPD Accreditation', icon: Award, path: '/director/beauty-accreditation' },
       { label: 'IELTS Academy', icon: GraduationCap, path: '/director/ielts' },
       { label: 'Staff', icon: Users, path: '/director/staff' },
       { label: 'Students', icon: GraduationCap, path: '/director/students' },
+      { label: 'Employer Partnerships', icon: Briefcase, path: '/director/employers' },
     ]},
     { title: 'Operations', items: [
       { label: 'Quality', icon: FileCheck, path: '/director/quality' },
@@ -98,6 +102,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
     { items: [
       { label: 'Pipeline', icon: LayoutDashboard, path: '/admissions' },
       { label: 'Applications', icon: FolderOpen, path: '/admissions/applications' },
+      { label: 'Employer Partnerships', icon: Briefcase, path: '/admissions/employers' },
       { label: 'Documents', icon: FileText, path: '/admissions/documents' },
       { label: 'Eligibility', icon: UserCheck, path: '/admissions/eligibility' },
       { label: 'Global Partners', icon: Globe, path: '/admissions/global-partners' },
@@ -159,6 +164,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
     { items: [
       { label: 'Dashboard', icon: LayoutDashboard, path: '/programme' },
       { label: 'Modules', icon: BookOpen, path: '/programme/modules' },
+      { label: 'Curriculum & Accreditation', icon: Award, path: '/programme/beauty-accreditation' },
       { label: 'Knowledge Library', icon: BookOpen, path: '/programme/knowledge' },
       { label: 'Lecturers', icon: Users, path: '/programme/lecturers' },
       { label: 'Students', icon: GraduationCap, path: '/programme/students' },
@@ -262,6 +268,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Knowledge Library', icon: BookOpen, path: '/student/knowledge' },
       { label: 'University Applications', icon: Globe, path: '/student/international-applications' },
       { label: 'Careers & Internships', icon: Briefcase, path: '/student/career' },
+      { label: 'Verified Opportunities', icon: Briefcase, path: '/student/opportunities' },
       { label: 'Universities Abroad', icon: GraduationCap, path: '/student/global-progression' },
       { label: 'Health', icon: Heart, path: '/health' },
       { label: 'Transport', icon: Bus, path: '/transport' },
