@@ -34,7 +34,7 @@ describe('UniPathway Europe education-first public directory',()=>{
    expect(app).toContain('path="/europe"');
    expect(app).toContain('path="/europe/:slug"');
    const page=readFileSync('src/pages/promo/EuropeStudyDirectory.tsx','utf8');
-   expect(page).toContain("'/europe'");
+   expect(page).toContain('to="/europe"');
    expect(page).toContain('/europe/${x.slug}');
    expect(page).toContain('We teach');
    expect(isPublicMobilePath('/europe/italy')).toBe(true);
