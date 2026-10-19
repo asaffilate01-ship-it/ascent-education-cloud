@@ -19,19 +19,19 @@ export const studyLinks = [
   { label: 'Accounting & Finance Academy', detail: 'Bookkeeping, tax, finance, IFA and ACCA revision', to: '/finance-academy', icon: GraduationCap },
   { label: 'Employer learning', detail: 'Skills for teams and organisations', to: '/employer-learning', icon: BriefcaseBusiness },
   { label: 'Education consultancy', detail: 'Universities, admissions, counselling and career guidance', to: '/pathways', icon: Globe2 },
+  { label: 'Study in Pakistan', detail: 'HEC universities, local admissions and progression', to: '/pakistan', icon: School },
   { label: 'Pakistan funded skills', detail: 'PSDF, PITB e-Rozgaar, WDD SEHR and NAVTTC', to: '/funded-courses', icon: BriefcaseBusiness },
   { label: 'Pakistan careers & internships', detail: 'Planned employer partnerships and practical placements', to: '/careers', icon: BriefcaseBusiness },
   { label: 'Overseas student support', detail: 'Accommodation, banking, work and graduate guidance', to: '/student-support', icon: Globe2 },
 ];
 
 export const destinationLinks = [
-  { label: 'All destinations', detail: 'Compare admissions and progression across countries', to: '/pathways' },
+  { label: 'All overseas destinations', detail: 'Compare UK, USA, Canada, Australia and Germany', to: '/pathways' },
   { label: 'United Kingdom', detail: 'UK admissions and progression', to: '/uk' },
   { label: 'Germany', detail: 'German study options and pathways', to: '/germany' },
   { label: 'United States', detail: 'U.S. universities, English and career guidance', to: '/usa' },
   { label: 'Australia', detail: 'Universities, VET, CRICOS and English requirements', to: '/australia' },
   { label: 'Canada', detail: 'English/French study routes and university options', to: '/canada' },
-  { label: 'Pakistan', detail: 'HEC universities, vocational study and careers', to: '/pakistan' },
 ];
 
 const linkCls = (active: boolean) => cn('relative rounded-full px-4 py-2 text-sm font-semibold transition-colors', active ? 'bg-primary/5 text-primary' : 'text-foreground/80 hover:bg-accent hover:text-foreground');
