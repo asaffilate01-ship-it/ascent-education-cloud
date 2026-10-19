@@ -61,3 +61,49 @@ test('new public service and awarding body routes render at the beginning', asyn
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(10);
   }
 });
+
+test('ladies Beauty Academy discloses pending centre and CPD accreditation',async({page})=>{
+  await page.goto('/beauty-aesthetics');
+  await expect(page.getByRole('heading',{name:/Professional beauty skills/i})).toBeVisible();
+  await expect(page.getByText(/Application preparation — approval pending/i).first()).toBeVisible();
+  await expect(page.getByRole('heading',{name:/Planned certificates, awards and diplomas/i})).toBeVisible();
+  const count=page.getByRole('status').filter({hasText:'proposed qualification options'}).first();
+  await expect(count).toBeVisible();
+  await page.getByRole('button',{name:'Nails',exact:true}).click();
+  await expect(count).toContainText('2 proposed qualification options');
+  await page.getByLabel('Level').selectOption('3');
+  await expect(count).toContainText('1 proposed qualification options');
+});
+test('unverified centre users cannot open staff Beauty Accreditation dashboard anonymously',async({page})=>{
+  await page.goto('/director/beauty-accreditation');
+  await expect(page).toHaveURL(/\/login(?:[/?#]|$)/);
+});
+
+test('Tech and Finance academies contain actual modules and exam-preparation boundaries',async({page})=>{
+  await page.goto('/tech-academy');
+  await expect(page.getByRole('heading',{name:/Build the skills to create/i})).toBeVisible();
+  await expect(page.getByRole('heading',{name:/Python Programming/i})).toBeVisible();
+  await expect(page.getByRole('heading',{name:/Cyber Security & Cyber Essentials Awareness/i})).toBeVisible();
+  await page.goto('/finance-academy');
+  await expect(page.getByRole('heading',{name:/Understand the numbers/i})).toBeVisible();
+  await expect(page.getByRole('heading',{name:/IFA Professional Exam Preparation/i})).toBeVisible();
+  await expect(page.getByRole('heading',{name:/ACCA Foundation and Qualification Exam Preparation/i})).toBeVisible();
+});
+test('six study destinations, Pakistan vocational and About pages render trustworthy routes',async({page})=>{
+  for(const route of ['/usa','/canada','/australia','/pakistan','/uk','/germany']){
+    await page.goto(route);
+    await expect(page.locator('main h1').first()).toBeVisible();
+    await expect(page.getByRole('heading',{name:/Language requirements and preparation/i}).first()).toBeVisible();
+  }
+  await page.goto('/funded-courses');
+  await expect(page.getByRole('heading',{name:/Explore vocational and employability subjects/i})).toBeVisible();
+  await page.goto('/about');
+  await expect(page.getByRole('heading',{name:/Learn here.*Go further/i})).toBeVisible();
+  await expect(page.getByText('342+', {exact:true})).toHaveCount(0);
+});
+test('employer partnership management and student vacancies remain private when unauthenticated',async({page})=>{
+  for(const route of ['/director/employers','/admissions/employers','/landlord/employers','/student/opportunities']){
+    await page.goto(route);
+    await expect(page).toHaveURL(/\/login(?:[/?#]|$)/);
+  }
+});
