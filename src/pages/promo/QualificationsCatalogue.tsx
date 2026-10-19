@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ArrowUpRight, BookOpenCheck, GraduationCap, Search } from 'lucide-react';
+import { BookOpenCheck, GraduationCap, Search } from 'lucide-react';
 import PublicNav from '@/components/PublicNav';
 import PublicFooter from '@/components/PublicFooter';
 import Seo from '@/components/Seo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { officialAwardingBodies, qualificationSelection, type AwardingBody } from '@/lib/qualificationSelection';
+import { qualificationSelection } from '@/lib/qualificationSelection';
+
 
 const bodies = ['All', 'OTHM', 'Qualifi'] as const;
 export default function QualificationsCatalogue() {
@@ -22,7 +23,7 @@ export default function QualificationsCatalogue() {
     `${q.name} ${q.body} ${q.category}`.toLowerCase().includes(query.trim().toLowerCase())
   );
   return <div className="public-site min-h-dvh bg-background">
-    <Seo canonical="/qualifications" title="OTHM and Qualifi Qualification Options | UniPathway" description="Review planned OTHM and Qualifi qualifications in business, IT, AI, accounting, law, hospitality and more, with official qualification directory links."/>
+    <Seo canonical="/qualifications" title="OTHM and Qualifi Qualification Options | UniPathway" description="Review planned OTHM and Qualifi qualifications in business, IT, AI, accounting, law, hospitality and more."/>
     <PublicNav/>
     <main className="mx-auto max-w-7xl space-y-8 px-5 py-12 sm:px-8">
       <header className="max-w-4xl">
