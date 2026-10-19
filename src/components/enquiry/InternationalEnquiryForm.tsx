@@ -20,9 +20,16 @@ const initial:Form={
  test_type:'unsure',prior_qualification:'Unsure',message:'',consent:false,
 };
 
-export default function InternationalEnquiryForm({kind,defaultDestination}:{kind:Kind;defaultDestination?:string}){
+export default function InternationalEnquiryForm({kind,defaultDestination,defaultUniversity}:{kind:Kind;defaultDestination?:string;defaultUniversity?:string}){
  const [form,setForm]=useState<Form>(initial);
  useEffect(()=>{if(defaultDestination && destinations.includes(defaultDestination))setForm(prev=>({...prev,destination:defaultDestination}));},[defaultDestination]);
+ useEffect(()=>{
+  if(kind!=='university'||!defaultUniversity)return;
+  const university=defaultUniversity.trim().replace(/[<>]/g,'').slice(0,140);
+  if(!university)return;
+  setForm(prev=>({...prev,message:prev.message.trim()?prev.message:
+    `I would like guidance on university progression to ${university}. Please advise which OTHM or Qualifi qualification, credits and entry conditions would apply.`}));
+ },[kind,defaultUniversity]);
  const [busy,setBusy]=useState(false);
  const [sent,setSent]=useState(false);
  const [error,setError]=useState('');
