@@ -185,3 +185,30 @@ test('UniPathway scholarship decisions are never public dashboard pages', async 
     await expect(page).toHaveURL(/\/login(?:[/?#]|$)/);
   }
 });
+
+test('European explorer filters all EU and wider European countries and stays on-site', async ({ page }) => {
+  await page.goto('/europe');
+  await expect(page.getByRole('heading',{name:/Learn in Pakistan.*Explore your future in Europe/i})).toBeVisible();
+  const status=page.getByRole('status').filter({hasText:'destinations match your selection'}).first();
+  await expect(status).toContainText('34 destinations');
+  await page.getByLabel('Country grouping').selectOption('European Union');
+  await expect(status).toContainText('27 destinations');
+  await page.getByLabel('Country grouping').selectOption('Other Europe');
+  await expect(status).toContainText('7 destinations');
+  await page.getByLabel('Country grouping').selectOption('All Europe');
+  await page.getByLabel('Find country, field or university').fill('Belgium');
+  await expect(status).toContainText('1 destinations');
+  await page.getByRole('link',{name:/Explore Belgium/i}).click();
+  await expect(page).toHaveURL(/\/europe\/belgium(?:\/?$|\?)/);
+  await expect(page.getByRole('heading',{name:/Prepare for university study in Belgium/i})).toBeVisible();
+  await expect(page.getByRole('heading',{name:/Language requirements/i})).toBeVisible();
+});
+
+test('education-first homepage leads to learning and European explorer rather than only visa sales', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByRole('heading',{name:/Education comes first. International opportunity follows./i})).toBeVisible();
+  const action=page.getByRole('link',{name:/Explore all 27 EU countries/i});
+  await expect(action).toBeVisible();
+  await action.click();
+  await expect(page).toHaveURL(/\/europe(?:\/?$|\?)/);
+});
