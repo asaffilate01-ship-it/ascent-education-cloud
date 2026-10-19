@@ -170,3 +170,18 @@ test('study Explore options buttons navigate to working academy and qualificatio
  await expect(page).toHaveURL(/\/qualifications\?body=OTHM/);
  await expect(page.getByRole('button',{name:'OTHM',exact:true})).toHaveAttribute('aria-pressed','true');
 });
+
+test('The scholarships and free Ilmvero partnership pages render and keep visitors on UniPathway', async ({ page }) => {
+  await page.goto('/school-partners');
+  await expect(page.getByRole('heading', { name: /Better school tools, more tuition opportunities/i })).toBeVisible();
+  await expect(page.getByText(/first 12 months/i).first()).toBeVisible();
+  await page.getByRole('link', { name: /Explore scholarships/i }).click();
+  await expect(page).toHaveURL(/\/scholarships(?:[/?#]|$)/);
+  await expect(page.getByRole('heading', { name: /Talent deserves opportunity/i })).toBeVisible();
+});
+test('UniPathway scholarship decisions are never public dashboard pages', async ({ page }) => {
+  for (const route of ['/director/opportunity-fund','/landlord/opportunity-fund','/finance/scholarships']) {
+    await page.goto(route);
+    await expect(page).toHaveURL(/\/login(?:[/?#]|$)/);
+  }
+});
