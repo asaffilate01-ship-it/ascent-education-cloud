@@ -8,8 +8,10 @@ import { cn } from '@/lib/utils';
 
 export const studyLinks = [
   { label: 'All study options', detail: 'Qualifications, accountancy, IT and more', to: '/study', icon: BookOpen },
+  { label: 'Study in Pakistan', detail: 'HEC universities, local degree progression and study guidance', to: '/pakistan', icon: School },
   { label: 'Women’s Beauty & Aesthetics', detail: 'CIBTAC centre approval pathway, salon skills and CPD training', to: '/beauty-aesthetics', icon: GraduationCap },
   { label: 'UK & international qualifications', detail: 'Browse planned diplomas and awarding-body details', to: '/qualifications', icon: GraduationCap },
+  { label: 'University progression directory', detail: 'OTHM and Qualifi named university routes with in-site guidance', to: '/university-progression', icon: GraduationCap },
   { label: 'Years 8–12 tuition & STEMCoach', detail: 'Matric, Intermediate/FSc, Cambridge; online and in-centre', to: '/tuition', icon: School },
   { label: 'IELTS preparation', detail: 'Academic and General Training practice', to: '/ielts-preparation', icon: BookOpen },
   { label: 'German language courses', detail: 'A1–C1, Goethe, TestDaF, telc and DSH preparation', to: '/german-preparation', icon: BookOpen },
@@ -23,13 +25,13 @@ export const studyLinks = [
 ];
 
 export const destinationLinks = [
-  { label: 'All destinations', detail: 'Compare admissions and progression across countries', to: '/pathways' },
+  { label: 'All overseas destinations', detail: 'Compare UK, USA, Canada, Australia and Germany', to: '/pathways' },
+  { label: 'University progression directory', detail: 'Named OTHM and Qualifi university routes', to: '/university-progression' },
   { label: 'United Kingdom', detail: 'UK admissions and progression', to: '/uk' },
   { label: 'Germany', detail: 'German study options and pathways', to: '/germany' },
   { label: 'United States', detail: 'U.S. universities, English and career guidance', to: '/usa' },
   { label: 'Australia', detail: 'Universities, VET, CRICOS and English requirements', to: '/australia' },
   { label: 'Canada', detail: 'English/French study routes and university options', to: '/canada' },
-  { label: 'Pakistan', detail: 'HEC universities, vocational study and careers', to: '/pakistan' },
 ];
 
 const linkCls = (active: boolean) => cn('relative rounded-full px-4 py-2 text-sm font-semibold transition-colors', active ? 'bg-primary/5 text-primary' : 'text-foreground/80 hover:bg-accent hover:text-foreground');

@@ -53,7 +53,7 @@ export default function QualificationsCatalogue() {
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Approved awarding-body unit specifications and assessment rules will determine the final modules, credits, assignment briefs and delivery method. Our planned model includes online study and two 14-day centre-based academic visits where permitted. A Level 4 or 5 diploma is not itself a UK university degree and admission or advanced standing is subject to the receiving university.</p>
         <div className="mt-4 flex flex-wrap gap-4 text-sm">
           {(Object.entries(officialAwardingBodies) as [AwardingBody,{url:string;label:string}][]).map(([body,info])=><a key={body} href={info.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">{info.label} ↗</a>)}
-        </div><Button asChild className="mt-5"><Link to="/pathways">Explore university progression <GraduationCap className="ml-2 size-4"/></Link></Button>
+        </div><Button asChild className="mt-5"><Link to="/university-progression">Explore university progression <GraduationCap className="ml-2 size-4"/></Link></Button>
       </section>
     </main><PublicFooter/>
   </div>;

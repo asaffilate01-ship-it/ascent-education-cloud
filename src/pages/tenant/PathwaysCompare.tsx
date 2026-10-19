@@ -1,39 +1,52 @@
 import TenantNav from '@/components/TenantNav';
 import ComplianceDisclosure from '@/components/tenant/ComplianceDisclosure';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Seo from '@/components/Seo';
 import InternationalEnquiryForm from '@/components/enquiry/InternationalEnquiryForm';
+import { getProgressionInstitutions } from '@/lib/universityProgressionDirectory';
 import { ArrowRight, BookOpenCheck, GraduationCap, MessageSquareText } from 'lucide-react';
 
+const publishedInstitutions = getProgressionInstitutions();
 const DESTINATIONS = [
   { key: 'UK', label: 'United Kingdom', symbol: '🇬🇧', guide: '/uk' },
   { key: 'Germany', label: 'Germany', symbol: '🇩🇪', guide: '/germany' },
   { key: 'USA', label: 'United States', symbol: '🇺🇸', guide: '/usa' },
   { key: 'Australia', label: 'Australia', symbol: '🇦🇺', guide: '/australia' },
   { key: 'Canada', label: 'Canada', symbol: '🇨🇦', guide: '/canada' },
-  { key: 'Pakistan', label: 'Pakistan', symbol: '🇵🇰', guide: '/pakistan' },
 ] as const;
 
 export default function PathwaysCompare() {
   const [params, setParams] = useSearchParams();
   const requested = params.get('destination');
   const destination = DESTINATIONS.find(item => item.key === requested);
+  const chosenUniversity = publishedInstitutions.find(
+    entry => entry.name === params.get('university') && entry.country === requested
+  );
+  const requestedBody = params.get('body');
+  const chosenBody = chosenUniversity?.records.some(r=>r.body===requestedBody) &&
+    (requestedBody==='OTHM'||requestedBody==='Qualifi') ? requestedBody : undefined;
+  if (requested === 'Pakistan') return <Navigate to="/pakistan" replace />;
   return (
     <div className="min-h-dvh bg-background text-foreground">
-      <Seo title="Study Abroad & University Admissions | UniPathway" description="Explore university admissions and qualification progression for the UK, Germany, USA, Australia, Canada and Pakistan. Request personalised guidance." canonical="/pathways" />
+      <Seo title="Study Abroad & University Admissions | UniPathway" description="Explore university admissions outside Pakistan, including the UK, Germany, USA, Australia and Canada. Request personalised guidance." canonical="/pathways" />
       <TenantNav brandName="UniPathway" />
       <main className="mx-auto max-w-6xl space-y-10 px-4 py-10 sm:px-6 lg:px-8 lg:py-16">
         <header className="max-w-3xl">
           <p className="text-sm font-bold uppercase tracking-wide text-success">Study abroad & university admissions</p>
           <h1 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-5xl">Find your next university pathway</h1>
           <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-            Studying in Pakistan or considering a university overseas? Choose a destination and tell us about your qualifications. We can help you explore entry requirements, diploma progression where applicable, and your application options.
+            Considering university studies overseas from Pakistan? Choose an international destination and tell us about your qualifications. We can help you explore entry requirements, diploma progression where applicable, and your application options.
           </p>
         </header>
 
+        <div className="rounded-xl border bg-secondary/40 p-5">
+          <p className="font-semibold">Looking for university study within Pakistan instead?</p>
+          <p className="mt-2 text-sm text-muted-foreground">Explore Pakistani universities, HEC-recognised campuses, local degree progression, scholarships, vocational training and career opportunities separately from international study.</p>
+          <Button asChild variant="outline" className="mt-3"><Link to="/pakistan">Study in Pakistan <ArrowRight className="ml-2 size-4"/></Link></Button>
+        </div>
         <section aria-labelledby="destinations-title" className="space-y-4">
-          <div><span className="text-xs font-bold uppercase tracking-wider text-success">Step 1</span><h2 id="destinations-title" className="mt-1 text-2xl font-bold">Where would you like to study?</h2></div>
+          <div><span className="text-xs font-bold uppercase tracking-wider text-success">Step 1</span><h2 id="destinations-title" className="mt-1 text-2xl font-bold">Where would you like to study abroad?</h2></div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {DESTINATIONS.map(item => <button key={item.key} type="button" aria-pressed={destination?.key === item.key} onClick={() => setParams({ destination: item.key })} className={`flex min-h-24 items-center gap-3 rounded-xl border p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${destination?.key === item.key ? 'border-primary bg-primary/10 ring-1 ring-primary' : 'border-border bg-card hover:border-primary/60 hover:bg-secondary/60'}`}>
               <span className="text-2xl" aria-hidden="true">{item.symbol}</span><span className="font-semibold">{item.label}</span>
@@ -64,8 +77,12 @@ export default function PathwaysCompare() {
         </section>
 
         <section aria-labelledby="enquiry-title" className="space-y-4">
+          {chosenUniversity && <div className="rounded-xl border bg-card p-4 text-sm" role="status">
+            <p className="font-bold">Selected university: {chosenUniversity.name}</p>
+            <p className="mt-1 text-muted-foreground">The chosen institution is on an awarding-body progression list for particular qualifications; UniPathway will verify your own course, grades and admission options.</p>
+          </div>}
           <div><span className="text-xs font-bold uppercase tracking-wider text-success">Step 3</span><h2 id="enquiry-title" className="mt-1 text-2xl font-bold">Ask us about your options</h2><p className="mt-2 text-muted-foreground">{destination ? `You've selected ${destination.label}. Mention this destination in your enquiry so our team can assist.` : 'Not sure where to study? Tell us your qualifications and goals.'}</p></div>
-          <InternationalEnquiryForm kind="university" defaultDestination={destination?.key} />
+          <InternationalEnquiryForm kind="university" defaultDestination={destination?.key} defaultUniversity={chosenUniversity?.name} defaultQualification={chosenBody}/>
         </section>
         <div className="border-t pt-6"><p className="mb-4 text-xs leading-relaxed text-muted-foreground">University admission, recognition of prior learning and financial support are assessed case by case. Training of our advisers is not university accreditation or approval by the British Council. We only claim recruitment-partner status after checking signed, current institutional agreements.</p><ComplianceDisclosure /></div>
       </main>

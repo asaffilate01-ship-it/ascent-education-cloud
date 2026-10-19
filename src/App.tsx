@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, Navigate, useParams } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate, useLocation, useParams } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -114,6 +114,7 @@ const BlogPostPage = lazy(() => import("./pages/blog/BlogPostPage"));
 const StudentOnboarding = lazy(() => import("./pages/onboarding/StudentOnboarding"));
 const LecturerOnboarding = lazy(() => import("./pages/onboarding/LecturerOnboarding"));
 const StudyPriorities = lazy(() => import("./pages/promo/StudyPriorities"));
+const UniversityProgressionDirectory = lazy(() => import("./pages/promo/UniversityProgressionDirectory"));
 const AcademyPage = lazy(() => import("./pages/promo/AcademyPage"));
 const StudyDestinationPage = lazy(() => import("./pages/promo/StudyDestinationPage"));
 const BeautyAcademy = lazy(() => import("./pages/promo/BeautyAcademy"));
@@ -225,7 +226,8 @@ function LoadingFallback() {
 // UniPathway marketing lives at /tenant/unipathway; expose clean URLs that
 // redirect into the tenant tree so the marketing pages still see :slug.
 function RedirectToTenant({ suffix = "" }: { suffix?: string }) {
-  return <Navigate to={`/tenant/unipathway${suffix}`} replace />;
+  const { search, hash } = useLocation();
+  return <Navigate to={`/tenant/unipathway${suffix}${search}${hash}`} replace />;
 }
 function ApplyRedirect() {
   const { destination } = useParams();
@@ -243,6 +245,7 @@ function AppRoutes() {
         <Route path="/index" element={<Navigate to="/" replace />} />
         <Route path="/about" element={<RedirectToTenant suffix="/about" />} />
         <Route path="/study" element={<StudyPriorities />} />
+        <Route path="/university-progression" element={<UniversityProgressionDirectory />} />
         <Route path="/tech-academy" element={<AcademyPage kind="tech" />} />
         <Route path="/finance-academy" element={<AcademyPage kind="finance" />} />
         <Route path="/pakistan" element={<StudyDestinationPage destination={studyDestinations.pakistan} />} />
