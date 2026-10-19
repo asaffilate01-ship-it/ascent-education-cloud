@@ -56,7 +56,7 @@ export default function PrivacyPolicyPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-foreground">5. Data Retention</h2>
-            <p>We retain your data for as long as your account is active. Education records may be retained for up to 6 years after course completion to meet accreditation body requirements (OTHM, QUALIFI, IAB). You may request early deletion subject to regulatory obligations.</p>
+            <p>We retain your data for as long as your account is active. Education records may be retained for up to 6 years after course completion to meet awarding body requirements. You may request early deletion subject to regulatory obligations.</p>
           </section>
 
           <section>
@@ -68,7 +68,7 @@ export default function PrivacyPolicyPage() {
             <h2 className="text-lg font-semibold text-foreground">7. Third-Party Sharing</h2>
             <p>We do not sell your data. We may share data with:</p>
             <ul className="list-disc pl-5 space-y-1">
-              <li>Accreditation bodies (OTHM, QUALIFI, IAB) as required for programme validation</li>
+              <li>Awarding bodies as required for programme validation</li>
               <li>University partners for progression applications (with your consent)</li>
               <li>Payment processors for financial transactions</li>
             </ul>

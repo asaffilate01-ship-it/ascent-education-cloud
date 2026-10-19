@@ -19,7 +19,7 @@ export default function IELTSPreparationPage() {
             <h1 className="text-4xl md:text-6xl font-extrabold leading-tight tracking-tight mt-4">IELTS preparation, built around your goals.</h1>
             <p className="text-lg text-muted-foreground mt-5 max-w-2xl">Academic and General Training pathways with guided study, practice assignments, tutor feedback and exam techniques. A flexible part of UniPathway’s learning platform in Pakistan and online.</p>
             <div className="flex flex-wrap gap-3 mt-8"><Button size="lg" asChild><Link to="/register">Explore enrolment <ArrowRight className="ml-2 w-4 h-4"/></Link></Button><Button size="lg" variant="outline" asChild><a href="#ielts-enquiry">Ask about IELTS classes</a></Button></div>
-            <p className="text-xs text-muted-foreground mt-5">Students studying OTHM or Qualifi programmes and external students can use the same UniPathway IELTS academy. Course access and any fees are confirmed at enrolment.</p>
+            <p className="text-xs text-muted-foreground mt-5">Students studying UniPathway qualification programmes and external students can use the same UniPathway IELTS academy. Course access and any fees are confirmed at enrolment.</p>
           </div>
           <div className="surface-card p-7 rounded-2xl space-y-4">
             <div className="flex items-center gap-3"><GraduationCap className="text-primary w-8 h-8"/><h2 className="text-xl font-bold">Your independent preparation journey</h2></div>

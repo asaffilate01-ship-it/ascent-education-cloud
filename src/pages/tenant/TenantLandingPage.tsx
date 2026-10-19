@@ -19,7 +19,7 @@ const DEFAULT_THEME: TenantTheme = {
   faviconUrl: '',
   fontFamily: 'Inter',
   heroTitle: 'Your Gateway to Global Qualifications',
-  heroSubtitle: 'Study OTHM, QUALIFI & IAB accredited Level 3–5 diplomas primarily online. Progress to universities in the UK, USA, Australia, Canada, Germany & beyond.',
+  heroSubtitle: 'Study UK-regulated Level 3–5 diplomas primarily online. Progress to universities in the UK, USA, Australia, Canada, Germany & beyond.',
   heroImageUrl: '',
   customDomain: '',
   brandName: 'UniPathway',
@@ -47,7 +47,7 @@ export default function TenantLandingPage() {
           faviconUrl: '',
           fontFamily: 'Inter',
           heroTitle: `Your Gateway to Global Qualifications`,
-          heroSubtitle: 'Study internationally recognised diplomas from Pakistan. Online learning with two 14-day centre visits annually for OTHM / Qualifi. Progress to UK, USA, Australia, Canada & Germany. Save 50–70% vs studying abroad.',
+          heroSubtitle: 'Study internationally recognised diplomas from Pakistan. Online learning with two 14-day centre visits annually for applicable diplomas. Progress to UK, USA, Australia, Canada & Germany. Save 50–70% vs studying abroad.',
           heroImageUrl: '',
           customDomain: t.custom_domain || '',
           brandName: t.brand_name || t.name,
@@ -61,7 +61,7 @@ export default function TenantLandingPage() {
   if (loading) {
     return (
       <div className="min-h-dvh flex items-center justify-center bg-background">
-        <Seo title="UniPathway — UK & Germany Study Pathways from Pakistan" description="OTHM, QUALIFI and IAB accredited Level 3–5 diplomas studied primarily online, with progression to universities in the UK, Germany, USA, Australia and Canada." canonical="/" />
+        <Seo title="UniPathway — UK & Germany Study Pathways from Pakistan" description="UK-regulated Level 3–5 diplomas studied primarily online, with progression to universities in the UK, Germany, USA, Australia and Canada." canonical="/" />
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
@@ -110,7 +110,7 @@ export default function TenantLandingPage() {
               {/* Badge */}
               <div className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full mb-8 border" style={{ backgroundColor: `${pc}08`, color: pc, borderColor: `${pc}15` }}>
                 <Award className="w-3.5 h-3.5" />
-                <span>OTHM · QUALIFI · IAB Accredited Centre</span>
+                <span>UK Qualifications Centre</span>
               </div>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight leading-[1.08]">
@@ -194,7 +194,7 @@ export default function TenantLandingPage() {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { icon: GraduationCap, title: 'Globally Recognised Qualifications', desc: 'Study OTHM, QUALIFI, and IAB accredited courses — recognised by universities across the UK, USA, Canada, Australia, and beyond.' },
+              { icon: GraduationCap, title: 'Globally Recognised Qualifications', desc: 'Study UK-regulated courses — recognised by universities across the UK, USA, Canada, Australia, and beyond.' },
               { icon: Video, title: 'Online Learning Between Visits', desc: 'Join HD live lectures from home. Interactive whiteboard, breakout rooms, and all sessions recorded for 24/7 playback.' },
               { icon: MapPin, title: 'Two 14-Day Visits Annually', desc: 'Attend two 14-day residential visits per year for workshops, presentations, tutor meetings, and formal examinations.' },
               { icon: Target, title: 'Global University Progression', desc: 'Clear academic pathways to top-up your diploma to a full bachelor\'s degree at partner universities in UK, USA, Australia, Canada & Germany.' },
@@ -523,7 +523,7 @@ export default function TenantLandingPage() {
                 {[
                   'Laptop or desktop computer (min 8 GB RAM recommended)',
                   'Reliable internet connection (min 10 Mbps)',
-                  '2 × 14-day centre visits per academic year for OTHM / Qualifi, with separate accommodation',
+                  '2 × 14-day centre visits per academic year for applicable diplomas, with separate accommodation',
                   'Passport / CNIC copy and academic transcripts (verified during enrolment)',
                   'All qualifications and ID documents will be verified before admission',
                 ].map((req) => (
@@ -738,7 +738,7 @@ export default function TenantLandingPage() {
           <div className="max-w-3xl mx-auto">
             {[
               { step: '1', title: 'Enrol in Pakistan', desc: 'Apply online, get accepted within 48 hours, and begin your studies.' },
-              { step: '2', title: 'Study Level 3 → Level 4 → Level 5', desc: 'Online learning plus two 14-day centre visits annually for OTHM / Qualifi; assessment follows programme requirements.' },
+              { step: '2', title: 'Study Level 3 → Level 4 → Level 5', desc: 'Online learning plus two 14-day centre visits annually for applicable diplomas; assessment follows programme requirements.' },
               { step: '3', title: 'Gain Internship Experience', desc: 'Access corporate internships across Pakistan in your chosen field.' },
               { step: '4', title: 'Transfer to International University', desc: 'Progress to partner universities in UK, Canada, Australia, or UAE.' },
               { step: '5', title: 'Graduate Abroad', desc: 'Complete your final year on campus and receive the same degree as full-time students.' },
@@ -844,7 +844,7 @@ export default function TenantLandingPage() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               { icon: Heart, title: 'Your Child Stays Home', desc: 'No need to send your child abroad at 16–18. They study from the safety of your home for 2 years, with the same quality as UK universities.' },
-              { icon: Shield, title: 'UK-Regulated & Accredited', desc: 'Planned OTHM and Qualifi qualifications are regulated diploma pathways, not university degrees. Recognition, progression and credit transfer are assessed by receiving institutions.' },
+              { icon: Shield, title: 'UK-Regulated & Accredited', desc: 'Planned UK qualifications are regulated diploma pathways, not university degrees. Recognition, progression and credit transfer are assessed by receiving institutions.' },
               { icon: Banknote, title: 'Save Rs. 2.5+ Crore', desc: 'Instead of spending Rs. 3–4 Crore on a full 3-year degree abroad, save 50–70% by studying the first 2 years at home.' },
               { icon: Briefcase, title: 'Real Internships & Jobs', desc: 'We provide internship placements across Pakistan — in corporate offices, IT firms, accounting practices, and healthcare organisations.' },
               { icon: Globe, title: 'Global Degree, Global Career', desc: 'After the final year abroad, your child has a UK/Australian/Canadian degree with access to post-study work visas (UK Graduate Route currently 2 years, reducing to 18 months from 2027).' },
@@ -994,7 +994,7 @@ export default function TenantLandingPage() {
               <div className="mb-4">
                 <img src={unipathwayLogo} alt="UniPathway" className="h-16 w-auto bg-white/95 rounded-lg p-2" />
               </div>
-              <p className="text-sm leading-relaxed max-w-sm">UK-accredited education centre in Pakistan. OTHM, QUALIFI & IAB approved — with UK & Germany progression pathways.</p>
+              <p className="text-sm leading-relaxed max-w-sm">UK-accredited education centre in Pakistan. UK qualifications with UK & Germany progression pathways.</p>
               <div className="flex gap-2 mt-4">
                 {['OTHM', 'QUALIFI', 'IAB'].map(b => (
                   <span key={b} className="text-[9px] font-bold uppercase tracking-wider bg-background/5 px-2 py-1 rounded">{b}</span>
