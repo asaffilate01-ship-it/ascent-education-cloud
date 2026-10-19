@@ -121,7 +121,7 @@ const UniversityProgressionDirectory = lazy(() => import("./pages/promo/Universi
 const AcademyPage = lazy(() => import("./pages/promo/AcademyPage"));
 const StudyDestinationPage = lazy(() => import("./pages/promo/StudyDestinationPage"));
 const EuropeStudyDirectory = lazy(() => import("./pages/promo/EuropeStudyDirectory"));
-const EuropeanCountryPage = lazy(() => import("./pages/promo/EuropeanCountryPage"));
+const EuropeanCountryPage = lazy(() => import("./pages/promo/EuropeStudyDirectory").then(m => ({ default: m.EuropeanCountryPage })));
 const BeautyAcademy = lazy(() => import("./pages/promo/BeautyAcademy"));
 const BeautyAccreditationDashboard = lazy(() => import("./pages/director/BeautyAccreditationDashboard"));
 const QualificationsCatalogue = lazy(() => import("./pages/promo/QualificationsCatalogue"));
