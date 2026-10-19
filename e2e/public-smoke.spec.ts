@@ -122,7 +122,7 @@ test('Study Abroad excludes Pakistan and offers the local Pakistan guide separat
   await page.goto('/pathways');
   await expect(page.getByRole('heading', { name: 'Find your next university pathway' })).toBeVisible();
   await expect(page.getByRole('button', { name: /Pakistan/ })).toHaveCount(0);
-  await expect(page.getByRole('link', { name: /Study in Pakistan/ }).first()).toBeVisible();
+  await expect(page.locator('main').getByRole('link', { name: /Study in Pakistan/ })).toBeVisible();
   await page.getByRole('button', { name: /United States/ }).click();
   await expect(page).toHaveURL(/destination=USA/);
   await expect(page.getByRole('heading', { name: 'Explore United States' })).toBeVisible();
