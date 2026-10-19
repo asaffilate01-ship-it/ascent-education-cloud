@@ -8,6 +8,8 @@ import { cn } from '@/lib/utils';
 
 export const studyLinks = [
   { label: 'All study options', detail: 'Qualifications, accountancy, IT and more', to: '/study', icon: BookOpen },
+  { label: 'UniPathway scholarships', detail: 'Foundation Opportunity Fund: merit, financial need and sponsoring employers', to: '/scholarships', icon: GraduationCap },
+  { label: 'Partner schools — Ilmvero', detail: 'Complimentary first year, tuition referrals and free renewals', to: '/school-partners', icon: School },
   { label: 'Women’s Beauty & Aesthetics', detail: 'CIBTAC centre approval pathway, salon skills and CPD training', to: '/beauty-aesthetics', icon: GraduationCap },
   { label: 'UK & international qualifications', detail: 'Browse planned diplomas and awarding-body details', to: '/qualifications', icon: GraduationCap },
   { label: 'Years 8–12 tuition & STEMCoach', detail: 'Matric, Intermediate/FSc, Cambridge; online and in-centre', to: '/tuition', icon: School },
