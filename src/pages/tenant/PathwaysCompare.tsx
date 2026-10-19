@@ -28,7 +28,7 @@ export default function PathwaysCompare() {
           <p className="text-sm font-bold uppercase tracking-wide text-success">Study abroad & university admissions</p>
           <h1 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-5xl">Find your next university pathway</h1>
           <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-            Studying in Pakistan or considering a university overseas? Choose a destination and tell us about your qualifications. We can help you explore entry requirements, OTHM or Qualifi progression where applicable, and your application options.
+            Studying in Pakistan or considering a university overseas? Choose a destination and tell us about your qualifications. We can help you explore entry requirements, diploma progression where applicable, and your application options.
           </p>
         </header>
 
@@ -46,7 +46,7 @@ export default function PathwaysCompare() {
           <span className="text-xs font-bold uppercase tracking-wider text-success">Step 2</span>
           <h2 className="mt-1 text-xl font-bold">Explore {destination.label}</h2>
           <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-            University admissions depend on your exact qualification, grades, language requirements, the course and the institution. OTHM and Qualifi qualifications do not guarantee admission or credit transfer. We'll verify your intended route before describing it as confirmed.
+            University admissions depend on your exact qualification, grades, language requirements, the course and the institution. UK diplomas do not guarantee admission or credit transfer. We'll verify your intended route before describing it as confirmed.
           </p>
           {('guide' in destination) && <Button asChild variant="outline" className="mt-4"><Link to={destination.guide}>Read {destination.label} study guide <ArrowRight className="ml-2 size-4" /></Link></Button>}
           {!('guide' in destination) && <p className="mt-3 text-sm font-medium">We can review your individual options for this destination using the enquiry form below.</p>}

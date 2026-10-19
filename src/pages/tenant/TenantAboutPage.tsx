@@ -67,7 +67,7 @@ export default function TenantAboutPage() {
           </div>
           <div className="grid sm:grid-cols-2 gap-5">
             {[
-              { icon: GraduationCap, title: 'UK Level 3–5 Diplomas', body: 'OTHM, QUALIFI and IAB regulated qualifications delivered 80% online with 2 residential weeks per year at our Pakistan centre. Progress to a full UK/USA/Australia/Canada degree with a final top-up year abroad.' },
+              { icon: GraduationCap, title: 'UK Level 3–5 Diplomas', body: 'UK-regulated qualifications delivered 80% online with 2 residential weeks per year at our Pakistan centre. Progress to a full UK/USA/Australia/Canada degree with a final top-up year abroad.' },
               { icon: Building2, title: 'Germany Pathway', body: 'End-to-end support for Studienkolleg, bachelor and master applications through uni-assist / direct entry, plus guidance on the Sperrkonto, health insurance and the 18-month post-study job-seeker visa.' },
               { icon: BookOpen, title: 'Language Academy', body: 'Live-taught German A1–B2 and Academic English, plus dedicated preparation courses for TestDaF, telc, Goethe-Zertifikat, IELTS, PTE and TOEFL.' },
               { icon: Users, title: 'Applicant Advisory', body: 'Qualification equivalency checks (HEC ↔ Anabin/uni-assist ↔ UK ENIC), document checklists, deposit and financial planning, and application tracking through our student portal.' },
