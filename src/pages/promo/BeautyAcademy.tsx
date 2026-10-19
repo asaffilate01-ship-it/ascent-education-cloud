@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ArrowUpRight, BookOpenCheck, HeartHandshake, ShieldCheck, Sparkles, GraduationCap, ClipboardCheck, Search, Users } from 'lucide-react';
+import { ArrowRight, BookOpenCheck, HeartHandshake, ShieldCheck, Sparkles, GraduationCap, ClipboardCheck, Search, Users } from 'lucide-react';
 import PublicNav from '@/components/PublicNav';
 import PublicFooter from '@/components/PublicFooter';
 import Seo from '@/components/Seo';
@@ -37,7 +37,7 @@ export default function BeautyAcademy() {
 
       <section className="space-y-4" aria-labelledby="academy-approval-heading">
         <div><p className="text-label text-success">International awarding bodies</p><h2 id="academy-approval-heading" className="mt-2 text-2xl font-bold">Our centre-accreditation plans</h2><p className="mt-2 max-w-3xl text-sm text-muted-foreground">UniPathway is pursuing these independent approval routes. Centre status, CPD provider membership and individual course certification are not currently presented as awarded.</p></div>
-        <div className="grid gap-4 md:grid-cols-2">{academyAccreditationSchemes.slice(0,2).map(s=><article key={s.id} className="rounded-xl border bg-card p-6"><ShieldCheck className="size-6 text-success"/><h3 className="mt-3 text-xl font-bold">{s.name}</h3><p className="mt-2 text-sm text-muted-foreground">{s.description}</p><p className="mt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Application preparation — approval pending</p><a href={s.url} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline">Read official requirements <ArrowUpRight className="size-4"/></a></article>)}</div>
+        <div className="grid gap-4 md:grid-cols-2">{academyAccreditationSchemes.slice(0,2).map(s=><article key={s.id} className="rounded-xl border bg-card p-6"><ShieldCheck className="size-6 text-success"/><h3 className="mt-3 text-xl font-bold">{s.name}</h3><p className="mt-2 text-sm text-muted-foreground">{s.description}</p><p className="mt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Application preparation — approval pending</p></article>)}</div>
       </section>
 
       <section id="qualifications" className="scroll-mt-28 space-y-5" aria-labelledby="beauty-qualifications-heading">
@@ -51,7 +51,7 @@ export default function BeautyAcademy() {
           <p className="mt-3 text-sm text-muted-foreground" role="status">{visible.length} proposed qualification options.</p>
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" aria-label="Beauty qualification options">
-          {visible.map(q=><article key={q.code} className="flex flex-col rounded-xl border bg-card p-5"><div className="flex flex-wrap items-center justify-between gap-2"><span className="text-xs font-bold text-success">CIBTAC · Level {q.level}</span><span className="text-xs text-muted-foreground">{q.code}</span></div><h3 className="mt-3 text-lg font-bold">{q.name}</h3><p className="mt-2 text-sm text-muted-foreground">{q.area} · QAN {q.qan}</p><div className="mt-auto flex flex-wrap gap-3 pt-5 text-sm"><a className="inline-flex items-center gap-1 font-semibold text-primary hover:underline" href={q.source} target="_blank" rel="noopener noreferrer">Official CIBTAC listing <ArrowUpRight className="size-4"/></a><Link className="font-semibold text-success hover:underline" to="/contact">Enquire</Link></div></article>)}
+          {visible.map(q=><article key={q.code} className="flex flex-col rounded-xl border bg-card p-5"><div className="flex flex-wrap items-center justify-between gap-2"><span className="text-xs font-bold text-success">CIBTAC · Level {q.level}</span><span className="text-xs text-muted-foreground">{q.code}</span></div><h3 className="mt-3 text-lg font-bold">{q.name}</h3><p className="mt-2 text-sm text-muted-foreground">{q.area} · QAN {q.qan}</p><div className="mt-auto flex flex-wrap gap-3 pt-5 text-sm"><Link className="font-semibold text-success hover:underline" to="/contact">Enquire</Link></div></article>)}
           {!visible.length&&<p className="text-muted-foreground">No qualifications match. Adjust the subject or level.</p>}
         </div>
       </section>
