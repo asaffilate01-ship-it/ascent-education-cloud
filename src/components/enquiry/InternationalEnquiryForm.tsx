@@ -20,9 +20,10 @@ const initial:Form={
  test_type:'unsure',prior_qualification:'Unsure',message:'',consent:false,
 };
 
-export default function InternationalEnquiryForm({kind,defaultDestination}:{kind:Kind;defaultDestination?:string}){
+export default function InternationalEnquiryForm({kind,defaultDestination,defaultUniversity,defaultQualification}:{kind:Kind;defaultDestination?:string;defaultUniversity?:string;defaultQualification?:'OTHM'|'Qualifi'}){
  const [form,setForm]=useState<Form>(initial);
  useEffect(()=>{if(defaultDestination && destinations.includes(defaultDestination))setForm(prev=>({...prev,destination:defaultDestination}));},[defaultDestination]);
+ useEffect(()=>{if(defaultQualification)setForm(prev=>({...prev,prior_qualification:defaultQualification}));},[defaultQualification]);
  const [busy,setBusy]=useState(false);
  const [sent,setSent]=useState(false);
  const [error,setError]=useState('');
@@ -44,7 +45,7 @@ export default function InternationalEnquiryForm({kind,defaultDestination}:{kind
         kind,tenant_slug:'unipathway',name:form.name.trim(),email:form.email.trim(),
         phone:form.phone.trim(),student_origin:form.student_origin,
         destination:form.destination,test_type:form.test_type,
-        prior_qualification:form.prior_qualification,message:form.message.trim(),consent:form.consent,
+        prior_qualification:form.prior_qualification,message:(defaultUniversity ? `University of interest: ${defaultUniversity}.\n` : '')+form.message.trim(),consent:form.consent,
         captcha_token:captchaToken,
       }
     });
@@ -65,6 +66,7 @@ export default function InternationalEnquiryForm({kind,defaultDestination}:{kind
       <p className="text-xs uppercase font-bold tracking-widest text-primary">Speak to our admissions team</p>
       <h3 className="text-2xl font-semibold mt-2">{university?'Explore university progression':'Enquire about IELTS preparation'}</h3>
       <p className="text-sm text-muted-foreground mt-1">Available to current UniPathway learners and applicants from outside the college in Pakistan. Sending an enquiry does not commit you to a course or paid service.</p>
+      {university && defaultUniversity && <p className="mt-2 text-sm font-semibold text-success">Requesting a progression review for {defaultUniversity}.</p>}
     </div>
     <form onSubmit={e=>void submit(e)} className="grid md:grid-cols-2 gap-4">
       <label className="text-sm font-semibold">Full name *
