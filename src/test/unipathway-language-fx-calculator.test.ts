@@ -16,7 +16,7 @@ describe('UniPathway language discovery and international calculator wiring',()=
   expect(calculator).toContain("years*(num(c.tuition)+num(c.living)+num(c.extras))+num(c.travel)");
   expect(calculator).toContain("mode==='pakistan-first'?");
   expect(calculator).toContain('Math.max(0,years-pakistanYears)');
-  expect(calculator).toContain('result.theirs-result.ours').toBe(false);
+  expect(calculator).not.toContain('difference:ours-theirs');
   expect(calculator).toContain('difference:theirs-ours');
  });
  it('fetches dated exchange rates, checks freshness and converts amounts safely',()=>{
