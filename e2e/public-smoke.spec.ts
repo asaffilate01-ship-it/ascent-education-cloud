@@ -107,3 +107,11 @@ test('employer partnership management and student vacancies remain private when 
     await expect(page).toHaveURL(/\/login(?:[/?#]|$)/);
   }
 });
+
+test('UniPathway tenant homepage uses approved brand instead of legacy unverified claims', async ({ page }) => {
+  await page.goto('/tenant/unipathway');
+  await expect(page.locator('main h1').first()).toContainText('Learn here.');
+  await expect(page.getByText('342+', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('95% Pass Rate', { exact: false })).toHaveCount(0);
+  await expect(page.getByText('50–70%', { exact: false })).toHaveCount(0);
+});
