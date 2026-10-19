@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import ProgressionPathway from '@/components/career/ProgressionPathway';
+import PartnerCareerLinks from '@/components/career/PartnerCareerLinks';
 import EntryRequirements from '@/components/career/EntryRequirements';
 import AccreditationPartners from '@/components/career/AccreditationPartners';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -66,6 +67,7 @@ export default function StudentCareer() {
 
   return (
     <DashboardLayout title="Career & Progression" subtitle="Qualification pathways, university progression, CV builder, and job opportunities">
+      <div className="mb-6"><PartnerCareerLinks compact /></div>
       {/* Career Tools */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Dialog open={cvOpen} onOpenChange={setCvOpen}>

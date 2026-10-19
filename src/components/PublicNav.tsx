@@ -8,6 +8,8 @@ import { cn } from '@/lib/utils';
 
 export const studyLinks = [
   { label: 'All study options', detail: 'Qualifications, accountancy, IT and more', to: '/study', icon: BookOpen },
+  { label: 'UniPathway scholarships', detail: 'Foundation opportunity fund for merit and financial need', to: '/scholarships', icon: GraduationCap },
+  { label: 'Partner schools — Ilmvero', detail: 'A complimentary year and renewal through verified referrals', to: '/school-partners', icon: School },
   { label: 'Study in Pakistan', detail: 'HEC universities, local degree progression and study guidance', to: '/pakistan', icon: School },
   { label: 'Women’s Beauty & Aesthetics', detail: 'CIBTAC centre approval pathway, salon skills and CPD training', to: '/beauty-aesthetics', icon: GraduationCap },
   { label: 'UK & international qualifications', detail: 'Browse planned diplomas and awarding-body details', to: '/qualifications', icon: GraduationCap },

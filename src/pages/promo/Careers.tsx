@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import PublicNav from '@/components/PublicNav';
 import PublicFooter from '@/components/PublicFooter';
 import Seo from '@/components/Seo';
+import PartnerCareerLinks from '@/components/career/PartnerCareerLinks';
 
 const sectors=[
  {name:'Banking & Finance',description:'Retail banking, treasury support, branch operations and compliance administration.',roles:['Customer service trainee','Banking operations intern','Credit/finance administrator']},
@@ -48,6 +49,7 @@ export default function Careers(){
    ].map(x=><div key={x.n} className="rounded-lg border bg-card p-4"><p className="font-bold text-success">{x.n}</p><h3 className="mt-2 font-semibold">{x.title}</h3><p className="mt-2 text-sm text-muted-foreground">{x.text}</p></div>)}</div></section>
    <section className="grid gap-5 lg:grid-cols-2"><article className="rounded-xl border p-6"><Users className="size-7 text-success"/><h2 className="mt-3 text-xl font-bold">Students and graduates</h2><p className="mt-2 text-sm text-muted-foreground">Work on a CV, career interests, an application portfolio and interview skills through the learner dashboard. Approved placements will be available there only after employer checks and database activation have been completed.</p><div className="mt-5 flex gap-3"><Button asChild variant="outline"><Link to="/student/career">My career workspace</Link></Button><Button asChild variant="outline"><Link to="/funded-courses">Vocational skills</Link></Button></div></article>
    <article className="rounded-xl border p-6"><HeartHandshake className="size-7 text-success"/><h2 className="mt-3 text-xl font-bold">For employer partners</h2><p className="mt-2 text-sm text-muted-foreground">Employers can discuss training plans, supervised placements and prospective recruitment. Access to applicant data requires a verified organisational agreement and role-based permissions; it is never granted to general enquiries.</p><Button asChild variant="outline" className="mt-5"><Link to="/contact">Discuss an employer partnership</Link></Button></article></section>
+  <PartnerCareerLinks />
   </main><PublicFooter/>
  </div>;
 }
