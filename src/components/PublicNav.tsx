@@ -7,7 +7,8 @@ import PublicBottomNav from '@/components/PublicBottomNav';
 import { cn } from '@/lib/utils';
 
 export const studyLinks = [
-  { label: 'All study options', detail: 'Qualifications, accountancy, IT and more', to: '/study', icon: BookOpen },
+  { label: 'All study options', detail: 'Live online / in-centre tuition, qualifications, digital skills, finance and more', to: '/study', icon: BookOpen },
+  { label: 'European country explorer', detail: 'All EU university destinations with language and study preparation', to: '/europe', icon: Globe2 },
   { label: 'UniPathway scholarships', detail: 'Foundation opportunity fund for merit and financial need', to: '/scholarships', icon: GraduationCap },
   { label: 'Partner schools — Ilmvero', detail: 'A complimentary year and renewal through verified referrals', to: '/school-partners', icon: School },
   { label: 'Study in Pakistan', detail: 'HEC universities, local degree progression and study guidance', to: '/pakistan', icon: School },
@@ -27,7 +28,8 @@ export const studyLinks = [
 ];
 
 export const destinationLinks = [
-  { label: 'All overseas destinations', detail: 'Compare UK, USA, Canada, Australia and Germany', to: '/pathways' },
+  { label: 'All overseas destinations', detail: 'Explore university progression beyond Pakistan', to: '/pathways' },
+  { label: 'Europe — all EU countries', detail: 'EU study destinations, universities, languages and training', to: '/europe' },
   { label: 'University progression directory', detail: 'Named OTHM and Qualifi university routes', to: '/university-progression' },
   { label: 'United Kingdom', detail: 'UK admissions and progression', to: '/uk' },
   { label: 'Germany', detail: 'German study options and pathways', to: '/germany' },
