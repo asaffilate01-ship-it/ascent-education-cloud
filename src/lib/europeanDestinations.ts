@@ -1,5 +1,5 @@
 /** European higher education discovery, based on European Commission Study in Europe
- * country profiles (accessed 2026-10-19). Internal research references are kept
+ * country profiles (accessed 2026-10-19), plus Switzerland, a non-EU option. Internal research references are kept
  * for admission advisers; public cards keep visitors inside UniPathway.
  *
  * Institutions are EXAMPLES TO RESEARCH, not UniPathway partners and not
@@ -49,13 +49,17 @@ const seeds:readonly ProfileSeed[]=[
  ['sweden','Sweden','🇸🇪','EU','Swedish','Technology|Design|Life sciences','Lund University|KTH Royal Institute of Technology','Many international master’s programmes are English-taught; Swedish bachelor’s courses may require recognised Swedish evidence.'],
  ['iceland','Iceland','🇮🇸','EEA (non-EU)','Icelandic','Environmental science|Technology|Humanities','University of Iceland|Reykjavík University','English-language options and Icelandic-medium programmes must be checked individually.'],
  ['norway','Norway','🇳🇴','EEA (non-EU)','Norwegian','Engineering|Marine science|Technology','University of Oslo|Norwegian University of Science and Technology','English-taught programmes vary by level; Norwegian-taught programmes need institution-recognised Norwegian proficiency.'],
+ ['liechtenstein','Liechtenstein','🇱🇮','EEA (non-EU)','German','Business|Finance|Architecture','University of Liechtenstein|Private University in the Principality of Liechtenstein','German and English requirements differ by institution and exact degree.'],
+ ['north-macedonia','North Macedonia','🇲🇰','European non-EU','Macedonian|Albanian','Business|Technology|Medicine','Ss. Cyril and Methodius University in Skopje|South East European University','Check the degree language, admission requirements, academic equivalence and any visa or residence requirements.'],
+ ['serbia','Serbia','🇷🇸','European non-EU','Serbian','Engineering|Medicine|Business','University of Belgrade|University of Novi Sad','Serbian programmes and English-taught courses set distinct university language and examination requirements.'],
+ ['turkiye','Türkiye','🇹🇷','European non-EU','Turkish','Engineering|Medicine|Business','Middle East Technical University|Boğaziçi University','Confirm Turkish or English instruction, recognised academic transcripts and specific international entrance criteria.'],
  ['switzerland','Switzerland','🇨🇭','European non-EU','German|French|Italian','Engineering|Finance|Hospitality','ETH Zurich|University of Geneva','Programme language depends on canton and institution; English-taught graduate routes vary and admissions are highly specific.'],
 ] as const;
 export const europeanDestinations:EuropeanProfile[]=seeds.map(([slug,country,flag,membership,languages,fields,universities,languageNote])=>({
  slug,country,flag,membership,
  localLanguages:languages.split('|'),fields:fields.split('|'),universityExamples:universities.split('|'),
  languageNote,admissionsNote:defaultAdmission,
- commissionReference:'https://education.ec.europa.eu/study-in-europe/country-profiles',
+ commissionReference:'https://education.ec.europa.eu/de/study-in-europe/country-profiles',
  priority:prioritySlugs.has(slug),
 }));
 export const euMemberCountries=europeanDestinations.filter(x=>x.membership==='EU');
