@@ -122,6 +122,7 @@ const StudyDestinationPage = lazy(() => import("./pages/promo/StudyDestinationPa
 const BeautyAcademy = lazy(() => import("./pages/promo/BeautyAcademy"));
 const BeautyAccreditationDashboard = lazy(() => import("./pages/director/BeautyAccreditationDashboard"));
 const QualificationsCatalogue = lazy(() => import("./pages/promo/QualificationsCatalogue"));
+const UniversityProgressionDirectory = lazy(() => import("./pages/promo/UniversityProgressionDirectory"));
 const GermanPreparation = lazy(() => import("./pages/promo/GermanPreparation"));
 const FundedCourses = lazy(() => import("./pages/promo/FundedCourses"));
 const Careers = lazy(() => import("./pages/promo/Careers"));
@@ -256,6 +257,7 @@ function AppRoutes() {
         <Route path="/australia" element={<StudyDestinationPage destination={studyDestinations.australia} />} />
         <Route path="/beauty-aesthetics" element={<BeautyAcademy />} />
         <Route path="/qualifications" element={<QualificationsCatalogue />} />
+        <Route path="/university-progression" element={<UniversityProgressionDirectory />} />
         <Route path="/german-preparation" element={<GermanPreparation />} />
         <Route path="/funded-courses" element={<FundedCourses />} />
         <Route path="/careers" element={<Careers />} />
