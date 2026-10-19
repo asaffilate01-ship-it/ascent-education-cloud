@@ -8,11 +8,13 @@ import { cn } from '@/lib/utils';
 
 export const studyLinks = [
   { label: 'All study options', detail: 'Qualifications, accountancy, IT and more', to: '/study', icon: BookOpen },
+  { label: 'Women’s Beauty & Aesthetics', detail: 'CIBTAC centre approval pathway, salon skills and CPD training', to: '/beauty-aesthetics', icon: GraduationCap },
   { label: 'UK & international qualifications', detail: 'Browse planned diplomas and awarding-body details', to: '/qualifications', icon: GraduationCap },
   { label: 'Years 8–12 tuition & STEMCoach', detail: 'Matric, Intermediate/FSc, Cambridge; online and in-centre', to: '/tuition', icon: School },
   { label: 'IELTS preparation', detail: 'Academic and General Training practice', to: '/ielts-preparation', icon: BookOpen },
   { label: 'German language courses', detail: 'A1–C1, Goethe, TestDaF, telc and DSH preparation', to: '/german-preparation', icon: BookOpen },
-  { label: 'AI, tech & accounting', detail: 'Coding, cyber security, cloud, finance and IFA/ACCA prep', to: '/study#technology-training', icon: BookOpen },
+  { label: 'Technology Academy', detail: 'AI, Python, coding, cyber defence, cloud and DevOps', to: '/tech-academy', icon: BookOpen },
+  { label: 'Accounting & Finance Academy', detail: 'Bookkeeping, tax, finance, IFA and ACCA revision', to: '/finance-academy', icon: GraduationCap },
   { label: 'Employer learning', detail: 'Skills for teams and organisations', to: '/employer-learning', icon: BriefcaseBusiness },
   { label: 'Education consultancy', detail: 'Universities, admissions, counselling and career guidance', to: '/pathways', icon: Globe2 },
   { label: 'Pakistan funded skills', detail: 'PSDF, PITB e-Rozgaar, WDD SEHR and NAVTTC', to: '/funded-courses', icon: BriefcaseBusiness },
@@ -24,10 +26,10 @@ export const destinationLinks = [
   { label: 'All destinations', detail: 'Compare admissions and progression across countries', to: '/pathways' },
   { label: 'United Kingdom', detail: 'UK admissions and progression', to: '/uk' },
   { label: 'Germany', detail: 'German study options and pathways', to: '/germany' },
-  { label: 'United States', detail: 'USA university admissions enquiries', to: '/pathways?destination=USA' },
-  { label: 'Australia', detail: 'Australian university admissions enquiries', to: '/pathways?destination=Australia' },
-  { label: 'Canada', detail: 'Canadian university admissions enquiries', to: '/pathways?destination=Canada' },
-  { label: 'Pakistan', detail: 'Local university and qualification options', to: '/pathways?destination=Pakistan' },
+  { label: 'United States', detail: 'U.S. universities, English and career guidance', to: '/usa' },
+  { label: 'Australia', detail: 'Universities, VET, CRICOS and English requirements', to: '/australia' },
+  { label: 'Canada', detail: 'English/French study routes and university options', to: '/canada' },
+  { label: 'Pakistan', detail: 'HEC universities, vocational study and careers', to: '/pakistan' },
 ];
 
 const linkCls = (active: boolean) => cn('relative rounded-full px-4 py-2 text-sm font-semibold transition-colors', active ? 'bg-primary/5 text-primary' : 'text-foreground/80 hover:bg-accent hover:text-foreground');

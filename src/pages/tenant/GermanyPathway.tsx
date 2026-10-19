@@ -4,20 +4,22 @@ import LanguageAcademy from '@/components/tenant/LanguageAcademy';
 import DestinationHero from '@/components/tenant/DestinationHero';
 import { GraduationCap, Wallet, ShieldCheck, FileCheck2, Briefcase, Building2 } from 'lucide-react';
 import Seo from '@/components/Seo';
+import { StudyDestinationSections } from '@/pages/promo/StudyDestinationPage';
+import { studyDestinations } from '@/lib/studyDestinations';
 
 export default function GermanyPathway() {
   return (
     <div className="min-h-dvh bg-background text-foreground">
-      <Seo title="Study in Germany from Pakistan — Pathways & Costs | UniPathway" description="Low-tuition public universities, English-taught master’s, Studienkolleg routes and German A1–B2 language preparation for Pakistani students." canonical="/germany" />
+      <Seo title="Study in Germany from Pakistan — Pathways & Costs | UniPathway" description="Low-tuition public universities, English-taught master’s, Studienkolleg routes and German A1–C1 language preparation for Pakistani students." canonical="/germany" />
       <TenantNav brandName="UniPathway" activePage="home" />
 
       <DestinationHero
         flag="🇩🇪"
         eyebrow="Study in Germany"
         title="Bachelor’s, master’s and language pathways to Germany"
-        subtitle="Low-tuition public universities, English-taught master’s, and a clear route from Pakistani HSSC or A-Levels through Studienkolleg or direct entry — supported by German A1–B2 teaching in Karachi and online."
+        subtitle="Low-tuition public universities, English-taught master’s, and a clear route from Pakistani HSSC or A-Levels through Studienkolleg or direct entry — supported by German A1–C1 learning online and in participating Pakistan centres."
         bullets={[
-          'Most public universities charge only a semester fee (approx. €150–€350)',
+          'Public-university tuition and semester contributions vary; state and programme exceptions apply',
           'English-taught master’s programmes available across engineering, IT, business and life sciences',
           '18-month job-seeker residence permit after graduation to find qualified employment',
           'Applications processed via uni-assist or Hochschulstart where the institution requires it',
@@ -27,6 +29,7 @@ export default function GermanyPathway() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-14">
         <ComplianceDisclosure destination="germany" />
+        <StudyDestinationSections destination={studyDestinations.germany} compact />
 
         {/* Study levels */}
         <section>

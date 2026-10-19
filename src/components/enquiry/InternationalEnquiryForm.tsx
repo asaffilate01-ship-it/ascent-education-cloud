@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle2, Loader2, Send } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,8 +20,9 @@ const initial:Form={
  test_type:'unsure',prior_qualification:'Unsure',message:'',consent:false,
 };
 
-export default function InternationalEnquiryForm({kind}:{kind:Kind}){
+export default function InternationalEnquiryForm({kind,defaultDestination}:{kind:Kind;defaultDestination?:string}){
  const [form,setForm]=useState<Form>(initial);
+ useEffect(()=>{if(defaultDestination && destinations.includes(defaultDestination))setForm(prev=>({...prev,destination:defaultDestination}));},[defaultDestination]);
  const [busy,setBusy]=useState(false);
  const [sent,setSent]=useState(false);
  const [error,setError]=useState('');
