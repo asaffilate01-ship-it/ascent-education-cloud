@@ -115,3 +115,52 @@ test('UniPathway tenant homepage uses approved brand instead of legacy unverifie
   await expect(page.getByText('95% Pass Rate', { exact: false })).toHaveCount(0);
   await expect(page.getByText('50–70%', { exact: false })).toHaveCount(0);
 });
+
+test('Pakistan universities are under domestic Study, not the Study Abroad menu',async({page})=>{
+  await page.setViewportSize({width:1366,height:900});
+  await page.goto('/');
+  const consent=page.getByRole('dialog',{name:'Cookie preferences'});
+  if(await consent.isVisible())await consent.getByRole('button',{name:'Reject all'}).click();
+  const nav=page.getByRole('navigation',{name:'Main navigation'});
+  await nav.getByRole('button',{name:'Study Abroad'}).click();
+  await expect(nav.getByRole('link',{name:'Pakistan',exact:true})).toHaveCount(0);
+  await expect(nav.getByRole('link',{name:/All overseas destinations/})).toBeVisible();
+  await page.goto('/pathways');
+  await expect(page.getByRole('heading',{name:/Where would you like to study abroad/i})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Pakistan',exact:true})).toHaveCount(0);
+  await expect(page.getByRole('link',{name:/Study in Pakistan/i}).first()).toBeVisible();
+  await page.goto('/pathways?destination=Pakistan');
+  await expect(page).toHaveURL(/\/pakistan(?:[/?#]|$)/);
+});
+
+test('selected overseas university and awarding body stay in UniPathway enquiry',async({page})=>{
+  await page.goto('/university-progression');
+  await expect(page.getByRole('heading',{name:/Find universities that list OTHM or Qualifi/i})).toBeVisible();
+  await expect(page.locator('main a[href^="http"]')).toHaveCount(0);
+  await page.getByRole('button',{name:'USA',exact:true}).click();
+  const card=page.locator('article').filter({has:page.getByRole('heading',{name:'Thomas Edison State University'})});
+  await expect(card).toBeVisible();
+  await card.getByRole('link',{name:/Check my eligibility/i}).click();
+  await expect(page).toHaveURL(/\/tenant\/unipathway\/pathways\?destination=USA/);
+  await expect(page.getByText('Selected university: Thomas Edison State University')).toBeVisible();
+  await expect(page.getByLabel('Destination country')).toHaveValue('USA');
+  await expect(page.getByLabel('Current or intended qualification')).toHaveValue('Qualifi');
+});
+
+test('Canada is not falsely advertised as an existing OTHM or Qualifi university agreement',async({page})=>{
+ await page.goto('/university-progression');
+ await page.getByRole('button',{name:'Canada',exact:true}).click();
+ await expect(page.getByRole('heading',{name:/Canada: qualification-specific review required/i})).toBeVisible();
+ await expect(page.getByRole('status').filter({hasText:'0 named universities'})).toBeVisible();
+});
+
+test('study Explore options buttons navigate to working academy and qualification routes',async({page})=>{
+ await page.goto('/study');
+ await page.locator('article').filter({has:page.getByRole('heading',{name:'Accounting and finance',exact:true})}).getByRole('link',{name:'Explore options'}).click();
+ await expect(page).toHaveURL(/\/finance-academy/);
+ await expect(page.locator('main h1').first()).toBeVisible();
+ await page.goto('/study');
+ await page.locator('article').filter({has:page.getByRole('heading',{name:'UK business and professional diplomas'})}).getByRole('link',{name:'Explore options'}).click();
+ await expect(page).toHaveURL(/\/qualifications\?body=OTHM/);
+ await expect(page.getByRole('button',{name:'OTHM',exact:true})).toHaveAttribute('aria-pressed','true');
+});
