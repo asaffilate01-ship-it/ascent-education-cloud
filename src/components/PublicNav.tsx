@@ -11,6 +11,7 @@ export const studyLinks = [
   { label: 'UniPathway scholarships', detail: 'Foundation Opportunity Fund: merit, financial need and sponsoring employers', to: '/scholarships', icon: GraduationCap },
   { label: 'Partner schools — Ilmvero', detail: 'Complimentary first year, tuition referrals and free renewals', to: '/school-partners', icon: School },
   { label: 'Women’s Beauty & Aesthetics', detail: 'CIBTAC centre approval pathway, salon skills and CPD training', to: '/beauty-aesthetics', icon: GraduationCap },
+  { label: 'University progression directory', detail: 'Named OTHM and Qualifi university routes in the UK, USA and Australia', to: '/university-progression', icon: GraduationCap },
   { label: 'UK & international qualifications', detail: 'Browse planned diplomas and awarding-body details', to: '/qualifications', icon: GraduationCap },
   { label: 'Years 8–12 tuition & STEMCoach', detail: 'Matric, Intermediate/FSc, Cambridge; online and in-centre', to: '/tuition', icon: School },
   { label: 'IELTS preparation', detail: 'Academic and General Training practice', to: '/ielts-preparation', icon: BookOpen },
@@ -27,6 +28,7 @@ export const studyLinks = [
 
 export const destinationLinks = [
   { label: 'All overseas destinations', detail: 'Compare UK, USA, Canada, Australia and Germany', to: '/pathways' },
+  { label: 'Published university progression', detail: 'Explore named OTHM and Qualifi universities', to: '/university-progression' },
   { label: 'United Kingdom', detail: 'UK admissions and progression', to: '/uk' },
   { label: 'Germany', detail: 'German study options and pathways', to: '/germany' },
   { label: 'United States', detail: 'U.S. universities, English and career guidance', to: '/usa' },
