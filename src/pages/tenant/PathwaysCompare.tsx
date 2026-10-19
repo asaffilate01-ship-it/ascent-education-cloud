@@ -17,6 +17,7 @@ const DESTINATIONS = [
 export default function PathwaysCompare() {
   const [params, setParams] = useSearchParams();
   const requested = params.get('destination');
+  const selectedUniversity = (params.get('university') || '').trim().slice(0,160);
   const destination = DESTINATIONS.find(item => item.key === requested);
   if (requested === 'Pakistan') return <Navigate replace to="/pakistan" />;
   return (
@@ -49,7 +50,9 @@ export default function PathwaysCompare() {
           <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
             University admissions depend on your exact qualification, grades, language requirements, the course and the institution. UK diplomas do not guarantee admission or credit transfer. We'll verify your intended route before describing it as confirmed.
           </p>
-          {('guide' in destination) && <Button asChild variant="outline" className="mt-4"><Link to={destination.guide}>Read {destination.label} study guide <ArrowRight className="ml-2 size-4" /></Link></Button>}
+          {selectedUniversity&&<p className="mt-3 rounded-lg border bg-card p-3 text-sm"><strong>University to discuss:</strong> {selectedUniversity}. We will need the exact OTHM or Qualifi certificate and the programme you wish to enter before checking your route.</p>}
+          {('guide' in destination) && <Button asChild variant="outline" className="mt-4"><Link to={destination.guide}>Read {destination.label} study guide <ArrowRight className="ml-2 size-4" /></Link></Button>
+          <Button asChild className="mt-4 ml-2" variant="outline"><Link to="/university-progression">Compare named progression universities</Link></Button>
           {!('guide' in destination) && <p className="mt-3 text-sm font-medium">We can review your individual options for this destination using the enquiry form below.</p>}
         </section>}
 
@@ -66,7 +69,7 @@ export default function PathwaysCompare() {
 
         <section aria-labelledby="enquiry-title" className="space-y-4">
           <div><span className="text-xs font-bold uppercase tracking-wider text-success">Step 3</span><h2 id="enquiry-title" className="mt-1 text-2xl font-bold">Ask us about your options</h2><p className="mt-2 text-muted-foreground">{destination ? `You've selected ${destination.label}. Mention this destination in your enquiry so our team can assist.` : 'Not sure where to study? Tell us your qualifications and goals.'}</p></div>
-          <InternationalEnquiryForm kind="university" defaultDestination={destination?.key} />
+          <InternationalEnquiryForm kind="university" defaultDestination={destination?.key} defaultUniversity={selectedUniversity||undefined} />
         </section>
         <div className="border-t pt-6"><p className="mb-4 text-xs leading-relaxed text-muted-foreground">University admission, recognition of prior learning and financial support are assessed case by case. Training of our advisers is not university accreditation or approval by the British Council. We only claim recruitment-partner status after checking signed, current institutional agreements.</p><ComplianceDisclosure /></div>
       </main>
