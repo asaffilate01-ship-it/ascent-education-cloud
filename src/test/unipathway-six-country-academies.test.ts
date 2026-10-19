@@ -39,7 +39,8 @@ describe('UniPathway academy, international progression and employment completen
    expect(studyDestinations.canada.languages.some(x=>x.title.toLowerCase().includes('french'))).toBe(true);
    expect(studyDestinations.germany.languages.some(x=>x.title.toLowerCase().includes('german'))).toBe(true);
    expect(isMobileTabActive('/pathways','/usa')).toBe(true);
-   expect(isMobileTabActive('/pathways','/pakistan')).toBe(true);
+   expect(isMobileTabActive('/pathways','/pakistan')).toBe(false);
+   expect(isMobileTabActive('/study','/pakistan')).toBe(true);
  });
  it('shows genuine careers/vocational learning topics without implying funding is awarded',()=>{
    expect(vocationalTracks.length).toBeGreaterThanOrEqual(20);
