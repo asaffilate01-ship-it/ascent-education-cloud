@@ -52,7 +52,7 @@ export default function QualificationsCatalogue() {
       <section className="rounded-xl border bg-secondary/40 p-6">
         <BookOpenCheck className="size-7 text-success"/><h2 className="mt-3 text-xl font-bold">Teaching, curriculum and university progression</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Approved awarding-body unit specifications and assessment rules will determine the final modules, credits, assignment briefs and delivery method. Our planned model includes online study and two 14-day centre-based academic visits where permitted. A Level 4 or 5 diploma is not itself a UK university degree and admission or advanced standing is subject to the receiving university.</p>
-        <div className="mt-4 flex flex-wrap gap-4 text-sm text-muted-foreground"><span>OTHM · Level 3–7 diploma titles</span><span>Qualifi · Level 3–7 diploma titles</span></div>
+        <div className="mt-4 flex flex-wrap gap-4 text-sm text-muted-foreground"><span>OTHM · Level 3–6 diploma titles</span><span>Qualifi · Level 3–6 diploma titles</span></div>
         <Button asChild className="mt-5"><Link to="/university-progression">Explore university progression <GraduationCap className="ml-2 size-4"/></Link></Button>
       </section>
     </main><PublicFooter/>
