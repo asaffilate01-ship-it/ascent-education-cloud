@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ArrowUpRight, BookOpenCheck, HeartHandshake, ShieldCheck, Sparkles, GraduationCap, ClipboardCheck, Search, Users } from 'lucide-react';
+import { ArrowRight, BookOpenCheck, HeartHandshake, ShieldCheck, Sparkles, GraduationCap, ClipboardCheck, Search, Users } from 'lucide-react';
 import PublicNav from '@/components/PublicNav';
 import PublicFooter from '@/components/PublicFooter';
 import Seo from '@/components/Seo';
@@ -51,7 +51,7 @@ export default function BeautyAcademy() {
           <p className="mt-3 text-sm text-muted-foreground" role="status">{visible.length} proposed qualification options.</p>
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" aria-label="Beauty qualification options">
-          {visible.map(q=><article key={q.code} className="flex flex-col rounded-xl border bg-card p-5"><div className="flex flex-wrap items-center justify-between gap-2"><span className="text-xs font-bold text-success">CIBTAC · Level {q.level}</span><span className="text-xs text-muted-foreground">{q.code}</span></div><h3 className="mt-3 text-lg font-bold">{q.name}</h3><p className="mt-2 text-sm text-muted-foreground">{q.area} · QAN {q.qan}</p><div className="mt-auto flex flex-wrap gap-3 pt-5 text-sm"><a className="inline-flex items-center gap-1 font-semibold text-primary hover:underline" href={q.source} target="_blank" rel="noopener noreferrer">Official CIBTAC listing <ArrowUpRight className="size-4"/></a><Link className="font-semibold text-success hover:underline" to="/contact">Enquire</Link></div></article>)}
+          {visible.map(q=><article key={q.code} className="flex flex-col rounded-xl border bg-card p-5"><div className="flex flex-wrap items-center justify-between gap-2"><span className="text-xs font-bold text-success">CIBTAC · Level {q.level}</span><span className="text-xs text-muted-foreground">{q.code}</span></div><h3 className="mt-3 text-lg font-bold">{q.name}</h3><p className="mt-2 text-sm text-muted-foreground">{q.area} · QAN {q.qan}</p><div className="mt-auto flex flex-wrap gap-3 pt-5 text-sm"><Link className="font-semibold text-success hover:underline" to="/contact">Enquire</Link></div></article>)}
           {!visible.length&&<p className="text-muted-foreground">No qualifications match. Adjust the subject or level.</p>}
         </div>
       </section>
