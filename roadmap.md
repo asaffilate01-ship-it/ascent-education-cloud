@@ -6,3 +6,4 @@
 - [x] Remove bundled dev logins from sign-in page.
 - [x] Remove made-up phone/address.
 - [ ] Add real phone, WhatsApp and address (waiting on user).
+- [ ] Switch on bot protection for enquiry forms so "Request counselling" works (waiting on user's Cloudflare Turnstile site key + secret key).
