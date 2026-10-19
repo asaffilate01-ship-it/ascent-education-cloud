@@ -37,7 +37,7 @@ describe('UniPathway domestic Pakistan and verified overseas progression navigat
  it('merges university records while retaining each awarding-body route',()=>{
    const list=getProgressionInstitutions();
    expect(list.length).toBeLessThan(progressionRecords.length);
-   const arden=list.find(x=>x.institution==='Arden University' || x.name==='Arden University');
+   const arden=list.find(x=>x.name==='Arden University');
    expect(arden?.records.map(x=>x.body).sort()).toEqual(['OTHM','Qualifi']);
    expect(arden?.records.every(x=>x.route.trim().length>25)).toBe(true);
  });
