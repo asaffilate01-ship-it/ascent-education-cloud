@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import Seo from '@/components/Seo';
 import TenantNav from '@/components/TenantNav';
-import ComplianceDisclosure from '@/components/tenant/ComplianceDisclosure';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -343,7 +342,6 @@ export default function DestinationApply() {
               <Field label="Anything you'd like your counsellor to know?">
                 <Textarea rows={3} value={form.notes} onChange={(e) => set('notes', e.target.value)} />
               </Field>
-              <ComplianceDisclosure destination={dest} compact />
             </div>
           )}
 

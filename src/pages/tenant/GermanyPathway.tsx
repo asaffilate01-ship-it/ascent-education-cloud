@@ -1,5 +1,4 @@
 import TenantNav from '@/components/TenantNav';
-import ComplianceDisclosure from '@/components/tenant/ComplianceDisclosure';
 import LanguageAcademy from '@/components/tenant/LanguageAcademy';
 import DestinationHero from '@/components/tenant/DestinationHero';
 import { GraduationCap, Wallet, ShieldCheck, FileCheck2, Briefcase, Building2 } from 'lucide-react';
@@ -28,7 +27,6 @@ export default function GermanyPathway() {
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-14">
-        <ComplianceDisclosure destination="germany" />
         <StudyDestinationSections destination={studyDestinations.germany} compact />
 
         {/* Study levels */}
@@ -130,7 +128,6 @@ export default function GermanyPathway() {
 
         <LanguageAcademy track="german" />
 
-        <ComplianceDisclosure destination="language" compact />
       </div>
 
       <footer className="border-t border-border/40 mt-14 py-8">
