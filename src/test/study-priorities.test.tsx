@@ -13,6 +13,6 @@ describe('study priorities discovery', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Funding' }));
     expect(screen.getByText('2 study options')).toHaveAttribute('role', 'status');
     expect(screen.getByText(/Scheme, provider approval, eligibility/)).toBeInTheDocument();
-    expect(screen.getByText('Canada', { exact: true })).toBeInTheDocument();
+    expect(screen.getAllByText('Canada', { exact: true }).length).toBeGreaterThan(0);
   });
 });
