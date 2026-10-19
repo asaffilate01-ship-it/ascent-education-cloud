@@ -115,3 +115,43 @@ test('UniPathway tenant homepage uses approved brand instead of legacy unverifie
   await expect(page.getByText('95% Pass Rate', { exact: false })).toHaveCount(0);
   await expect(page.getByText('50–70%', { exact: false })).toHaveCount(0);
 });
+
+test('Study Abroad excludes Pakistan and offers the local Pakistan guide separately', async ({ page }) => {
+  await page.goto('/pathways?destination=Pakistan');
+  await expect(page).toHaveURL(/\/pakistan(?:[/?#]|$)/);
+  await page.goto('/pathways');
+  await expect(page.getByRole('heading', { name: 'Find your next university pathway' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Pakistan/ })).toHaveCount(0);
+  await expect(page.getByRole('link', { name: /Study in Pakistan/ }).first()).toBeVisible();
+  await page.getByRole('button', { name: /United States/ }).click();
+  await expect(page).toHaveURL(/destination=USA/);
+  await expect(page.getByRole('heading', { name: 'Explore United States' })).toBeVisible();
+});
+
+test('Explore options leads to selected OTHM/Qualifi qualifications and the internal university directory', async ({page}) => {
+  await page.goto('/study');
+  const chosen = page.getByRole('article').filter({hasText:'UK business and professional diplomas'});
+  await chosen.getByRole('link', {name:'Explore options'}).click();
+  await expect(page).toHaveURL(/\/qualifications\?body=OTHM/);
+  await expect(page.getByRole('button', {name:'OTHM',exact:true})).toHaveAttribute('aria-pressed','true');
+  await page.getByRole('link', {name:/Explore listed progression universities/}).click();
+  await expect(page).toHaveURL(/\/university-progression/);
+  await expect(page.getByRole('heading', {name:/published OTHM or Qualifi progression routes/})).toBeVisible();
+});
+
+test('University directory stays on-site and filters USA, Australia and Canada truthfully',async({page})=>{
+  await page.goto('/university-progression');
+  const country=page.getByRole('group',{name:'Filter universities by country'});
+  await country.getByRole('button',{name:'United States'}).click();
+  await expect(page.getByRole('status').first()).toContainText('8 listed universities');
+  await expect(page.getByRole('heading',{name:'Thomas Edison State University'})).toBeVisible();
+  await country.getByRole('button',{name:'Australia'}).click();
+  await expect(page.getByRole('heading',{name:'Curtin University'})).toBeVisible();
+  await country.getByRole('button',{name:'Canada'}).click();
+  await expect(page.getByRole('heading',{name:'Canadian qualification review remains available'})).toBeVisible();
+  await expect(page.getByRole('status').first()).toContainText('0 listed universities');
+  await country.getByRole('button',{name:'United States'}).click();
+  await page.getByRole('link',{name:/Discuss this university/}).first().click();
+  await expect(page).toHaveURL(/\/tenant\/unipathway\/pathways\?destination=USA&university=/);
+  await expect(page.getByText('University to discuss:',{exact:false})).toBeVisible();
+});
