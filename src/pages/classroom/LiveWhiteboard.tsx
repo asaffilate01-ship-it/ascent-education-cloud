@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import LectureInteractions from '@/components/classroom/LectureInteractions';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { db } from '@/lib/db';
@@ -66,6 +67,7 @@ export default function LiveWhiteboard(){
  const userId=user?.id;
  const manager=!!user?.roles.some(r=>['superadmin','centre_director','programme_leader'].includes(r));
  const editable=!!board&&!board.locked_after_class&&(manager||board.prepared_by===userId);
+ const teacher=!!user?.roles.some(r=>['lecturer','programme_leader','centre_director','superadmin'].includes(r));
  const apply=(sh:WhiteboardShape[])=>{shapesRef.current=sh;setShapes(sh);};
  // Idempotent application: each durable operation carries a per-board sequence.
  const absorb=useCallback((event:WhiteboardEvent)=>{
@@ -246,7 +248,7 @@ export default function LiveWhiteboard(){
  const shown=useMemo(()=>mode==='replay'?replayWhiteboard(history,replayAt):shapes,[mode,history,replayAt,shapes]);
  return <DashboardLayout title="UniPathway Live Whiteboard" subtitle="One presenter, many invited learners, secure live updates and durable lesson replay">
   <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-   <Link className="inline-flex items-center gap-2 text-sm font-semibold underline" to="/lecturer/whiteboards"><ArrowLeft className="size-4"/>Board library</Link>
+   <Link className="inline-flex items-center gap-2 text-sm font-semibold underline" to={teacher?"/lecturer/classroom":"/student/classroom"}><ArrowLeft className="size-4"/>My classes</Link>
    <span className="text-xs text-muted-foreground" role="status">{connection}</span>
   </div>
   {loading&&<p role="status">Checking your classroom invitation and whiteboard access…</p>}
@@ -270,6 +272,8 @@ export default function LiveWhiteboard(){
     {tool==='text'&&<Input aria-label="Text annotation" className="max-w-60" maxLength={180} value={note} placeholder="Enter text, then tap canvas" onChange={e=>setNote(e.target.value)}/>}
     <Button variant="outline" size="sm" disabled={writing} onClick={clearBoard}><Eraser className="mr-1 size-4"/>Clear page</Button>
    </div>}
+   <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(20rem,1fr)]">
+   <div className="space-y-3 min-w-0">
    <BoardSurface shapes={shown} draft={mode==='live'?draft:[]} editable={editable&&mode==='live'} onPointerDown={startStroke} onPointerMove={moveStroke} onPointerUp={finishStroke}/>
    <div className="flex flex-wrap items-center gap-2">
     {mode==='live'?<Button variant="outline" disabled={replayLoading} onClick={()=>void startReplay()}><Film className="mr-2 size-4"/>Replay saved whiteboard</Button>:
@@ -277,7 +281,10 @@ export default function LiveWhiteboard(){
     {mode==='replay'&&<><Button disabled={duration===0} size="sm" onClick={()=>setPlaying(p=>!p)}>{playing?<Pause className="mr-1 size-4"/>:<Play className="mr-1 size-4"/>}{playing?'Pause':'Play'}</Button>
      <label className="flex flex-1 items-center gap-2 text-sm"><span>Timeline</span><input aria-label="Whiteboard replay timeline" className="min-w-36 flex-1" type="range" min={0} max={Math.max(duration,1)} step={250} value={replayAt} onChange={e=>setReplayAt(Number(e.target.value))}/><span>{Math.round(replayAt/1000)}s / {Math.round(duration/1000)}s</span></label></>}
    </div>
-   <p className="text-xs text-muted-foreground">Whiteboard replay saves drawing and annotation order, not microphone, camera or Teams chat. Students need a valid class invitation to access it. Video/audio recording requires the separate Teams recording workflow and provider authorisation.</p>
+   <p className="text-xs text-muted-foreground">Whiteboard replay saves drawing and annotation order, not microphone, camera or Teams chat. Students need a valid class invitation to access it. Video/audio recording requires a separate Teams recording workflow and provider authorisation.</p>
+   </div>
+   <LectureInteractions sessionId={board.session_id} compact />
+   </div>
   </div>}
  </DashboardLayout>;
 }
