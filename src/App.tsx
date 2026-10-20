@@ -152,7 +152,8 @@ const AICourseBuilder = lazy(() => import("./pages/ai/AICourseBuilder"));
 const QuizDashboard = lazy(() => import("./pages/quiz/QuizDashboard"));
 const ForumPage = lazy(() => import("./pages/forums/ForumPage"));
 const GradebookPage = lazy(() => import("./pages/gradebook/GradebookPage"));
-const ITLabsDashboard = lazy(() => import("./pages/labs/ITLabsDashboard"));
+const LabLearningHub = lazy(() => import("./pages/labs/LabLearningHub"));
+const LabInstructorPlanner = lazy(() => import("./pages/labs/LabInstructorPlanner"));
 const CertificateVerification = lazy(() => import("./pages/verify/CertificateVerification"));
 const PredictiveAnalytics = lazy(() => import("./pages/analytics/PredictiveAnalytics"));
 const DocumentManagement = lazy(() => import("./pages/documents/DocumentManagement"));
@@ -392,7 +393,7 @@ function AppRoutes() {
         <Route path="/lecturer/timeline" element={<LecturerR><AcademicTimeline /></LecturerR>} />
         <Route path="/lecturer/analytics" element={<LecturerR><AnalyticsDashboard /></LecturerR>} />
         <Route path="/lecturer/messages" element={<LecturerR><MessagingInbox /></LecturerR>} />
-        <Route path="/lecturer/labs" element={<LecturerR><ITLabsDashboard /></LecturerR>} />
+        <Route path="/lecturer/labs" element={<LecturerR><LabInstructorPlanner /></LecturerR>} />
         <Route path="/lecturer/quizzes" element={<LecturerR><QuizDashboard /></LecturerR>} />
         <Route path="/lecturer/forums" element={<LecturerR><ForumPage /></LecturerR>} />
         <Route path="/lecturer/gradebook" element={<LecturerR><GradebookPage /></LecturerR>} />
@@ -482,7 +483,7 @@ function AppRoutes() {
         <Route path="/student/career" element={<StudentR><StudentCareer /></StudentR>} />
         <Route path="/student/opportunities" element={<StudentR><CareerMarketplace /></StudentR>} />
         <Route path="/student/support" element={<StudentR><MessagingInbox /></StudentR>} />
-        <Route path="/student/labs" element={<StudentR><ITLabsDashboard /></StudentR>} />
+        <Route path="/student/labs" element={<StudentR><LabLearningHub /></StudentR>} />
         <Route path="/student/quizzes" element={<StudentR><QuizDashboard /></StudentR>} />
         <Route path="/student/forums" element={<StudentR><ForumPage /></StudentR>} />
         <Route path="/student/gradebook" element={<StudentR><GradebookPage /></StudentR>} />
