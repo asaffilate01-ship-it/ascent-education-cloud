@@ -8,6 +8,20 @@
       "when": 1792477083692,
       "tag": "0000_add_missing_dashboard_role_values",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792478119657,
+      "tag": "0001_restore_data_api_grants",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792478174970,
+      "tag": "0002_restore_function_execute_grants",
+      "breakpoints": true
     }
   ]
 }

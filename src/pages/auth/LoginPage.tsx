@@ -1,12 +1,11 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable/index';
 import { Button } from '@/components/ui/button';
 import { Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { ROLE_HOME } from '@/contexts/AuthContext';
-import type { UserRole } from '@/types/platform';
+import { ROLE_HOME, useAuth } from '@/contexts/AuthContext';
 import unipathwayLogo from '@/assets/unipathway-logo.png';
 
 
@@ -17,8 +16,19 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
   const tapTimestamps = useRef<number[]>([]);
   const navigate = useNavigate();
+  const { user: authUser } = useAuth();
+
+  // Navigate only once AuthContext has hydrated the signed-in user,
+  // so the role guard on the destination never bounces back to /login.
+  useEffect(() => {
+    if (!signedIn) return;
+    if (authUser) {
+      navigate(ROLE_HOME[authUser.role] || '/student', { replace: true });
+    }
+  }, [signedIn, authUser, navigate]);
 
   const handleLogoTap = useCallback(() => {
     const now = Date.now();
@@ -47,12 +57,8 @@ export default function LoginPage() {
     toast.success('Signed in successfully');
 
     if (data.user) {
-      const { data: roles } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', data.user.id);
-      const primaryRole = (roles?.[0]?.role as UserRole) || 'student';
-      navigate(ROLE_HOME[primaryRole] || '/student');
+      // Navigation happens in the effect above once the user's roles are loaded.
+      setSignedIn(true);
     } else {
       navigate('/student');
     }
