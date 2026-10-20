@@ -355,14 +355,67 @@ BEGIN
 END
 $lab_support$;
 
+
+-- Self-study learning evidence is independent of paid provider provisioning.
+-- A student's draft notes are not verified grades or cloud task completion.
+CREATE TABLE IF NOT EXISTS public.unipathway_lab_task_notes(
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+ tenant_id uuid NOT NULL,
+ student_id uuid NOT NULL,
+ template_id uuid NOT NULL REFERENCES public.lab_templates(id),
+ task_id uuid NOT NULL REFERENCES public.lab_tasks(id),
+ notes text NOT NULL DEFAULT '' CHECK(length(notes)<=3000),
+ status text NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','submitted','reviewed')),
+ submitted_at timestamptz,
+ reviewer_id uuid,
+ reviewer_feedback text,
+ updated_at timestamptz NOT NULL DEFAULT now(),
+ UNIQUE(student_id,task_id)
+);
+ALTER TABLE public.unipathway_lab_task_notes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "student study notes own or assigned instructor read"
+ ON public.unipathway_lab_task_notes FOR SELECT TO authenticated
+ USING((student_id=auth.uid() AND public.can_access_uni_lab_template(template_id))
+   OR public.can_manage_uni_lab_template(template_id));
+REVOKE INSERT,UPDATE,DELETE ON public.unipathway_lab_task_notes FROM anon,authenticated;
+
+CREATE OR REPLACE FUNCTION public.save_unipathway_lab_practice_note(
+ p_task uuid,p_notes text,p_submit boolean DEFAULT false)
+RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $save_uni_note$
+DECLARE t public.lab_tasks%ROWTYPE;existing public.unipathway_lab_task_notes%ROWTYPE;v_id uuid;
+BEGIN
+ SELECT * INTO t FROM public.lab_tasks WHERE id=p_task;
+ IF NOT FOUND OR NOT public.has_role(auth.uid(),'student'::public.app_role)
+  OR NOT public.can_access_uni_lab_template(t.template_id) THEN
+  RAISE EXCEPTION 'Not enrolled in this practical module' USING ERRCODE='42501';
+ END IF;
+ IF p_notes IS NULL OR length(p_notes)>3000 THEN RAISE EXCEPTION 'Practice note cannot exceed 3000 characters';END IF;
+ SELECT * INTO existing FROM public.unipathway_lab_task_notes
+ WHERE student_id=auth.uid() AND task_id=p_task FOR UPDATE;
+ IF FOUND AND existing.status IN ('submitted','reviewed') THEN
+  RAISE EXCEPTION 'This practice evidence has already been submitted for review';
+ END IF;
+ INSERT INTO public.unipathway_lab_task_notes(tenant_id,student_id,template_id,task_id,notes,status,submitted_at)
+ VALUES(t.tenant_id,auth.uid(),t.template_id,t.id,p_notes,
+  CASE WHEN p_submit THEN 'submitted' ELSE 'draft' END,
+  CASE WHEN p_submit THEN now() ELSE NULL END)
+ ON CONFLICT(student_id,task_id) DO UPDATE SET notes=excluded.notes,status=excluded.status,
+ submitted_at=excluded.submitted_at,updated_at=now()
+ RETURNING id INTO v_id;
+ RETURN v_id;
+END
+$save_uni_note$;
+
 REVOKE ALL ON FUNCTION public.can_manage_uni_lab_template(uuid),public.can_access_uni_lab_template(uuid),
  public.can_manage_uni_lab_run(uuid),public.can_access_uni_lab_run(uuid),
  public.can_manage_uni_lab_request(uuid),public.invite_enrolled_unipathway_lab_run(uuid),
  public.request_unipathway_lms_lab(uuid,text,uuid),
- public.request_unipathway_lab_support(uuid,text) FROM PUBLIC;
+ public.request_unipathway_lab_support(uuid,text),
+ public.save_unipathway_lab_practice_note(uuid,text,boolean) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.can_manage_uni_lab_template(uuid),public.can_access_uni_lab_template(uuid),
  public.can_manage_uni_lab_run(uuid),public.can_access_uni_lab_run(uuid),
  public.can_manage_uni_lab_request(uuid),public.invite_enrolled_unipathway_lab_run(uuid),
  public.request_unipathway_lms_lab(uuid,text,uuid),
- public.request_unipathway_lab_support(uuid,text) TO authenticated;
+ public.request_unipathway_lab_support(uuid,text),
+ public.save_unipathway_lab_practice_note(uuid,text,boolean) TO authenticated;
 COMMIT;
