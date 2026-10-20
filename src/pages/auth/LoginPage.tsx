@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ROLE_HOME, useAuth } from '@/contexts/AuthContext';
-import type { UserRole } from '@/types/platform';
 import unipathwayLogo from '@/assets/unipathway-logo.png';
 
 
