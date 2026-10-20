@@ -29,3 +29,25 @@ jobs:
           STAGING_SUPABASE_URL: ${{ secrets.UNIPATHWAY_STAGING_URL }}
           STAGING_SUPABASE_ANON_KEY: ${{ secrets.UNIPATHWAY_STAGING_ANON_KEY }}
           STAGING_FIXTURES_JSON: ${{ secrets.UNIPATHWAY_STAGING_FIXTURES_JSON }}
+
+  staging-academic-role-acceptance:
+    if: inputs.confirmation == 'UNIPATHWAY_STAGING_ONLY'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    environment: unipathway-staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Read-only Auth, 17-role, two-tenant RLS and private LMS materials gate
+        run: node scripts/verify-unipathway-staging-academic.mjs
+        env:
+          STAGING_RUN_ACK: ${{ inputs.confirmation }}
+          STAGING_PROJECT_REF: ${{ vars.UNIPATHWAY_STAGING_PROJECT_REF }}
+          UNIPATHWAY_PRODUCTION_PROJECT_REF: ${{ vars.UNIPATHWAY_PRODUCTION_PROJECT_REF }}
+          STAGING_SUPABASE_URL: ${{ secrets.UNIPATHWAY_STAGING_URL }}
+          STAGING_SUPABASE_ANON_KEY: ${{ secrets.UNIPATHWAY_STAGING_ANON_KEY }}
+          STAGING_ACADEMIC_FIXTURES_JSON: ${{ secrets.UNIPATHWAY_STAGING_ACADEMIC_FIXTURES_JSON }}
