@@ -4,7 +4,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { db } from '@/lib/db';
 import { useAuth } from '@/contexts/AuthContext';
-import { AlertTriangle, Calendar, ExternalLink, Film, PenTool, ShieldCheck, Video, Users } from 'lucide-react';
+import { AlertTriangle, BookOpen, Calendar, ExternalLink, Film, Hand, PenTool, ShieldCheck, Video, Users } from 'lucide-react';
 
 type Session={id:string;title:string;module_id:string|null;starts_at:string;ends_at:string;
  class_mode:string;status:string;join_url:string|null;recording_enabled:boolean;capacity:number};
@@ -69,6 +69,7 @@ export default function TeamsClassroom(){
       <div className="mt-4 flex flex-wrap items-center gap-2">
        {joinable?<a className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground" href={s.join_url!} target="_blank" rel="noopener noreferrer">Join Teams <ExternalLink className="size-4"/></a>:
         <p className="text-xs font-semibold text-muted-foreground">{current>end+30*60_000?'Class completed':!joinWindow?'Teams join opens 20 minutes before start':'Verified Teams link not configured'}</p>}
+       <Link className="inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-semibold" to={'/classroom/discussion/'+s.id}><Hand className="size-4"/>Raise hand / Ask a question</Link>
        {board?<Link className="inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-semibold" to={'/classroom/whiteboard/'+board.id}><PenTool className="size-4"/>Open live board & replay</Link>:
        <span className="text-xs text-muted-foreground">{boardError?'Board unavailable':'Lecturer has not created the board yet'}</span>}
       </div>
@@ -77,6 +78,7 @@ export default function TeamsClassroom(){
   <div className="mt-6 rounded-xl border p-4"><h2 className="flex items-center gap-2 font-semibold"><Film className="size-5"/>Lesson archive</h2>
    <p className="mt-2 text-sm text-muted-foreground">Saved whiteboard drawings replay independently from Teams video. Private recordings, transcripts and approved learning packs appear only when received and published.</p>
    <Link className="mt-3 inline-block text-sm font-semibold underline" to={teacher?'/lecturer/lesson-archive':'/student/lesson-archive'}>Open my class archive</Link>
+   <Link className="ml-4 mt-3 inline-flex items-center gap-2 text-sm font-semibold underline" to={teacher?'/lecturer/materials':'/student/materials'}><BookOpen className="size-4"/>All enrolled course notes and materials</Link>
   </div>
  </DashboardLayout>;
 }
