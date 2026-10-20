@@ -53,7 +53,8 @@ await as(M,T,async()=>{
  assert.equal((await db.query('SELECT id FROM public.unipathway_assessment_briefs WHERE status=$1',['published'])).rows.length,1);checks++;
 });
 await as(L,T,async()=>{
- await denied(()=>db.query('UPDATE public.unipathway_assessment_briefs SET penalty_points_per_resubmission=20 WHERE id=$1',[brief]),/policy|permission/i);
+ const unauthorized=await db.query('UPDATE public.unipathway_assessment_briefs SET penalty_points_per_resubmission=20 WHERE id=$1 RETURNING id',[brief]);
+ assert.equal(unauthorized.rows.length,0,'Published rubric and penalty cannot be altered');checks++;
 });
 await as(OUT,T2,async()=>{
  assert.equal((await db.query('SELECT * FROM public.unipathway_assessment_briefs')).rows.length,0);checks++;
