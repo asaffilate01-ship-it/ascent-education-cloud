@@ -1,4 +1,5 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import {useAuth} from '@/contexts/AuthContext';
 import { BookOpen, Clock, Award, ChevronRight, CheckCircle, Circle, Lock } from 'lucide-react';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
@@ -10,12 +11,19 @@ import StatusBadge from '@/components/ui/StatusBadge';
 
 export default function StudentCourses() {
   const navigate = useNavigate();
+  const {user}=useAuth();
   const [selectedModule, setSelectedModule] = useState<any>(null);
 
   const { data: programmes, loading: pLoading } = useSupabaseQuery('programmes', {
     filters: [{ column: 'status', operator: 'eq', value: 'active' }],
     orderBy: { column: 'title', ascending: true },
   });
+  const {data:enrolments,loading:eLoading,error:eError}=useSupabaseQuery('student_enrolments',{
+    filters:[{column:'student_id',operator:'eq',value:user?.id||''}],
+    enabled:!!user?.id
+  });
+  const enrolledProgrammeIds=useMemo(()=>new Set(enrolments.filter(e=>e.status==='active').map(e=>e.programme_id)),[enrolments]);
+  const myProgrammes=useMemo(()=>programmes.filter(p=>enrolledProgrammeIds.has(p.id)),[programmes,enrolledProgrammeIds]);
   const { data: modules, loading: mLoading } = useSupabaseQuery('modules');
   const { data: submissions } = useSupabaseQuery('submissions');
   const { data: assignments } = useSupabaseQuery('assignments');
@@ -57,8 +65,9 @@ export default function StudentCourses() {
     return map;
   }, [submissions]);
 
-  const loading = pLoading || mLoading;
+  const loading = pLoading || mLoading || eLoading;
   if (loading) return <DashboardSkeleton />;
+  if (eError) return <DashboardLayout title="My Courses" subtitle="Enrolled programmes"><p role="alert" className="rounded-xl border border-destructive p-4">Your enrolments cannot be verified: {eError}. No courses or assignments have been opened.</p></DashboardLayout>;
 
   const handleModuleClick = (mod: any) => {
     setSelectedModule(mod);
@@ -76,7 +85,7 @@ export default function StudentCourses() {
           <Button size="sm" variant="outline" onClick={()=>navigate('/student/assignments')}>Homework & submissions</Button>
         </div>
       </section>
-      {programmes.map((prog) => {
+      {myProgrammes.map((prog) => {
         const progModules = modulesByProgramme[prog.id] || [];
         const completedModules = progModules.filter((m) => m.status === 'archived').length;
         const activeModules = progModules.filter((m) => m.status === 'active').length;
@@ -128,7 +137,7 @@ export default function StudentCourses() {
                 }).length;
                 const avgGrade = modAssignments.reduce((acc, a) => {
                   const sub = submissionByAssignment[a.id];
-                  return sub?.grade ? acc + sub.grade : acc;
+                  return sub?.grade !== null && sub?.grade !== undefined ? acc + sub.grade : acc;
                 }, 0) / (completedAssignments || 1);
 
                 return (
@@ -199,7 +208,7 @@ export default function StudentCourses() {
         );
       })}
 
-      {programmes.length === 0 && (
+      {myProgrammes.length === 0 && (
         <div className="surface-card p-12 text-center text-muted-foreground text-sm">No enrolled programmes found</div>
       )}
 
