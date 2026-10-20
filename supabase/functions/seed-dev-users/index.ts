@@ -1,34 +1,19 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { corsHeaders } from '../_shared/cors.ts';
 
-const DEV_PASSWORD = 'DevTest123!';
-
-const DEV_ACCOUNTS: { role: string; email: string; label: string }[] = [
-  { role: 'superadmin', email: 'dev.superadmin@educloud.test', label: 'Super Admin' },
-  { role: 'centre_director', email: 'dev.director@educloud.test', label: 'Centre Director' },
-  { role: 'admissions_admin', email: 'dev.admissions@educloud.test', label: 'Admissions' },
-  { role: 'lecturer', email: 'dev.lecturer@educloud.test', label: 'Lecturer' },
-  { role: 'programme_leader', email: 'dev.programme@educloud.test', label: 'Programme Lead' },
-  { role: 'student', email: 'dev.student@educloud.test', label: 'Student' },
-  { role: 'finance_officer', email: 'dev.finance@educloud.test', label: 'Finance' },
-  { role: 'iqa_officer', email: 'dev.qa@educloud.test', label: 'QA Officer' },
-  { role: 'exams_officer', email: 'dev.exams@educloud.test', label: 'Exams' },
-  { role: 'marketing_officer', email: 'dev.marketing@educloud.test', label: 'Marketing' },
-  { role: 'agent', email: 'dev.agent@educloud.test', label: 'Agent' },
-  { role: 'university_partner', email: 'dev.unipartner@educloud.test', label: 'Uni Partner' },
-  { role: 'employer_partner', email: 'dev.employer@educloud.test', label: 'Employer' },
-  { role: 'parent_guardian', email: 'dev.parent@educloud.test', label: 'Parent' },
-];
+import { DEV_ACCOUNTS } from './accounts.ts';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
-  const admin = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-  );
+  const url = Deno.env.get('SUPABASE_URL');
+  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (!url || !serviceKey) return new Response(JSON.stringify({ error: 'Account service unavailable' }), {
+    status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+  const admin = createClient(url, serviceKey);
 
   // Only an authenticated superadmin may seed dev accounts.
   const authHeader = req.headers.get('Authorization') ?? '';
@@ -52,6 +37,11 @@ Deno.serve(async (req) => {
     });
   }
 
+  const password = Deno.env.get('DEV_ACCOUNT_PASSWORD');
+  if (!password) return new Response(JSON.stringify({ error: 'Test account password is not configured' }), {
+    status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+
 
   // Pick a tenant (unipathway if present, else any)
   const { data: tenants } = await admin
@@ -71,7 +61,7 @@ Deno.serve(async (req) => {
       // Try to create; if exists, look up
       const { data: created, error: createErr } = await admin.auth.admin.createUser({
         email: acc.email,
-        password: DEV_PASSWORD,
+        password,
         email_confirm: true,
         user_metadata: { full_name: acc.label, account_type: acc.role },
       });
@@ -83,10 +73,10 @@ Deno.serve(async (req) => {
         if (existing) {
           userId = existing.id;
           // Reset password to known value
-          await admin.auth.admin.updateUserById(existing.id, {
-            password: DEV_PASSWORD,
-            email_confirm: true,
+          const { error: resetError } = await admin.auth.admin.updateUserById(existing.id, {
+            password,
           });
+          if (resetError) throw resetError;
         }
       } else {
         userId = created.user?.id ?? null;
@@ -97,9 +87,14 @@ Deno.serve(async (req) => {
         continue;
       }
 
+      // Preserve existing profiles and roles on password resets.
+      if (createErr) {
+        results.push({ email: acc.email, ok: true });
+        continue;
+      }
       // Ensure profile exists + tenant assigned (superadmin stays untenanted)
       const profileTenant = acc.role === 'superadmin' ? null : tenantId;
-      await admin
+      const { error: profileError } = await admin
         .from('profiles')
         .upsert(
           {
@@ -110,14 +105,17 @@ Deno.serve(async (req) => {
           },
           { onConflict: 'user_id' },
         );
+      if (profileError) throw profileError;
 
       // Wipe default roles and set the intended one
-      await admin.from('user_roles').delete().eq('user_id', userId);
-      await admin.from('user_roles').insert({
+      const { error: deleteError } = await admin.from('user_roles').delete().eq('user_id', userId);
+      if (deleteError) throw deleteError;
+      const { error: roleError } = await admin.from('user_roles').insert({
         user_id: userId,
         role: acc.role as any,
         tenant_id: profileTenant,
       });
+      if (roleError) throw roleError;
 
       results.push({ email: acc.email, ok: true });
     } catch (e: any) {
