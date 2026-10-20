@@ -92,7 +92,7 @@ BEGIN
   v_n:=jsonb_array_length(p_operation->'points');
   IF v_n<2 OR v_n>240 THEN RAISE EXCEPTION 'Stroke must contain 2–240 points'; END IF;
   IF NOT (p_operation->>'color' ~ '^#[0-9a-fA-F]{6}$') THEN RAISE EXCEPTION 'Invalid stroke colour'; END IF;
-  IF (p_operation->>'width')::numeric<1 OR (p_operation->>'width')::numeric>24
+  IF p_operation->>'width' IS NULL OR (p_operation->>'width')::numeric<1 OR (p_operation->>'width')::numeric>24
     THEN RAISE EXCEPTION 'Invalid stroke width'; END IF;
   IF EXISTS(
    SELECT 1 FROM jsonb_array_elements(p_operation->'points') pt
@@ -103,6 +103,7 @@ BEGIN
   ) THEN RAISE EXCEPTION 'Stroke points outside canvas'; END IF;
  ELSIF v_kind='text' THEN
   IF length(coalesce(p_operation->>'text','')) NOT BETWEEN 1 AND 180
+   OR p_operation->>'x' IS NULL OR p_operation->>'y' IS NULL
    OR (p_operation->>'x')::numeric NOT BETWEEN 0 AND 1000
    OR (p_operation->>'y')::numeric NOT BETWEEN 0 AND 1000
   THEN RAISE EXCEPTION 'Invalid text annotation'; END IF;
