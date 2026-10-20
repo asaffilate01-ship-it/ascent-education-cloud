@@ -60,6 +60,10 @@ const as=async(uid,tenant,action)=>{
  try{return await action()}finally{await db.exec('RESET ROLE')}
 };
 await as(LECTURER,A,async()=>{
+ const scope=await db.query("SELECT auth.uid()::text AS uid, public.get_user_tenant_id(auth.uid())::text AS tenant, public.has_role(auth.uid(),'lecturer'::public.app_role) AS lecturer, public.same_tenant($1) AS same_tenant",[A]);
+ console.log('Synthetic lecturer policy fixtures:',scope.rows[0]);
+ const moduleCheck=await db.query('SELECT id FROM public.modules WHERE id=$1',[mod]);
+ console.log('Fixture module read count:',moduleCheck.rows.length);
  const t=await db.query("INSERT INTO public.lab_templates(tenant_id,module_id,title,provider,created_by,access_mode,published,estimated_cost_gbp) VALUES($1,$2,'AWS VPC Lab','aws_managed',$3,'both',false,8) RETURNING id",[A,mod,LECTURER]);
  template=t.rows[0].id;checks++;
  const q=await db.query("INSERT INTO public.lab_tasks(tenant_id,template_id,sequence_no,title,instructions) VALUES($1,$2,1,'Create private subnet','Explain your route tables') RETURNING id",[A,template]);
