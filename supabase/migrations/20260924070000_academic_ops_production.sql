@@ -22,9 +22,51 @@ create table if not exists public.iqa_reviews (
   iqa_id uuid not null,
   decision text not null check (decision in ('approved','rejected','action_required')),
   notes text,
-  reviewed_at timestamptz not null default now(),
-  constraint iqa_not_assessor check (iqa_id <> (select assessor_id from public.assessment_reviews ar where ar.id = assessment_review_id))
+  reviewed_at timestamptz not null default now()
 );
+
+-- PostgreSQL forbids subqueries in CHECK constraints. Enforce same-tenant,
+-- separate marker/IQA instead, including on assessor reassignment.
+-- This source migration was not present in the connected production registry
+-- at the October 20 audit; validate it in isolated staging before use.
+create or replace function public.unipathway_iqa_separation_guard()
+returns trigger language plpgsql security definer set search_path=public as $uni_iqa_guard$
+declare assigned_marker uuid; parent_tenant uuid;
+begin
+  select ar.assessor_id,ar.tenant_id into assigned_marker,parent_tenant
+  from public.assessment_reviews ar where ar.id=new.assessment_review_id;
+  if not found or parent_tenant is distinct from new.tenant_id then
+    raise exception 'IQA review must belong to the assessment tenant' using errcode='23514';
+  end if;
+  if new.iqa_id=assigned_marker then
+    raise exception 'Independent IQA reviewer must differ from original assessor' using errcode='23514';
+  end if;
+  return new;
+end
+$uni_iqa_guard$;
+
+create or replace function public.unipathway_assessor_change_guard()
+returns trigger language plpgsql security definer set search_path=public as $uni_marker_guard$
+begin
+  if exists(select 1 from public.iqa_reviews ir where ir.assessment_review_id=new.id
+     and ir.iqa_id=new.assessor_id) then
+    raise exception 'Changing assessor would violate independent IQA review' using errcode='23514';
+  end if;
+  return new;
+end
+$uni_marker_guard$;
+
+drop trigger if exists enforce_uni_iqa_separation on public.iqa_reviews;
+create trigger enforce_uni_iqa_separation
+  before insert or update of assessment_review_id,tenant_id,iqa_id on public.iqa_reviews
+  for each row execute function public.unipathway_iqa_separation_guard();
+drop trigger if exists enforce_uni_marker_independence on public.assessment_reviews;
+create trigger enforce_uni_marker_independence
+  before update of assessor_id on public.assessment_reviews
+  for each row execute function public.unipathway_assessor_change_guard();
+
+revoke all on function public.unipathway_iqa_separation_guard() from public,anon;
+revoke all on function public.unipathway_assessor_change_guard() from public,anon;
 
 create table if not exists public.progression_cases (
   id uuid primary key default gen_random_uuid(),
