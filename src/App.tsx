@@ -211,6 +211,9 @@ const EmployerR = ({ children }: { children: React.ReactNode }) => (
 const ParentR = ({ children }: { children: React.ReactNode }) => (
   <RoleGuard allowed={['parent_guardian', 'centre_director', 'superadmin']}>{children}</RoleGuard>
 );
+const WelfareR = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['welfare_officer', 'student', 'centre_director', 'superadmin']}>{children}</RoleGuard>
+);
 
 function LoadingFallback() {
   return (
@@ -501,7 +504,7 @@ function AppRoutes() {
         <Route path="/calendar" element={<P><AcademicCalendar /></P>} />
         <Route path="/lesson-plans" element={<LecturerR><LessonPlanBuilder /></LecturerR>} />
         <Route path="/leave" element={<P><LeaveManagement /></P>} />
-        <Route path="/health" element={<P><HealthRecords /></P>} />
+        <Route path="/health" element={<WelfareR><HealthRecords /></WelfareR>} />
         <Route path="/transport" element={<P><TransportTracking /></P>} />
         <Route path="/ai-recommendations" element={<P><AIRecommendations /></P>} />
         <Route path="/ai-course-builder" element={<LecturerR><AICourseBuilder /></LecturerR>} />
