@@ -158,7 +158,6 @@ const AIRecommendations = lazy(() => import("./pages/ai/AIRecommendations"));
 const AICourseBuilder = lazy(() => import("./pages/ai/AICourseBuilder"));
 const QuizDashboard = lazy(() => import("./pages/quiz/QuizDashboard"));
 const ForumPage = lazy(() => import("./pages/forums/ForumPage"));
-const GradebookPage = lazy(() => import("./pages/gradebook/GradebookPage"));
 const LabLearningHub = lazy(() => import("./pages/labs/LabLearningHub"));
 const LabInstructorPlanner = lazy(() => import("./pages/labs/LabInstructorPlanner"));
 const CertificateVerification = lazy(() => import("./pages/verify/CertificateVerification"));
@@ -534,7 +533,7 @@ function AppRoutes() {
         <Route path="/ai-course-builder" element={<LecturerR><AICourseBuilder /></LecturerR>} />
         <Route path="/quizzes" element={<P><QuizDashboard /></P>} />
         <Route path="/forums" element={<P><ForumPage /></P>} />
-        <Route path="/gradebook" element={<P><GradebookPage /></P>} />
+        <Route path="/gradebook" element={<StudentR><StudentReleasedResults /></StudentR>} />
         <Route path="/predictive-analytics" element={<Director><PredictiveAnalytics /></Director>} />
         <Route path="/documents" element={<P><DocumentManagement /></P>} />
         <Route path="/email-campaigns" element={<Marketing><EmailCampaigns /></Marketing>} />
