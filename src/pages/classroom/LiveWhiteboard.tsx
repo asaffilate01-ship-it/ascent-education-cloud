@@ -63,7 +63,6 @@ export default function LiveWhiteboard(){
  const pointerRef=useRef<Point[]>([]);
  const seqRef=useRef(0);
  const refreshingRef=useRef(false);
- const liveRef=useRef(true);
  const userId=user?.id;
  const manager=!!user?.roles.some(r=>['superadmin','centre_director','programme_leader'].includes(r));
  const editable=!!board&&!board.locked_after_class&&(manager||board.prepared_by===userId);
@@ -73,7 +72,6 @@ export default function LiveWhiteboard(){
   if(!isWhiteboardOperation(event.operation)||event.sequence<=seqRef.current)return;
   if(event.sequence!==seqRef.current+1)return;
   seqRef.current=event.sequence;
-  applyWhiteboardOperation;
   const next=applyWhiteboardOperation(shapesRef.current,event.operation);
   shapesRef.current=next;setShapes(next);
  },[]);
