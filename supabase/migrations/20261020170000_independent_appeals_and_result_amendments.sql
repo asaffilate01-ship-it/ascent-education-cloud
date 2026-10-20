@@ -82,6 +82,42 @@ CREATE TABLE IF NOT EXISTS public.unipathway_assessment_grade_amendments(
 );
 ALTER TABLE public.unipathway_assessment_grade_amendments ENABLE ROW LEVEL SECURITY;
 
+
+-- Reviewer needs the exact original brief, learner evidence and signed result.
+-- Additive READ grants to only the separately allocated appeal reviewer.
+CREATE OR REPLACE FUNCTION public.can_read_uni_appeal_attempt(p_attempt uuid)
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $appeal_attempt_read$
+ SELECT EXISTS(SELECT 1 FROM public.unipathway_assessment_appeals a
+ WHERE a.attempt_id=p_attempt AND a.reviewer_id=auth.uid()
+ AND a.tenant_id=public.get_user_tenant_id(auth.uid())
+ AND a.status IN ('under_review','recommendation')
+ AND public.has_role(auth.uid(),'iqa_officer'::public.app_role))
+$appeal_attempt_read$;
+CREATE OR REPLACE FUNCTION public.can_read_uni_appeal_brief(p_brief uuid)
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $appeal_brief_read$
+ SELECT EXISTS(SELECT 1 FROM public.unipathway_assessment_appeals a
+ WHERE a.brief_id=p_brief AND public.can_read_uni_appeal_attempt(a.attempt_id))
+$appeal_brief_read$;
+
+CREATE POLICY "appeal reviewer may read original frozen brief"
+ ON public.unipathway_assessment_briefs FOR SELECT TO authenticated
+ USING(public.can_read_uni_appeal_brief(id));
+CREATE POLICY "appeal reviewer may read original rubric"
+ ON public.unipathway_assessment_criteria FOR SELECT TO authenticated
+ USING(public.can_read_uni_appeal_brief(brief_id));
+CREATE POLICY "appeal reviewer may inspect submitted evidence"
+ ON public.unipathway_assessment_attempts FOR SELECT TO authenticated
+ USING(public.can_read_uni_appeal_attempt(id));
+CREATE POLICY "appeal reviewer may inspect original independent human mark"
+ ON public.unipathway_assessment_human_marks FOR SELECT TO authenticated
+ USING(public.can_read_uni_appeal_attempt(attempt_id));
+CREATE POLICY "appeal reviewer may inspect original IQA decision"
+ ON public.unipathway_assessment_quality_decisions FOR SELECT TO authenticated
+ USING(public.can_read_uni_appeal_attempt(attempt_id));
+CREATE POLICY "appeal reviewer may inspect released result"
+ ON public.unipathway_assessment_released_results FOR SELECT TO authenticated
+ USING(public.can_read_uni_appeal_attempt(attempt_id));
+
 CREATE POLICY "student own appeal or assigned reviewer or manager"
  ON public.unipathway_assessment_appeals FOR SELECT TO authenticated USING(
  (student_id=auth.uid() AND tenant_id=public.get_user_tenant_id(auth.uid()))
@@ -255,12 +291,16 @@ BEGIN
 END
 $finalise_appeal$;
 
-REVOKE ALL ON FUNCTION public.approve_unipathway_appeal_policy(uuid,integer,text),
+REVOKE ALL ON FUNCTION public.can_read_uni_appeal_attempt(uuid),
+ public.can_read_uni_appeal_brief(uuid),
+ public.approve_unipathway_appeal_policy(uuid,integer,text),
  public.request_unipathway_grade_appeal(uuid,text,text),
  public.assign_unipathway_appeal_reviewer(uuid,uuid),
  public.record_unipathway_appeal_review(uuid,text,numeric,text,text),
  public.finalise_unipathway_grade_appeal(uuid,boolean,text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.approve_unipathway_appeal_policy(uuid,integer,text),
+GRANT EXECUTE ON FUNCTION public.can_read_uni_appeal_attempt(uuid),
+ public.can_read_uni_appeal_brief(uuid),
+ public.approve_unipathway_appeal_policy(uuid,integer,text),
  public.request_unipathway_grade_appeal(uuid,text,text),
  public.assign_unipathway_appeal_reviewer(uuid,uuid),
  public.record_unipathway_appeal_review(uuid,text,numeric,text,text),
