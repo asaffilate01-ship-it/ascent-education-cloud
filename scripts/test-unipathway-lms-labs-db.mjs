@@ -79,7 +79,7 @@ await as(LECTURER,A,async()=>{
  const count=await db.query('SELECT public.invite_enrolled_unipathway_lab_run($1) AS invited',[run]);
  assert.equal(Number(count.rows[0].invited),2);checks++;
 });
-await db.query("INSERT INTO public.lab_provider_configs(tenant_id,provider,display_name,enabled,credential_status,verified_at,budget_monthly,max_concurrent) VALUES($1,'aws_managed','AWS managed staging',true,'verified',now(),8,1)",[A]);
+await db.query("INSERT INTO public.lab_provider_configs(tenant_id,provider,display_name,enabled,credential_status,verified_at,budget_monthly,budget_currency,max_concurrent) VALUES($1,'aws_managed','AWS managed staging',true,'verified',now(),8,'GBP',1)",[A]);
 let request;
 await as(STUDENT,A,async()=>{
  const created=await db.query("SELECT public.request_unipathway_lms_lab($1,'self_study',NULL) AS id",[template]);
