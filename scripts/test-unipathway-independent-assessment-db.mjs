@@ -7,6 +7,7 @@ const L='20000000-0000-0000-0000-000000000001',M='20000000-0000-0000-0000-000000
 const S='20000000-0000-0000-0000-000000000003',S2='20000000-0000-0000-0000-000000000004';
 const MARK='20000000-0000-0000-0000-000000000005',QA='20000000-0000-0000-0000-000000000006';
 const OUT='20000000-0000-0000-0000-000000000007';
+const QA2='20000000-0000-0000-0000-000000000008',DIRECTOR='20000000-0000-0000-0000-000000000009';
 const MOD='30000000-0000-0000-0000-000000000001',PROG='40000000-0000-0000-0000-000000000001';
 let checks=0;
 async function denied(fn,pattern){await assert.rejects(fn,pattern);checks++;}
@@ -23,10 +24,12 @@ await db.exec([
  "CREATE FUNCTION public.same_tenant(t uuid) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $$ SELECT t=public.get_user_tenant_id(auth.uid()) OR public.has_role(auth.uid(),'superadmin'::public.app_role) $$;",
 ].join('\n'));
 await db.exec(readFileSync('supabase/migrations/20261020150000_unipathway_independent_assessment.sql','utf8'));
+await db.exec(readFileSync('supabase/migrations/20261020170000_independent_appeals_and_result_amendments.sql','utf8'));
 await db.exec('GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO authenticated;');
 await db.query("INSERT INTO public.modules(id,tenant_id,programme_id,lecturer_id,title) VALUES($1,$2,$3,$4,'Physics')",[MOD,T,PROG,L]);
 await db.query("INSERT INTO public.student_enrolments(tenant_id,programme_id,student_id,status) VALUES($1,$2,$3,'active'),($1,$2,$4,'active')",[T,PROG,S,S2]);
 await db.query("INSERT INTO public.user_roles(user_id,tenant_id,role) VALUES ($1,$2,'lecturer'),($3,$2,'programme_leader'),($4,$2,'student'),($5,$2,'student'),($6,$2,'assessor'),($7,$2,'iqa_officer'),($8,$9,'student')",[L,T,M,S,S2,MARK,QA,OUT,T2]);
+await db.query("INSERT INTO public.user_roles(user_id,tenant_id,role) VALUES($1,$2,'iqa_officer'),($3,$2,'centre_director')",[QA2,T,DIRECTOR]);
 async function as(u,t,fn){
  await db.exec('SET ROLE authenticated');
  await db.query("SELECT set_config('test.uid',$1,false),set_config('test.tenant',$2,false)",[u,t]);
@@ -51,6 +54,7 @@ await as(S,T,async()=>{
 await as(M,T,async()=>{
  await db.query('SELECT public.publish_unipathway_assessment_brief($1)',[brief]);checks++;
  assert.equal((await db.query('SELECT id FROM public.unipathway_assessment_briefs WHERE status=$1',['published'])).rows.length,1);checks++;
+ await db.query('SELECT public.approve_unipathway_appeal_policy($1,$2,$3)',[brief,30,'ACADEMIC-APPEALS-TEST-POLICY']);checks++;
 });
 await as(L,T,async()=>{
  const unauthorized=await db.query('UPDATE public.unipathway_assessment_briefs SET penalty_points_per_resubmission=20 WHERE id=$1 RETURNING id',[brief]);
@@ -110,5 +114,69 @@ await as(S,T,async()=>{
 });
 await as(S2,T,async()=>{assert.equal((await db.query('SELECT * FROM public.unipathway_assessment_released_results')).rows.length,0);checks++;});
 await as(OUT,T2,async()=>{assert.equal((await db.query('SELECT * FROM public.unipathway_assessment_attempts')).rows.length,0);checks++;});
+
+await as(M,T,async()=>{
+ await denied(()=>db.query('SELECT public.approve_unipathway_appeal_policy($1,$2,$3)',[brief,60,'RETROACTIVE-POLICY-CHANGE']),/after first released/i);
+});
+await as(OUT,T2,async()=>{
+ await denied(()=>db.query('SELECT public.request_unipathway_grade_appeal($1,$2,$3)',[second,'rubric_application','An external student is attempting to read and appeal another individual result.']),/own released result/i);
+});
+await as(S2,T,async()=>{
+ await denied(()=>db.query('SELECT public.request_unipathway_grade_appeal($1,$2,$3)',[second,'procedural_error','I am another enrolled student and must not be able to appeal another mark.']),/own released result/i);
+});
+let appealId;
+await as(S,T,async()=>{
+ const a=await db.query('SELECT public.request_unipathway_grade_appeal($1,$2,$3) AS id',
+  [second,'rubric_application','I believe the observation-based criterion was applied inconsistently. My submitted table gives numerical measurements for both forces and an explanation of the relationship.']);
+ appealId=a.rows[0].id;assert.ok(appealId);checks++;
+ await denied(()=>db.query('SELECT public.request_unipathway_grade_appeal($1,$2,$3)',
+  [second,'rubric_application','I am trying to duplicate the exact same appeal that has already been logged.']),/duplicate|unique/i);
+ assert.equal((await db.query('SELECT * FROM public.unipathway_assessment_appeal_reviews')).rows.length,0);checks++;
+});
+await as(QA,T,async()=>{
+ assert.equal((await db.query('SELECT * FROM public.unipathway_assessment_appeals')).rows.length,0);checks++;
+});
+await as(M,T,async()=>{
+ await denied(()=>db.query('SELECT public.assign_unipathway_appeal_reviewer($1,$2)',[appealId,QA]),/independent second IQA/i);
+ await denied(()=>db.query('SELECT public.assign_unipathway_appeal_reviewer($1,$2)',[appealId,MARK]),/independent second IQA/i);
+ await db.query('SELECT public.assign_unipathway_appeal_reviewer($1,$2)',[appealId,QA2]);checks++;
+});
+await as(QA2,T,async()=>{
+ assert.equal((await db.query('SELECT id FROM public.unipathway_assessment_attempts WHERE id=$1',[second])).rows.length,1);checks++;
+ assert.equal((await db.query('SELECT id FROM public.unipathway_assessment_briefs WHERE id=$1',[brief])).rows.length,1);checks++;
+ assert.equal((await db.query('SELECT attempt_id FROM public.unipathway_assessment_human_marks WHERE attempt_id=$1',[second])).rows.length,1);checks++;
+ assert.equal((await db.query('SELECT attempt_id FROM public.unipathway_assessment_released_results WHERE attempt_id=$1',[second])).rows.length,1);checks++;
+ await denied(()=>db.query('SELECT public.finalise_unipathway_grade_appeal($1,$2,$3)',[appealId,true,'A reviewer cannot serve as the independent final signatory for their own recommendation.']),/centre-director sign-off/i);
+ await db.query('SELECT public.record_unipathway_appeal_review($1,$2,$3,$4,$5)',
+  [appealId,'correct',90,'The originally awarded mark omitted valid measurement comparisons in the revised evidence. The adjusted raw score better matches the frozen rubric and independently recorded observations.','The force/acceleration calculations meet the required standard. Credit has been adjusted for your quantitative observations; continue expanding your analysis of measurement uncertainty.']);checks++;
+});
+await as(S,T,async()=>{
+ assert.equal((await db.query('SELECT * FROM public.unipathway_assessment_appeal_reviews')).rows.length,0);checks++;
+ assert.equal((await db.query('SELECT * FROM public.unipathway_assessment_grade_amendments')).rows.length,0);checks++;
+});
+await as(M,T,async()=>{
+ await denied(()=>db.query('SELECT public.finalise_unipathway_grade_appeal($1,$2,$3)',
+  [appealId,true,'The original programme manager cannot self-sign an independent appeal recommendation.']),/centre-director sign-off/i);
+});
+await as(DIRECTOR,T,async()=>{
+ await db.query('SELECT public.finalise_unipathway_grade_appeal($1,$2,$3)',
+  [appealId,true,'I independently verified the second IQA recommendation, the original evidence and the published policy. I authorise a separate amended result, preserving the prior mark and penalty.']);checks++;
+});
+await as(S,T,async()=>{
+ const original=await db.query('SELECT final_score FROM public.unipathway_assessment_released_results WHERE attempt_id=$1',[second]);
+ assert.equal(Number(original.rows[0].final_score),81,'Original release must remain unchanged');checks++;
+ const corrected=await db.query('SELECT original_final_score,corrected_raw_score,retained_penalty_points,corrected_final_score FROM public.unipathway_assessment_grade_amendments WHERE attempt_id=$1',[second]);
+ assert.deepEqual(corrected.rows[0]&&[Number(corrected.rows[0].original_final_score),Number(corrected.rows[0].corrected_raw_score),Number(corrected.rows[0].retained_penalty_points),Number(corrected.rows[0].corrected_final_score)],[81,90,5,85]);checks++;
+ const outcome=await db.query('SELECT final_outcome FROM public.unipathway_assessment_appeal_outcomes WHERE appeal_id=$1',[appealId]);
+ assert.equal(outcome.rows[0].final_outcome,'amended');checks++;
+});
+await as(S2,T,async()=>{
+ assert.equal((await db.query('SELECT * FROM public.unipathway_assessment_grade_amendments')).rows.length,0);checks++;
+ assert.equal((await db.query('SELECT * FROM public.unipathway_assessment_appeal_outcomes')).rows.length,0);checks++;
+});
+await as(OUT,T2,async()=>{
+ assert.equal((await db.query('SELECT * FROM public.unipathway_assessment_grade_amendments')).rows.length,0);checks++;
+});
+
 await db.close();
 console.log('Independent assessor, IQA approval, two-tenant privacy and penalty RLS: '+checks+' checks passed.');
