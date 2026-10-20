@@ -187,7 +187,6 @@ RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $
  WHERE b.id=p_brief AND public.same_tenant(b.tenant_id)
  AND (public.has_role(auth.uid(),'programme_leader'::public.app_role)
   OR public.has_role(auth.uid(),'centre_director'::public.app_role)
-  OR public.has_role(auth.uid(),'iqa_officer'::public.app_role)
   OR public.has_role(auth.uid(),'superadmin'::public.app_role)))
 $assess_manager$;
 
@@ -221,13 +220,25 @@ RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $
  AND public.has_role(auth.uid(),'iqa_officer'::public.app_role))
 $assess_quality$;
 
+-- The assigned independent marker/reviewer sees only the rubric for attempts
+-- explicitly allocated to them; neither role gets tenant-wide student evidence.
+CREATE OR REPLACE FUNCTION public.can_review_uni_assessment_brief(p_brief uuid)
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $assess_brief_review$
+ SELECT EXISTS(SELECT 1 FROM public.unipathway_assessment_attempts x
+ JOIN public.unipathway_assessment_allocations a ON a.attempt_id=x.id AND a.tenant_id=x.tenant_id
+ WHERE x.brief_id=p_brief AND x.tenant_id=public.get_user_tenant_id(auth.uid())
+ AND ((a.marker_id=auth.uid() AND public.has_role(auth.uid(),'assessor'::public.app_role))
+  OR (a.qa_reviewer_id=auth.uid() AND public.has_role(auth.uid(),'iqa_officer'::public.app_role))))
+$assess_brief_review$;
+
 -- Immutable published syllabus/criterion definitions. Only authorised editors
 -- write DRAFT content. Programme/IQA approval is a dedicated transaction.
 CREATE POLICY "assessment briefs published enrolled or author or coordinator"
  ON public.unipathway_assessment_briefs FOR SELECT TO authenticated USING(
   (status='published' AND public.can_study_uni_assessment(id))
   OR public.can_author_uni_assessment(module_id,tenant_id)
-  OR public.can_manage_uni_assessment(id));
+  OR public.can_manage_uni_assessment(id)
+  OR public.can_review_uni_assessment_brief(id));
 CREATE POLICY "brief creator initial draft only" ON public.unipathway_assessment_briefs
  FOR INSERT TO authenticated WITH CHECK(status='draft' AND lecturer_id=auth.uid()
  AND public.can_author_uni_assessment(module_id,tenant_id)
@@ -243,7 +254,8 @@ CREATE POLICY "criteria published enrolled or author or coordinator"
    AND b.tenant_id=tenant_id AND
    (public.can_study_uni_assessment(b.id)
     OR public.can_author_uni_assessment(b.module_id,b.tenant_id)
-    OR public.can_manage_uni_assessment(b.id))));
+    OR public.can_manage_uni_assessment(b.id)
+    OR public.can_review_uni_assessment_brief(b.id))));
 CREATE POLICY "author adds unpublished assessment criteria" ON public.unipathway_assessment_criteria
  FOR INSERT TO authenticated WITH CHECK(
  EXISTS(SELECT 1 FROM public.unipathway_assessment_briefs b
@@ -525,6 +537,7 @@ REVOKE ALL ON FUNCTION public.can_manage_uni_assessment(uuid) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.can_study_uni_assessment(uuid) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.can_mark_uni_attempt(uuid) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.can_quality_uni_attempt(uuid) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.can_review_uni_assessment_brief(uuid) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.publish_unipathway_assessment_brief(uuid) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.submit_unipathway_assessment(uuid,text) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.allocate_unipathway_independent_marker(uuid,uuid,uuid) FROM PUBLIC;
@@ -536,6 +549,7 @@ REVOKE ALL ON FUNCTION public.release_unipathway_assessment_mark(uuid) FROM PUBL
 GRANT EXECUTE ON FUNCTION public.can_author_uni_assessment(uuid,uuid),
  public.can_manage_uni_assessment(uuid),public.can_study_uni_assessment(uuid),
  public.can_mark_uni_attempt(uuid),public.can_quality_uni_attempt(uuid),
+ public.can_review_uni_assessment_brief(uuid),
  public.publish_unipathway_assessment_brief(uuid),
  public.submit_unipathway_assessment(uuid,text),
  public.allocate_unipathway_independent_marker(uuid,uuid,uuid),
