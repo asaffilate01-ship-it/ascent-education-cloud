@@ -58,12 +58,8 @@ export default function LoginPage() {
     toast.success('Signed in successfully');
 
     if (data.user) {
-      const { data: roles } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', data.user.id);
-      const primaryRole = (roles?.[0]?.role as UserRole) || 'student';
-      navigate(ROLE_HOME[primaryRole] || '/student');
+      // Navigation happens in the effect above once the user's roles are loaded.
+      setSignedIn(true);
     } else {
       navigate('/student');
     }
