@@ -59,6 +59,8 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Dashboard', icon: LayoutDashboard, path: '/director' },
       { label: 'Admissions', icon: UserPlus, path: '/director/admissions' },
       { label: 'Programmes', icon: BookOpen, path: '/director/programmes' },
+      { label: 'Syllabuses & Board Readiness', icon: GraduationCap, path: '/director/syllabuses' },
+      { label: 'Independent Marker Allocation', icon: ClipboardList, path: '/director/assessment-management' },
       { label: 'CIBTAC / CPD Accreditation', icon: Award, path: '/director/beauty-accreditation' },
       { label: 'IELTS Academy', icon: GraduationCap, path: '/director/ielts' },
       { label: 'Staff', icon: Users, path: '/director/staff' },
@@ -121,6 +123,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
     { items: [
       { label: 'Dashboard', icon: LayoutDashboard, path: '/lecturer' },
       { label: 'Teaching', icon: BookOpen, path: '/lecturer/teaching' },
+      { label: 'Coursework Briefs & Rubrics', icon: ClipboardCheck, path: '/lecturer/assessments' },
       { label: 'IELTS Academy', icon: GraduationCap, path: '/lecturer/ielts' },
       { label: 'Live Classroom', icon: Video, path: '/lecturer/classroom' },
     { label: 'Class Scheduler & Invites', icon: Calendar, path: '/lecturer/class-scheduler' },
@@ -132,7 +135,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'AI Builder', icon: Brain, path: '/ai-course-builder' },
       { label: 'Quizzes', icon: ClipboardList, path: '/lecturer/quizzes' },
       { label: 'Forums', icon: BookOpen, path: '/lecturer/forums' },
-      { label: 'Gradebook', icon: BarChart3, path: '/lecturer/gradebook' },
+      { label: 'Teaching Rubrics (not marking)', icon: ClipboardCheck, path: '/lecturer/gradebook' },
 
       { label: 'Report Cards', icon: FileText, path: '/lecturer/report-cards' },
       { label: 'Attendance', icon: Calendar, path: '/lecturer/attendance' },
@@ -148,7 +151,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
   ],
   assessor: [
     { items: [
-      { label: 'Assessment Queue', icon: ClipboardList, path: '/assessor' },
+      { label: 'Independent Marking & Omniqora', icon: ClipboardList, path: '/assessor' },
       { label: 'Messages', icon: MessageSquare, path: '/messaging' },
       { label: 'Activity Log', icon: Activity, path: '/my-activity' },
     ]},
@@ -174,7 +177,8 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Knowledge Library', icon: BookOpen, path: '/programme/knowledge' },
       { label: 'Lecturers', icon: Users, path: '/programme/lecturers' },
       { label: 'Students', icon: GraduationCap, path: '/programme/students' },
-      { label: 'Assessments', icon: ClipboardList, path: '/programme/assessments' },
+      { label: 'Marker Allocation & Brief Approval', icon: ClipboardList, path: '/programme/assessments' },
+      { label: 'Syllabuses & Mock Exams', icon: GraduationCap, path: '/programme/syllabuses' },
       { label: 'Schedule', icon: Calendar, path: '/programme/schedule' },
       { label: 'Moderation', icon: FileCheck, path: '/programme/moderation' },
       { label: 'Analytics', icon: BarChart3, path: '/programme/analytics' },
@@ -186,6 +190,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
     { items: [
       { label: 'Dashboard', icon: LayoutDashboard, path: '/qa' },
       { label: 'Moderation', icon: FileCheck, path: '/qa/moderation' },
+      { label: 'Independent Coursework IQA', icon: ClipboardCheck, path: '/qa/assessment-approval' },
       { label: 'Sampling', icon: ClipboardList, path: '/qa/sampling' },
       { label: 'Plagiarism', icon: AlertTriangle, path: '/qa/plagiarism' },
       { label: 'Malpractice', icon: Shield, path: '/qa/malpractice' },
@@ -257,8 +262,8 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
     { label: 'Module Materials', icon: BookOpen, path: '/student/materials' },
       { label: 'Microsoft 365', icon: Mail, path: '/student/microsoft' },
       { label: 'My Labs & Self Study', icon: Cloud, path: '/student/labs' },
-      { label: 'Assignments', icon: ClipboardList, path: '/student/assignments' },
-      { label: 'Grades', icon: BarChart3, path: '/student/grades' },
+      { label: 'My Coursework & Resubmissions', icon: ClipboardList, path: '/student/assignments' },
+      { label: 'Approved Results Only', icon: BarChart3, path: '/student/grades' },
       { label: 'Attendance', icon: Calendar, path: '/student/attendance' },
       { label: 'Calendar', icon: CalendarDays, path: '/calendar' },
       { label: 'Timeline', icon: Clock, path: '/student/timeline' },
