@@ -64,8 +64,11 @@ await as(LECTURER,A,async()=>{
  console.log('Synthetic lecturer policy fixtures:',scope.rows[0]);
  const moduleCheck=await db.query('SELECT id FROM public.modules WHERE id=$1',[mod]);
  console.log('Fixture module read count:',moduleCheck.rows.length);
- const t=await db.query("INSERT INTO public.lab_templates(tenant_id,module_id,title,provider,created_by,access_mode,published,estimated_cost_gbp) VALUES($1,$2,'AWS VPC Lab','aws_managed',$3,'both',false,8) RETURNING id",[A,mod,LECTURER]);
- template=t.rows[0].id;checks++;
+ const allowed=await db.query('SELECT public.can_create_uni_lab_in_module($1,$2) AS allowed',[mod,A]);
+ console.log('Module authorisation predicate:',allowed.rows[0]);
+ await db.query("INSERT INTO public.lab_templates(tenant_id,module_id,title,provider,created_by,access_mode,published,estimated_cost_gbp) VALUES($1,$2,'AWS VPC Lab','aws_managed',$3,'both',false,8)",[A,mod,LECTURER]);
+ const t=await db.query("SELECT id FROM public.lab_templates WHERE title='AWS VPC Lab'");
+ template=t.rows[0]?.id;checks++;
  const q=await db.query("INSERT INTO public.lab_tasks(tenant_id,template_id,sequence_no,title,instructions) VALUES($1,$2,1,'Create private subnet','Explain your route tables') RETURNING id",[A,template]);
  task=q.rows[0].id;checks++;
  await db.query("UPDATE public.lab_templates SET published=true WHERE id=$1",[template]);checks++;
