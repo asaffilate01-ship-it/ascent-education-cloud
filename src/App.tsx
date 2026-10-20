@@ -82,6 +82,7 @@ const StudentDashboard = lazy(() => import("./pages/student/StudentDashboard"));
 const StudentCourses = lazy(() => import("./pages/student/StudentCourses"));
 const StudentCoursework = lazy(() => import("./pages/student/StudentCoursework"));
 const StudentReleasedResults = lazy(() => import("./pages/student/StudentReleasedResults"));
+const StudentAssessmentAppeals = lazy(() => import("./pages/student/StudentAssessmentAppeals"));
 const StudentLibrary = lazy(() => import("./pages/student/StudentLibrary"));
 const StudentCareer = lazy(() => import("./pages/student/StudentCareer"));
 const CareerMarketplace = lazy(() => import("./pages/careers/CareerMarketplace"));
@@ -98,6 +99,8 @@ const LecturerAttendance = lazy(() => import("./pages/lecturer/LecturerAttendanc
 const IndependentMarkerQueue = lazy(() => import("./pages/assessor/IndependentMarkerQueue"));
 const AssessmentManager = lazy(() => import("./pages/programme/AssessmentManager"));
 const QualityAssessmentApproval = lazy(() => import("./pages/qa/QualityAssessmentApproval"));
+const AppealReviewerQueue = lazy(() => import("./pages/qa/AppealReviewerQueue"));
+const AssessmentAppealManagement = lazy(() => import("./pages/programme/AssessmentAppealManagement"));
 const CentreSyllabusPlanner = lazy(() => import("./pages/programme/CentreSyllabusPlanner"));
 const AwardingBodyDashboard = lazy(() => import("./pages/eqa/AwardingBodyDashboard"));
 
@@ -345,6 +348,7 @@ function AppRoutes() {
         <Route path="/director/programmes" element={<Director><ProgrammeManagement /></Director>} />
         <Route path="/director/syllabuses" element={<Director><CentreSyllabusPlanner /></Director>} />
         <Route path="/director/assessment-management" element={<Director><AssessmentManager /></Director>} />
+        <Route path="/director/assessment-appeals" element={<Director><AssessmentAppealManagement /></Director>} />
         <Route path="/director/beauty-accreditation" element={<Director><BeautyAccreditationDashboard /></Director>} />
         <Route path="/director/ielts" element={<Director><IELTSAcademy /></Director>} />
         <Route path="/director/staff" element={<Director><StaffManagement /></Director>} />
@@ -420,6 +424,7 @@ function AppRoutes() {
         <Route path="/programme/lecturers" element={<Programme><StaffManagement /></Programme>} />
         <Route path="/programme/students" element={<Programme><StudentManagement /></Programme>} />
         <Route path="/programme/assessments" element={<Programme><AssessmentManager /></Programme>} />
+        <Route path="/programme/appeals" element={<Programme><AssessmentAppealManagement /></Programme>} />
         <Route path="/programme/syllabuses" element={<Programme><CentreSyllabusPlanner /></Programme>} />
         <Route path="/programme/schedule" element={<Programme><ScheduleManager /></Programme>} />
         <Route path="/programme/moderation" element={<Programme><QADashboard /></Programme>} />
@@ -432,7 +437,7 @@ function AppRoutes() {
         <Route path="/qa/sampling" element={<QA><QADashboard /></QA>} />
         <Route path="/qa/plagiarism" element={<QA><QADashboard /></QA>} />
         <Route path="/qa/malpractice" element={<QA><QADashboard /></QA>} />
-        <Route path="/qa/appeals" element={<QA><QADashboard /></QA>} />
+        <Route path="/qa/appeals" element={<QA><AppealReviewerQueue /></QA>} />
         <Route path="/qa/audit" element={<QA><QADashboard /></QA>} />
         <Route path="/qa/evidence" element={<QA><QADashboard /></QA>} />
 
@@ -482,6 +487,7 @@ function AppRoutes() {
         <Route path="/student/materials" element={<StudentR><ModuleMaterials /></StudentR>} />
         <Route path="/student/assignments" element={<StudentR><StudentCoursework /></StudentR>} />
         <Route path="/student/grades" element={<StudentR><StudentReleasedResults /></StudentR>} />
+        <Route path="/student/appeals" element={<StudentR><StudentAssessmentAppeals /></StudentR>} />
         <Route path="/student/attendance" element={<StudentR><AttendanceDashboard /></StudentR>} />
         <Route path="/student/library" element={<StudentR><StudentLibrary /></StudentR>} />
         <Route path="/student/finance" element={<StudentR><StudentFees /></StudentR>} />
