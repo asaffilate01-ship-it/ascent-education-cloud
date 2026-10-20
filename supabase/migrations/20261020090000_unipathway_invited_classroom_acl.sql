@@ -164,6 +164,13 @@ CREATE POLICY "whiteboard invited class only" ON public.lesson_whiteboards
  FOR SELECT TO authenticated USING(
   session_id IS NOT NULL AND public.can_join_unipathway_class(session_id)
  );
+CREATE POLICY "assigned educator may create whiteboard" ON public.lesson_whiteboards FOR INSERT TO authenticated
+ WITH CHECK(session_id IS NOT NULL AND public.can_manage_unipathway_class(session_id)
+  AND tenant_id=(SELECT s.tenant_id FROM public.live_class_sessions s WHERE s.id=session_id)
+  AND prepared_by=auth.uid());
+CREATE POLICY "assigned educator updates whiteboard" ON public.lesson_whiteboards FOR UPDATE TO authenticated
+ USING(session_id IS NOT NULL AND public.can_manage_unipathway_class(session_id))
+ WITH CHECK(session_id IS NOT NULL AND public.can_manage_unipathway_class(session_id));
 DROP POLICY IF EXISTS "lesson packs tenant read" ON public.lesson_ai_packs;
 DROP POLICY IF EXISTS "lesson packs academic manage" ON public.lesson_ai_packs;
 CREATE POLICY "lesson packs reviewed publication" ON public.lesson_ai_packs FOR SELECT TO authenticated
@@ -247,15 +254,32 @@ CREATE POLICY "private module material download" ON storage.objects FOR SELECT T
    OR (a.publication_status='published' AND (a.available_at IS NULL OR a.available_at<=now())
     AND public.can_view_unipathway_module(a.module_id)))
  ));
--- Teacher uploads use a vetted server endpoint; no generic browser storage insert grant.
+-- A lecturer may upload only under a module assigned to them. Names are
+-- tenant UUID/module UUID/random filename. No cross-module browser upload.
+CREATE OR REPLACE FUNCTION public.can_upload_unipathway_module_asset(p_path text)
+ RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $
+ SELECT EXISTS(
+  SELECT 1 FROM public.modules m
+  WHERE p_path LIKE m.tenant_id::text||'/'||m.id::text||'/%'
+    AND m.tenant_id=public.get_user_tenant_id(auth.uid())
+    AND public.can_manage_unipathway_module(m.id)
+ )
+ $;
+CREATE POLICY "assigned module teacher upload private asset" ON storage.objects FOR INSERT TO authenticated
+ WITH CHECK(bucket_id='unipathway-module-materials' AND public.can_upload_unipathway_module_asset(name));
+CREATE POLICY "assigned module teacher remove unregistered asset" ON storage.objects FOR DELETE TO authenticated
+ USING(bucket_id='unipathway-module-materials' AND public.can_upload_unipathway_module_asset(name));
+
 REVOKE ALL ON FUNCTION public.can_manage_unipathway_class(uuid) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.can_join_unipathway_class(uuid) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.can_review_unipathway_class(uuid) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.can_manage_unipathway_module(uuid) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.can_view_unipathway_module(uuid) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.can_read_unipathway_class_media(text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.can_upload_unipathway_module_asset(text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.can_manage_unipathway_class(uuid),public.can_join_unipathway_class(uuid),
  public.can_review_unipathway_class(uuid),public.can_manage_unipathway_module(uuid),
- public.can_view_unipathway_module(uuid),public.can_read_unipathway_class_media(text)
+ public.can_view_unipathway_module(uuid),public.can_read_unipathway_class_media(text),
+ public.can_upload_unipathway_module_asset(text)
  TO authenticated;
 COMMIT;
