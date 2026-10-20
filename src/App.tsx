@@ -73,6 +73,7 @@ const LiveClassScheduler = lazy(() => import("./pages/classroom/LiveClassSchedul
 const WhiteboardStudio = lazy(() => import("./pages/classroom/WhiteboardStudio"));
 const MicrosoftAccountCentre = lazy(() => import("./pages/student/MicrosoftAccountCentre"));
 const LessonArchive = lazy(() => import("./pages/student/LessonArchive"));
+const ModuleMaterials = lazy(() => import("./pages/learning/ModuleMaterials"));
 
 // Student
 const StudentDashboard = lazy(() => import("./pages/student/StudentDashboard"));
@@ -370,6 +371,10 @@ function AppRoutes() {
         <Route path="/lecturer/teaching" element={<LecturerR><LecturerTeaching /></LecturerR>} />
         <Route path="/lecturer/ielts" element={<LecturerR><IELTSAcademy /></LecturerR>} />
         <Route path="/lecturer/classroom" element={<LecturerR><LiveClassroom /></LecturerR>} />
+        <Route path="/lecturer/class-scheduler" element={<LecturerR><LiveClassScheduler /></LecturerR>} />
+        <Route path="/lecturer/lesson-archive" element={<LecturerR><LessonArchive /></LecturerR>} />
+        <Route path="/lecturer/materials" element={<LecturerR><ModuleMaterials /></LecturerR>} />
+        <Route path="/lecturer/whiteboards" element={<LecturerR><WhiteboardStudio /></LecturerR>} />
         <Route path="/lecturer/report-cards" element={<LecturerR><ReportCardGenerator /></LecturerR>} />
         <Route path="/lecturer/marking" element={<LecturerR><LecturerMarking /></LecturerR>} />
         <Route path="/lecturer/attendance" element={<LecturerR><LecturerAttendance /></LecturerR>} />
@@ -453,6 +458,7 @@ function AppRoutes() {
         <Route path="/student/classroom" element={<StudentR><LiveClassroom /></StudentR>} />
         <Route path="/student/microsoft" element={<StudentR><MicrosoftAccountCentre /></StudentR>} />
         <Route path="/student/lesson-archive" element={<StudentR><LessonArchive /></StudentR>} />
+        <Route path="/student/materials" element={<StudentR><ModuleMaterials /></StudentR>} />
         <Route path="/student/assignments" element={<StudentR><StudentAssignments /></StudentR>} />
         <Route path="/student/grades" element={<StudentR><StudentGrades /></StudentR>} />
         <Route path="/student/attendance" element={<StudentR><AttendanceDashboard /></StudentR>} />
