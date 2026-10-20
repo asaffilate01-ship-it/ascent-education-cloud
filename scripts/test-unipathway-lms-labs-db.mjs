@@ -72,7 +72,9 @@ await as(LECTURER,A,async()=>{
  const q=await db.query("INSERT INTO public.lab_tasks(tenant_id,template_id,sequence_no,title,instructions) VALUES($1,$2,1,'Create private subnet','Explain your route tables') RETURNING id",[A,template]);
  task=q.rows[0].id;checks++;
  await db.query("UPDATE public.lab_templates SET published=true WHERE id=$1",[template]);checks++;
- const r=await db.query("INSERT INTO public.lab_class_runs(tenant_id,template_id,cohort_reference,lead_instructor_id,max_concurrent) VALUES($1,$2,'Morning Teams cloud group',$3,1) RETURNING id",[A,template,LECTURER]);run=r.rows[0].id;checks++;
+ await db.query("INSERT INTO public.lab_class_runs(tenant_id,template_id,cohort_reference,lead_instructor_id,max_concurrent) VALUES($1,$2,'Morning Teams cloud group',$3,1)",[A,template,LECTURER]);
+ const r=await db.query("SELECT id FROM public.lab_class_runs WHERE cohort_reference='Morning Teams cloud group'");
+ run=r.rows[0]?.id;assert.ok(run,'Assigned lecturer sees newly created lab run');checks++;
 });
 await as(STUDENT,A,async()=>{
  const visible=await db.query('SELECT id FROM public.lab_templates');assert.equal(visible.rows.length,1);checks++;
