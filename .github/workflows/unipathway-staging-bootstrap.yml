@@ -1,0 +1,92 @@
+name: UniPathway Staging Bootstrap (Explicit Manual)
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: 'Offline migration inventory, read-only staging preflight, or synthetic staging fixtures'
+        required: true
+        type: choice
+        options: [inventory, staging-preflight, create-test-tenants, create-test-accounts]
+      confirmation:
+        description: 'Type UNIPATHWAY_STAGING_ONLY'
+        required: true
+        type: string
+      write_approval:
+        description: 'For fixture writes only: type I_APPROVE_ISOLATED_STAGING_FIXTURES'
+        required: false
+        type: string
+permissions:
+  contents: read
+jobs:
+  offline-inventory:
+    if: inputs.operation == 'inventory'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 24, cache: npm}
+      - run: npm ci --ignore-scripts
+      - run: node scripts/plan-unipathway-migrations.mjs --json
+  read-only-staging-preflight:
+    if: inputs.operation == 'staging-preflight' && inputs.confirmation == 'UNIPATHWAY_STAGING_ONLY'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: unipathway-staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 24, cache: npm}
+      - run: npm ci --ignore-scripts
+      - name: Verify stage identity and inspect source and applied SQL versions without writes
+        run: node scripts/plan-unipathway-migrations.mjs --staging --strict --json
+        env:
+          STAGING_RUN_ACK: ${{ inputs.confirmation }}
+          STAGING_PROJECT_REF: ${{ vars.UNIPATHWAY_STAGING_PROJECT_REF }}
+          UNIPATHWAY_PRODUCTION_PROJECT_REF: ${{ vars.UNIPATHWAY_PRODUCTION_PROJECT_REF }}
+          STAGING_SUPABASE_URL: ${{ secrets.UNIPATHWAY_STAGING_URL }}
+          STAGING_DATABASE_URL: ${{ secrets.UNIPATHWAY_STAGING_DATABASE_URL }}
+  synthetic-tenant-fixtures:
+    if: inputs.operation == 'create-test-tenants' && inputs.confirmation == 'UNIPATHWAY_STAGING_ONLY' && inputs.write_approval == 'I_APPROVE_ISOLATED_STAGING_FIXTURES'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    environment: unipathway-staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 24, cache: npm}
+      - run: npm ci --ignore-scripts
+      - name: Create only two isolated, clearly labelled fictitious QA tenants
+        run: node scripts/init-unipathway-staging-tenants.mjs --apply
+        env:
+          APP_ENV: staging
+          UNIPATHWAY_ISOLATED_STAGING_SEED: 'true'
+          STAGING_RUN_ACK: ${{ inputs.confirmation }}
+          UNIPATHWAY_STAGING_WRITE_ACK: ${{ inputs.write_approval }}
+          STAGING_PROJECT_REF: ${{ vars.UNIPATHWAY_STAGING_PROJECT_REF }}
+          UNIPATHWAY_PRODUCTION_PROJECT_REF: ${{ vars.UNIPATHWAY_PRODUCTION_PROJECT_REF }}
+          STAGING_SUPABASE_URL: ${{ secrets.UNIPATHWAY_STAGING_URL }}
+          STAGING_SERVICE_ROLE_KEY: ${{ secrets.UNIPATHWAY_STAGING_SERVICE_ROLE_KEY }}
+  synthetic-account-fixtures:
+    if: inputs.operation == 'create-test-accounts' && inputs.confirmation == 'UNIPATHWAY_STAGING_ONLY' && inputs.write_approval == 'I_APPROVE_ISOLATED_STAGING_FIXTURES'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: unipathway-staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 24, cache: npm}
+      - run: npm ci --ignore-scripts
+      - name: Provision each tagged QA identity with its own protected credential
+        run: node scripts/bootstrap-unipathway-staging-accounts.mjs --apply
+        env:
+          APP_ENV: staging
+          UNIPATHWAY_ISOLATED_STAGING_SEED: 'true'
+          STAGING_RUN_ACK: ${{ inputs.confirmation }}
+          UNIPATHWAY_STAGING_WRITE_ACK: ${{ inputs.write_approval }}
+          STAGING_PROJECT_REF: ${{ vars.UNIPATHWAY_STAGING_PROJECT_REF }}
+          UNIPATHWAY_PRODUCTION_PROJECT_REF: ${{ vars.UNIPATHWAY_PRODUCTION_PROJECT_REF }}
+          STAGING_SUPABASE_URL: ${{ secrets.UNIPATHWAY_STAGING_URL }}
+          STAGING_SERVICE_ROLE_KEY: ${{ secrets.UNIPATHWAY_STAGING_SERVICE_ROLE_KEY }}
+          STAGING_TENANTS_JSON: ${{ vars.UNIPATHWAY_STAGING_TENANTS_JSON }}
+          STAGING_ROLE_CREDENTIALS_JSON: ${{ secrets.UNIPATHWAY_STAGING_ROLE_CREDENTIALS_JSON }}
