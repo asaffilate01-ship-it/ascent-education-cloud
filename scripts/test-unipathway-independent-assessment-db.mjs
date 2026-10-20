@@ -98,6 +98,9 @@ const scores=[
 ];
 await as(MARK,T,async()=>{
  await denied(()=>db.query('SELECT public.record_unipathway_human_mark($1,$2,$3)',[second,JSON.stringify(scores.slice(0,1)),'Human feedback provided but one rubric item omitted deliberately']),/Each published criterion/i);
+ await denied(()=>db.query('SELECT public.record_unipathway_human_mark($1,$2,$3)',[
+  second,JSON.stringify([...scores,{code:'LO99.INVALID',points:0,reason:'Unrecognised criterion should never silently pass',evidence:'none',missing:'none'}]),
+  'Feedback includes every valid rubric criterion and an unapproved additional one.']),/Each published criterion/i);
  const a=await db.query('SELECT public.record_unipathway_human_mark($1,$2,$3) AS score',[second,JSON.stringify(scores),'Correct method with quantitative evidence; stronger discussion of measurement uncertainty would improve the response.']);
  assert.equal(Number(a.rows[0].score),81);checks++;
 });
