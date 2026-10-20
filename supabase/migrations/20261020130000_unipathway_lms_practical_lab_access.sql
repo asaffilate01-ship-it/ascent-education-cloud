@@ -23,6 +23,9 @@ ALTER TABLE public.lab_templates
  ADD CONSTRAINT lab_templates_provider_check
  CHECK(provider IN ('unipathway_container','github_codespaces','aws_academy','aws_managed','azure','jupyter','managed_lab'));
 ALTER TABLE public.lab_provider_configs
+ ADD COLUMN IF NOT EXISTS budget_currency text NOT NULL DEFAULT 'UNSET'
+ CHECK(budget_currency IN ('UNSET','GBP'));
+ALTER TABLE public.lab_provider_configs
  ADD COLUMN IF NOT EXISTS max_concurrent integer NOT NULL DEFAULT 25
  CHECK(max_concurrent BETWEEN 1 AND 500);
 ALTER TABLE public.lab_provider_configs
@@ -306,8 +309,11 @@ BEGIN
     OR cfg.verified_at IS NULL THEN
   RAISE EXCEPTION 'Lab provider is not activated. No cloud resources were started.';
  END IF;
- IF cfg.budget_monthly IS NULL OR cfg.budget_monthly<=0 THEN
-  RAISE EXCEPTION 'A monthly lab spend ceiling must be approved before launches';
+ IF cfg.budget_monthly IS NULL OR cfg.budget_monthly<=0 OR cfg.budget_currency<>'GBP' THEN
+  RAISE EXCEPTION 'A verified monthly GBP lab spending limit must be approved before launches';
+ END IF;
+ IF t.provider='aws_managed' AND t.estimated_cost_gbp<=0 THEN
+  RAISE EXCEPTION 'Managed AWS labs require a reviewed non-zero per-attempt cost estimate';
  END IF;
  SELECT count(*) INTO v_active FROM public.unipathway_lab_launch_requests
  WHERE tenant_id=t.tenant_id AND template_id IN(
