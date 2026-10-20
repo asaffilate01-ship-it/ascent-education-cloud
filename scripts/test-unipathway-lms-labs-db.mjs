@@ -61,11 +61,11 @@ const as=async(uid,tenant,action)=>{
 };
 await as(LECTURER,A,async()=>{
  const scope=await db.query("SELECT auth.uid()::text AS uid, public.get_user_tenant_id(auth.uid())::text AS tenant, public.has_role(auth.uid(),'lecturer'::public.app_role) AS lecturer, public.same_tenant($1) AS same_tenant",[A]);
- console.log('Synthetic lecturer policy fixtures:',scope.rows[0]);
+ assert.equal(scope.rows[0].lecturer,true);
  const moduleCheck=await db.query('SELECT id FROM public.modules WHERE id=$1',[mod]);
- console.log('Fixture module read count:',moduleCheck.rows.length);
+ assert.equal(moduleCheck.rows.length,1);checks++;
  const allowed=await db.query('SELECT public.can_create_uni_lab_in_module($1,$2) AS allowed',[mod,A]);
- console.log('Module authorisation predicate:',allowed.rows[0]);
+ assert.equal(allowed.rows[0].allowed,true);checks++;
  await db.query("INSERT INTO public.lab_templates(tenant_id,module_id,title,provider,created_by,access_mode,published,estimated_cost_gbp) VALUES($1,$2,'AWS VPC Lab','aws_managed',$3,'both',false,8)",[A,mod,LECTURER]);
  const t=await db.query("SELECT id FROM public.lab_templates WHERE title='AWS VPC Lab'");
  template=t.rows[0]?.id;checks++;
