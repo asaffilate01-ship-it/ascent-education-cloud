@@ -66,6 +66,16 @@ export default function StudentCourses() {
 
   return (
     <DashboardLayout title="My Courses" subtitle="Enrolled programmes and module progress">
+      <section aria-label="My LMS learning tools" className="mb-6 rounded-xl border bg-primary/5 p-4">
+        <h2 className="font-semibold">My course learning environment</h2>
+        <p className="mt-2 text-sm text-muted-foreground">Open notes, slides and worksheets, join your approved lectures, or practise in module-linked AWS, coding and data labs. Independent study progress stays associated with your enrolled modules.</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button size="sm" variant="outline" onClick={()=>navigate('/student/materials')}>Course notes & presentations</Button>
+          <Button size="sm" variant="outline" onClick={()=>navigate('/student/labs')}>Cloud & coding practical labs</Button>
+          <Button size="sm" variant="outline" onClick={()=>navigate('/student/classroom')}>Live online classroom</Button>
+          <Button size="sm" variant="outline" onClick={()=>navigate('/student/assignments')}>Homework & submissions</Button>
+        </div>
+      </section>
       {programmes.map((prog) => {
         const progModules = modulesByProgramme[prog.id] || [];
         const completedModules = progModules.filter((m) => m.status === 'archived').length;
