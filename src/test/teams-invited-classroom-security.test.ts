@@ -47,6 +47,7 @@ describe('UniPathway invitation-only Teams classrooms and academic materials',()
   }
   expect(routes).toContain('<StudentR><ModuleMaterials /></StudentR>');
   expect(routes).toContain('<LecturerR><LiveClassScheduler /></LecturerR>');
+  expect(routes).toContain('<WelfareR><HealthRecords /></WelfareR>');
  });
  it('does not show unallocated modules as a fallback',()=>{
   expect(lecturer).not.toContain('modules.slice(0, 6)');
