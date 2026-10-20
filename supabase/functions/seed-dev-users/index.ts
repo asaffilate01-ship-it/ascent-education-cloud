@@ -1,135 +1,19 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { corsHeaders } from '../_shared/cors.ts';
-
-import { DEV_ACCOUNTS } from './accounts.ts';
-
-Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
-  }
-
-  const url = Deno.env.get('SUPABASE_URL');
-  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-  // This endpoint provisions privileged demonstration accounts and must NEVER
-  // be usable on the live, publicly accessible UniPathway database.
-  // All three values are server-only configuration, not request headers/metadata.
-  if (Deno.env.get('APP_ENV') !== 'staging'
-    || Deno.env.get('UNIPATHWAY_ISOLATED_STAGING_SEED') !== 'true'
-    || !Deno.env.get('UNIPATHWAY_STAGING_SUPABASE_URL')
-    || url !== Deno.env.get('UNIPATHWAY_STAGING_SUPABASE_URL')) {
-    return new Response(JSON.stringify({error:'Demo account seeding is restricted to verified isolated staging.'}), {
-      status: 403, headers: {...corsHeaders,'Content-Type':'application/json'},
-    });
-  }
-  if (!url || !serviceKey) return new Response(JSON.stringify({ error: 'Account service unavailable' }), {
-    status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
-  const admin = createClient(url, serviceKey);
-
-  // Only an authenticated superadmin may seed dev accounts.
-  const authHeader = req.headers.get('Authorization') ?? '';
-  const token = authHeader.replace(/^Bearer\s+/i, '');
-  const { data: userData } = await admin.auth.getUser(token);
-  const callerId = userData?.user?.id;
-  if (!callerId) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-      status: 401,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-  const { data: isSuper } = await admin.rpc('has_role', {
-    _user_id: callerId,
-    _role: 'superadmin',
-  });
-  if (!isSuper) {
-    return new Response(JSON.stringify({ error: 'Forbidden' }), {
-      status: 403,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-
-  const password = Deno.env.get('DEV_ACCOUNT_PASSWORD');
-  if (!password) return new Response(JSON.stringify({ error: 'Test account password is not configured' }), {
-    status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
-
-
-  // Pick a tenant (unipathway if present, else any)
-  const { data: tenants } = await admin
-    .from('tenants')
-    .select('id, slug')
-    .limit(50);
-  const tenant =
-    tenants?.find((t: any) => t.slug === 'unipathway') || tenants?.[0] || null;
-  const tenantId = tenant?.id ?? null;
-
-  const results: any[] = [];
-
-  for (const acc of DEV_ACCOUNTS) {
-    try {
-      let userId: string | null = null;
-
-      // Try to create; if exists, look up
-      const { data: created, error: createErr } = await admin.auth.admin.createUser({
-        email: acc.email,
-        password,
-        email_confirm: true,
-        user_metadata: { full_name: acc.label, account_type: acc.role },
-      });
-
-      if (createErr) {
-        // Find existing user
-        const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
-        const existing = list?.users.find((u: any) => u.email === acc.email);
-        if (existing) {
-          userId = existing.id;
-          // Never silently reset an existing account's password.
-          // Reconcile profile + role scopes below only on isolated staging.
-        }
-      } else {
-        userId = created.user?.id ?? null;
-      }
-
-      if (!userId) {
-        results.push({ email: acc.email, ok: false, error: createErr?.message || 'no user' });
-        continue;
-      }
-
-      // Existing staging accounts need the same tenant/profile/role reconciliation
-      // as newly created accounts. Skipping this is what produced unmapped roles.
-      // Ensure profile exists + tenant assigned (superadmin stays untenanted)
-      const profileTenant = acc.role === 'superadmin' ? null : tenantId;
-      const { error: profileError } = await admin
-        .from('profiles')
-        .upsert(
-          {
-            user_id: userId,
-            email: acc.email,
-            full_name: acc.label,
-            tenant_id: profileTenant,
-          },
-          { onConflict: 'user_id' },
-        );
-      if (profileError) throw profileError;
-
-      // Wipe default roles and set the intended one
-      const { error: deleteError } = await admin.from('user_roles').delete().eq('user_id', userId);
-      if (deleteError) throw deleteError;
-      const { error: roleError } = await admin.from('user_roles').insert({
-        user_id: userId,
-        role: acc.role as any,
-        tenant_id: profileTenant,
-      });
-      if (roleError) throw roleError;
-
-      results.push({ email: acc.email, ok: true });
-    } catch (e: any) {
-      results.push({ email: acc.email, ok: false, error: e?.message || String(e) });
-    }
-  }
-
-  return new Response(
-    JSON.stringify({ tenantId, results }),
-    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-  );
+// DEPRECATED: the previous test-user endpoint provisioned 17 privileged roles
+// with one shared password and allowed an arbitrary first-tenant fallback.
+// That approach is no longer acceptable for staging or production.
+// Use scripts/bootstrap-unipathway-staging-accounts.mjs from the protected
+// unipathway-staging GitHub environment with 19 unique credentials instead.
+//
+// Intentionally no service-role client, account creation, default tenant
+// selection, password access or privileged user modification in this function.
+import {corsHeaders} from '../_shared/cors.ts';
+Deno.serve(async (req:Request)=>{
+ if(req.method==='OPTIONS')return new Response(null,{headers:corsHeaders});
+ return new Response(JSON.stringify({
+  error:'Legacy shared-password test account seeding is disabled.',
+  code:'UNIPATHWAY_STAGING_CLI_ONLY'
+ }),{
+  status:410,headers:{...corsHeaders,'Content-Type':'application/json',
+   'Cache-Control':'no-store'}
+ });
 });
