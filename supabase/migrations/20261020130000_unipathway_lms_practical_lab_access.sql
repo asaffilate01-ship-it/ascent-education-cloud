@@ -100,6 +100,21 @@ CREATE INDEX IF NOT EXISTS lab_support_active_idx
  ON public.unipathway_lab_support_requests(tenant_id,status,requested_at);
 ALTER TABLE public.unipathway_lab_support_requests ENABLE ROW LEVEL SECURITY;
 
+CREATE OR REPLACE FUNCTION public.can_create_uni_lab_in_module(p_module uuid,p_tenant uuid)
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $lab_module_scope$
+ SELECT EXISTS(
+  SELECT 1 FROM public.modules m
+  WHERE m.id=p_module AND m.tenant_id=p_tenant AND public.same_tenant(p_tenant)
+    AND (
+     public.has_role(auth.uid(),'centre_director'::public.app_role)
+     OR public.has_role(auth.uid(),'programme_leader'::public.app_role)
+     OR public.has_role(auth.uid(),'superadmin'::public.app_role)
+     OR (m.lecturer_id=auth.uid()
+       AND public.has_role(auth.uid(),'lecturer'::public.app_role))
+    )
+ )
+$lab_module_scope$;
+
 CREATE OR REPLACE FUNCTION public.can_manage_uni_lab_template(p_template uuid)
 RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $manage_uni_lab$
  SELECT EXISTS(
@@ -172,13 +187,7 @@ CREATE POLICY "lab templates enrolled student or assigned teacher" ON public.lab
 CREATE POLICY "lab templates assigned teacher create" ON public.lab_templates
  FOR INSERT TO authenticated WITH CHECK(
    module_id IS NOT NULL AND published=false AND created_by=auth.uid()
-   AND EXISTS(SELECT 1 FROM public.modules m WHERE m.id=module_id
-    AND m.tenant_id=lab_templates.tenant_id AND
-    (public.has_role(auth.uid(),'centre_director'::public.app_role)
-     OR public.has_role(auth.uid(),'programme_leader'::public.app_role)
-     OR public.has_role(auth.uid(),'superadmin'::public.app_role)
-     OR (m.lecturer_id=auth.uid() AND public.has_role(auth.uid(),'lecturer'::public.app_role)))
-    AND public.same_tenant(lab_templates.tenant_id)));
+   AND public.can_create_uni_lab_in_module(module_id,tenant_id));
 CREATE POLICY "lab templates assigned teacher update" ON public.lab_templates
  FOR UPDATE TO authenticated USING(public.can_manage_uni_lab_template(id))
  WITH CHECK(public.can_manage_uni_lab_template(id));
@@ -448,7 +457,8 @@ BEGIN
 END
 $answer_uni_lab_help$;
 
-REVOKE ALL ON FUNCTION public.can_manage_uni_lab_template(uuid),public.can_access_uni_lab_template(uuid),
+REVOKE ALL ON FUNCTION public.can_create_uni_lab_in_module(uuid,uuid),
+ public.can_manage_uni_lab_template(uuid),public.can_access_uni_lab_template(uuid),
  public.can_manage_uni_lab_run(uuid),public.can_access_uni_lab_run(uuid),
  public.can_manage_uni_lab_request(uuid),public.invite_enrolled_unipathway_lab_run(uuid),
  public.request_unipathway_lms_lab(uuid,text,uuid),
@@ -456,7 +466,8 @@ REVOKE ALL ON FUNCTION public.can_manage_uni_lab_template(uuid),public.can_acces
  public.save_unipathway_lab_practice_note(uuid,text,boolean),
  public.review_unipathway_lab_practice_note(uuid,text),
  public.answer_unipathway_lab_support(uuid,text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.can_manage_uni_lab_template(uuid),public.can_access_uni_lab_template(uuid),
+GRANT EXECUTE ON FUNCTION public.can_create_uni_lab_in_module(uuid,uuid),
+ public.can_manage_uni_lab_template(uuid),public.can_access_uni_lab_template(uuid),
  public.can_manage_uni_lab_run(uuid),public.can_access_uni_lab_run(uuid),
  public.can_manage_uni_lab_request(uuid),public.invite_enrolled_unipathway_lab_run(uuid),
  public.request_unipathway_lms_lab(uuid,text,uuid),
