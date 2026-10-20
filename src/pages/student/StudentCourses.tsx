@@ -225,10 +225,10 @@ export default function StudentCourses() {
                             <p className="text-[10px] text-muted-foreground">{a.type} · Due {new Date(a.deadline).toLocaleDateString('en-GB')}</p>
                           </div>
                           <div className="text-right">
-                                   <div className="text-right">
                             <span className="text-xs text-muted-foreground">Check current coursework</span>
                           </div>
-                    );
+                        </div>
+                      );
                     })}
                     {(assignmentsByModule[selectedModule.id] || []).length === 0 && (
                       <p className="text-sm text-muted-foreground text-center py-4">No assignments yet</p>
