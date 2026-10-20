@@ -1,4 +1,4 @@
-import {render,screen,cleanup,waitFor} from '@testing-library/react';
+import {render,screen,cleanup} from '@testing-library/react';
 import {MemoryRouter} from 'react-router-dom';
 import {afterEach,it,expect,vi} from 'vitest';
 const mocks=vi.hoisted(()=>({query:vi.fn(),from:vi.fn()}));
@@ -32,7 +32,7 @@ it('only queries enrolled programmes and never reads provisional legacy submissi
   .toContainEqual({column:'module_id',operator:'in',value:['m1']});
  expect(mocks.query.mock.calls.find(c=>c[0]==='submissions')).toBeUndefined();
  expect(screen.getByText('Scheduled legacy task')).toBeInTheDocument();
- await waitFor(()=>expect(mocks.from).toHaveBeenCalled());
+ expect(await screen.findByText('No independently released grades yet')).toBeInTheDocument();
+ expect(mocks.from).toHaveBeenCalled();
  expect(screen.queryByText('99%')).not.toBeInTheDocument();
- expect(screen.getByText('No independently released grades yet')).toBeInTheDocument();
 });
