@@ -8,8 +8,8 @@ import { motion } from 'framer-motion';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { useAuth } from '@/contexts/AuthContext';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
-import { useMemo } from 'react';
-import ProgressTracker from '@/components/student/ProgressTracker';
+import { useEffect, useState } from 'react';
+import { db } from '@/lib/db';
 import STEMCoachLearningAccess from '@/components/student/STEMCoachLearningAccess';
 
 const fadeUp = {
@@ -29,21 +29,40 @@ export default function StudentDashboard() {
   const modulesQuery = useSupabaseQuery('modules', {enabled: programmeIds.length > 0, filters: [...scope, {column: 'programme_id', operator: 'in', value: programmeIds}]});
   const moduleIds = modulesQuery.data.map(row => row.id);
   const assignmentsQuery = useSupabaseQuery('assignments', {enabled: moduleIds.length > 0, filters: [...scope, {column: 'module_id', operator: 'in', value: moduleIds}], orderBy: {column: 'deadline', ascending: true}});
-  const submissionsQuery = useSupabaseQuery('submissions', {enabled: !!user?.tenantId, filters: [...scope, {column: 'student_id', operator: 'eq', value: user?.id}]});
+  type Approved={attempt_id:string;brief_id:string;final_score:number;released_at:string};
+  type Amendment={attempt_id:string;corrected_final_score:number};
+  const [approved,setApproved]=useState<Approved[]>([]);
+  const [corrections,setCorrections]=useState<Amendment[]>([]);
+  const [gradeError,setGradeError]=useState('');
+  const [gradeLoading,setGradeLoading]=useState(true);
+  useEffect(()=>{
+   if(!user?.id||!user.tenantId){setGradeLoading(false);setApproved([]);return;}
+   let live=true;setGradeLoading(true);setGradeError('');
+   void Promise.all([
+    db.from('unipathway_assessment_released_results')
+      .select('attempt_id,brief_id,final_score,released_at')
+      .eq('student_id',user.id).eq('tenant_id',user.tenantId).order('released_at',{ascending:false}).limit(100),
+    db.from('unipathway_assessment_grade_amendments')
+      .select('attempt_id,corrected_final_score')
+      .eq('student_id',user.id).eq('tenant_id',user.tenantId).limit(100)
+   ]).then(([a,b])=>{
+    if(!live)return;
+    if(a.error||b.error){setApproved([]);setCorrections([]);setGradeError('Only independently released marks are available; the secure grade service is not ready.');}
+    else {setApproved((a.data||[]) as Approved[]);setCorrections((b.data||[]) as Amendment[]);}
+    setGradeLoading(false);
+   }).catch(()=>{if(live){setApproved([]);setCorrections([]);setGradeError('Secure approved grades are unavailable.');setGradeLoading(false);}});
+   return()=>{live=false;};
+  },[user?.id,user?.tenantId]);
   const {data: assignments} = assignmentsQuery;
   const {data: modules} = modulesQuery;
   const {data: programmes} = programmesQuery;
-  const mySubmissions = submissionsQuery.data;
-  const queries = [enrolmentsQuery, programmesQuery, modulesQuery, assignmentsQuery, submissionsQuery];
+  const queries = [enrolmentsQuery, programmesQuery, modulesQuery, assignmentsQuery];
   const loading = queries.some(query => query.loading);
 
-  const gradedSubmissions = mySubmissions.filter((s) => s.grade !== null);
-  const avgGrade = gradedSubmissions.length > 0
-    ? Math.round(gradedSubmissions.reduce((sum, s) => sum + (s.grade || 0), 0) / gradedSubmissions.length)
-    : 0;
-
-  const submittedIds = new Set(mySubmissions.filter(s => ['submitted', 'graded'].includes(s.status)).map(s => s.assignment_id));
-  const upcomingAssignments = assignments.filter((a) => new Date(a.deadline) > new Date() && !submittedIds.has(a.id));
+  const approvedAverage = approved.length>0
+    ? Math.round(approved.reduce((sum,g)=>sum+Number(corrections.find(x=>x.attempt_id===g.attempt_id)?.corrected_final_score??g.final_score),0)/approved.length)
+    : null;
+  const upcomingAssignments = assignments.filter((a) => new Date(a.deadline) > new Date());
 
   if (!user?.tenantId) return <DashboardLayout title="My Dashboard"><p role="alert">A centre assignment is required.</p></DashboardLayout>;
   if (loading) return <DashboardSkeleton />;
@@ -52,11 +71,11 @@ export default function StudentDashboard() {
   const stats = [
     { label: 'Courses', value: String(programmes.length), icon: BookOpen },
     { label: 'Modules', value: String(modules.length), change: 'enrolled', changeType: 'neutral' as const, icon: Video },
-    { label: 'Assignments Due', value: String(upcomingAssignments.length), change: `${upcomingAssignments.filter(a => {
+    { label: 'Upcoming Legacy Tasks', value: String(upcomingAssignments.length), change: `${upcomingAssignments.filter(a => {
       const days = (new Date(a.deadline).getTime() - Date.now()) / 86400000;
       return days <= 7;
     }).length} this week`, changeType: 'negative' as const, icon: ClipboardList },
-    { label: 'Average Grade', value: gradedSubmissions.length ? `${avgGrade}%` : '—', change: 'recorded submissions', changeType: 'positive' as const, icon: BarChart3 },
+    { label: 'Approved Average', value: gradeError||gradeLoading?'—':approvedAverage===null?'—':`${approvedAverage}%`, change: 'IQA-released results only', changeType: 'positive' as const, icon: BarChart3 },
   ];
 
   return (
@@ -98,7 +117,7 @@ export default function StudentDashboard() {
         {/* Upcoming Deadlines */}
         <div className="surface-card p-5">
           <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-            <Clock className="w-4 h-4 text-destructive" /> Upcoming Deadlines
+            <Clock className="w-4 h-4 text-destructive" /> Scheduled legacy tasks
           </h3>
           <div className="space-y-3">
             {upcomingAssignments.slice(0, 4).map((a) => {
@@ -127,10 +146,15 @@ export default function StudentDashboard() {
 
       <STEMCoachLearningAccess enrolled={enrolmentsQuery.data.length > 0} />
 
-      {/* Progress Tracker */}
-      <div className="mb-6">
-        <ProgressTracker modules={modules} submissions={mySubmissions} assignments={assignments} />
-      </div>
+      <section className="mb-6 rounded-xl border bg-primary/5 p-4">
+        <h3 className="font-semibold">Your verified learning progress</h3>
+        <p className="mt-2 text-sm text-muted-foreground">Coursework, resubmissions and IQA-approved grades now have separate secure workflows. Progress is not inferred from unapproved legacy submissions.</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button asChild variant="outline" size="sm"><Link to="/student/assignments">My current coursework</Link></Button>
+          <Button asChild variant="outline" size="sm"><Link to="/student/grades">Approved results</Link></Button>
+          <Button asChild variant="outline" size="sm"><Link to="/student/appeals">Grade appeals</Link></Button>
+        </div>
+      </section>
 
       {/* Recent Grades */}
       <div className="grid lg:grid-cols-2 gap-4">
@@ -139,24 +163,17 @@ export default function StudentDashboard() {
             <TrendingUp className="w-4 h-4 text-primary" /> Recent Grades
           </h3>
           <div className="space-y-3">
-            {gradedSubmissions.slice(0, 5).map((s) => (
-              <div key={s.id} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
-                <div>
-                  <p className="text-sm font-medium truncate">{(s as any).file_name || 'Submission'}</p>
-                  <p className="text-xs text-muted-foreground">
-                    Graded {s.graded_at ? new Date(s.graded_at).toLocaleDateString() : '—'}
-                  </p>
-                </div>
-                <span className={`text-sm font-bold ${
-                  (s.grade || 0) >= 70 ? 'text-success' : (s.grade || 0) >= 40 ? 'text-warning' : 'text-destructive'
-                }`}>
-                  {s.grade}%
-                </span>
-              </div>
-            ))}
-            {gradedSubmissions.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-4">No grades yet</p>
-            )}
+            {gradeError&&<p role="alert" className="text-sm text-muted-foreground">{gradeError}</p>}
+            {gradeLoading&&<p role="status" className="text-sm text-muted-foreground">Verifying independent marks…</p>}
+            {!gradeError&&!gradeLoading&&approved.slice(0,5).map(g=>{
+             const score=corrections.find(x=>x.attempt_id===g.attempt_id)?.corrected_final_score??g.final_score;
+             return <div key={g.attempt_id} className="flex items-center justify-between border-b border-border/30 py-2">
+               <div><p className="text-sm font-medium">Approved coursework</p>
+                <p className="text-xs text-muted-foreground">Released {new Date(g.released_at).toLocaleDateString()} · {g.attempt_id.slice(0,8)}</p></div>
+               <span className="text-sm font-bold text-primary">{score}/100</span>
+              </div>;
+            })}
+            {!gradeError&&!gradeLoading&&approved.length===0&&<p className="py-4 text-center text-sm text-muted-foreground">No independently released grades yet</p>}
           </div>
         </div>
 
