@@ -80,8 +80,8 @@ const ModuleMaterials = lazy(() => import("./pages/learning/ModuleMaterials"));
 // Student
 const StudentDashboard = lazy(() => import("./pages/student/StudentDashboard"));
 const StudentCourses = lazy(() => import("./pages/student/StudentCourses"));
-const StudentAssignments = lazy(() => import("./pages/student/StudentAssignments"));
-const StudentGrades = lazy(() => import("./pages/student/StudentGrades"));
+const StudentCoursework = lazy(() => import("./pages/student/StudentCoursework"));
+const StudentReleasedResults = lazy(() => import("./pages/student/StudentReleasedResults"));
 const StudentLibrary = lazy(() => import("./pages/student/StudentLibrary"));
 const StudentCareer = lazy(() => import("./pages/student/StudentCareer"));
 const CareerMarketplace = lazy(() => import("./pages/careers/CareerMarketplace"));
@@ -93,9 +93,12 @@ const StudentFees = lazy(() => import("./pages/student/StudentFees"));
 // Lecturer
 const LecturerDashboard = lazy(() => import("./pages/lecturer/LecturerDashboard"));
 const LecturerTeaching = lazy(() => import("./pages/lecturer/LecturerTeaching"));
-const LecturerMarking = lazy(() => import("./pages/lecturer/LecturerMarking"));
+const LecturerAssessmentBriefs = lazy(() => import("./pages/lecturer/LecturerAssessmentBriefs"));
 const LecturerAttendance = lazy(() => import("./pages/lecturer/LecturerAttendance"));
-const AssessorDashboard = lazy(() => import("./pages/assessor/AssessorDashboard"));
+const IndependentMarkerQueue = lazy(() => import("./pages/assessor/IndependentMarkerQueue"));
+const AssessmentManager = lazy(() => import("./pages/programme/AssessmentManager"));
+const QualityAssessmentApproval = lazy(() => import("./pages/qa/QualityAssessmentApproval"));
+const CentreSyllabusPlanner = lazy(() => import("./pages/programme/CentreSyllabusPlanner"));
 const AwardingBodyDashboard = lazy(() => import("./pages/eqa/AwardingBodyDashboard"));
 
 // External + shared
@@ -340,6 +343,8 @@ function AppRoutes() {
         <Route path="/director" element={<Director><CentreDirectorDashboard /></Director>} />
         <Route path="/director/admissions" element={<Director><AdmissionsCRM /></Director>} />
         <Route path="/director/programmes" element={<Director><ProgrammeManagement /></Director>} />
+        <Route path="/director/syllabuses" element={<Director><CentreSyllabusPlanner /></Director>} />
+        <Route path="/director/assessment-management" element={<Director><AssessmentManager /></Director>} />
         <Route path="/director/beauty-accreditation" element={<Director><BeautyAccreditationDashboard /></Director>} />
         <Route path="/director/ielts" element={<Director><IELTSAcademy /></Director>} />
         <Route path="/director/staff" element={<Director><StaffManagement /></Director>} />
@@ -380,6 +385,7 @@ function AppRoutes() {
         {/* ========== LECTURER ========== */}
         <Route path="/lecturer" element={<LecturerR><LecturerDashboard /></LecturerR>} />
         <Route path="/lecturer/teaching" element={<LecturerR><LecturerTeaching /></LecturerR>} />
+        <Route path="/lecturer/assessments" element={<LecturerR><LecturerAssessmentBriefs /></LecturerR>} />
         <Route path="/lecturer/ielts" element={<LecturerR><IELTSAcademy /></LecturerR>} />
         <Route path="/lecturer/classroom" element={<LecturerR><LiveClassroom /></LecturerR>} />
         <Route path="/lecturer/class-scheduler" element={<LecturerR><LiveClassScheduler /></LecturerR>} />
@@ -389,7 +395,7 @@ function AppRoutes() {
         <Route path="/classroom/whiteboard/:boardId" element={<ClassroomBoardR><LiveWhiteboard /></ClassroomBoardR>} />
         <Route path="/classroom/discussion/:sessionId" element={<ClassroomBoardR><LectureDiscussion /></ClassroomBoardR>} />
         <Route path="/lecturer/report-cards" element={<LecturerR><ReportCardGenerator /></LecturerR>} />
-        <Route path="/lecturer/marking" element={<LecturerR><LecturerMarking /></LecturerR>} />
+        <Route path="/lecturer/marking" element={<LecturerR><LecturerAssessmentBriefs /></LecturerR>} />
         <Route path="/lecturer/attendance" element={<LecturerR><LecturerAttendance /></LecturerR>} />
         <Route path="/lecturer/students" element={<LecturerR><StudentManagement /></LecturerR>} />
         <Route path="/lecturer/timeline" element={<LecturerR><AcademicTimeline /></LecturerR>} />
@@ -398,11 +404,11 @@ function AppRoutes() {
         <Route path="/lecturer/labs" element={<LecturerR><LabInstructorPlanner /></LecturerR>} />
         <Route path="/lecturer/quizzes" element={<LecturerR><QuizDashboard /></LecturerR>} />
         <Route path="/lecturer/forums" element={<LecturerR><ForumPage /></LecturerR>} />
-        <Route path="/lecturer/gradebook" element={<LecturerR><GradebookPage /></LecturerR>} />
+        <Route path="/lecturer/gradebook" element={<LecturerR><LecturerAssessmentBriefs /></LecturerR>} />
 
         {/* ========== ASSESSOR ========== */}
-        <Route path="/assessor" element={<AssessorR><AssessorDashboard /></AssessorR>} />
-        <Route path="/assessor/queue" element={<AssessorR><AssessorDashboard /></AssessorR>} />
+        <Route path="/assessor" element={<AssessorR><IndependentMarkerQueue /></AssessorR>} />
+        <Route path="/assessor/queue" element={<AssessorR><IndependentMarkerQueue /></AssessorR>} />
         {/* ========== AWARDING BODY / EQA ========== */}
         <Route path="/eqa" element={<EQAR><AwardingBodyDashboard /></EQAR>} />
 
@@ -413,7 +419,8 @@ function AppRoutes() {
         <Route path="/programme/modules" element={<Programme><LecturerTeaching /></Programme>} />
         <Route path="/programme/lecturers" element={<Programme><StaffManagement /></Programme>} />
         <Route path="/programme/students" element={<Programme><StudentManagement /></Programme>} />
-        <Route path="/programme/assessments" element={<Programme><LecturerMarking /></Programme>} />
+        <Route path="/programme/assessments" element={<Programme><AssessmentManager /></Programme>} />
+        <Route path="/programme/syllabuses" element={<Programme><CentreSyllabusPlanner /></Programme>} />
         <Route path="/programme/schedule" element={<Programme><ScheduleManager /></Programme>} />
         <Route path="/programme/moderation" element={<Programme><QADashboard /></Programme>} />
         <Route path="/programme/analytics" element={<Programme><AnalyticsDashboard /></Programme>} />
@@ -421,6 +428,7 @@ function AppRoutes() {
         {/* ========== QA ========== */}
         <Route path="/qa" element={<QA><QADashboard /></QA>} />
         <Route path="/qa/moderation" element={<QA><QADashboard /></QA>} />
+        <Route path="/qa/assessment-approval" element={<QA><QualityAssessmentApproval /></QA>} />
         <Route path="/qa/sampling" element={<QA><QADashboard /></QA>} />
         <Route path="/qa/plagiarism" element={<QA><QADashboard /></QA>} />
         <Route path="/qa/malpractice" element={<QA><QADashboard /></QA>} />
@@ -472,8 +480,8 @@ function AppRoutes() {
         <Route path="/student/microsoft" element={<StudentR><MicrosoftAccountCentre /></StudentR>} />
         <Route path="/student/lesson-archive" element={<StudentR><LessonArchive /></StudentR>} />
         <Route path="/student/materials" element={<StudentR><ModuleMaterials /></StudentR>} />
-        <Route path="/student/assignments" element={<StudentR><StudentAssignments /></StudentR>} />
-        <Route path="/student/grades" element={<StudentR><StudentGrades /></StudentR>} />
+        <Route path="/student/assignments" element={<StudentR><StudentCoursework /></StudentR>} />
+        <Route path="/student/grades" element={<StudentR><StudentReleasedResults /></StudentR>} />
         <Route path="/student/attendance" element={<StudentR><AttendanceDashboard /></StudentR>} />
         <Route path="/student/library" element={<StudentR><StudentLibrary /></StudentR>} />
         <Route path="/student/finance" element={<StudentR><StudentFees /></StudentR>} />
@@ -488,7 +496,7 @@ function AppRoutes() {
         <Route path="/student/labs" element={<StudentR><LabLearningHub /></StudentR>} />
         <Route path="/student/quizzes" element={<StudentR><QuizDashboard /></StudentR>} />
         <Route path="/student/forums" element={<StudentR><ForumPage /></StudentR>} />
-        <Route path="/student/gradebook" element={<StudentR><GradebookPage /></StudentR>} />
+        <Route path="/student/gradebook" element={<StudentR><StudentReleasedResults /></StudentR>} />
 
         {/* ========== PARTNER / EMPLOYER / PARENT ========== */}
         <Route path="/partner" element={<PartnerR><UniversityPartnerPortal /></PartnerR>} />
