@@ -174,6 +174,11 @@ CREATE POLICY "private UniPathway classroom interaction viewers" ON realtime.mes
 CREATE OR REPLACE FUNCTION public.signal_unipathway_classroom_update()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $interaction_signal$
 BEGIN
+ -- A class of 300 should not fan-out 300 simultaneous raised-hand or
+ -- incoming-question notifications to all other students. The lecturer queue
+ -- polls every 10 seconds; publish only moderator decisions/replies to viewers.
+ IF TG_ARGV[0]='hand' AND NEW.status='raised' THEN RETURN NEW; END IF;
+ IF TG_ARGV[0]='question' AND NEW.status='submitted' THEN RETURN NEW; END IF;
  BEGIN
   PERFORM realtime.send(
    jsonb_build_object('sessionId',NEW.session_id,'kind',TG_ARGV[0]),
