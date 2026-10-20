@@ -25,7 +25,6 @@ export default function StudentCourses() {
   const enrolledProgrammeIds=useMemo(()=>new Set(enrolments.filter(e=>e.status==='active').map(e=>e.programme_id)),[enrolments]);
   const myProgrammes=useMemo(()=>programmes.filter(p=>enrolledProgrammeIds.has(p.id)),[programmes,enrolledProgrammeIds]);
   const { data: modules, loading: mLoading } = useSupabaseQuery('modules');
-  const { data: submissions } = useSupabaseQuery('submissions');
   const { data: assignments } = useSupabaseQuery('assignments');
   const { data: profiles } = useSupabaseQuery('profiles');
 
@@ -55,15 +54,6 @@ export default function StudentCourses() {
     });
     return map;
   }, [assignments]);
-
-  // Submission status by assignment
-  const submissionByAssignment = useMemo(() => {
-    const map: Record<string, typeof submissions[0]> = {};
-    submissions.forEach((s) => {
-      map[s.assignment_id] = s;
-    });
-    return map;
-  }, [submissions]);
 
   const loading = pLoading || mLoading || eLoading;
   if (loading) return <DashboardSkeleton />;
@@ -131,14 +121,8 @@ export default function StudentCourses() {
               {progModules.map((mod) => {
                 const statusLabel = mod.status === 'archived' ? 'completed' : mod.status;
                 const modAssignments = assignmentsByModule[mod.id] || [];
-                const completedAssignments = modAssignments.filter(a => {
-                  const sub = submissionByAssignment[a.id];
-                  return sub && sub.grade != null;
-                }).length;
-                const avgGrade = modAssignments.reduce((acc, a) => {
-                  const sub = submissionByAssignment[a.id];
-                  return sub?.grade !== null && sub?.grade !== undefined ? acc + sub.grade : acc;
-                }, 0) / (completedAssignments || 1);
+                // Assignment completion and grades live in the separate,
+                // released-only independent assessment service.
 
                 return (
                   <div
@@ -171,20 +155,10 @@ export default function StudentCourses() {
                     {/* Module stats */}
                     <div className="flex items-center justify-between text-xs mb-2">
                       <span className="text-muted-foreground">{modAssignments.length} assignments</span>
-                      {completedAssignments > 0 && (
-                        <span className="font-semibold text-primary">{Math.round(avgGrade)}% avg</span>
-                      )}
+                      <span className="font-semibold text-primary">Use approved results for grading</span>
                     </div>
 
-                    {/* Progress mini-bar */}
-                    {modAssignments.length > 0 && (
-                      <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden mb-2">
-                        <div
-                          className={`h-full rounded-full transition-default ${statusLabel === 'completed' ? 'bg-success' : 'bg-primary'}`}
-                          style={{ width: `${modAssignments.length > 0 ? (completedAssignments / modAssignments.length) * 100 : 0}%` }}
-                        />
-                      </div>
-                    )}
+                    <p className="mb-2 text-xs text-muted-foreground">Submission progress is tracked in My Coursework, not the legacy gradebook.</p>
 
                     <div className="flex items-center justify-between">
                       <span className={`text-[10px] font-medium capitalize px-2 py-0.5 rounded ${
@@ -244,7 +218,6 @@ export default function StudentCourses() {
                   <h4 className="text-sm font-semibold mb-2">Assignments</h4>
                   <div className="space-y-2">
                     {(assignmentsByModule[selectedModule.id] || []).map((a: any) => {
-                      const sub = submissionByAssignment[a.id];
                       return (
                         <div key={a.id} className="surface-data p-3 rounded-lg flex items-center justify-between">
                           <div>
@@ -252,16 +225,10 @@ export default function StudentCourses() {
                             <p className="text-[10px] text-muted-foreground">{a.type} · Due {new Date(a.deadline).toLocaleDateString('en-GB')}</p>
                           </div>
                           <div className="text-right">
-                            {sub?.grade != null ? (
-                              <span className="text-sm font-bold text-primary">{sub.grade}%</span>
-                            ) : sub ? (
-                              <StatusBadge status="Submitted" variant="info" />
-                            ) : (
-                              <StatusBadge status="Pending" variant="warning" />
-                            )}
+                                   <div className="text-right">
+                            <span className="text-xs text-muted-foreground">Check current coursework</span>
                           </div>
-                        </div>
-                      );
+                    );
                     })}
                     {(assignmentsByModule[selectedModule.id] || []).length === 0 && (
                       <p className="text-sm text-muted-foreground text-center py-4">No assignments yet</p>
