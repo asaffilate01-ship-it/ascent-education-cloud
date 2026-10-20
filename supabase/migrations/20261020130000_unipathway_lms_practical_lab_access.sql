@@ -170,12 +170,12 @@ CREATE POLICY "lab templates assigned teacher create" ON public.lab_templates
  FOR INSERT TO authenticated WITH CHECK(
    module_id IS NOT NULL AND published=false AND created_by=auth.uid()
    AND EXISTS(SELECT 1 FROM public.modules m WHERE m.id=module_id
-    AND m.tenant_id=tenant_id AND
+    AND m.tenant_id=lab_templates.tenant_id AND
     (public.has_role(auth.uid(),'centre_director'::public.app_role)
      OR public.has_role(auth.uid(),'programme_leader'::public.app_role)
      OR public.has_role(auth.uid(),'superadmin'::public.app_role)
      OR (m.lecturer_id=auth.uid() AND public.has_role(auth.uid(),'lecturer'::public.app_role)))
-    AND public.same_tenant(tenant_id)));
+    AND public.same_tenant(lab_templates.tenant_id)));
 CREATE POLICY "lab templates assigned teacher update" ON public.lab_templates
  FOR UPDATE TO authenticated USING(public.can_manage_uni_lab_template(id))
  WITH CHECK(public.can_manage_uni_lab_template(id));
@@ -198,7 +198,7 @@ CREATE POLICY "class run lecturer schedule" ON public.lab_class_runs FOR INSERT 
    OR public.has_role(auth.uid(),'superadmin'::public.app_role))
   AND (live_class_session_id IS NULL OR EXISTS(
     SELECT 1 FROM public.live_class_sessions s JOIN public.lab_templates t ON t.id=template_id
-    WHERE s.id=live_class_session_id AND s.module_id=t.module_id AND s.tenant_id=tenant_id
+    WHERE s.id=live_class_session_id AND s.module_id=t.module_id AND s.tenant_id=lab_class_runs.tenant_id
   )));
 CREATE POLICY "class run owner update" ON public.lab_class_runs FOR UPDATE TO authenticated
  USING(public.can_manage_uni_lab_run(id))
