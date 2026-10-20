@@ -67,7 +67,7 @@ describe('large-class student raise hand and message controls',()=>{
  });
  it('lecturers can moderate verbal requests and answer questions without live Teams microphone control',async()=>{
   mocks.user={id:'lecturer-1',roles:['lecturer'],tenantId:'tenant-1'};
-  render(<LectureInteractions sessionId="session-1"/>);
+  render(<MemoryRouter><LectureInteractions sessionId="session-1"/></MemoryRouter>);
   expect(await screen.findByRole('button',{name:'Call to speak'})).toBeInTheDocument();
   expect(screen.getAllByText('Sample Student').length).toBeGreaterThan(0);
   expect(screen.queryByRole('button',{name:'Raise hand'})).not.toBeInTheDocument();
