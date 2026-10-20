@@ -30,7 +30,7 @@ export default function LecturerTeaching() {
 
   const myModules = useMemo(() => {
     const assigned = modules.filter(m => m.lecturer_id === user?.id);
-    return assigned.length > 0 ? assigned : modules.slice(0, 6);
+    return assigned;
   }, [modules, user]);
 
   const progMap = useMemo(() => {
