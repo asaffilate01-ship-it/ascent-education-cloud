@@ -195,7 +195,11 @@ CREATE POLICY "class run lecturer schedule" ON public.lab_class_runs FOR INSERT 
  WITH CHECK(public.can_manage_uni_lab_template(template_id)
   AND tenant_id=(SELECT t.tenant_id FROM public.lab_templates t WHERE t.id=template_id)
   AND (lead_instructor_id=auth.uid() OR public.has_role(auth.uid(),'centre_director'::public.app_role)
-   OR public.has_role(auth.uid(),'superadmin'::public.app_role)));
+   OR public.has_role(auth.uid(),'superadmin'::public.app_role))
+  AND (live_class_session_id IS NULL OR EXISTS(
+    SELECT 1 FROM public.live_class_sessions s JOIN public.lab_templates t ON t.id=template_id
+    WHERE s.id=live_class_session_id AND s.module_id=t.module_id AND s.tenant_id=tenant_id
+  )));
 CREATE POLICY "class run owner update" ON public.lab_class_runs FOR UPDATE TO authenticated
  USING(public.can_manage_uni_lab_run(id))
  WITH CHECK(public.can_manage_uni_lab_template(template_id));
@@ -406,16 +410,52 @@ BEGIN
 END
 $save_uni_note$;
 
+CREATE OR REPLACE FUNCTION public.review_unipathway_lab_practice_note(
+ p_note uuid,p_feedback text)
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $review_uni_note$
+DECLARE note public.unipathway_lab_task_notes%ROWTYPE;
+BEGIN
+ SELECT * INTO note FROM public.unipathway_lab_task_notes WHERE id=p_note FOR UPDATE;
+ IF NOT FOUND OR NOT public.can_manage_uni_lab_template(note.template_id) THEN
+  RAISE EXCEPTION 'You are not the assigned lecturer for this lab' USING ERRCODE='42501';END IF;
+ IF note.status<>'submitted' THEN RAISE EXCEPTION 'Only submitted evidence can be reviewed';END IF;
+ IF p_feedback IS NULL OR length(btrim(p_feedback)) NOT BETWEEN 2 AND 2000
+ THEN RAISE EXCEPTION 'Feedback is required';END IF;
+ UPDATE public.unipathway_lab_task_notes SET status='reviewed',reviewer_id=auth.uid(),
+ reviewer_feedback=btrim(p_feedback),updated_at=now() WHERE id=p_note;
+END
+$review_uni_note$;
+
+CREATE OR REPLACE FUNCTION public.answer_unipathway_lab_support(
+ p_support uuid,p_response text)
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $answer_uni_lab_help$
+DECLARE help public.unipathway_lab_support_requests%ROWTYPE;
+BEGIN
+ SELECT * INTO help FROM public.unipathway_lab_support_requests WHERE id=p_support FOR UPDATE;
+ IF NOT FOUND OR NOT public.can_manage_uni_lab_request(help.launch_request_id)
+ THEN RAISE EXCEPTION 'Lab support is not assigned to you' USING ERRCODE='42501';END IF;
+ IF help.status IN ('resolved','cancelled') THEN RAISE EXCEPTION 'Request already closed';END IF;
+ IF p_response IS NULL OR length(btrim(p_response)) NOT BETWEEN 2 AND 2000
+ THEN RAISE EXCEPTION 'Response is required';END IF;
+ UPDATE public.unipathway_lab_support_requests SET status='resolved',
+ assigned_lecturer_id=auth.uid(),answered_at=now(),response=btrim(p_response) WHERE id=p_support;
+END
+$answer_uni_lab_help$;
+
 REVOKE ALL ON FUNCTION public.can_manage_uni_lab_template(uuid),public.can_access_uni_lab_template(uuid),
  public.can_manage_uni_lab_run(uuid),public.can_access_uni_lab_run(uuid),
  public.can_manage_uni_lab_request(uuid),public.invite_enrolled_unipathway_lab_run(uuid),
  public.request_unipathway_lms_lab(uuid,text,uuid),
  public.request_unipathway_lab_support(uuid,text),
- public.save_unipathway_lab_practice_note(uuid,text,boolean) FROM PUBLIC;
+ public.save_unipathway_lab_practice_note(uuid,text,boolean),
+ public.review_unipathway_lab_practice_note(uuid,text),
+ public.answer_unipathway_lab_support(uuid,text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.can_manage_uni_lab_template(uuid),public.can_access_uni_lab_template(uuid),
  public.can_manage_uni_lab_run(uuid),public.can_access_uni_lab_run(uuid),
  public.can_manage_uni_lab_request(uuid),public.invite_enrolled_unipathway_lab_run(uuid),
  public.request_unipathway_lms_lab(uuid,text,uuid),
  public.request_unipathway_lab_support(uuid,text),
- public.save_unipathway_lab_practice_note(uuid,text,boolean) TO authenticated;
+ public.save_unipathway_lab_practice_note(uuid,text,boolean),
+ public.review_unipathway_lab_practice_note(uuid,text),
+ public.answer_unipathway_lab_support(uuid,text) TO authenticated;
 COMMIT;
