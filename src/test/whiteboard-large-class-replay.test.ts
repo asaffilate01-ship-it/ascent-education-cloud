@@ -41,7 +41,7 @@ describe('UniPathway 100+ learner whiteboard event playback',()=>{
   const sampled=sampleStroke(points);
   expect(sampled).toHaveLength(240);
   expect(sampled[0]).toEqual(points[0]);
-  expect(sampled.at(-1)).toEqual(points.at(-1));
+  expect(sampled[sampled.length-1]).toEqual(points[points.length-1]);
  });
 });
 
