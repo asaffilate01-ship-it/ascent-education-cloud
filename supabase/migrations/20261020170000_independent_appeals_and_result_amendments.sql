@@ -14,6 +14,9 @@ ALTER TABLE public.unipathway_assessment_appeal_policies ENABLE ROW LEVEL SECURI
 CREATE POLICY "approved appeal rules read only by student and authorised academics"
  ON public.unipathway_assessment_appeal_policies FOR SELECT TO authenticated USING(
  public.can_study_uni_assessment(brief_id)
+ OR EXISTS(SELECT 1 FROM public.unipathway_assessment_released_results r
+  WHERE r.brief_id=unipathway_assessment_appeal_policies.brief_id AND r.student_id=auth.uid()
+   AND r.tenant_id=public.get_user_tenant_id(auth.uid()))
  OR public.can_manage_uni_assessment(brief_id)
  OR public.can_review_uni_assessment_brief(brief_id));
 REVOKE INSERT,UPDATE,DELETE ON public.unipathway_assessment_appeal_policies FROM anon,authenticated;
@@ -98,6 +101,12 @@ RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $
  SELECT EXISTS(SELECT 1 FROM public.unipathway_assessment_appeals a
  WHERE a.brief_id=p_brief AND public.can_read_uni_appeal_attempt(a.attempt_id))
 $appeal_brief_read$;
+
+CREATE POLICY "released student may access original published assessment brief for appeal"
+ ON public.unipathway_assessment_briefs FOR SELECT TO authenticated
+ USING(EXISTS(SELECT 1 FROM public.unipathway_assessment_released_results r
+  WHERE r.brief_id=id AND r.student_id=auth.uid()
+   AND r.tenant_id=public.get_user_tenant_id(auth.uid())));
 
 CREATE POLICY "appeal reviewer may read original frozen brief"
  ON public.unipathway_assessment_briefs FOR SELECT TO authenticated
