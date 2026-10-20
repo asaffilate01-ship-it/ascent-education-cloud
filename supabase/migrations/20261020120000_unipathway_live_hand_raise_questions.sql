@@ -123,6 +123,9 @@ BEGIN
  IF p_body IS NULL OR char_length(btrim(p_body)) NOT BETWEEN 1 AND 1000 THEN
   RAISE EXCEPTION 'Question must contain 1–1000 characters';
  END IF;
+ -- Serialise requests per student/session so concurrent browser sends cannot
+ -- bypass the 3-per-minute limit.
+ PERFORM pg_advisory_xact_lock(hashtextextended(auth.uid()::text||':'||p_session::text,0));
  SELECT count(*) INTO v_count FROM public.live_class_questions
  WHERE session_id=p_session AND student_id=auth.uid()
   AND created_at>now()-interval '60 seconds';
