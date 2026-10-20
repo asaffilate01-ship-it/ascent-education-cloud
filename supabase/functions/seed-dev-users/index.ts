@@ -10,6 +10,17 @@ Deno.serve(async (req) => {
 
   const url = Deno.env.get('SUPABASE_URL');
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  // This endpoint provisions privileged demonstration accounts and must NEVER
+  // be usable on the live, publicly accessible UniPathway database.
+  // All three values are server-only configuration, not request headers/metadata.
+  if (Deno.env.get('APP_ENV') !== 'staging'
+    || Deno.env.get('UNIPATHWAY_ISOLATED_STAGING_SEED') !== 'true'
+    || !Deno.env.get('UNIPATHWAY_STAGING_SUPABASE_URL')
+    || url !== Deno.env.get('UNIPATHWAY_STAGING_SUPABASE_URL')) {
+    return new Response(JSON.stringify({error:'Demo account seeding is restricted to verified isolated staging.'}), {
+      status: 403, headers: {...corsHeaders,'Content-Type':'application/json'},
+    });
+  }
   if (!url || !serviceKey) return new Response(JSON.stringify({ error: 'Account service unavailable' }), {
     status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
@@ -72,11 +83,8 @@ Deno.serve(async (req) => {
         const existing = list?.users.find((u: any) => u.email === acc.email);
         if (existing) {
           userId = existing.id;
-          // Reset password to known value
-          const { error: resetError } = await admin.auth.admin.updateUserById(existing.id, {
-            password,
-          });
-          if (resetError) throw resetError;
+          // Never silently reset an existing account's password.
+          // Reconcile profile + role scopes below only on isolated staging.
         }
       } else {
         userId = created.user?.id ?? null;
@@ -87,11 +95,8 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      // Preserve existing profiles and roles on password resets.
-      if (createErr) {
-        results.push({ email: acc.email, ok: true });
-        continue;
-      }
+      // Existing staging accounts need the same tenant/profile/role reconciliation
+      // as newly created accounts. Skipping this is what produced unmapped roles.
       // Ensure profile exists + tenant assigned (superadmin stays untenanted)
       const profileTenant = acc.role === 'superadmin' ? null : tenantId;
       const { error: profileError } = await admin
