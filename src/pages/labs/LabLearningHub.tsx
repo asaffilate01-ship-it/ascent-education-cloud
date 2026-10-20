@@ -20,6 +20,7 @@ type Request={id:string;template_id:string;class_run_id:string|null;status:strin
  requested_at:string;expires_at:string|null;estimated_cost_gbp:number};
 type Task={id:string;template_id:string;sequence_no:number;title:string;instructions:string|null;verification_type:string};
 type Note={id:string;task_id:string;notes:string;status:string;reviewer_feedback:string|null};
+type HelpReply={id:string;launch_request_id:string;message:string;status:string;requested_at:string;response:string|null};
 const providers:Record<string,string>={
  aws_academy:'AWS Academy Learner Lab',aws_managed:'AWS managed sandbox',
  unipathway_container:'UniPathway coding container',github_codespaces:'GitHub Codespaces',
@@ -34,6 +35,7 @@ export default function LabLearningHub(){
  const [requests,setRequests]=useState<Request[]>([]);
  const [tasks,setTasks]=useState<Task[]>([]);
  const [notes,setNotes]=useState<Note[]>([]);
+ const [support,setSupport]=useState<HelpReply[]>([]);
  const [drafts,setDrafts]=useState<Record<string,string>>({});
  const [helpText,setHelpText]=useState<Record<string,string>>({});
  const [invites,setInvites]=useState<Invite[]>([]);
@@ -51,7 +53,7 @@ export default function LabLearningHub(){
    if(enrol.error)throw new Error(enrol.error.message);
    const programmes=[...new Set<string>((enrol.data||[]).map((r:{programme_id:string})=>r.programme_id))];
    if(!programmes.length){
-    setModules([]);setTemplates([]);setTasks([]);setRuns([]);setRequests([]);setNotes([]);setInvites([]);
+    setModules([]);setTemplates([]);setTasks([]);setRuns([]);setRequests([]);setNotes([]);setSupport([]);setInvites([]);
     setLoading(false);return;
    }
    const mod=await db.from('modules').select('id,title,programme_id').eq('tenant_id',tenant).in('programme_id',programmes);
@@ -68,18 +70,21 @@ export default function LabLearningHub(){
    const failure=[t,request,inv].find(x=>x.error);if(failure)throw new Error(failure.error.message);
    const list=(t.data||[]) as Template[],allInvites=(inv.data||[]) as Invite[];
    const labIds=list.map(x=>x.id),runIds=allInvites.map(x=>x.class_run_id);
-   const [taskRows,runsRows,noteRows]=await Promise.all([
+   const [taskRows,runsRows,noteRows,helpRows]=await Promise.all([
     labIds.length?db.from('lab_tasks').select('id,template_id,sequence_no,title,instructions,verification_type').in('template_id',labIds).order('sequence_no'):
        Promise.resolve({data:[],error:null}),
     runIds.length?db.from('lab_class_runs').select('id,template_id,cohort_reference,starts_at,ends_at,status,live_class_session_id,max_concurrent')
        .eq('tenant_id',tenant).in('id',runIds):Promise.resolve({data:[],error:null}),
     db.from('unipathway_lab_task_notes').select('id,task_id,notes,status,reviewer_feedback')
       .eq('student_id',userId).eq('tenant_id',tenant).limit(300),
+    db.from('unipathway_lab_support_requests').select('id,launch_request_id,message,status,requested_at,response')
+      .eq('student_id',userId).eq('tenant_id',tenant).order('requested_at',{ascending:false}).limit(100),
    ]);
-   const fail=[taskRows,runsRows,noteRows].find(x=>x.error);if(fail)throw new Error(fail.error.message);
+   const fail=[taskRows,runsRows,noteRows,helpRows].find(x=>x.error);if(fail)throw new Error(fail.error.message);
    setModules(m);setTemplates(list);setRequests((request.data||[]) as Request[]);
    setInvites(allInvites);setTasks((taskRows.data||[]) as Task[]);
    setRuns((runsRows.data||[]) as Run[]);setNotes((noteRows.data||[]) as Note[]);
+   setSupport((helpRows.data||[]) as HelpReply[]);
   }catch(e){setError(e instanceof Error?e.message:'Unable to load lab catalogue or permissions');setTemplates([]);}
   finally{setLoading(false);}
  },[userId,tenant]);
@@ -153,12 +158,12 @@ export default function LabLearningHub(){
       {t.preparation_notes&&<p className="mt-2 whitespace-pre-wrap text-sm"><strong>Before the lab:</strong> {t.preparation_notes}</p>}
      </div><div className="flex flex-wrap gap-2">
       <Badge variant="outline"><Clock className="mr-1 inline size-3"/>{t.duration_minutes} min / attempt</Badge>
-      <Badge variant="outline">{t.access_mode.replaceAll('_',' ')}</Badge></div>
+      <Badge variant="outline">{t.access_mode.replace(/_/g,' ')}</Badge></div>
     </div>
     <div className="mt-4 flex flex-wrap gap-2">
      {['self_study','both'].includes(t.access_mode)&&<Button size="sm" variant="outline" disabled={!canRequest(t,'self_study',null)||!!busy} onClick={()=>requestLab(t,'self_study',null)}><Cloud className="mr-1 size-4"/>Request self-study workspace</Button>}
      {classRuns.map(run=><Button key={run.id} size="sm" disabled={!canRequest(t,'class',run.id)||!!busy} onClick={()=>requestLab(t,'class',run.id)}><Layers className="mr-1 size-4"/>Join approved class lab ({run.cohort_reference})</Button>)}
-     {current&&<span role="status" className="inline-flex items-center text-sm font-semibold">Workspace request: {current.status.replaceAll('_',' ')} — provider access pending</span>}
+     {current&&<span role="status" className="inline-flex items-center text-sm font-semibold">Workspace request: {current.status.replace(/_/g,' ')} — provider access pending</span>}
     </div>
     <p className="mt-3 text-xs text-muted-foreground">An LMS request is not an active AWS session. AWS Academy access requires its separate approved student invitation; managed AWS launches require verified accounts, IAM restrictions, time and budget limits. No virtual machine identifiers or secret keys are exposed.</p>
     {steps.length>0&&<div className="mt-5 space-y-3 border-t pt-4"><h3 className="font-semibold">Guided exercises and independent practice</h3>
@@ -184,6 +189,10 @@ export default function LabLearningHub(){
       placeholder="Describe the task, error or problem you're facing…" value={helpText[current.id]||''}
       onChange={e=>setHelpText(p=>({...p,[current.id]:e.target.value}))}/>
       <Button variant="outline" disabled={!!busy||(helpText[current.id]||'').trim().length<4} onClick={()=>requestHelp(current)}>Request help</Button></div>
+     <div className="mt-3 space-y-2">{support.filter(x=>x.launch_request_id===current.id).map(h=><div key={h.id} className="rounded-lg border p-3 text-sm">
+      <p className="whitespace-pre-wrap">{h.message}</p><p className="mt-1 text-xs text-muted-foreground">{h.status} · {new Date(h.requested_at).toLocaleString()}</p>
+      {h.response&&<p className="mt-2 whitespace-pre-wrap border-l-2 border-primary pl-3"><strong>Tutor:</strong> {h.response}</p>}
+     </div>)}</div>
     </div>}
    </section>;
   })}</div>}
