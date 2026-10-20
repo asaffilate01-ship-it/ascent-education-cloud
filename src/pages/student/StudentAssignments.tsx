@@ -65,7 +65,7 @@ export default function StudentAssignments() {
         deadline: a.deadline,
         module_title: a.modules?.title || 'Unknown Module',
         submission_status: sub ? sub.status : 'pending',
-        grade: sub?.grade || null,
+        grade: sub?.grade ?? null,
         feedback: sub?.feedback || null,
         file_url: sub?.file_url || null,
       };
@@ -185,7 +185,7 @@ export default function StudentAssignments() {
                     </div>
                   </div>
                   <div className="text-right">
-                    {a.submission_status === 'graded' && a.grade && (
+                    {a.submission_status === 'graded' && a.grade !== null && a.grade !== undefined && (
                       <p className="text-lg font-bold text-primary">{a.grade}%</p>
                     )}
                     <StatusBadge
@@ -234,7 +234,7 @@ export default function StudentAssignments() {
               </div>
             </div>
 
-            {selected.submission_status === 'graded' && selected.grade && (
+            {selected.submission_status === 'graded' && selected.grade !== null && selected.grade !== undefined && (
               <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mb-4">
                 <div className="flex items-center gap-2 mb-2">
                   <CheckCircle className="w-4 h-4 text-primary" />

@@ -71,14 +71,18 @@ const MarketingDashboard = lazy(() => import("./pages/marketing/MarketingDashboa
 const LiveClassroom = lazy(() => import("./pages/classroom/TeamsClassroom"));
 const LiveClassScheduler = lazy(() => import("./pages/classroom/LiveClassScheduler"));
 const WhiteboardStudio = lazy(() => import("./pages/classroom/WhiteboardStudio"));
+const LiveWhiteboard = lazy(() => import("./pages/classroom/LiveWhiteboard"));
+const LectureDiscussion = lazy(() => import("./pages/classroom/LectureDiscussion"));
 const MicrosoftAccountCentre = lazy(() => import("./pages/student/MicrosoftAccountCentre"));
 const LessonArchive = lazy(() => import("./pages/student/LessonArchive"));
+const ModuleMaterials = lazy(() => import("./pages/learning/ModuleMaterials"));
 
 // Student
 const StudentDashboard = lazy(() => import("./pages/student/StudentDashboard"));
 const StudentCourses = lazy(() => import("./pages/student/StudentCourses"));
-const StudentAssignments = lazy(() => import("./pages/student/StudentAssignments"));
-const StudentGrades = lazy(() => import("./pages/student/StudentGrades"));
+const StudentCoursework = lazy(() => import("./pages/student/StudentCoursework"));
+const StudentReleasedResults = lazy(() => import("./pages/student/StudentReleasedResults"));
+const StudentAssessmentAppeals = lazy(() => import("./pages/student/StudentAssessmentAppeals"));
 const StudentLibrary = lazy(() => import("./pages/student/StudentLibrary"));
 const StudentCareer = lazy(() => import("./pages/student/StudentCareer"));
 const CareerMarketplace = lazy(() => import("./pages/careers/CareerMarketplace"));
@@ -90,9 +94,14 @@ const StudentFees = lazy(() => import("./pages/student/StudentFees"));
 // Lecturer
 const LecturerDashboard = lazy(() => import("./pages/lecturer/LecturerDashboard"));
 const LecturerTeaching = lazy(() => import("./pages/lecturer/LecturerTeaching"));
-const LecturerMarking = lazy(() => import("./pages/lecturer/LecturerMarking"));
+const LecturerAssessmentBriefs = lazy(() => import("./pages/lecturer/LecturerAssessmentBriefs"));
 const LecturerAttendance = lazy(() => import("./pages/lecturer/LecturerAttendance"));
-const AssessorDashboard = lazy(() => import("./pages/assessor/AssessorDashboard"));
+const IndependentMarkerQueue = lazy(() => import("./pages/assessor/IndependentMarkerQueue"));
+const AssessmentManager = lazy(() => import("./pages/programme/AssessmentManager"));
+const QualityAssessmentApproval = lazy(() => import("./pages/qa/QualityAssessmentApproval"));
+const AppealReviewerQueue = lazy(() => import("./pages/qa/AppealReviewerQueue"));
+const AssessmentAppealManagement = lazy(() => import("./pages/programme/AssessmentAppealManagement"));
+const CentreSyllabusPlanner = lazy(() => import("./pages/programme/CentreSyllabusPlanner"));
 const AwardingBodyDashboard = lazy(() => import("./pages/eqa/AwardingBodyDashboard"));
 
 // External + shared
@@ -114,6 +123,7 @@ const BlogPostPage = lazy(() => import("./pages/blog/BlogPostPage"));
 const StudentOnboarding = lazy(() => import("./pages/onboarding/StudentOnboarding"));
 const LecturerOnboarding = lazy(() => import("./pages/onboarding/LecturerOnboarding"));
 const StudyPriorities = lazy(() => import("./pages/promo/StudyPriorities"));
+const EducationCentreHub = lazy(() => import("./pages/promo/EducationCentreHub"));
 const SchoolPartnerships = lazy(() => import("./pages/promo/SchoolPartnerships"));
 const FoundationScholarships = lazy(() => import("./pages/promo/FoundationScholarships"));
 const OpportunityFundDashboard = lazy(() => import("./pages/director/OpportunityFundDashboard"));
@@ -148,8 +158,8 @@ const AIRecommendations = lazy(() => import("./pages/ai/AIRecommendations"));
 const AICourseBuilder = lazy(() => import("./pages/ai/AICourseBuilder"));
 const QuizDashboard = lazy(() => import("./pages/quiz/QuizDashboard"));
 const ForumPage = lazy(() => import("./pages/forums/ForumPage"));
-const GradebookPage = lazy(() => import("./pages/gradebook/GradebookPage"));
-const ITLabsDashboard = lazy(() => import("./pages/labs/ITLabsDashboard"));
+const LabLearningHub = lazy(() => import("./pages/labs/LabLearningHub"));
+const LabInstructorPlanner = lazy(() => import("./pages/labs/LabInstructorPlanner"));
 const CertificateVerification = lazy(() => import("./pages/verify/CertificateVerification"));
 const PredictiveAnalytics = lazy(() => import("./pages/analytics/PredictiveAnalytics"));
 const DocumentManagement = lazy(() => import("./pages/documents/DocumentManagement"));
@@ -210,6 +220,12 @@ const EmployerR = ({ children }: { children: React.ReactNode }) => (
 const ParentR = ({ children }: { children: React.ReactNode }) => (
   <RoleGuard allowed={['parent_guardian', 'centre_director', 'superadmin']}>{children}</RoleGuard>
 );
+const WelfareR = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['welfare_officer', 'student', 'centre_director', 'superadmin']}>{children}</RoleGuard>
+);
+const ClassroomBoardR = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['student', 'lecturer', 'programme_leader', 'centre_director', 'superadmin']}>{children}</RoleGuard>
+);
 
 function LoadingFallback() {
   return (
@@ -250,6 +266,7 @@ function AppRoutes() {
         <Route path="/index" element={<Navigate to="/" replace />} />
         <Route path="/about" element={<RedirectToTenant suffix="/about" />} />
         <Route path="/study" element={<StudyPriorities />} />
+        <Route path="/education-centre" element={<EducationCentreHub />} />
         <Route path="/europe" element={<EuropeStudyDirectory />} />
         <Route path="/europe/:slug" element={<EuropeanCountryPage />} />
         <Route path="/school-partners" element={<SchoolPartnerships />} />
@@ -328,6 +345,9 @@ function AppRoutes() {
         <Route path="/director" element={<Director><CentreDirectorDashboard /></Director>} />
         <Route path="/director/admissions" element={<Director><AdmissionsCRM /></Director>} />
         <Route path="/director/programmes" element={<Director><ProgrammeManagement /></Director>} />
+        <Route path="/director/syllabuses" element={<Director><CentreSyllabusPlanner /></Director>} />
+        <Route path="/director/assessment-management" element={<Director><AssessmentManager /></Director>} />
+        <Route path="/director/assessment-appeals" element={<Director><AssessmentAppealManagement /></Director>} />
         <Route path="/director/beauty-accreditation" element={<Director><BeautyAccreditationDashboard /></Director>} />
         <Route path="/director/ielts" element={<Director><IELTSAcademy /></Director>} />
         <Route path="/director/staff" element={<Director><StaffManagement /></Director>} />
@@ -368,23 +388,30 @@ function AppRoutes() {
         {/* ========== LECTURER ========== */}
         <Route path="/lecturer" element={<LecturerR><LecturerDashboard /></LecturerR>} />
         <Route path="/lecturer/teaching" element={<LecturerR><LecturerTeaching /></LecturerR>} />
+        <Route path="/lecturer/assessments" element={<LecturerR><LecturerAssessmentBriefs /></LecturerR>} />
         <Route path="/lecturer/ielts" element={<LecturerR><IELTSAcademy /></LecturerR>} />
         <Route path="/lecturer/classroom" element={<LecturerR><LiveClassroom /></LecturerR>} />
+        <Route path="/lecturer/class-scheduler" element={<LecturerR><LiveClassScheduler /></LecturerR>} />
+        <Route path="/lecturer/lesson-archive" element={<LecturerR><LessonArchive /></LecturerR>} />
+        <Route path="/lecturer/materials" element={<LecturerR><ModuleMaterials /></LecturerR>} />
+        <Route path="/lecturer/whiteboards" element={<LecturerR><WhiteboardStudio /></LecturerR>} />
+        <Route path="/classroom/whiteboard/:boardId" element={<ClassroomBoardR><LiveWhiteboard /></ClassroomBoardR>} />
+        <Route path="/classroom/discussion/:sessionId" element={<ClassroomBoardR><LectureDiscussion /></ClassroomBoardR>} />
         <Route path="/lecturer/report-cards" element={<LecturerR><ReportCardGenerator /></LecturerR>} />
-        <Route path="/lecturer/marking" element={<LecturerR><LecturerMarking /></LecturerR>} />
+        <Route path="/lecturer/marking" element={<LecturerR><LecturerAssessmentBriefs /></LecturerR>} />
         <Route path="/lecturer/attendance" element={<LecturerR><LecturerAttendance /></LecturerR>} />
         <Route path="/lecturer/students" element={<LecturerR><StudentManagement /></LecturerR>} />
         <Route path="/lecturer/timeline" element={<LecturerR><AcademicTimeline /></LecturerR>} />
         <Route path="/lecturer/analytics" element={<LecturerR><AnalyticsDashboard /></LecturerR>} />
         <Route path="/lecturer/messages" element={<LecturerR><MessagingInbox /></LecturerR>} />
-        <Route path="/lecturer/labs" element={<LecturerR><ITLabsDashboard /></LecturerR>} />
+        <Route path="/lecturer/labs" element={<LecturerR><LabInstructorPlanner /></LecturerR>} />
         <Route path="/lecturer/quizzes" element={<LecturerR><QuizDashboard /></LecturerR>} />
         <Route path="/lecturer/forums" element={<LecturerR><ForumPage /></LecturerR>} />
-        <Route path="/lecturer/gradebook" element={<LecturerR><GradebookPage /></LecturerR>} />
+        <Route path="/lecturer/gradebook" element={<LecturerR><LecturerAssessmentBriefs /></LecturerR>} />
 
         {/* ========== ASSESSOR ========== */}
-        <Route path="/assessor" element={<AssessorR><AssessorDashboard /></AssessorR>} />
-        <Route path="/assessor/queue" element={<AssessorR><AssessorDashboard /></AssessorR>} />
+        <Route path="/assessor" element={<AssessorR><IndependentMarkerQueue /></AssessorR>} />
+        <Route path="/assessor/queue" element={<AssessorR><IndependentMarkerQueue /></AssessorR>} />
         {/* ========== AWARDING BODY / EQA ========== */}
         <Route path="/eqa" element={<EQAR><AwardingBodyDashboard /></EQAR>} />
 
@@ -395,7 +422,9 @@ function AppRoutes() {
         <Route path="/programme/modules" element={<Programme><LecturerTeaching /></Programme>} />
         <Route path="/programme/lecturers" element={<Programme><StaffManagement /></Programme>} />
         <Route path="/programme/students" element={<Programme><StudentManagement /></Programme>} />
-        <Route path="/programme/assessments" element={<Programme><LecturerMarking /></Programme>} />
+        <Route path="/programme/assessments" element={<Programme><AssessmentManager /></Programme>} />
+        <Route path="/programme/appeals" element={<Programme><AssessmentAppealManagement /></Programme>} />
+        <Route path="/programme/syllabuses" element={<Programme><CentreSyllabusPlanner /></Programme>} />
         <Route path="/programme/schedule" element={<Programme><ScheduleManager /></Programme>} />
         <Route path="/programme/moderation" element={<Programme><QADashboard /></Programme>} />
         <Route path="/programme/analytics" element={<Programme><AnalyticsDashboard /></Programme>} />
@@ -403,10 +432,11 @@ function AppRoutes() {
         {/* ========== QA ========== */}
         <Route path="/qa" element={<QA><QADashboard /></QA>} />
         <Route path="/qa/moderation" element={<QA><QADashboard /></QA>} />
+        <Route path="/qa/assessment-approval" element={<QA><QualityAssessmentApproval /></QA>} />
         <Route path="/qa/sampling" element={<QA><QADashboard /></QA>} />
         <Route path="/qa/plagiarism" element={<QA><QADashboard /></QA>} />
         <Route path="/qa/malpractice" element={<QA><QADashboard /></QA>} />
-        <Route path="/qa/appeals" element={<QA><QADashboard /></QA>} />
+        <Route path="/qa/appeals" element={<QA><AppealReviewerQueue /></QA>} />
         <Route path="/qa/audit" element={<QA><QADashboard /></QA>} />
         <Route path="/qa/evidence" element={<QA><QADashboard /></QA>} />
 
@@ -453,8 +483,10 @@ function AppRoutes() {
         <Route path="/student/classroom" element={<StudentR><LiveClassroom /></StudentR>} />
         <Route path="/student/microsoft" element={<StudentR><MicrosoftAccountCentre /></StudentR>} />
         <Route path="/student/lesson-archive" element={<StudentR><LessonArchive /></StudentR>} />
-        <Route path="/student/assignments" element={<StudentR><StudentAssignments /></StudentR>} />
-        <Route path="/student/grades" element={<StudentR><StudentGrades /></StudentR>} />
+        <Route path="/student/materials" element={<StudentR><ModuleMaterials /></StudentR>} />
+        <Route path="/student/assignments" element={<StudentR><StudentCoursework /></StudentR>} />
+        <Route path="/student/grades" element={<StudentR><StudentReleasedResults /></StudentR>} />
+        <Route path="/student/appeals" element={<StudentR><StudentAssessmentAppeals /></StudentR>} />
         <Route path="/student/attendance" element={<StudentR><AttendanceDashboard /></StudentR>} />
         <Route path="/student/library" element={<StudentR><StudentLibrary /></StudentR>} />
         <Route path="/student/finance" element={<StudentR><StudentFees /></StudentR>} />
@@ -466,10 +498,10 @@ function AppRoutes() {
         <Route path="/student/career" element={<StudentR><StudentCareer /></StudentR>} />
         <Route path="/student/opportunities" element={<StudentR><CareerMarketplace /></StudentR>} />
         <Route path="/student/support" element={<StudentR><MessagingInbox /></StudentR>} />
-        <Route path="/student/labs" element={<StudentR><ITLabsDashboard /></StudentR>} />
+        <Route path="/student/labs" element={<StudentR><LabLearningHub /></StudentR>} />
         <Route path="/student/quizzes" element={<StudentR><QuizDashboard /></StudentR>} />
         <Route path="/student/forums" element={<StudentR><ForumPage /></StudentR>} />
-        <Route path="/student/gradebook" element={<StudentR><GradebookPage /></StudentR>} />
+        <Route path="/student/gradebook" element={<StudentR><StudentReleasedResults /></StudentR>} />
 
         {/* ========== PARTNER / EMPLOYER / PARENT ========== */}
         <Route path="/partner" element={<PartnerR><UniversityPartnerPortal /></PartnerR>} />
@@ -495,13 +527,13 @@ function AppRoutes() {
         <Route path="/calendar" element={<P><AcademicCalendar /></P>} />
         <Route path="/lesson-plans" element={<LecturerR><LessonPlanBuilder /></LecturerR>} />
         <Route path="/leave" element={<P><LeaveManagement /></P>} />
-        <Route path="/health" element={<P><HealthRecords /></P>} />
+        <Route path="/health" element={<WelfareR><HealthRecords /></WelfareR>} />
         <Route path="/transport" element={<P><TransportTracking /></P>} />
         <Route path="/ai-recommendations" element={<P><AIRecommendations /></P>} />
         <Route path="/ai-course-builder" element={<LecturerR><AICourseBuilder /></LecturerR>} />
         <Route path="/quizzes" element={<P><QuizDashboard /></P>} />
         <Route path="/forums" element={<P><ForumPage /></P>} />
-        <Route path="/gradebook" element={<P><GradebookPage /></P>} />
+        <Route path="/gradebook" element={<StudentR><StudentReleasedResults /></StudentR>} />
         <Route path="/predictive-analytics" element={<Director><PredictiveAnalytics /></Director>} />
         <Route path="/documents" element={<P><DocumentManagement /></P>} />
         <Route path="/email-campaigns" element={<Marketing><EmailCampaigns /></Marketing>} />

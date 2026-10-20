@@ -1,4 +1,5 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import {useAuth} from '@/contexts/AuthContext';
 import { BookOpen, Clock, Award, ChevronRight, CheckCircle, Circle, Lock } from 'lucide-react';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
@@ -10,14 +11,20 @@ import StatusBadge from '@/components/ui/StatusBadge';
 
 export default function StudentCourses() {
   const navigate = useNavigate();
+  const {user}=useAuth();
   const [selectedModule, setSelectedModule] = useState<any>(null);
 
   const { data: programmes, loading: pLoading } = useSupabaseQuery('programmes', {
     filters: [{ column: 'status', operator: 'eq', value: 'active' }],
     orderBy: { column: 'title', ascending: true },
   });
+  const {data:enrolments,loading:eLoading,error:eError}=useSupabaseQuery('student_enrolments',{
+    filters:[{column:'student_id',operator:'eq',value:user?.id||''}],
+    enabled:!!user?.id
+  });
+  const enrolledProgrammeIds=useMemo(()=>new Set(enrolments.filter(e=>e.status==='active').map(e=>e.programme_id)),[enrolments]);
+  const myProgrammes=useMemo(()=>programmes.filter(p=>enrolledProgrammeIds.has(p.id)),[programmes,enrolledProgrammeIds]);
   const { data: modules, loading: mLoading } = useSupabaseQuery('modules');
-  const { data: submissions } = useSupabaseQuery('submissions');
   const { data: assignments } = useSupabaseQuery('assignments');
   const { data: profiles } = useSupabaseQuery('profiles');
 
@@ -48,17 +55,9 @@ export default function StudentCourses() {
     return map;
   }, [assignments]);
 
-  // Submission status by assignment
-  const submissionByAssignment = useMemo(() => {
-    const map: Record<string, typeof submissions[0]> = {};
-    submissions.forEach((s) => {
-      map[s.assignment_id] = s;
-    });
-    return map;
-  }, [submissions]);
-
-  const loading = pLoading || mLoading;
+  const loading = pLoading || mLoading || eLoading;
   if (loading) return <DashboardSkeleton />;
+  if (eError) return <DashboardLayout title="My Courses" subtitle="Enrolled programmes"><p role="alert" className="rounded-xl border border-destructive p-4">Your enrolments cannot be verified: {eError}. No courses or assignments have been opened.</p></DashboardLayout>;
 
   const handleModuleClick = (mod: any) => {
     setSelectedModule(mod);
@@ -66,7 +65,17 @@ export default function StudentCourses() {
 
   return (
     <DashboardLayout title="My Courses" subtitle="Enrolled programmes and module progress">
-      {programmes.map((prog) => {
+      <section aria-label="My LMS learning tools" className="mb-6 rounded-xl border bg-primary/5 p-4">
+        <h2 className="font-semibold">My course learning environment</h2>
+        <p className="mt-2 text-sm text-muted-foreground">Open notes, slides and worksheets, join your approved lectures, or practise in module-linked AWS, coding and data labs. Independent study progress stays associated with your enrolled modules.</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button size="sm" variant="outline" onClick={()=>navigate('/student/materials')}>Course notes & presentations</Button>
+          <Button size="sm" variant="outline" onClick={()=>navigate('/student/labs')}>Cloud & coding practical labs</Button>
+          <Button size="sm" variant="outline" onClick={()=>navigate('/student/classroom')}>Live online classroom</Button>
+          <Button size="sm" variant="outline" onClick={()=>navigate('/student/assignments')}>Homework & submissions</Button>
+        </div>
+      </section>
+      {myProgrammes.map((prog) => {
         const progModules = modulesByProgramme[prog.id] || [];
         const completedModules = progModules.filter((m) => m.status === 'archived').length;
         const activeModules = progModules.filter((m) => m.status === 'active').length;
@@ -112,14 +121,8 @@ export default function StudentCourses() {
               {progModules.map((mod) => {
                 const statusLabel = mod.status === 'archived' ? 'completed' : mod.status;
                 const modAssignments = assignmentsByModule[mod.id] || [];
-                const completedAssignments = modAssignments.filter(a => {
-                  const sub = submissionByAssignment[a.id];
-                  return sub && sub.grade != null;
-                }).length;
-                const avgGrade = modAssignments.reduce((acc, a) => {
-                  const sub = submissionByAssignment[a.id];
-                  return sub?.grade ? acc + sub.grade : acc;
-                }, 0) / (completedAssignments || 1);
+                // Assignment completion and grades live in the separate,
+                // released-only independent assessment service.
 
                 return (
                   <div
@@ -152,20 +155,10 @@ export default function StudentCourses() {
                     {/* Module stats */}
                     <div className="flex items-center justify-between text-xs mb-2">
                       <span className="text-muted-foreground">{modAssignments.length} assignments</span>
-                      {completedAssignments > 0 && (
-                        <span className="font-semibold text-primary">{Math.round(avgGrade)}% avg</span>
-                      )}
+                      <span className="font-semibold text-primary">Use approved results for grading</span>
                     </div>
 
-                    {/* Progress mini-bar */}
-                    {modAssignments.length > 0 && (
-                      <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden mb-2">
-                        <div
-                          className={`h-full rounded-full transition-default ${statusLabel === 'completed' ? 'bg-success' : 'bg-primary'}`}
-                          style={{ width: `${modAssignments.length > 0 ? (completedAssignments / modAssignments.length) * 100 : 0}%` }}
-                        />
-                      </div>
-                    )}
+                    <p className="mb-2 text-xs text-muted-foreground">Submission progress is tracked in My Coursework, not the legacy gradebook.</p>
 
                     <div className="flex items-center justify-between">
                       <span className={`text-[10px] font-medium capitalize px-2 py-0.5 rounded ${
@@ -189,7 +182,7 @@ export default function StudentCourses() {
         );
       })}
 
-      {programmes.length === 0 && (
+      {myProgrammes.length === 0 && (
         <div className="surface-card p-12 text-center text-muted-foreground text-sm">No enrolled programmes found</div>
       )}
 
@@ -225,7 +218,6 @@ export default function StudentCourses() {
                   <h4 className="text-sm font-semibold mb-2">Assignments</h4>
                   <div className="space-y-2">
                     {(assignmentsByModule[selectedModule.id] || []).map((a: any) => {
-                      const sub = submissionByAssignment[a.id];
                       return (
                         <div key={a.id} className="surface-data p-3 rounded-lg flex items-center justify-between">
                           <div>
@@ -233,13 +225,7 @@ export default function StudentCourses() {
                             <p className="text-[10px] text-muted-foreground">{a.type} · Due {new Date(a.deadline).toLocaleDateString('en-GB')}</p>
                           </div>
                           <div className="text-right">
-                            {sub?.grade != null ? (
-                              <span className="text-sm font-bold text-primary">{sub.grade}%</span>
-                            ) : sub ? (
-                              <StatusBadge status="Submitted" variant="info" />
-                            ) : (
-                              <StatusBadge status="Pending" variant="warning" />
-                            )}
+                            <span className="text-xs text-muted-foreground">Check current coursework</span>
                           </div>
                         </div>
                       );

@@ -10,6 +10,7 @@ import mobileImage from '@/assets/promo-shot-mobile.jpg';
 import { euMemberCountries, europePreparationStages } from '@/lib/europeanDestinations';
 
 const pathways = [
+  { title: 'Complete Education Centre', caption: 'Matric, FSc, FA/ICS/ICom, Cambridge O/A Levels, global languages and vocational certifications', to: '/education-centre', icon: GraduationCap, number: '00' },
   { title: 'UK & international qualifications', caption: 'Online LMS plus two 14-day centre visits for eligible programmes', to: '/qualifications', icon: GraduationCap, number: '01' },
   { title: 'Technology Academy', caption: 'AI, software, Python, cyber security, cloud and DevOps', to: '/tech-academy', icon: School, number: '02' },
   { title: 'Accounting & Finance Academy', caption: 'Bookkeeping, tax, financial reporting and IFA/ACCA preparation', to: '/finance-academy', icon: GraduationCap, number: '09' },

@@ -1,5 +1,5 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Play, RotateCcw, Download, Copy, CheckCircle, Code2, Terminal, FileCode } from 'lucide-react';
 import { toast } from 'sonner';
@@ -100,6 +100,9 @@ export default function CloudCodingSandbox() {
   const [output, setOutput] = useState('');
   const [running, setRunning] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isolatedScript,setIsolatedScript] = useState('');
+  const runnerRef=useRef<HTMLIFrameElement>(null);
+  const tokenRef=useRef<string|null>(null);
 
   const handleTemplateChange = (key: string) => {
     setTemplate(key);
@@ -117,15 +120,24 @@ export default function CloudCodingSandbox() {
           // HTML runs in iframe — handled by preview
           setOutput('✅ HTML rendered in preview panel below');
         } else if (template === 'javascript') {
-          const logs: string[] = [];
-          const mockConsole = {
-            log: (...args: any[]) => logs.push(args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ')),
-            error: (...args: any[]) => logs.push('❌ ' + args.join(' ')),
-            warn: (...args: any[]) => logs.push('⚠️ ' + args.join(' ')),
-          };
-          const fn = new Function('console', code);
-          fn(mockConsole);
-          setOutput(logs.join('\n') || '(no output)');
+          // Never execute learner code in the authenticated UniPathway window.
+          // A sandboxed opaque-origin iframe runs with no fetch, cookies or LMS API access.
+          const token=crypto.randomUUID();
+          tokenRef.current=token;
+          const source=JSON.stringify(code).replace(/</g,'\\u003c');
+          const safeToken=JSON.stringify(token);
+          const doc=`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; style-src 'none'; frame-src 'none'; object-src 'none'; form-action 'none'; base-uri 'none'"></head><body><script>
+          const results=[];
+          const safeConsole={ log:(...x)=>results.push(x.map(v=>String(v)).join(' ')),
+           error:(...x)=>results.push('Error: '+x.join(' ')),
+           warn:(...x)=>results.push('Warning: '+x.join(' ')) };
+          try{const runner=new Function('console',${source}); runner(safeConsole);}
+          catch(e){results.push('Error: '+String(e));}
+          parent.postMessage({kind:'unipathway-isolated-js',token:${safeToken},output:results.join('\\n')||'(no output)'},'*');
+          </script></body></html>`;
+          setIsolatedScript(doc);
+          // Completion is acknowledged only from the matching isolated frame.
+          return;
         } else if (template === 'python') {
           // Simple Python simulator
           const logs: string[] = [];
@@ -168,7 +180,19 @@ export default function CloudCodingSandbox() {
     }, 500);
   }, [code, template]);
 
-  const handleCopy = () => {
+  useEffect(()=>{
+    const receive=(e:MessageEvent)=>{
+      if(e.source!==runnerRef.current?.contentWindow||e.origin!=='null')return;
+      const data=e.data as {kind?:string;token?:string;output?:string}|null;
+      if(!data||data.kind!=='unipathway-isolated-js'||data.token!==tokenRef.current)return;
+      setOutput(String(data.output||'').slice(0,20000));
+      setRunning(false);
+      tokenRef.current=null;
+    };
+    window.addEventListener('message',receive);
+    return()=>window.removeEventListener('message',receive);
+  },[]);
+    const handleCopy = () => {
     navigator.clipboard.writeText(code);
     setCopied(true);
     toast.success('Code copied to clipboard');
@@ -205,6 +229,12 @@ export default function CloudCodingSandbox() {
         </div>
       }
     >
+      <div className="mb-4 rounded-xl border bg-secondary/40 p-3 text-sm text-muted-foreground">
+        HTML and JavaScript run only in an isolated browser demonstration sandbox. Python is a limited text simulation, not a Python interpreter. For real Python, AWS, Linux, databases and project work, use the approved practical labs from your LMS course.
+      </div>
+      {isolatedScript&&<iframe ref={runnerRef} srcDoc={isolatedScript}
+         title="Isolated JavaScript execution sandbox" sandbox="allow-scripts"
+         className="hidden" aria-hidden="true" />}
       {/* Template selector */}
       <div className="flex gap-2 mb-4">
         {Object.entries(TEMPLATES).map(([key, t]) => (
