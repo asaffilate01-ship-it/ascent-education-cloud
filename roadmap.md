@@ -7,4 +7,4 @@
 - [x] Remove made-up phone/address.
 - [ ] Add real phone, WhatsApp and address (waiting on user).
 - [ ] Switch on bot protection for enquiry forms so "Request counselling" works (waiting on user's Cloudflare Turnstile site key + secret key).
-- [ ] Reset the 14 existing test dashboard accounts and create the requested Assessor, Awarding Body/EQA and Welfare Officer test accounts securely.
+- [x] Reset the 14 existing test dashboard accounts and create the requested Assessor, Awarding Body/EQA and Welfare Officer test accounts securely.

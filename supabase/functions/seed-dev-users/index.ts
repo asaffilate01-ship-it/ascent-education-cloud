@@ -73,9 +73,10 @@ Deno.serve(async (req) => {
         if (existing) {
           userId = existing.id;
           // Reset password to known value
-          await admin.auth.admin.updateUserById(existing.id, {
+          const { error: resetError } = await admin.auth.admin.updateUserById(existing.id, {
             password,
           });
+          if (resetError) throw resetError;
         }
       } else {
         userId = created.user?.id ?? null;
@@ -93,7 +94,7 @@ Deno.serve(async (req) => {
       }
       // Ensure profile exists + tenant assigned (superadmin stays untenanted)
       const profileTenant = acc.role === 'superadmin' ? null : tenantId;
-      await admin
+      const { error: profileError } = await admin
         .from('profiles')
         .upsert(
           {
@@ -104,14 +105,17 @@ Deno.serve(async (req) => {
           },
           { onConflict: 'user_id' },
         );
+      if (profileError) throw profileError;
 
       // Wipe default roles and set the intended one
-      await admin.from('user_roles').delete().eq('user_id', userId);
-      await admin.from('user_roles').insert({
+      const { error: deleteError } = await admin.from('user_roles').delete().eq('user_id', userId);
+      if (deleteError) throw deleteError;
+      const { error: roleError } = await admin.from('user_roles').insert({
         user_id: userId,
         role: acc.role as any,
         tenant_id: profileTenant,
       });
+      if (roleError) throw roleError;
 
       results.push({ email: acc.email, ok: true });
     } catch (e: any) {
