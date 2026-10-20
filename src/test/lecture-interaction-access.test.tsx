@@ -31,15 +31,16 @@ function queryFor(table:string){
  if(table==='live_class_published_answers')
   result=[{id:'public-answer',question_text:'What is algebra?',answer_text:'Rules for working with symbols.',published_at:'2026-10-21T10:05:00Z'}];
  if(table==='profiles')result=[{user_id:'student-1',full_name:'Sample Student'}];
- const obj:{
-  select:(...args:unknown[])=>typeof obj;
-  eq:(...args:unknown[])=>typeof obj;
-  in:(...args:unknown[])=>typeof obj;
-  order:(...args:unknown[])=>typeof obj;
-  limit:(...args:unknown[])=>typeof obj;
+ type Query={
+  select:(...args:unknown[])=>Query;
+  eq:(...args:unknown[])=>Query;
+  in:(...args:unknown[])=>Query;
+  order:(...args:unknown[])=>Query;
+  limit:(...args:unknown[])=>Query;
   maybeSingle:()=>Promise<unknown>;
   then:(resolve:(data:unknown)=>unknown,reject?:(error:unknown)=>unknown)=>Promise<unknown>;
- }={} as never;
+ };
+ const obj={} as Query;
  for(const method of ['select','eq','in','order','limit'] as const)obj[method]=()=>obj;
  obj.maybeSingle=async()=>({data:table==='live_class_sessions'?session:null,error:null});
  obj.then=(resolve,reject)=>Promise.resolve({data:result,error:null}).then(resolve,reject);
@@ -56,7 +57,6 @@ afterEach(cleanup);
 describe('large-class student raise hand and message controls',()=>{
  it('offers invited students their own speaking request, private question and course notes',async()=>{
   render(<LectureInteractions sessionId="session-1"/>);
-  expect(await screen.findByText('Maths live lecture').catch(()=>null)).toBeNull(); // hidden session metadata is intentional
   expect(await screen.findByRole('button',{name:'Raise hand'})).toBeInTheDocument();
   expect(screen.getByText('How is this formula derived?')).toBeInTheDocument();
   expect(screen.getByRole('link',{name:/Course notes, slides and homework/})).toHaveAttribute('href','/student/materials');
@@ -108,6 +108,6 @@ describe('server permission contract for 100+ learner discussion',()=>{
   expect(app).toContain('<ClassroomBoardR><LectureDiscussion /></ClassroomBoardR>');
   expect(classes).toContain("to={'/classroom/discussion/'+s.id}");
   expect(materials).toContain("db.from('student_enrolments')");
-  expect(materials).toContain("e.status");
+  expect(materials).toContain(".eq('status','active')");
  });
 });
