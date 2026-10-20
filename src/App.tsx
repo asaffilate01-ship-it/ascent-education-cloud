@@ -72,6 +72,7 @@ const LiveClassroom = lazy(() => import("./pages/classroom/TeamsClassroom"));
 const LiveClassScheduler = lazy(() => import("./pages/classroom/LiveClassScheduler"));
 const WhiteboardStudio = lazy(() => import("./pages/classroom/WhiteboardStudio"));
 const LiveWhiteboard = lazy(() => import("./pages/classroom/LiveWhiteboard"));
+const LectureDiscussion = lazy(() => import("./pages/classroom/LectureDiscussion"));
 const MicrosoftAccountCentre = lazy(() => import("./pages/student/MicrosoftAccountCentre"));
 const LessonArchive = lazy(() => import("./pages/student/LessonArchive"));
 const ModuleMaterials = lazy(() => import("./pages/learning/ModuleMaterials"));
@@ -383,6 +384,7 @@ function AppRoutes() {
         <Route path="/lecturer/materials" element={<LecturerR><ModuleMaterials /></LecturerR>} />
         <Route path="/lecturer/whiteboards" element={<LecturerR><WhiteboardStudio /></LecturerR>} />
         <Route path="/classroom/whiteboard/:boardId" element={<ClassroomBoardR><LiveWhiteboard /></ClassroomBoardR>} />
+        <Route path="/classroom/discussion/:sessionId" element={<ClassroomBoardR><LectureDiscussion /></ClassroomBoardR>} />
         <Route path="/lecturer/report-cards" element={<LecturerR><ReportCardGenerator /></LecturerR>} />
         <Route path="/lecturer/marking" element={<LecturerR><LecturerMarking /></LecturerR>} />
         <Route path="/lecturer/attendance" element={<LecturerR><LecturerAttendance /></LecturerR>} />
