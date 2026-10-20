@@ -11,7 +11,7 @@ type Brief={id:string;lecturer_id:string;title:string;status:string};
 type Policy={brief_id:string;window_days:number;policy_reference:string;approved_at:string};
 type Appeal={id:string;attempt_id:string;brief_id:string;student_id:string;reviewer_id:string|null;status:string;grounds:string;details:string;requested_at:string};
 type Review={appeal_id:string;reviewer_id:string;recommendation:string;proposed_raw_score:number|null;reasoning:string;proposed_feedback:string|null};
-type Released={attempt_id:string;released_by:string;raw_score:number;final_score:number;penalty_points:number};
+type Released={attempt_id:string;brief_id:string;released_by:string;raw_score:number;final_score:number;penalty_points:number};
 type Mark={attempt_id:string;marker_id:string};
 type Role={user_id:string;role:string;tenant_id:string};
 export default function AssessmentAppealManagement(){
@@ -35,7 +35,7 @@ export default function AssessmentAppealManagement(){
     db.from('unipathway_assessment_appeal_policies').select('brief_id,window_days,policy_reference,approved_at').eq('tenant_id',tenant),
     db.from('unipathway_assessment_appeals').select('id,attempt_id,brief_id,student_id,reviewer_id,status,grounds,details,requested_at').eq('tenant_id',tenant).order('requested_at',{ascending:false}).limit(300),
     db.from('unipathway_assessment_appeal_reviews').select('appeal_id,reviewer_id,recommendation,proposed_raw_score,reasoning,proposed_feedback').eq('tenant_id',tenant),
-    db.from('unipathway_assessment_released_results').select('attempt_id,released_by,raw_score,final_score,penalty_points').eq('tenant_id',tenant),
+    db.from('unipathway_assessment_released_results').select('attempt_id,brief_id,released_by,raw_score,final_score,penalty_points').eq('tenant_id',tenant),
     db.from('unipathway_assessment_human_marks').select('attempt_id,marker_id').eq('tenant_id',tenant),
     db.from('user_roles').select('user_id,role,tenant_id').eq('tenant_id',tenant).eq('role','iqa_officer')
    ]);
@@ -90,7 +90,7 @@ export default function AssessmentAppealManagement(){
     <p className="mt-2 text-xs text-muted-foreground">Only enter deadlines explicitly supported by the approved centre or awarding-body policy. Never apply a default to every qualification.</p>
     <div className="mt-3 space-y-3">{briefs.map(b=>{
      const approved=policies.find(p=>p.brief_id===b.id);
-     const hasReleased=releases.some(r=>appeals.some(a=>a.attempt_id===r.attempt_id&&a.brief_id===b.id));
+     const hasReleased=releases.some(r=>r.brief_id===b.id);
      return <div key={b.id} className="rounded-lg border p-4"><h3 className="font-semibold text-sm">{b.title}</h3>
       {approved?<p className="mt-2 text-xs text-muted-foreground">{approved.policy_reference} · {approved.window_days} days · Approved {new Date(approved.approved_at).toLocaleDateString()}</p>:
        <div className="mt-2 grid gap-2 sm:grid-cols-[8rem_1fr_auto]">
