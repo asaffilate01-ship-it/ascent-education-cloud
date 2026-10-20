@@ -453,7 +453,8 @@ BEGIN
  INTO v_count,v_distinct,v_total,v_valid
  FROM jsonb_to_recordset(p_criteria) AS item(code text,points numeric,reason text,evidence text,missing text)
  JOIN public.unipathway_assessment_criteria c ON c.brief_id=b.id AND c.criterion_code=item.code;
- IF v_rubric<2 OR v_count<>v_rubric OR v_distinct<>v_rubric
+ IF v_rubric<2 OR jsonb_array_length(p_criteria)<>v_rubric
+ OR v_count<>v_rubric OR v_distinct<>v_rubric
  OR NOT v_valid OR v_total>100 THEN
   RAISE EXCEPTION 'Each published criterion needs a bounded mark, evidence, missing-work note and reasons';
  END IF;
