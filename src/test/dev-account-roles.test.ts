@@ -17,19 +17,20 @@ describe('requested test dashboard accounts', () => {
     expect(DEV_ACCOUNTS.find(account => account.email === 'dev.welf@educloud.test')?.role).toBe('welfare_officer');
   });
 });
-describe('staging-only test-account provisioning safety', () => {
- it('refuses production and unexpected Supabase projects',()=>{
+describe('staging-only test-account provisioning safety',()=>{
+ it('retires the privileged shared-password seed endpoint',()=>{
   const source=readFileSync('supabase/functions/seed-dev-users/index.ts','utf8');
-  expect(source).toContain("Deno.env.get('APP_ENV') !== 'staging'");
-  expect(source).toContain("Deno.env.get('UNIPATHWAY_ISOLATED_STAGING_SEED') !== 'true'");
-  expect(source).toContain("url !== Deno.env.get('UNIPATHWAY_STAGING_SUPABASE_URL')");
-  expect(source).toContain("Demo account seeding is restricted to verified isolated staging.");
-  expect(source).not.toContain('admin.auth.admin.updateUserById(existing.id');
+  expect(source).toContain('Legacy shared-password test account seeding is disabled.');
+  expect(source).toContain("code:'UNIPATHWAY_STAGING_CLI_ONLY'");
+  expect(source).not.toContain('SUPABASE_SERVICE_ROLE_KEY');
+  expect(source).not.toContain('admin.auth.admin.createUser');
+  expect(source).not.toContain('DEV_ACCOUNT_PASSWORD');
  });
- it('reconciles existing staging accounts rather than skipping their tenant and role scope',()=>{
-  const source=readFileSync('supabase/functions/seed-dev-users/index.ts','utf8');
-  expect(source).not.toContain('if (createErr) {\n        results.push({ email: acc.email, ok: true });');
-  expect(source).toContain(".from('profiles')");
-  expect(source).toContain(".from('user_roles')");
+ it('preserves existing test account names in the new safer staging CLI',()=>{
+  const script=readFileSync('scripts/bootstrap-unipathway-staging-accounts.mjs','utf8');
+  for(const account of DEV_ACCOUNTS)expect(script).toContain(account.email);
+  expect(script).toContain("getCredentials(env)");
+  expect(script).toContain('fixture_namespace');
+  expect(script).not.toContain('admin.auth.admin.updateUserById');
  });
 });
