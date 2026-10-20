@@ -1,5 +1,6 @@
 import {afterEach,beforeEach,describe,expect,it,vi} from 'vitest';
 import {cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
+import {MemoryRouter} from 'react-router-dom';
 import {readFileSync} from 'node:fs';
 
 const mocks=vi.hoisted(()=>({
@@ -56,7 +57,7 @@ afterEach(cleanup);
 
 describe('large-class student raise hand and message controls',()=>{
  it('offers invited students their own speaking request, private question and course notes',async()=>{
-  render(<LectureInteractions sessionId="session-1"/>);
+  render(<MemoryRouter><LectureInteractions sessionId="session-1"/></MemoryRouter>);
   expect(await screen.findByRole('button',{name:'Raise hand'})).toBeInTheDocument();
   expect(screen.getByText('How is this formula derived?')).toBeInTheDocument();
   expect(screen.getByRole('link',{name:/Course notes, slides and homework/})).toHaveAttribute('href','/student/materials');
@@ -68,7 +69,7 @@ describe('large-class student raise hand and message controls',()=>{
   mocks.user={id:'lecturer-1',roles:['lecturer'],tenantId:'tenant-1'};
   render(<LectureInteractions sessionId="session-1"/>);
   expect(await screen.findByRole('button',{name:'Call to speak'})).toBeInTheDocument();
-  expect(screen.getByText('Sample Student')).toBeInTheDocument();
+  expect(screen.getAllByText('Sample Student').length).toBeGreaterThan(0);
   expect(screen.queryByRole('button',{name:'Raise hand'})).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole('button',{name:'Call to speak'}));
   await waitFor(()=>expect(mocks.rpc).toHaveBeenCalledWith('respond_unipathway_hand_raise',
