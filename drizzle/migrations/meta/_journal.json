@@ -15,6 +15,13 @@
       "when": 1792478119657,
       "tag": "0001_restore_data_api_grants",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792478174970,
+      "tag": "0002_restore_function_execute_grants",
+      "breakpoints": true
     }
   ]
 }
