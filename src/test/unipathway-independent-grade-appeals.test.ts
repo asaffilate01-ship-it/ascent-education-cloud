@@ -19,7 +19,7 @@ describe('qualification-specific UniPathway independent grade appeals',()=>{
  it('protects original marks and separates initial IQA from second review',()=>{
   expect(sql).toContain('p_reviewer IN (a.student_id,b.lecturer_id,r.released_by,m.marker_id,auth.uid())');
   expect(sql).toContain("u.role='iqa_officer'::public.app_role");
-  expect(sql).toContain("a.reviewer_id<>auth.uid()");
+  expect(sql).toContain('auth.uid() IN (a.student_id,a.reviewer_id,r.released_by,b.lecturer_id,m.marker_id,a.assigned_by)');
   expect(sql).toContain('A separate centre-director sign-off is required');
   expect(sql).toContain('CREATE TABLE IF NOT EXISTS public.unipathway_assessment_grade_amendments');
   expect(sql).toContain('GREATEST(0,v.proposed_raw_score-r.penalty_points)');
