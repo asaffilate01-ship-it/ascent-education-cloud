@@ -3,7 +3,7 @@ import { UserRole } from '@/types/platform';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Building2, CreditCard, Shield,
-  GraduationCap, BookOpen, Video, ClipboardList, BarChart3,
+  GraduationCap, BookOpen, Video, ClipboardList, ClipboardCheck, BarChart3,
   MessageSquare, Library, Briefcase, UserPlus, PieChart,
   Settings, Palette, Globe, FileCheck, LogOut,
   ChevronLeft, ChevronRight, UserCheck, Calendar,
