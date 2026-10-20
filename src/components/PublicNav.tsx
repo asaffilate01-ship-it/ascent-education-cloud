@@ -7,6 +7,7 @@ import PublicBottomNav from '@/components/PublicBottomNav';
 import { cn } from '@/lib/utils';
 
 export const studyLinks = [
+  { label: 'Complete Education Centre', detail: 'Pakistan board exams, O/A Levels, global languages, professional certification, care, beauty and UK diplomas', to: '/education-centre', icon: GraduationCap },
   { label: 'All study options', detail: 'Live online / in-centre tuition, qualifications, digital skills, finance and more', to: '/study', icon: BookOpen },
   { label: 'European country explorer', detail: 'All EU university destinations with language and study preparation', to: '/europe', icon: Globe2 },
   { label: 'UniPathway scholarships', detail: 'Foundation opportunity fund for merit and financial need', to: '/scholarships', icon: GraduationCap },
