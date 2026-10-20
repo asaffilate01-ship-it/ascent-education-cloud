@@ -134,7 +134,7 @@ export default function CloudCodingSandbox() {
           try{const runner=new Function('console',${source}); runner(safeConsole);}
           catch(e){results.push('Error: '+String(e));}
           parent.postMessage({kind:'unipathway-isolated-js',token:${safeToken},output:results.join('\\n')||'(no output)'},'*');
-          <\/script></body></html>`;
+          </script></body></html>`;
           setIsolatedScript(doc);
           // Completion is acknowledged only from the matching isolated frame.
           return;
