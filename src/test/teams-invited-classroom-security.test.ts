@@ -54,8 +54,8 @@ describe('UniPathway invitation-only Teams classrooms and academic materials',()
   expect(lecturer).toContain('return assigned;');
  });
  it('surfaces provider/migration errors and never claims unpublished Teams recordings are playable',()=>{
-  expect(classroom).toContain("if(err){setError(err.message)");
-  expect(classroom).toContain('Joining opens the Microsoft Teams meeting');
+  expect(classroom).toContain("if(classes.error){setError(classes.error.message)");
+  expect(classroom).toContain('Microsoft Teams lobby, presenter and recording permissions must be configured separately.');
   expect(scheduler).toContain('Automatic Graph scheduling and recording ingestion require');
   expect(archive).toContain("a.publication_status!=='published'");
   expect(archive).toContain('createSignedUrl(a.storage_reference,120)');
