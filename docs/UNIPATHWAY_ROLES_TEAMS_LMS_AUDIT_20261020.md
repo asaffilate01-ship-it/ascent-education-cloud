@@ -49,7 +49,7 @@ Connected GitHub repository `asaffilate01-ship-it/ascent-education-cloud` and Lo
 7. **P1 pending:** public `resources` bucket is used for messaging attachments; must move confidential messaging to private storage.
 8. **P1 pending:** 13 tenant-invalid test accounts; no actual role browser/mobile/storage negative tests, despite valid role strings and many routes.
 9. **P1 pending:** many sidebar paths reuse one dashboard; source routing does not prove each action is separately implemented.
-10. **CI blocker:** PR #47 initially failed before any tests: `npm ci` rejected package-lock drift; missing Drizzle ORM/kit, postgres, esbuild transitive entries. Regenerate `package-lock.json` with the package manager, commit, then rerun all gates. Do not replace deterministic CI with `npm install` as a workaround.
+10. **CI repair:** PR #47 initially failed before any tests because `package-lock.json` was out of sync (Drizzle and esbuild entries). A temporary branch-scoped workflow regenerated and committed the lockfile; the workflow was removed. On commit `84232b35d7`, all seven CI jobs (typecheck, lint, build, app tests, DB fixture tests, Edge checks and browser acceptance) passed. Changes committed after that SHA need their own final CI pass.
 
 ## Teams Enterprise target model and Microsoft service boundaries
 - **Staff:** licensed Microsoft Teams organiser identities in a verified Microsoft 365/Entra tenant. Admin consent and app access policy for Graph, compliant meeting policies including lobby, presenter, recording and transcripts, retention and institutional privacy.
@@ -70,12 +70,13 @@ Microsoft primary guidance: https://learn.microsoft.com/en-us/azure/communicatio
 - New private `unipathway_module_materials` uploads and academic publishing flow; server role and module RLS; enrolled students see published materials.
 - Lecturer Teams-link timetable and per-course invitations, class visibility/errors and class launch linked to confirmed provider meeting.
 - Curriculum fallback bug fixed: lecturer no longer sees arbitrary six modules when unassigned. Student assignment zero scores no longer disappear due truthiness.
-- Unit/static security contracts added. No claims of live ACS room, Graph meeting creation, recording transport, or cleared browser/RLS suite.
+- Unit/static security contracts added. At the earlier validated SHA, all seven standard CI suites passed; CI does **not** yet supply real multi-tenant authenticated RLS tests. No claims of live ACS room, Graph meeting creation or recording transport.
+- Staging-only dev seeder repaired so existing accounts receive the same tenant/role reconciliation as new demo users. Production seeding now requires explicit isolated staging environment configuration; existing passwords are not silently reset.
 
 ## Release gates (all required; no production classroom publish)
 1. Reconcile **all** source migrations into an isolated working staging database, seed two distinct tenants and all 17 roles with controlled non-production credentials. Confirm migration IDs on target and backup/rollback.
 2. Apply role and RLS fixes in staging, test 17× permitted/prohibited API actions, safe parent links, employer/referral samples, audit logging, blocked signup role escalation and Storage policies. Resolve student provisional-grade exposure and conversation participation.
-3. Repair npm lock drift; pass `npm ci`, typecheck, lint, build, Vitest, PGlite fixtures, Deno Edge Functions and browser E2E (desktop+mobile) on the exact head SHA.
+3. Lock drift has been repaired. Require `npm ci`, typecheck, lint, build, Vitest, PGlite fixtures, Deno Edge Functions and browser E2E (desktop+mobile) to pass again on the exact final head SHA.
 4. Configure Microsoft 365 tenant and verified domain, Teams/Entra licensing, Graph app permissions/admin consent, app access policies, ACS resource, recording/transcription/retention/lobby/attendance policies. Never store Microsoft user passwords in UniPathway.
 5. Implement and verify calendar meeting creation/change/cancellation, invite notifications, classroom rendering, presentation/whiteboard, recording webhook or polling ingestion, short-lived media access, signed auditable grade release.
 6. Pilot with real consented test staff and students. Test live join, invitation revocation, unauthorized observers, recording failure, late join, accessibility, mobile and cross-tenant separation. Only then merge and publish to production.
