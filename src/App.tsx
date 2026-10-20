@@ -71,6 +71,7 @@ const MarketingDashboard = lazy(() => import("./pages/marketing/MarketingDashboa
 const LiveClassroom = lazy(() => import("./pages/classroom/TeamsClassroom"));
 const LiveClassScheduler = lazy(() => import("./pages/classroom/LiveClassScheduler"));
 const WhiteboardStudio = lazy(() => import("./pages/classroom/WhiteboardStudio"));
+const LiveWhiteboard = lazy(() => import("./pages/classroom/LiveWhiteboard"));
 const MicrosoftAccountCentre = lazy(() => import("./pages/student/MicrosoftAccountCentre"));
 const LessonArchive = lazy(() => import("./pages/student/LessonArchive"));
 const ModuleMaterials = lazy(() => import("./pages/learning/ModuleMaterials"));
@@ -213,6 +214,9 @@ const ParentR = ({ children }: { children: React.ReactNode }) => (
 );
 const WelfareR = ({ children }: { children: React.ReactNode }) => (
   <RoleGuard allowed={['welfare_officer', 'student', 'centre_director', 'superadmin']}>{children}</RoleGuard>
+);
+const ClassroomBoardR = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['student', 'lecturer', 'programme_leader', 'centre_director', 'superadmin']}>{children}</RoleGuard>
 );
 
 function LoadingFallback() {
@@ -378,6 +382,7 @@ function AppRoutes() {
         <Route path="/lecturer/lesson-archive" element={<LecturerR><LessonArchive /></LecturerR>} />
         <Route path="/lecturer/materials" element={<LecturerR><ModuleMaterials /></LecturerR>} />
         <Route path="/lecturer/whiteboards" element={<LecturerR><WhiteboardStudio /></LecturerR>} />
+        <Route path="/classroom/whiteboard/:boardId" element={<ClassroomBoardR><LiveWhiteboard /></ClassroomBoardR>} />
         <Route path="/lecturer/report-cards" element={<LecturerR><ReportCardGenerator /></LecturerR>} />
         <Route path="/lecturer/marking" element={<LecturerR><LecturerMarking /></LecturerR>} />
         <Route path="/lecturer/attendance" element={<LecturerR><LecturerAttendance /></LecturerR>} />
