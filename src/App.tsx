@@ -117,6 +117,7 @@ const BlogPostPage = lazy(() => import("./pages/blog/BlogPostPage"));
 const StudentOnboarding = lazy(() => import("./pages/onboarding/StudentOnboarding"));
 const LecturerOnboarding = lazy(() => import("./pages/onboarding/LecturerOnboarding"));
 const StudyPriorities = lazy(() => import("./pages/promo/StudyPriorities"));
+const EducationCentreHub = lazy(() => import("./pages/promo/EducationCentreHub"));
 const SchoolPartnerships = lazy(() => import("./pages/promo/SchoolPartnerships"));
 const FoundationScholarships = lazy(() => import("./pages/promo/FoundationScholarships"));
 const OpportunityFundDashboard = lazy(() => import("./pages/director/OpportunityFundDashboard"));
@@ -260,6 +261,7 @@ function AppRoutes() {
         <Route path="/index" element={<Navigate to="/" replace />} />
         <Route path="/about" element={<RedirectToTenant suffix="/about" />} />
         <Route path="/study" element={<StudyPriorities />} />
+        <Route path="/education-centre" element={<EducationCentreHub />} />
         <Route path="/europe" element={<EuropeStudyDirectory />} />
         <Route path="/europe/:slug" element={<EuropeanCountryPage />} />
         <Route path="/school-partners" element={<SchoolPartnerships />} />
