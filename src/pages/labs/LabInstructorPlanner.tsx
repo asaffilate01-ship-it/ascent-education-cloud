@@ -34,6 +34,7 @@ export default function LabInstructorPlanner(){
  const [provider,setProvider]=useState<(typeof providerOptions)[number]>('unipathway_container');
  const [mode,setMode]=useState('both');
  const [duration,setDuration]=useState(90);
+ const [estimatedCost,setEstimatedCost]=useState('');
  const [runTemplate,setRunTemplate]=useState('');
  const [cohort,setCohort]=useState('');
  const [runStart,setRunStart]=useState('');const [runEnd,setRunEnd]=useState('');
@@ -86,16 +87,18 @@ export default function LabInstructorPlanner(){
  const createTemplate=async()=>{
   const assigned=modules.some(x=>x.id===moduleId);
   if(!userId||!tenant||!assigned||!title.trim())return toast.error('Choose your assigned module and a lab title');
+  if(provider==='aws_managed'&&(!Number(estimatedCost)||Number(estimatedCost)<=0)){toast.error('Enter a reviewed positive estimate for managed AWS labs');return;}
+  if(Number(estimatedCost)<0||Number(estimatedCost)>500){toast.error('Lab estimate must be between £0 and £500');return;}
   setBusy('template');
   const {error:e}=await db.from('lab_templates').insert({
    tenant_id:tenant,module_id:moduleId,title:title.trim(),provider,
    access_mode:mode,published:false,active:true,created_by:userId,
-   duration_minutes:duration,max_attempts:3,estimated_cost_gbp:0
+   duration_minutes:duration,max_attempts:3,estimated_cost_gbp:Math.max(0,Number(estimatedCost)||0)
   });
   setBusy('');
   if(e)return toast.error('Lab draft rejected: '+e.message);
   toast.success('Lab created as a private draft. Add tasks and publish when approved.');
-  setTitle('');await load();
+  setTitle('');setEstimatedCost('');await load();
  };
  const addTask=async(t:Template)=>{
   const name=taskTitles[t.id]?.trim(),instructions=taskInstructions[t.id]?.trim();
@@ -191,6 +194,8 @@ export default function LabInstructorPlanner(){
       <option value="both">Classroom + independent study</option><option value="class_only">Teacher-led class only</option><option value="self_study">Self-study only</option></select></label>
      <label className="text-sm font-medium">Time per attempt<select className="mt-1 w-full rounded-md border bg-background p-2" value={duration} onChange={e=>setDuration(Number(e.target.value))}>
       {[30,45,60,90,120,180,240].map(m=><option key={m} value={m}>{m} minutes</option>)}</select></label>
+     <label className="text-sm font-medium">Planned maximum cost per attempt (GBP)<Input className="mt-1" type="number" min="0" max="500" step="0.01" value={estimatedCost}
+      placeholder="Must be reviewed for AWS" onChange={e=>setEstimatedCost(e.target.value)}/></label>
     </div>
     <Button className="mt-3" disabled={!!busy||!moduleId||!title.trim()} onClick={()=>createTemplate()}>Create unpublished lab</Button>
    </section>
