@@ -257,14 +257,14 @@ CREATE POLICY "private module material download" ON storage.objects FOR SELECT T
 -- A lecturer may upload only under a module assigned to them. Names are
 -- tenant UUID/module UUID/random filename. No cross-module browser upload.
 CREATE OR REPLACE FUNCTION public.can_upload_unipathway_module_asset(p_path text)
- RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $
+ RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $$
  SELECT EXISTS(
   SELECT 1 FROM public.modules m
   WHERE p_path LIKE m.tenant_id::text||'/'||m.id::text||'/%'
     AND m.tenant_id=public.get_user_tenant_id(auth.uid())
     AND public.can_manage_unipathway_module(m.id)
  )
- $;
+ $$;
 CREATE POLICY "assigned module teacher upload private asset" ON storage.objects FOR INSERT TO authenticated
  WITH CHECK(bucket_id='unipathway-module-materials' AND public.can_upload_unipathway_module_asset(name));
 CREATE POLICY "assigned module teacher remove unregistered asset" ON storage.objects FOR DELETE TO authenticated
