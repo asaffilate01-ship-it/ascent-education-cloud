@@ -78,6 +78,16 @@ Read-only hosted privacy check: resources bucket remains public, but contains 0 
 
 Staging diagnosis: the earlier remix failed while copying integrations and left the staging Git reference uninitialised. The diagnostic agent run itself ended in error. Missing project source/configuration must be repaired; an empty database alone does not provide a runnable authenticated QA environment. No production credentials, data or secrets were copied.
 
+## Finance integrity fixes and staging recovery attempt
+
+- Student finance no longer treats `?payment=success` as proof of receipt or cancellation as proof that no charge occurred. Only verified backend invoice records establish the displayed payment status.
+- Failed invoice queries produce a blocking retry state instead of zero balances/no invoices. Refunded invoices offer no payment action. Overpayment on one invoice no longer cancels the displayed debt on another.
+- The invoice checkout endpoint independently rejects another learner's invoice, closed/refunded invoices, invalid balances and invalid/excess/unsupported-precision payment amounts. SaaS subscription checkout is unchanged.
+- Removed unverified claims that particular local payment services are accepted; learners must obtain their centre's verified payment instructions.
+- Eleven targeted regression tests pass; app TypeScript and build pass. Deno checkout type checking is added to CI but was not run locally. Provider callbacks, invoice currency configuration (legacy flow assumes PKR), reconciliation and actual payment acceptance remain Stage 3/4 gates.
+
+A bounded repair request was sent to the existing unpublished QA project on 22 October. It ended with `response.status=error` / `UNKNOWN`, cost 0 credits, and no returned actionable approval or source commit. The platform diagnostic reports missing application source/package.json. No successful scaffold recovery, backend identity or deployment is claimed. A Lovable editor/platform recovery step is required before hosted testing; the source remains safely in PR #51.
+
 ## Following stages
 
 | Stage | Outcome required before advancing |
