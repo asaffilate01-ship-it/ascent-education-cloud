@@ -2,7 +2,7 @@
 
 ## Stage 1: database readiness and access hardening — IN PROGRESS
 
-This branch starts from main `2df767a`; managed AWS PR #48 remains a separate draft.
+This branch starts from main `2df767a` and now integrates the reconciled managed AWS changes from PR #48. Both source PRs remain drafts; no AWS provider is activated.
 No production or staging DDL, accounts, messages, provider resources or deployments were changed by this pass.
 
 ### Delivered in source
@@ -17,7 +17,7 @@ No production or staging DDL, accounts, messages, provider resources or deployme
 
 ### Fresh-start repair — source completed, hosted acceptance pending
 
-`npm run test:fresh-schema` now executes 161 of 162 ordered migrations in a disposable PostgreSQL engine. It explicitly defers only the pg_cron/pg_net extension-install migration, which that engine cannot support. It reports `schema-only-provider-acceptance-pending`, never full provider readiness. Eleven full-schema checks cover signup, repeated account repair, metadata privilege rejection and whiteboard validation/access. Synthetic Auth, Storage and Realtime scaffolding are not transport acceptance.
+`npm run test:fresh-schema` now executes 163 of 164 ordered migrations in a disposable PostgreSQL engine. It explicitly defers only the pg_cron/pg_net extension-install migration, which that engine cannot support. It reports `schema-only-provider-acceptance-pending`, never full provider readiness. Eleven full-schema checks cover signup, repeated account repair, metadata privilege rejection and whiteboard validation/access. Synthetic Auth, Storage and Realtime scaffolding are not transport acceptance.
 
 Original migration files remain unchanged. `supabase/fresh-staging/manifest.json` pins source and replacement SHA-256 hashes for 11 reviewed replacements:
 
@@ -36,7 +36,7 @@ Commands:
 - `npm run test:fresh-schema`: explicitly scoped offline SQL/behaviour checks with provider extension installation deferred.
 - `npm run build:fresh-staging -- /absolute/new-directory`: produces an ordered SQL review bundle and complete hash inventory. Includes actual provider extension SQL; never connects/applies SQL or writes hosted migration history. Refuses an existing directory.
 
-Do not apply the replacement files as production upgrades or mark the historical versions as applied. The existing guarded staging application process needs to consume the reviewed bundle after independently verifying an empty target. Production requires a separate measured forward-upgrade plan. PR #48 remains separate from this branch and requires integration acceptance when combined.
+Do not apply the replacement files as production upgrades or mark the historical versions as applied. The existing guarded staging application process needs to consume the reviewed bundle after independently verifying an empty target. Production requires a separate measured forward-upgrade plan. PR #48 is now combined in this draft and passes offline schema and managed-lab checks; authenticated staging/provider acceptance remains outstanding.
 
 ### Hosted state confirmed in this session
 
@@ -46,12 +46,24 @@ Production was read-only during the audit: 57 base tables, 4 recorded migrations
 
 ### Remaining Stage 1 exit gates
 
-1. Complete hosted replay of the reviewed fresh-staging baseline, including provider extensions, and test it combined with PR #48. The offline SQL stage now passes.
+1. Complete hosted replay of the reviewed fresh-staging baseline, including provider extensions. The offline SQL stage now passes with PR #48 combined.
 2. Independently identify staging URL/ref and production ref; configure the protected staging environment. No new paid project is required or approved by this branch.
 3. Apply the reviewed schema to the isolated target, verify migration/object parity, then create two QA tenants and 19 separate synthetic accounts using the guarded bootstrap.
 4. Run authenticated positive/negative Auth, PostgREST and Storage tests. The 20 PGlite checks do not certify signed URL transport or real user login.
 5. Inventory existing messaging uploads in public resources and relocate confirmed private attachments with an audit trail. This migration does not delete existing public objects or change unrelated resources.
-6. Validate the existing independent-assessment/legacy-grade cutover and replace parent legacy-grade reads before a live pilot.
+6. Validate the existing independent-assessment/legacy-grade cutover and the new learner-approved guardian sharing flow in authenticated staging before a live pilot.
+
+## Stage 2 source work — released-results sharing and combined labs
+
+- Parent dashboard no longer reads legacy submissions, attendance or invoices. It uses a purpose-limited server projection of independently released results, with approved appeal amendments applied. It does not assign qualification labels such as distinction or classify missing data as zero/at risk.
+- Sharing needs a centre-verified, same-tenant guardian link plus an explicit choice by the linked learner. The learner can grant/revoke sharing on Approved Grades & Feedback. Reverification or identity changes invalidate consent. Parents cannot self-verify; centre staff cannot directly write the consent table.
+- Earlier guardian paths into legacy final-results and tuition snapshots are removed. Attendance, finance and other guardian scopes require their own explicit policy before they can be offered.
+- Added loading, retry, no-result, pending-verification and pending-permission states; failed changes report errors rather than claiming success.
+- Fifteen checks against the complete schema cover self-verification denial, other-learner denial, tenant isolation, consent, revocation, approved amendments, unreleased attempts, invalidated consent and anonymous denial. Six UI tests cover errors, pending states, corrections, revocation and failed saves.
+- Combined the managed-labs routes, gateway and migration from PR #48 into this draft. Resolved the package-script conflict by retaining both test suites. Full schema replay includes managed labs; its 24-check fixture passes. AWS launch still requires separate provider configuration and acceptance.
+- CI now runs the explicitly scoped offline fresh-schema checks in addition to the targeted database fixtures.
+
+Hosted blocker rechecked: the QA project is still in provisioning/building state with no available `supabase/config.toml`. No authenticated acceptance or hosted schema application is claimed. Stage 2 is partial source implementation, not completion of the end-to-end academic journey or all later phases.
 
 ## Following stages
 

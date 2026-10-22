@@ -39,6 +39,8 @@ jobs:
         with: {node-version: 24, cache: npm}
       - run: npm ci --ignore-scripts
       - run: npm run test:db
+      - name: Fresh schema and access checks (hosted extensions deferred)
+        run: npm run test:fresh-schema
   edge-tests:
     runs-on: ubuntu-latest
     steps:
@@ -49,6 +51,7 @@ jobs:
       - uses: denoland/setup-deno@v2
         with: {deno-version: v2.9.6}
       - run: npm run check:intelligence
+      - run: deno check --config deno.intelligence.json --node-modules-dir=auto supabase/functions/unipathway-aws-lab-gateway/index.ts supabase/functions/aws-lab-manager/index.ts
       - run: npm run check:enquiry
       - run: npm run test:enquiry
   build:

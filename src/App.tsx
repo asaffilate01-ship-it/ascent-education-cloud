@@ -158,6 +158,7 @@ const AIRecommendations = lazy(() => import("./pages/ai/AIRecommendations"));
 const AICourseBuilder = lazy(() => import("./pages/ai/AICourseBuilder"));
 const QuizDashboard = lazy(() => import("./pages/quiz/QuizDashboard"));
 const ForumPage = lazy(() => import("./pages/forums/ForumPage"));
+const LMSVirtualLabs = lazy(() => import("./pages/labs/LMSVirtualLabs"));
 const LabLearningHub = lazy(() => import("./pages/labs/LabLearningHub"));
 const LabInstructorPlanner = lazy(() => import("./pages/labs/LabInstructorPlanner"));
 const CertificateVerification = lazy(() => import("./pages/verify/CertificateVerification"));
@@ -342,6 +343,7 @@ function AppRoutes() {
         <Route path="/landlord/settings" element={<Landlord><SettingsPage /></Landlord>} />
 
         {/* ========== CENTRE DIRECTOR ========== */}
+        <Route path="/director/managed-labs" element={<Director><LMSVirtualLabs /></Director>} />
         <Route path="/director" element={<Director><CentreDirectorDashboard /></Director>} />
         <Route path="/director/admissions" element={<Director><AdmissionsCRM /></Director>} />
         <Route path="/director/programmes" element={<Director><ProgrammeManagement /></Director>} />
@@ -386,6 +388,7 @@ function AppRoutes() {
         <Route path="/admissions/reports" element={<Admissions><AnalyticsDashboard /></Admissions>} />
 
         {/* ========== LECTURER ========== */}
+        <Route path="/lecturer/managed-labs" element={<LecturerR><LMSVirtualLabs /></LecturerR>} />
         <Route path="/lecturer" element={<LecturerR><LecturerDashboard /></LecturerR>} />
         <Route path="/lecturer/teaching" element={<LecturerR><LecturerTeaching /></LecturerR>} />
         <Route path="/lecturer/assessments" element={<LecturerR><LecturerAssessmentBriefs /></LecturerR>} />
@@ -416,6 +419,7 @@ function AppRoutes() {
         <Route path="/eqa" element={<EQAR><AwardingBodyDashboard /></EQAR>} />
 
         {/* ========== PROGRAMME LEADER ========== */}
+        <Route path="/programme/managed-labs" element={<Programme><LMSVirtualLabs /></Programme>} />
         <Route path="/programme" element={<Programme><ProgrammeManagement /></Programme>} />
         <Route path="/programme/beauty-accreditation" element={<Programme><BeautyAccreditationDashboard /></Programme>} />
         <Route path="/programme/knowledge" element={<Programme><KnowledgeLibrary /></Programme>} />
@@ -477,6 +481,7 @@ function AppRoutes() {
         <Route path="/agent/messages" element={<AgentR><MessagingInbox /></AgentR>} />
 
         {/* ========== STUDENT ========== */}
+        <Route path="/student/managed-labs" element={<StudentR><LMSVirtualLabs /></StudentR>} />
         <Route path="/student" element={<StudentR><StudentDashboard /></StudentR>} />
         <Route path="/student/courses" element={<StudentR><StudentCourses /></StudentR>} />
         <Route path="/student/ielts" element={<StudentR><IELTSAcademy /></StudentR>} />
