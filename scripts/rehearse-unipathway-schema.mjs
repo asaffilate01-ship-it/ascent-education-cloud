@@ -1,0 +1,30 @@
+/** Offline PostgreSQL schema rehearsal. Never connects to a hosted database.
+ * Supabase-owned Auth/Storage scaffolding is synthetic, not provider acceptance.
+ * Stops at the first SQL error; no migration is silently skipped.
+ */
+import {PGlite} from '@electric-sql/pglite';
+import {pgcrypto} from '@electric-sql/pglite/contrib/pgcrypto';
+import {readFileSync,readdirSync} from 'node:fs';
+const db=new PGlite({extensions:{pgcrypto}});
+try {
+ await db.exec(`CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role BYPASSRLS;
+ CREATE SCHEMA auth; CREATE SCHEMA storage; CREATE SCHEMA extensions;
+ CREATE TABLE auth.users(id uuid PRIMARY KEY, email text,raw_user_meta_data jsonb DEFAULT '{}',raw_app_meta_data jsonb DEFAULT '{}',created_at timestamptz DEFAULT now(), updated_at timestamptz, instance_id uuid, encrypted_password text, email_confirmed_at timestamptz, aud text,role text,confirmation_token text,recovery_token text,email_change_token_new text,email_change text,email_change_token_current text,phone_change text,phone_change_token text,reauthentication_token text,email_change_confirm_status int DEFAULT 0,phone text,phone_confirmed_at timestamptz,confirmation_sent_at timestamptz,recovery_sent_at timestamptz,email_change_sent_at timestamptz,phone_change_sent_at timestamptz);
+ CREATE TABLE auth.identities(id uuid PRIMARY KEY, user_id uuid, identity_data jsonb,provider text,provider_id text,last_sign_in_at timestamptz,created_at timestamptz,updated_at timestamptz,UNIQUE(provider_id,provider));
+ CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
+ CREATE FUNCTION auth.role() RETURNS text LANGUAGE sql STABLE AS $$ SELECT current_user::text $$;
+ CREATE FUNCTION auth.jwt() RETURNS jsonb LANGUAGE sql STABLE AS $$ SELECT '{}'::jsonb $$;
+ CREATE TABLE storage.buckets(id text PRIMARY KEY,name text,public boolean DEFAULT false,file_size_limit bigint,allowed_mime_types text[]);
+ CREATE TABLE storage.objects(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),bucket_id text,name text,owner uuid,metadata jsonb);
+ ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+ CREATE FUNCTION storage.foldername(text) RETURNS text[] LANGUAGE sql IMMUTABLE AS $$ SELECT string_to_array($1,'/') $$;
+ CREATE PUBLICATION supabase_realtime;
+ GRANT USAGE ON SCHEMA public,auth,storage TO authenticated,anon,service_role;
+ `);
+ let passed=0;
+ for(const file of readdirSync('supabase/migrations').filter(x=>x.endsWith('.sql')).sort()){
+  try{await db.exec(readFileSync('supabase/migrations/'+file,'utf8'));passed++;}
+  catch(error){console.error(JSON.stringify({status:'blocked',passed,file,code:error.code,message:error.message}));process.exitCode=1;break;}
+ }
+ if(!process.exitCode)console.log(JSON.stringify({status:'passed',migrations:passed,scope:'Offline PostgreSQL with synthetic Auth/Storage; no live acceptance'}));
+}finally{await db.close();}
