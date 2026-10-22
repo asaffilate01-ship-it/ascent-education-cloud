@@ -34,30 +34,20 @@ export default function KanbanBoard({ applications, onRefetch }: KanbanBoardProp
     const app = applications.find((a) => a.id === appId);
     if (!app || app.stage === newStage) return;
 
-    const { error } = await supabase
+    if(newStage==='enrolled'||app.stage==='enrolled'){
+      toast({title:'Academic review required',description:'Use Review enrolment below. Enrolled records cannot be moved through the sales pipeline.'});return;
+    }
+
+    const { data, error } = await supabase
       .from('applications')
       .update({ stage: newStage as Application['stage'] })
-      .eq('id', appId);
+      .eq('id', appId).eq('stage',app.stage).select('id').maybeSingle();
 
-    if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    if (error || !data) {
+      toast({ title: 'Error', description: error?.message || 'The application changed or access was denied. Refresh before retrying.', variant: 'destructive' });
     } else {
       toast({ title: 'Stage Updated', description: `${app.student_name} moved to ${newStage.replace(/_/g, ' ')}` });
 
-      // Auto-generate invoice on enrolment
-      if (newStage === 'enrolled' && app.stage !== 'enrolled') {
-        await supabase.from('invoices').insert({
-          student_name: app.student_name,
-          student_id: app.user_id,
-          tenant_id: app.tenant_id,
-          type: 'tuition',
-          amount: 4500,
-          paid: 0,
-          status: 'pending',
-          instalments: 3,
-        });
-        toast({ title: 'Invoice Created', description: `Tuition invoice generated for ${app.student_name}` });
-      }
       onRefetch();
     }
   };

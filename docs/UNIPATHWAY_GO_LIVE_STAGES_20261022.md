@@ -17,7 +17,7 @@ No production or staging DDL, accounts, messages, provider resources or deployme
 
 ### Fresh-start repair — source completed, hosted acceptance pending
 
-`npm run test:fresh-schema` now executes 163 of 164 ordered migrations in a disposable PostgreSQL engine. It explicitly defers only the pg_cron/pg_net extension-install migration, which that engine cannot support. It reports `schema-only-provider-acceptance-pending`, never full provider readiness. Eleven full-schema checks cover signup, repeated account repair, metadata privilege rejection and whiteboard validation/access. Synthetic Auth, Storage and Realtime scaffolding are not transport acceptance.
+`npm run test:fresh-schema` now executes 164 of 165 ordered migrations in a disposable PostgreSQL engine. It explicitly defers only the pg_cron/pg_net extension-install migration, which that engine cannot support. It reports `schema-only-provider-acceptance-pending`, never full provider readiness. Eleven full-schema checks cover signup, repeated account repair, metadata privilege rejection and whiteboard validation/access. Synthetic Auth, Storage and Realtime scaffolding are not transport acceptance.
 
 Original migration files remain unchanged. `supabase/fresh-staging/manifest.json` pins source and replacement SHA-256 hashes for 11 reviewed replacements:
 
@@ -50,7 +50,7 @@ Production was read-only during the audit: 57 base tables, 4 recorded migrations
 2. Independently identify staging URL/ref and production ref; configure the protected staging environment. No new paid project is required or approved by this branch.
 3. Apply the reviewed schema to the isolated target, verify migration/object parity, then create two QA tenants and 19 separate synthetic accounts using the guarded bootstrap.
 4. Run authenticated positive/negative Auth, PostgREST and Storage tests. The 20 PGlite checks do not certify signed URL transport or real user login.
-5. Inventory existing messaging uploads in public resources and relocate confirmed private attachments with an audit trail. This migration does not delete existing public objects or change unrelated resources.
+5. Read-only legacy attachment inventory completed: 0 resources objects, 0 messages with public Storage URLs, 0 legacy attachment markers. Nothing required relocation at inspection. Repeat `scripts/sql/unipathway-legacy-attachment-inventory.sql` at cutover because the old public upload code is still live.
 6. Validate the existing independent-assessment/legacy-grade cutover and the new learner-approved guardian sharing flow in authenticated staging before a live pilot.
 
 ## Stage 2 source work — released-results sharing and combined labs
@@ -64,6 +64,19 @@ Production was read-only during the audit: 57 base tables, 4 recorded migrations
 - CI now runs the explicitly scoped offline fresh-schema checks in addition to the targeted database fixtures.
 
 Hosted blocker rechecked: the QA project is still in provisioning/building state with no available `supabase/config.toml`. No authenticated acceptance or hosted schema application is claimed. Stage 2 is partial source implementation, not completion of the end-to-end academic journey or all later phases.
+
+## Next source increment — admission to course access
+
+- Replaced drag-to-enrol with an explicit review panel for unconditional offers/recorded-deposit applications. Staff choose a confirmed matching learner account, an active programme and record the admission decision/evidence reference.
+- New transactional handover checks staff role and tenant, confirmed Auth email, learner role/profile, programme status, application stage and existing links. Locks prevent duplicate handovers; retries return the same enrolment. Duplicate legacy auto-enrol triggers are retired.
+- Direct Enrolled stage changes and browser-created enrolments are blocked; enrolled application identity/stage cannot be changed through the sales pipeline. Academic withdrawal/transfer remains a separate lifecycle task.
+- Removed the hard-coded 4,500 tuition invoice and unchecked Invoice Created success message. The handover does not create invoices or certify payments. Stage 3 finance still needs approved pricing/reconciliation.
+- Seventeen full-schema checks verify admission permissions, stale stage rejection, confirmed identity, atomic/idempotent enrolment, absence of invented invoices, module access after enrolment and continued classroom invitation requirements. Four new UI tests verify eligible queues, errors, selected identities and failed-save behavior.
+- Validation: 329 unit tests across 80 files, full-schema replay (164 migrations, 1 provider-extension migration explicitly deferred), TypeScript and production build pass. Targeted lint: 0 errors, 2 existing any warnings.
+
+Read-only hosted privacy check: resources bucket remains public, but contains 0 objects; 0 messages reference any public Storage URL or the historical attachment marker. No data or objects were changed.
+
+Staging diagnosis: the earlier remix failed while copying integrations and left the staging Git reference uninitialised. The diagnostic agent run itself ended in error. Missing project source/configuration must be repaired; an empty database alone does not provide a runnable authenticated QA environment. No production credentials, data or secrets were copied.
 
 ## Following stages
 
