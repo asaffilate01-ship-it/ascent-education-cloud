@@ -21,7 +21,10 @@
     "check:intelligence": "deno check --config deno.intelligence.json supabase/functions/omniqora-student-intelligence/index.ts supabase/functions/omniqora-cohort-intelligence/index.ts supabase/functions/omniqora-executive-snapshot/index.ts",
     "check:enquiry": "deno check --config deno.intelligence.json supabase/functions/unipathway-public-enquiry/index.ts",
     "audit:dashboards": "node scripts/audit-dashboards.mjs",
-    "test:enquiry": "deno test supabase/functions/_shared/unipathway-turnstile.test.ts"
+    "test:enquiry": "deno test supabase/functions/_shared/unipathway-turnstile.test.ts",
+    "rehearse:fresh-staging": "node scripts/rehearse-unipathway-schema.mjs --fresh-staging",
+    "test:fresh-schema": "node scripts/rehearse-unipathway-schema.mjs --fresh-staging --defer-provider-extensions",
+    "build:fresh-staging": "node scripts/build-unipathway-fresh-staging.mjs"
   },
   "dependencies": {
     "@fontsource/manrope": "^5.3.0",

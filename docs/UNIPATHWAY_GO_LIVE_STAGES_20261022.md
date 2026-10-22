@@ -15,17 +15,28 @@ No production or staging DDL, accounts, messages, provider resources or deployme
 - Sending now retains text and reports an error if the backend rejects the message.
 - Added a PostgreSQL RLS fixture covering same-tenant nonmembers, other tenants, forged upload ownership, revoked membership, director tenant reassignment and blocked employer writes.
 
-### Verified blocker — do not mark stage complete
+### Fresh-start repair — source completed, hosted acceptance pending
 
-The ordered rehearsal executes 20 migration files, then fails at
-`20260316060647_11d03e1b-a05b-48f7-9fce-ee9d42fcdd49.sql` with SQLSTATE 23503:
-its historical attendance seed rows reference a tenant absent from a clean database.
-That migration also seeds notifications and conversations against hard-coded users/modules.
-The following migrations have not been certified by this rehearsal. Do not skip this file silently or insert invented tenant/student records to make the run green.
+`npm run test:fresh-schema` now executes 161 of 162 ordered migrations in a disposable PostgreSQL engine. It explicitly defers only the pg_cron/pg_net extension-install migration, which that engine cannot support. It reports `schema-only-provider-acceptance-pending`, never full provider readiness. Eleven full-schema checks cover signup, repeated account repair, metadata privilege rejection and whiteboard validation/access. Synthetic Auth, Storage and Realtime scaffolding are not transport acceptance.
 
-Four historical auth-related migration files also need a reviewed fresh-start decision before any hosted replay:
-`20260316034033`, `20260316050618`, `20260316053920`, `20260316221958`.
-Retain schema/trigger changes, but replace historical shared/demo identity provisioning with the existing guarded two-tenant/19-account fixture process. Preserve source hashes and a documented fresh-staging baseline; do not mark unapplied production migrations as applied.
+Original migration files remain unchanged. `supabase/fresh-staging/manifest.json` pins source and replacement SHA-256 hashes for 11 reviewed replacements:
+
+- Six historical demo/Auth data files are excluded or reduced to their schema/trigger changes. No shared-password accounts, fake attendance, invoices or messages are provisioned.
+- Quote the reserved `placing` column name.
+- Reconcile duplicate live-artifact and phase-4 classroom policies.
+- Add optional compatibility columns to the existing lecturer lab-session table. Preserve its required lecturer/title fields and foreign keys; active practical learning uses `uni_lab_runs`. This does not activate the superseded generic lab-session provisioning flow.
+- Repair malformed whiteboard colour validation, repeated migration content and an ambiguous timestamp reference. Test valid stroke/text operations and invalid/unauthorised writes.
+
+A new forward migration fixes signup functions referring to a nonexistent `(user_id, role)` unique constraint. It preserves existing assignments, avoids repeated student-role insertion, serialises account repair and rejects metadata role elevation.
+
+Commands:
+
+- `npm run rehearse:schema`: unchanged history diagnostic; still exposes the original demo-data blocker.
+- `npm run rehearse:fresh-staging`: strict repaired replay; stops at unsupported provider extensions locally.
+- `npm run test:fresh-schema`: explicitly scoped offline SQL/behaviour checks with provider extension installation deferred.
+- `npm run build:fresh-staging -- /absolute/new-directory`: produces an ordered SQL review bundle and complete hash inventory. Includes actual provider extension SQL; never connects/applies SQL or writes hosted migration history. Refuses an existing directory.
+
+Do not apply the replacement files as production upgrades or mark the historical versions as applied. The existing guarded staging application process needs to consume the reviewed bundle after independently verifying an empty target. Production requires a separate measured forward-upgrade plan. PR #48 remains separate from this branch and requires integration acceptance when combined.
 
 ### Hosted state confirmed in this session
 
@@ -35,7 +46,7 @@ Production was read-only during the audit: 57 base tables, 4 recorded migrations
 
 ### Remaining Stage 1 exit gates
 
-1. Produce and rehearse an explicit fresh-staging baseline separating historical sample/auth data from schema changes; resolve every SQL failure rather than relying on the static scanner.
+1. Complete hosted replay of the reviewed fresh-staging baseline, including provider extensions, and test it combined with PR #48. The offline SQL stage now passes.
 2. Independently identify staging URL/ref and production ref; configure the protected staging environment. No new paid project is required or approved by this branch.
 3. Apply the reviewed schema to the isolated target, verify migration/object parity, then create two QA tenants and 19 separate synthetic accounts using the guarded bootstrap.
 4. Run authenticated positive/negative Auth, PostgREST and Storage tests. The 20 PGlite checks do not certify signed URL transport or real user login.
