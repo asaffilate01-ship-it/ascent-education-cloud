@@ -4,6 +4,7 @@
  */
 import {PGlite} from '@electric-sql/pglite';
 import {freshStagingPlan} from './lib/unipathway-fresh-staging.mjs';
+import {verifyStripeLedger} from './lib/verify-unipathway-stripe-ledger.mjs';
 import {verifyAdmissionHandover} from './lib/verify-unipathway-admission-handover.mjs';
 import {verifyGuardianResults} from './lib/verify-unipathway-guardian-results.mjs';
 import {verifyFreshSchema} from './lib/verify-unipathway-fresh-schema.mjs';
@@ -44,6 +45,6 @@ try {
   try{await db.exec(replacements.get(file)??readFileSync('supabase/migrations/'+file,'utf8'));passed++;}
   catch(error){console.error(JSON.stringify({status:'blocked',passed,file,code:error.code,message:error.message}));process.exitCode=1;break;}
  }
- if(!process.exitCode&&fresh){await verifyFreshSchema(db);await verifyGuardianResults(db);await verifyAdmissionHandover(db);}
+ if(!process.exitCode&&fresh){await verifyFreshSchema(db);await verifyGuardianResults(db);await verifyAdmissionHandover(db);await verifyStripeLedger(db);}
  if(!process.exitCode)console.log(JSON.stringify({status:deferred.length?'schema-only-provider-acceptance-pending':'passed',deferred,migrations:passed,scope:'Offline PostgreSQL with synthetic Auth/Storage; no live acceptance'}));
 }catch(error){console.error(JSON.stringify({status:'verification-failed',code:error.code,message:error.message}));process.exitCode=1;}finally{await db.close();}

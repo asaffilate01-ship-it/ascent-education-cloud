@@ -14,3 +14,7 @@ verify_jwt = true
 
 [functions.unipathway-public-enquiry]
 verify_jwt = false
+
+# Stripe authenticates raw requests using STRIPE_WEBHOOK_SECRET.
+[functions.webhook-stripe]
+verify_jwt = false

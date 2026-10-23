@@ -52,7 +52,7 @@ jobs:
         with: {deno-version: v2.9.6}
       - run: npm run check:intelligence
       - run: deno check --config deno.intelligence.json --node-modules-dir=auto supabase/functions/unipathway-aws-lab-gateway/index.ts supabase/functions/aws-lab-manager/index.ts
-      - run: deno check --config deno.intelligence.json --node-modules-dir=auto supabase/functions/create-checkout/index.ts
+      - run: deno check --config deno.intelligence.json --node-modules-dir=auto supabase/functions/create-checkout/index.ts supabase/functions/webhook-stripe/index.ts
       - run: npm run check:enquiry
       - run: npm run test:enquiry
   build:
