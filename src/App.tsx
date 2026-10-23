@@ -56,6 +56,7 @@ const StudentManagement = lazy(() => import("./pages/director/StudentManagement"
 // Ops portals
 const AdmissionsCRM = lazy(() => import("./pages/admissions/AdmissionsCRM"));
 const QADashboard = lazy(() => import("./pages/qa/QADashboard"));
+const PaymentOperations = lazy(() => import("./pages/finance/PaymentOperations"));
 const FinanceDashboard = lazy(() => import("./pages/finance/FinanceDashboard"));
 const ExamsDashboard = lazy(() => import("./pages/exams/ExamsDashboard"));
 const ProgressionDashboard = lazy(() => import("./pages/progression/ProgressionDashboard"));
@@ -457,7 +458,7 @@ function AppRoutes() {
         {/* ========== FINANCE ========== */}
         <Route path="/finance" element={<Finance><FinanceDashboard /></Finance>} />
         <Route path="/finance/invoices" element={<Finance><FinanceDashboard /></Finance>} />
-        <Route path="/finance/payments" element={<Finance><FinanceDashboard /></Finance>} />
+        <Route path="/finance/payments" element={<Finance><PaymentOperations /></Finance>} />
         <Route path="/finance/instalments" element={<Finance><FinanceDashboard /></Finance>} />
         <Route path="/finance/commissions" element={<Finance><FinanceDashboard /></Finance>} />
         <Route path="/finance/scholarships" element={<Finance><OpportunityFundDashboard /></Finance>} />
