@@ -1,53 +1,60 @@
 {
   "/": {
-    "title": "UniPathway Jhelum | Tuition, IELTS & UK Qualifications",
-    "description": "Explore online and in-centre learning with UniPathway in Jhelum, Pakistan: school tuition, IELTS, UK qualification pathways and study abroad guidance.",
+    "title": "UniPathway | Online Learning Across Pakistan",
+    "description": "Explore online tuition, IELTS preparation and UK qualification pathways across Pakistan with UniPathway. Learn online nationwide or at our first centre in Jhelum.",
     "keywords": [
-      "education centre Jhelum",
-      "online tuition Pakistan"
+      "online courses in Pakistan",
+      "online learning Pakistan",
+      "online tuition Pakistan",
+      "education centre Jhelum"
     ]
   },
   "/education-centre": {
-    "title": "Education Centre in Jhelum, Pakistan | UniPathway",
-    "description": "Explore Matric, FSc, ICS and Cambridge tuition, languages and practical skills at UniPathway Centre in Jhelum, with online learning across Pakistan.",
+    "title": "Jhelum Centre & Pakistan-wide Online Learning | UniPathway",
+    "description": "Explore school tuition, languages and skills with online learning across Pakistan. Our first UniPathway centre in Jhelum offers in-person programme support.",
     "keywords": [
       "education centre Jhelum",
+      "online learning Pakistan",
       "Matric tuition Jhelum",
       "FSc tuition"
     ]
   },
   "/tuition": {
-    "title": "Online & Jhelum Tuition: Years 8–12 | UniPathway",
-    "description": "Explore Years 8–12 tuition in maths, English, biology, chemistry and physics with UniPathway. Compare online and in-centre learning options in Pakistan.",
+    "title": "Online Tuition in Pakistan: Years 8–12 | UniPathway",
+    "description": "Explore online tuition across Pakistan for Years 8–12 in maths, English and sciences. Learn from home or discuss in-centre tuition at our first centre in Jhelum.",
     "keywords": [
       "online tuition Pakistan",
-      "tuition Jhelum",
-      "GCSE subject tuition"
+      "online maths tuition Pakistan",
+      "online science tuition Pakistan",
+      "tuition Jhelum"
     ]
   },
   "/ielts-preparation": {
-    "title": "IELTS Preparation in Jhelum & Online | UniPathway",
-    "description": "Prepare for IELTS Academic or General Training with guided practice, tutor support and mock-test coaching through UniPathway in Pakistan.",
+    "title": "Online IELTS Preparation in Pakistan | UniPathway",
+    "description": "Prepare for IELTS Academic or General Training online across Pakistan with guided practice and tutor support, or explore learning at our first centre in Jhelum.",
     "keywords": [
-      "IELTS preparation Jhelum",
-      "online IELTS preparation Pakistan"
+      "online IELTS preparation Pakistan",
+      "IELTS preparation Pakistan",
+      "IELTS preparation Jhelum"
     ]
   },
   "/german-preparation": {
-    "title": "German Language Courses in Pakistan | UniPathway",
-    "description": "Explore German A1–C1 language preparation with UniPathway, including Goethe, telc and TestDaF exam preparation and guidance for studying in Germany.",
+    "title": "Online German Courses in Pakistan | UniPathway",
+    "description": "Explore online German A1–C1 language preparation across Pakistan with UniPathway, including Goethe, telc and TestDaF preparation. Check programme availability.",
     "keywords": [
+      "online German courses Pakistan",
       "German language courses Pakistan",
       "German A1 course"
     ]
   },
   "/qualifications": {
-    "title": "UK Qualification Pathways in Pakistan | UniPathway",
-    "description": "Compare OTHM, Qualifi, ATHE and other UK qualification pathways with UniPathway. Check course availability, entry requirements and progression options.",
+    "title": "UK Qualifications: Online Learning in Pakistan | UniPathway",
+    "description": "Explore planned OTHM, Qualifi and other UK qualification pathways with online learning across Pakistan. Check entry requirements and required centre visits.",
     "keywords": [
+      "UK qualifications Pakistan",
+      "online diploma courses Pakistan",
       "OTHM Pakistan",
-      "Qualifi Pakistan",
-      "ATHE qualifications"
+      "Qualifi Pakistan"
     ]
   },
   "/courses": {
@@ -59,12 +66,12 @@
     ]
   },
   "/tech-academy": {
-    "title": "AI, Coding & Cyber Security Courses | UniPathway",
-    "description": "Explore AI, Python, coding, cyber security, cloud and DevOps training with UniPathway Technology Academy, online and in centre in Pakistan.",
+    "title": "Online Technology Courses in Pakistan | UniPathway",
+    "description": "Explore AI, Python, coding, cyber security, cloud and DevOps learning online across Pakistan with UniPathway. Check delivery options and programme availability.",
     "keywords": [
+      "online technology courses Pakistan",
       "Python courses Pakistan",
-      "cyber security training",
-      "AI courses"
+      "cyber security training Pakistan"
     ]
   },
   "/finance-academy": {
@@ -153,25 +160,29 @@
     ]
   },
   "/study": {
-    "title": "Explore Courses, Tuition & Training | UniPathway",
-    "description": "Find UniPathway learning options in Pakistan: tuition, qualifications, IELTS, German, technology, accounting and practical training pathways.",
+    "title": "Online Courses in Pakistan | UniPathway",
+    "description": "Explore online courses across Pakistan: tuition, IELTS, German, technology and UK qualification pathways. Compare delivery options and required centre visits.",
     "keywords": [
-      "courses in Jhelum",
-      "online learning Pakistan"
+      "online courses in Pakistan",
+      "online learning Pakistan",
+      "courses in Jhelum"
     ]
   },
   "/about": {
-    "title": "About UniPathway Education in Pakistan | UniPathway",
-    "description": "Learn about UniPathway’s online and in-centre teaching, qualification pathways, skills training and university progression guidance in Pakistan.",
+    "title": "About UniPathway: Online Education Across Pakistan",
+    "description": "Discover UniPathway’s Pakistan-wide online learning, tuition, skills and qualification pathways, supported by our first physical centre in Jhelum.",
     "keywords": [
-      "UniPathway education Pakistan"
+      "UniPathway education Pakistan",
+      "online education Pakistan",
+      "UniPathway Jhelum"
     ]
   },
   "/contact": {
-    "title": "Contact UniPathway in Jhelum, Pakistan | UniPathway",
-    "description": "Contact UniPathway about tuition, IELTS, qualifications, skills courses and study abroad guidance. Discuss learning options at our Jhelum centre or online.",
+    "title": "Contact UniPathway: Online Pakistan & Jhelum Centre",
+    "description": "Contact UniPathway about online learning anywhere in Pakistan, tuition, IELTS and qualification pathways, or enquire about our first physical centre in Jhelum.",
     "keywords": [
       "UniPathway contact",
+      "online learning Pakistan",
       "education adviser Jhelum"
     ]
   },
