@@ -61,7 +61,7 @@ jobs:
           chmod 600 "$UNIPATHWAY_ANDROID_KEYSTORE" android/app/google-services.json
           bash android/gradlew -p android bundleRelease
           jarsigner -verify android/app/build/outputs/bundle/release/app-release.aab > "$RUNNER_TEMP/signature-check.txt"
-          rg -q 'jar verified' "$RUNNER_TEMP/signature-check.txt"
+          grep -q 'jar verified' "$RUNNER_TEMP/signature-check.txt"
       - uses: actions/upload-artifact@v4
         with:
           name: unipathway-signed-testing-bundle

@@ -41,7 +41,7 @@ jobs:
           keytool -genkeypair -keystore "$UNIPATHWAY_ANDROID_KEYSTORE" -storepass "$UNIPATHWAY_ANDROID_STORE_PASSWORD" -keypass "$UNIPATHWAY_ANDROID_KEY_PASSWORD" -alias ci-only -keyalg RSA -keysize 2048 -validity 2 -dname "CN=CI Test Only" -noprompt
           bash android/gradlew -p android bundleRelease
           jarsigner -verify android/app/build/outputs/bundle/release/app-release.aab > "$RUNNER_TEMP/ci-signature.txt"
-          rg -q 'jar verified' "$RUNNER_TEMP/ci-signature.txt"
+          grep -q 'jar verified' "$RUNNER_TEMP/ci-signature.txt"
       - uses: actions/upload-artifact@v4
         with:
           name: unipathway-android-debug
