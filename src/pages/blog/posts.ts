@@ -1,8 +1,8 @@
-import ukVisaCover from '@/assets/blog/uk-visa.jpg';
-import germanySperrkontoCover from '@/assets/blog/germany-sperrkonto.jpg';
-import englishExamsCover from '@/assets/blog/english-exams.jpg';
-import germanExamsCover from '@/assets/blog/german-exams.jpg';
-import diplomaGuidanceCover from '@/assets/blog/diploma-guidance.jpg';
+const ukVisaCover = '/blog/uk-visa.jpg';
+const germanySperrkontoCover = '/blog/germany-sperrkonto.jpg';
+const englishExamsCover = '/blog/english-exams.jpg';
+const germanExamsCover = '/blog/german-exams.jpg';
+const diplomaGuidanceCover = '/blog/diploma-guidance.jpg';
 
 export interface BlogPost {
   slug: string;

@@ -1,3 +1,4 @@
+import CompanyDetails from '@/components/CompanyDetails';
 import TenantNav from '@/components/TenantNav';
 import LanguageAcademy from '@/components/tenant/LanguageAcademy';
 import DestinationHero from '@/components/tenant/DestinationHero';
@@ -135,7 +136,7 @@ export default function GermanyPathway() {
           <p>© {new Date().getFullYear()} UniPathway — operated by the Pakistan-registered entity named in your fee schedule and invoice. SECP-compliant education consultancy.</p>
           <p>UniPathway is not a uni-assist placement partner. Admission decisions are made by the institution and immigration decisions are made by the competent authority.</p>
         </div>
-      </footer>
+      <div className="mx-auto max-w-6xl px-4 mt-6"><CompanyDetails /></div></footer>
     </div>
   );
 }

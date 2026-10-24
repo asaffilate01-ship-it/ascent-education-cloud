@@ -1,3 +1,4 @@
+import CompanyDetails from '@/components/CompanyDetails';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -18,7 +19,7 @@ export default function PublicFooter() {
         <FooterCol title="Company" links={[['About', '/about'], ['Contact', '/contact'], ['Blog', '/blog'], ['Careers & internships', '/careers'], ['Sign in', '/login']]} />
       </div>
       <div className="flex flex-col gap-3 border-t border-border py-6 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
-        <div><p>© {new Date().getFullYear()} UNIPATHWAY.PK</p><p className="mt-1">UniPathway is a trading name of iTechLounge GmbH in Germany and iTechLounge Ltd in the UK and rest of the world.</p></div>
+        <div><CompanyDetails /><p className="mt-4">© {new Date().getFullYear()} UniPathway Education (Pvt.) Ltd. All rights reserved.</p></div>
         <div className="flex flex-wrap gap-x-5 gap-y-2">{[['Privacy', '/privacy'], ['Terms', '/terms'], ['Cookies', '/cookies'], ['Disclaimer', '/disclaimer']].map(([l, to]) => <Link key={to} to={to} className="hover:text-foreground">{l}</Link>)}</div>
       </div>
     </div>

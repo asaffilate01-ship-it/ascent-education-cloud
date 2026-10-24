@@ -1,6 +1,7 @@
 // Generates route-specific HTML heads, not server-rendered page bodies.
 import {readFile,mkdir,writeFile} from 'node:fs/promises';
 const publicSeo=JSON.parse(await readFile('src/data/public-seo.json','utf8'));
+const blogImages=JSON.parse(await readFile('src/data/blog-images.json','utf8'));
 const SITE_URL='https://unipathway.pk';
 const breadcrumbSchema=(path,title)=>({'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:[{'@type':'ListItem',position:1,name:'Home',item:SITE_URL+'/'},...(path==='/'?[]:[{'@type':'ListItem',position:2,name:title.split(' | ')[0],item:SITE_URL+path}])]});
 const escape=s=>s.replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;');
@@ -12,7 +13,8 @@ const privatePaths=[...app.matchAll(/<Route path="([^"]+)"/g)].map(m=>m[1]).filt
 for(const path of [...Object.keys(publicSeo),...new Set(privatePaths)]){
  const page=publicSeo[path];const title=page?.title||'UniPathway | Secure learning portal';const description=page?.description||'Sign in to access your authorised UniPathway learning and administration services.';
  let html=template.replace(/<title>.*?<\/title>/s,`<title>${escape(title)}</title>`).replace(/<link[^>]+rel="canonical"[^>]*>/g,'');
- const values={'description':description,'robots':page?'index, follow, max-image-preview:large, max-snippet:-1':'noindex, follow','og:type':path.startsWith('/blog/')?'article':'website','og:title':title,'og:description':description,'og:url':SITE_URL+path,'twitter:title':title,'twitter:description':description};
+ const image=SITE_URL+(blogImages[path]||'/brand/unipathway-social.png');
+ const values={'og:image':image,'twitter:image':image,'description':description,'robots':page?'index, follow, max-image-preview:large, max-snippet:-1':'noindex, follow','og:type':path.startsWith('/blog/')?'article':'website','og:title':title,'og:description':description,'og:url':SITE_URL+path,'twitter:title':title,'twitter:description':description};
  for(const [key,value] of Object.entries(values))html=html.replace(new RegExp(`(<meta (?:name|property)="${key}" content=")[^"]*("[^>]*>)`),(_,a,b)=>a+escape(value)+b);
  if(page)html=html.replace('</head>',`<link rel="canonical" href="${SITE_URL}${path}" />\n<script type="application/ld+json" data-seo="build">${JSON.stringify(breadcrumbSchema(path,title)).replaceAll('<','\\u003c')}</script>\n</head>`);
  const directory=path==='/'?'dist':`dist${path}`;await mkdir(directory,{recursive:true});await writeFile(`${directory}/index.html`,html);

@@ -1,6 +1,8 @@
+import { SITE_URL } from '@/lib/publicSeo';
 import { Link, useParams, Navigate } from 'react-router-dom';
 import { Calendar, Clock, ArrowLeft } from 'lucide-react';
-import TenantNav from '@/components/TenantNav';
+import PublicNav from '@/components/PublicNav';
+import PublicFooter from '@/components/PublicFooter';
 import SocialShare from '@/components/SocialShare';
 import Seo from '@/components/Seo';
 import { BLOG_POSTS, getPost } from './posts';
@@ -13,12 +15,15 @@ export default function BlogPostPage() {
 
   const related = BLOG_POSTS.filter((p) => p.slug !== post.slug).slice(0, 3);
 
+  const canonicalUrl = `${SITE_URL}/blog/${post.slug}`;
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
     headline: post.title,
     description: post.excerpt,
-    image: [post.cover],
+    image: [new URL(post.cover, SITE_URL).href],
+    mainEntityOfPage: canonicalUrl,
+    publisher: { '@type': 'Organization', name: 'UniPathway Education (Pvt.) Ltd', url: SITE_URL },
     author: { '@type': 'Organization', name: post.author },
     datePublished: post.date,
     articleSection: post.category,
@@ -34,7 +39,7 @@ export default function BlogPostPage() {
         image={post.cover}
         jsonLd={jsonLd}
       />
-      <TenantNav brandName="UniPathway" />
+      <PublicNav />
 
 
       <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -71,7 +76,7 @@ export default function BlogPostPage() {
         </div>
 
         <div className="mt-10 pt-6 border-t border-border">
-          <SocialShare title={post.title} />
+          <SocialShare title={post.title} url={canonicalUrl} />
         </div>
 
         <aside className="mt-12">
@@ -83,6 +88,7 @@ export default function BlogPostPage() {
                 to={`/blog/${r.slug}`}
                 className="rounded-xl border border-border bg-card p-4 hover:border-primary/40 transition-all"
               >
+                <img src={r.cover} alt={r.coverAlt} loading="lazy" width={1280} height={720} className="mb-3 aspect-video w-full rounded-lg object-cover" />
                 <p className="text-[10px] font-bold uppercase tracking-widest text-primary">{r.category}</p>
                 <p className="text-sm font-semibold text-foreground mt-1 line-clamp-3">{r.title}</p>
               </Link>
@@ -90,6 +96,7 @@ export default function BlogPostPage() {
           </div>
         </aside>
       </article>
+      <PublicFooter />
     </div>
   );
 }

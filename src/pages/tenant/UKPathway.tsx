@@ -1,3 +1,4 @@
+import CompanyDetails from '@/components/CompanyDetails';
 import TenantNav from '@/components/TenantNav';
 import LanguageAcademy from '@/components/tenant/LanguageAcademy';
 import DestinationHero from '@/components/tenant/DestinationHero';
@@ -137,7 +138,7 @@ export default function UKPathway() {
           <p>© {new Date().getFullYear()} UniPathway — operated by the Pakistan-registered entity named in your fee schedule and invoice. Agent conduct aligned to the British Council Agent Quality Framework.</p>
           <p>Admission and CAS decisions are made by the UK institution. Visa decisions are made by UK Visas and Immigration.</p>
         </div>
-      </footer>
+      <div className="mx-auto max-w-6xl px-4 mt-6"><CompanyDetails /></div></footer>
     </div>
   );
 }
