@@ -105,7 +105,7 @@ function StudentDashboardContent() {
                   <BookOpen className="w-4 h-4 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{mod.title}</p>
+                  <Link className="text-sm font-medium underline" to={`/student/module?module=${encodeURIComponent(mod.id)}`}>{mod.title}</Link>
                   <p className="text-xs text-muted-foreground">{mod.code || ''} · {mod.credits || 0} credits</p>
                 </div>
                 <span className={`text-[10px] font-medium px-2 py-0.5 rounded ${

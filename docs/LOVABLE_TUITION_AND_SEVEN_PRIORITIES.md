@@ -53,3 +53,11 @@ This implementation is in the UniPathway repository. It does not modify or deplo
 ## Worker-host deployment preparation
 
 Reviewed systemd services/timers and offline configuration validation are now in `deploy/workers/README.md`. They schedule the existing recording and notification workers with non-overlapping runs, deadlines and filesystem restrictions. `npm run test:worker-operations` tests configuration rejection and offline CLI behaviour. No host has been provisioned or timer activated; Microsoft/FCM/APNs connectivity and device receipt still require live acceptance.
+
+## Connected module overview (next source phase)
+
+Student `/student/module?module=<id>` and lecturer `/lecturer/module?module=<id>` now consolidate the next five classes, up to five assessments prioritising open work needing a submission, resources, individual practice and student released-result counts. Enter through module titles on the dashboards/course list or the Overview link in module navigation. Each panel has its own unavailable state; failed queries do not become zero counts. No provisional marks or private answer text is fetched for the summary. Opening a tool rechecks its existing authorisation.
+
+The student library reads all permitted metadata in ordered batches, with bounded ID filters, and displays 20 resources per page. This removes the old 500-material/session/artifact cap. Private files are still fetched only on request using short-lived links. No new database migration or provider configuration is introduced by this phase; prior schema activation remains required.
+
+Hosted acceptance: open the same module as its enrolled learner and assigned lecturer; verify the correct classes, published briefs and resource releases; withdraw enrolment/reassign teaching and refresh; confirm no module detail is shown. Test a centre with over 500 materials/classes and search for an older released resource. Interrupt one panel request and verify an explicit error while the other panels remain usable. Check phone-width layout and navigation back to all courses/teaching. A passed source test does not replace this hosted acceptance.
