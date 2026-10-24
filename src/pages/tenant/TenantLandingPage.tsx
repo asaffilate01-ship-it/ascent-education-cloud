@@ -1,3 +1,4 @@
+import CompanyDetails from '@/components/CompanyDetails';
 import { GraduationCap, BookOpen, Users, ArrowRight, Shield, Video, MapPin, Phone, Mail, Loader2, CheckCircle, Star, Clock, Globe, Award, Sparkles, ChevronRight, Play, Target, Zap, Flame, Home, Banknote, Plane, Heart, TrendingDown, BadgeCheck, Briefcase, Building2, Laptop, Stethoscope, Calculator, FileText, UserCheck, Handshake, CircleDot } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useParams } from 'react-router-dom';
@@ -1052,7 +1053,7 @@ function LegacyTenantLandingPage() {
             </div>
           </div>
           <div className="border-t border-background/10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-            <p>© 2026 UNIPATHWAY.PK. All rights reserved. UniPathway is a trading name of iTechLounge GmbH in Germany, and of iTechLounge Ltd in the UK and the rest of the world.</p>
+            <div><CompanyDetails /><p className="mt-4">© {new Date().getFullYear()} UniPathway Education (Pvt.) Ltd. All rights reserved.</p></div>
             <div className="flex gap-4">
               <Link to="/privacy" className="hover:text-background transition-all">Privacy</Link>
               <Link to="/terms" className="hover:text-background transition-all">Terms</Link>

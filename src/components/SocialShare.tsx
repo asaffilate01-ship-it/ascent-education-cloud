@@ -1,4 +1,4 @@
-import { Facebook, Linkedin, Twitter, Link2, Mail } from 'lucide-react';
+import { Facebook, Linkedin, Twitter, Link2, Mail, Share2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface Props {
@@ -52,9 +52,19 @@ export default function SocialShare({ url, title = 'UniPathway', className = '' 
     }
   };
 
+  const share = async () => {
+    try { await navigator.share({ title, url: shareUrl }); }
+    catch (error) {
+      if (!(error instanceof DOMException && error.name === 'AbortError')) {
+        toast({ title: 'Sharing unavailable', description: 'Use a sharing link below or copy the article link.', variant: 'destructive' });
+      }
+    }
+  };
+
   return (
     <div className={`flex flex-wrap items-center gap-2 ${className}`}>
       <span className="text-xs font-medium text-muted-foreground mr-1">Share:</span>
+      {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && <button type="button" onClick={share} aria-label="Share using your device" className="w-9 h-9 rounded-full flex items-center justify-center bg-muted hover:bg-primary/10 hover:text-primary"><Share2 className="w-4 h-4" /></button>}
       {links.map(({ label, href, Icon }) => (
         <a
           key={label}
@@ -68,6 +78,7 @@ export default function SocialShare({ url, title = 'UniPathway', className = '' 
         </a>
       ))}
       <button
+        type="button"
         onClick={copy}
         aria-label="Copy link"
         className="w-9 h-9 rounded-full flex items-center justify-center bg-muted hover:bg-primary/10 hover:text-primary text-muted-foreground transition-all"
