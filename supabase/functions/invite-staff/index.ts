@@ -13,7 +13,7 @@ Deno.serve(async req=>{
   const prepared=await caller.rpc('prepare_unipathway_account_invitation',{p_email:email,p_name:fullName,p_role:role,p_tenant:tenantId||null});
   if(prepared.error)return json({error:prepared.error.message},403);
   const invitation=prepared.data;
-  if(invitation.status==='assigned')return json({success:true,status:'already_assigned',emailSent:invitation.email_sent});
+  if(invitation.status==='assigned')return json({success:true,status:'already_assigned',emailSent:false,previousEmailSent:invitation.email_sent});
   const admin=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{auth:{persistSession:false}});
   let userId=invitation.existing_user_id;let emailSent=false;
   if(!userId){

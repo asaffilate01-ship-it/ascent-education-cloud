@@ -11,5 +11,6 @@ Learners separately grant attendance, schedule and communication access after ce
 Migrations:
 - `20261024092731_unipathway_operations_and_guardian_scopes.sql`
 - `20261024141630_unipathway_native_devices.sql`
+- `20261024143459_unipathway_native_push_delivery.sql`
 
 Deploy `supabase/functions/invite-staff` after the migrations. Confirm hosted schema history before applying anything: the source history contains reviewed fresh-staging overrides that are not a production repair bundle. Hosted Supabase inspection was denied by the connected tool during this build; no hosted migration deployment is claimed. Native configuration and release gates are documented in `NATIVE_APP_READINESS.md`.

@@ -61,6 +61,26 @@ export async function verifyOperations(db) {
  await db.exec('RESET ROLE');ok((await db.query('select * from public.unipathway_native_devices where id=$1',[id(40)])).rows.length===1,'Peer cannot revoke device');
  await login(student);await db.query('select public.revoke_unipathway_native_device($1)',[id(40)]);
  await db.exec('RESET ROLE');ok((await db.query('select * from public.unipathway_native_devices')).rows.length===0,'Owner revokes device');
+ await db.query('delete from public.notifications where tenant_id=$1',[tenant]);
+ // Re-register after revocation and verify provider leases, deduplication and preferences.
+ await login(student);await db.query('select public.register_unipathway_native_device($1,$2,$3)',[id(41),'android','push-token-123456789']);
+ await denied(()=>db.query('select public.claim_unipathway_push($1,$2)',[tenant,'android']));
+ await db.exec('RESET ROLE');
+ await db.query("insert into public.notifications(id,user_id,tenant_id,title,message,type) values($1,$2,$3,'Private grade','Sensitive marking information','grade')",[id(42),student,tenant]);
+ await db.exec('SET LOCAL ROLE service_role');
+ ok(await rpc('select public.claim_unipathway_push($1,$2) value',[other,'android'])===null,'Push claim cannot cross worker centre');
+ const push=await rpc('select public.claim_unipathway_push($1,$2) value',[tenant,'android']);ok(!!push?.lease,'Worker leases a pending notification');
+ ok(await rpc('select public.claim_unipathway_push($1,$2) value',[tenant,'android'])===null,'Live lease cannot be claimed twice');
+ const payload=await rpc('select public.authorise_unipathway_push($1,$2) value',[push.id,push.lease]);ok(payload.token==='push-token-123456789'&&!JSON.stringify(payload).includes('Sensitive'),'Worker payload excludes private notification text');
+ await denied(()=>db.query('select public.finish_unipathway_push($1,$2,$3)',[push.id,id(99),'accepted']));
+ await db.query('select public.finish_unipathway_push($1,$2,$3)',[push.id,push.lease,'accepted']);
+ ok(await rpc('select public.claim_unipathway_push($1,$2) value',[tenant,'android'])===null,'Accepted delivery is not queued again');
+ await db.exec('RESET ROLE');
+ await db.query("insert into public.notifications(id,user_id,tenant_id,title,message,type) values($1,$2,$3,'Private grade','New mark','grade')",[id(43),student,tenant]);
+ await db.exec('SET LOCAL ROLE service_role');const pending=await rpc('select public.claim_unipathway_push($1,$2) value',[tenant,'android']);
+ await db.exec('RESET ROLE');await db.query('insert into public.notification_preferences(user_id,grade_releases_push) values($1,false)',[student]);
+ await db.exec('SET LOCAL ROLE service_role');ok(await rpc('select public.authorise_unipathway_push($1,$2) value',[pending.id,pending.lease])===null,'Preference revocation suppresses an already leased push');
+ await db.exec('RESET ROLE');
  await db.exec('SET LOCAL ROLE anon');await denied(()=>activity());await denied(()=>prepare('anonymous@example.invalid'));
  await db.exec('ROLLBACK');console.log(JSON.stringify({operationsGuardianNativeChecks:checks,status:'passed'}));
 }
