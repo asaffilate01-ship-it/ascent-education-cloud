@@ -30,14 +30,14 @@ const experiences = [
 
 export default function PromoHome() {
   return <div className="public-site min-h-dvh bg-background">
-    <Seo title="UniPathway — Online & In-Centre Teaching, Training & International Progression" description="Learn in Pakistan with UniPathway: Years 8–12 tuition, UK qualifications, AI and tech, finance, beauty, IELTS and German, with university and career guidance." canonical="/" />
+    <Seo title="UniPathway | Online Learning Across Pakistan" description="Explore online tuition, IELTS preparation and UK qualification pathways across Pakistan with UniPathway. Learn online nationwide or at our first centre in Jhelum." canonical="/" />
     <PublicNav />
     <main>
       <section className="relative overflow-hidden border-b border-border bg-gradient-to-b from-secondary/60 to-background">
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-5 pb-14 pt-8 sm:px-8 md:pt-12 lg:grid-cols-[1fr_1.05fr] lg:gap-16 lg:pb-24 lg:pt-16">
           <div className="animate-page-enter">
-            <p className="text-xs font-extrabold uppercase tracking-[0.15em] text-success">UniPathway Centre · Jhelum, Pakistan</p><h1 className="mt-5 max-w-2xl text-[2.5rem] font-extrabold leading-[1.05] sm:text-6xl lg:text-7xl">Learn here.<br /><span className="text-success">Go further.</span></h1>
-            <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">Tuition, qualifications and practical skills—online across Pakistan and at our centre in Civil Lines, Jhelum. Find your course and plan your next step.</p>
+            <p className="text-xs font-extrabold uppercase tracking-[0.15em] text-success">UniPathway · Online across Pakistan</p><h1 className="mt-5 max-w-2xl text-[2.5rem] font-extrabold leading-[1.05] sm:text-6xl lg:text-7xl">Online learning.<br /><span className="text-success">Across Pakistan.</span></h1>
+            <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">Study from anywhere in Pakistan with online tuition, IELTS preparation, qualifications and practical skills. Our first centre is in Jhelum, with in-person learning where your programme requires it.</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row"><Button size="lg" className="h-12 rounded-full px-7 shadow-surface-lg" asChild><Link to="/study">Find a course <ArrowRight /></Link></Button><Button size="lg" variant="outline" className="h-12 rounded-full bg-card px-7" asChild><Link to="/contact">Talk to an adviser</Link></Button></div>
             <dl className="mt-10 grid max-w-lg grid-cols-3 divide-x divide-border rounded-2xl border border-border bg-card/80 py-4 shadow-surface-lg">{[['8+', 'Learning areas'], ['27', 'EU countries to explore'], ['L3–7', 'Qualifications']].map(([v, l]) => <div key={l} className="px-4 text-center"><dt className="sr-only">{l}</dt><dd className="stat-value text-xl sm:text-2xl">{v}</dd><p className="mt-0.5 text-[11px] font-semibold text-muted-foreground sm:text-xs">{l}</p></div>)}</dl>
           </div>
