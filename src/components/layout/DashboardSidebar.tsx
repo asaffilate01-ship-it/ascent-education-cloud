@@ -430,9 +430,10 @@ export default function DashboardSidebar() {
         {navSearch && !sections.some(s => s.items.length) && <p className="px-3 text-sm">No matching pages. Try another name.</p>}
         {sections.map((section, si) => (
           <details key={`${user.role}-${si}-${navSearch}`} open={collapsed || si === 0 || !!navSearch || section.items.some(i => i.path === location.pathname)} className={si > 0 ? 'mt-5' : ''}>
-            {section.title && (
+            {(
+
               <summary className="text-[10px] font-bold uppercase tracking-[0.12em] text-sidebar-foreground/30 px-3 mb-1.5">
-                {section.title}
+                {section.title || 'Navigation'}
               </summary>
             )}
             <div className="space-y-0.5">

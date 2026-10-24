@@ -6,6 +6,7 @@
 - Course search now explains an empty result and offers filter reset.
 - Student, lecturer, director and platform-owner navigation begins with at most seven daily destinations. Additional authorised pages remain searchable and expandable. Exact route matching avoids multiple active destinations. Icon controls have accessible labels.
 - Student agenda appears before module summaries. Plain-language progress guidance and adjacent classes/materials/library/recording links reduce sidebar hunting.
+- Director next actions use actual deposit-stage and overdue-invoice counts. Platform next actions link onboarding, readiness and infrastructure; removed fabricated educloud.pk centre domains.
 - Lecturer preparation/materials/recording-review actions and adjacent teaching navigation replace an unavailable student metric with an actionable link.
 - Parent overview, progress, attendance, schedule and messages have distinct views. Activity supports learner selection, loading, empty/error/retry states. Existing server-side independent consents remain authoritative. Switching page/account remounts private activity. Result revocation tests remain in place.
 - Classes separate upcoming/past sessions, support refresh and give a useful recovery action. Existing 200-session fetch limit remains; this is not an unlimited historical archive.
