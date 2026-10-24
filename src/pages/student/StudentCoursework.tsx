@@ -1,10 +1,12 @@
-import {useSearchParams} from 'react-router-dom';
+import {Link,useSearchParams} from 'react-router-dom';
 import ModuleJourney from '@/components/assessment/ModuleJourney';
 import CourseworkFiles from '@/components/assessment/CourseworkFiles';
-import {useCallback,useEffect,useMemo,useState} from 'react';
+import SubmittedResponse from '@/components/assessment/SubmittedResponse';
+import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {useAuth} from '@/contexts/AuthContext';
 import {db} from '@/lib/db';
+import {pagedRows,rowsByIds} from '@/lib/pagedRows';
 import {Button} from '@/components/ui/button';
 import {Textarea} from '@/components/ui/textarea';
 import {toast} from 'sonner';
@@ -15,8 +17,9 @@ type Brief={id:string;module_id:string;title:string;assessment_type:string;
  due_at:string;submission_cutoff:string;max_attempts:number;penalty_points_per_resubmission:number;
  policy_reference:string;rubric_version:string};
 type Criterion={id:string;brief_id:string;criterion_code:string;learning_outcome:string;criterion_description:string;scoring_guidance:string;max_points:number;display_order:number};
-type Attempt={id:string;brief_id:string;attempt_no:number;status:string;submitted_at:string;resubmission_guidance:string|null;guidance_at:string|null;evidence_text:string};
+type Attempt={id:string;brief_id:string;attempt_no:number;status:string;submitted_at:string;resubmission_guidance:string|null;guidance_at:string|null};
 type Released={attempt_id:string;brief_id:string;student_id:string;final_score:number;raw_score:number;penalty_points:number;published_feedback:string;released_at:string};
+type Amendment={attempt_id:string;original_final_score:number;corrected_final_score:number;corrected_raw_score:number;corrected_feedback:string;recorded_at:string};
 export default function StudentCoursework(){
  const {user}=useAuth();const [params]=useSearchParams();
  return <CourseworkWorkspace moduleId={params.get('module')||undefined} key={`${user?.id}:${user?.tenantId}:${user?.role}`}/>;
@@ -25,7 +28,9 @@ function CourseworkWorkspace({moduleId}:{moduleId?:string}){
  const {user}=useAuth();const uid=user?.id,tenant=user?.tenantId;
  const [modules,setModules]=useState<Module[]>([]);const [briefs,setBriefs]=useState<Brief[]>([]);
  const [criteria,setCriteria]=useState<Criterion[]>([]);const [attempts,setAttempts]=useState<Attempt[]>([]);
- const [results,setResults]=useState<Released[]>([]);
+ const [results,setResults]=useState<Released[]>([]),[amendments,setAmendments]=useState<Amendment[]>([]);
+ const generation=useRef(0);
+ const [search,setSearch]=useState(''),[page,setPage]=useState(0);
  const [drafts,setDrafts]=useState<Record<string,string>>({});
  const [loading,setLoading]=useState(true);const [busy,setBusy]=useState('');
  const [error,setError]=useState('');
@@ -33,47 +38,48 @@ function CourseworkWorkspace({moduleId}:{moduleId?:string}){
  const [fileBusy,setFileBusy]=useState<Record<string,boolean>>({});
  const [requestIds]=useState<Record<string,string>>({});
  const load=useCallback(async()=>{
-  if(!uid||!tenant){setLoading(false);setError('Assigned student and authorised centre profile required.');return;}
-  setLoading(true);setError('');
+  const token=++generation.current,current=()=>token===generation.current;
+  setLoading(true);setError('');setModules([]);setBriefs([]);setCriteria([]);setAttempts([]);setResults([]);setAmendments([]);setPage(0);
   try{
-   const en=await db.from('student_enrolments').select('programme_id')
-    .eq('student_id',uid).eq('tenant_id',tenant).eq('status','active');
-   if(en.error)throw Error(en.error.message);
-   const ids=[...new Set<string>((en.data||[]).map((x:{programme_id:string})=>x.programme_id))];
-   if(!ids.length){setModules([]);setBriefs([]);setCriteria([]);setAttempts([]);setResults([]);return;}
-   const m=await db.from('modules').select('id,title,programme_id').eq('tenant_id',tenant).in('programme_id',ids);
-   if(m.error)throw Error(m.error.message);
-   const mods=(m.data||[]) as Module[];setModules(mods);
-   if(!mods.length){setBriefs([]);setCriteria([]);setAttempts([]);setResults([]);return;}
-   const [b,a,r]=await Promise.all([
-    db.from('unipathway_assessment_briefs')
-     .select('id,module_id,title,assessment_type,teaching_summary,learning_outcomes,student_expectations,required_evidence,due_at,submission_cutoff,max_attempts,penalty_points_per_resubmission,policy_reference,rubric_version')
-     .eq('tenant_id',tenant).eq('status','published').in('module_id',mods.map(x=>x.id)).order('due_at'),
-    db.from('unipathway_assessment_attempts')
-     .select('id,brief_id,attempt_no,status,submitted_at,resubmission_guidance,guidance_at,evidence_text')
-     .eq('student_id',uid).eq('tenant_id',tenant).order('attempt_no',{ascending:false}).limit(250),
-    db.from('unipathway_assessment_released_results')
+   if(!uid||!tenant)throw Error('Assigned student and authorised centre required');
+   const enrolments=await pagedRows<{programme_id:string}>(()=>db.from('student_enrolments').select('id,programme_id')
+    .eq('student_id',uid).eq('tenant_id',tenant).eq('status','active'),current);
+   const mods=await rowsByIds<Module>(enrolments.map(e=>e.programme_id),ids=>()=>{
+    let q=db.from('modules').select('id,title,programme_id').eq('tenant_id',tenant).in('programme_id',ids);
+    if(moduleId)q=q.eq('id',moduleId);return q;
+   },current);
+   const bs=await rowsByIds<Brief>(mods.map(m=>m.id),ids=>()=>db.from('unipathway_assessment_briefs')
+    .select('id,module_id,title,assessment_type,teaching_summary,learning_outcomes,student_expectations,required_evidence,due_at,submission_cutoff,max_attempts,penalty_points_per_resubmission,policy_reference,rubric_version')
+    .eq('tenant_id',tenant).eq('status','published').in('module_id',ids),current);
+   const ids=bs.map(b=>b.id);
+   const [as,rs,cs,ams]=await Promise.all([
+    rowsByIds<Attempt>(ids,batch=>()=>db.from('unipathway_assessment_attempts')
+     .select('id,brief_id,attempt_no,status,submitted_at,resubmission_guidance,guidance_at')
+     .eq('student_id',uid).eq('tenant_id',tenant).in('brief_id',batch),current),
+    rowsByIds<Released>(ids,batch=>()=>db.from('unipathway_assessment_released_results')
      .select('attempt_id,brief_id,student_id,final_score,raw_score,penalty_points,published_feedback,released_at')
-     .eq('student_id',uid).eq('tenant_id',tenant).order('released_at',{ascending:false}).limit(250)
+     .eq('student_id',uid).eq('tenant_id',tenant).in('brief_id',batch),current,'attempt_id'),
+    rowsByIds<Criterion>(ids,batch=>()=>db.from('unipathway_assessment_criteria')
+     .select('id,brief_id,criterion_code,learning_outcome,criterion_description,scoring_guidance,max_points,display_order')
+     .in('brief_id',batch),current),
+    rowsByIds<Amendment>(ids,batch=>()=>db.from('unipathway_assessment_grade_amendments')
+     .select('attempt_id,original_final_score,corrected_raw_score,corrected_final_score,corrected_feedback,recorded_at')
+     .eq('student_id',uid).eq('tenant_id',tenant).in('brief_id',batch),current,'attempt_id')
    ]);
-   const fail=[b,a,r].find(x=>x.error);if(fail)throw Error(fail.error.message);
-   const bs=(b.data||[]) as Brief[];setBriefs(bs);setAttempts((a.data||[]) as Attempt[]);setResults((r.data||[]) as Released[]);
-   if(!bs.length){setCriteria([]);return;}
-   const c=await db.from('unipathway_assessment_criteria')
-    .select('id,brief_id,criterion_code,learning_outcome,criterion_description,scoring_guidance,max_points,display_order')
-    .in('brief_id',bs.map(x=>x.id)).order('display_order');
-   if(c.error)throw Error(c.error.message);
-   setCriteria((c.data||[]) as Criterion[]);
-  }catch(e){setError(e instanceof Error?e.message:'Unable to verify enrolled coursework');setBriefs([]);}
-  finally{setLoading(false);}
- },[uid,tenant]);
- useEffect(()=>{void load();},[load]);
+   if(current()){setModules(mods);setBriefs(bs.sort((a,b)=>a.due_at.localeCompare(b.due_at)||a.id.localeCompare(b.id)));setCriteria(cs.sort((a,b)=>a.display_order-b.display_order));setAttempts(as);setResults(rs);setAmendments(ams);}
+  }catch{if(current())setError('Unable to verify enrolled coursework');}
+  finally{if(current())setLoading(false);}
+ },[uid,tenant,moduleId]);
+ const invalidate=useCallback(()=>{generation.current++;},[]);
+ useEffect(()=>{void load();return invalidate;},[load,invalidate]);
+ const refreshCurrent=useRef(load);refreshCurrent.current=load;
  const grouped=useMemo(()=>{
   const map=new Map<string,Attempt[]>();
   attempts.forEach(a=>{const list=map.get(a.brief_id)||[];list.push(a);map.set(a.brief_id,list)});
   for(const a of map.values())a.sort((x,y)=>y.attempt_no-x.attempt_no);
   return map;
  },[attempts]);
+ const visible=briefs.filter(b=>(!moduleId||b.module_id===moduleId)&&`${b.title} ${modules.find(m=>m.id===b.module_id)?.title||''}`.toLowerCase().includes(search.toLowerCase()));
  const submit=async(b:Brief)=>{
   if(busy||fileBusy[b.id]!==false){toast.error('Wait for attachments to load or finish uploading.');return;}
   const list=grouped.get(b.id)||[],latest=list[0];
@@ -88,7 +94,7 @@ function CourseworkWorkspace({moduleId}:{moduleId?:string}){
    const {error:e}=await db.rpc('submit_unipathway_coursework',{p_brief:b.id,p_evidence:work,p_uploads:attachmentIds[b.id]||[],p_request:requestIds[b.id]});
    if(e)throw e;
    toast.success('Assignment submitted. You can read your result after marking and approval.');
-   setDrafts(p=>({...p,[b.id]:''}));delete requestIds[b.id];await load();
+   setDrafts(p=>({...p,[b.id]:''}));delete requestIds[b.id];await refreshCurrent.current();
   } catch {toast.error('Submission could not be confirmed. Your draft is still here. Refresh assignments to check whether it arrived before trying again.');}
   finally {setBusy('');}
  };
@@ -100,8 +106,9 @@ function CourseworkWorkspace({moduleId}:{moduleId?:string}){
   {loading&&<p role="status">Checking your active enrolled assignments and released feedback…</p>}
   {error&&<p role="alert" className="rounded-xl border border-destructive p-4">Assignments could not be loaded. Please retry or contact your centre.</p>}
   <Button className="mb-4" variant="outline" disabled={loading||!!busy} onClick={()=>void load()}>Refresh assignments</Button>
-  {!loading&&!error&&!briefs.filter(b=>!moduleId||b.module_id===moduleId).length&&<p className="rounded-xl border bg-card p-6 text-sm">Your lecturers have not published coursework under your currently enrolled modules yet.</p>}
-  {!loading&&!error&&<div className="space-y-5">{briefs.filter(b=>!moduleId||b.module_id===moduleId).map(b=>{
+  <label className="mb-4 block text-sm">Search coursework<input className="mt-1 block rounded border bg-background p-2" value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}} placeholder="Assessment or module title"/></label>
+  {!loading&&!error&&!visible.length&&<p className="rounded-xl border bg-card p-6 text-sm">{search?'No coursework matches your search.':'Your lecturers have not published coursework under your currently enrolled modules yet.'}</p>}
+  {!loading&&!error&&<div className="space-y-5">{visible.slice(page*10,page*10+10).map(b=>{
    const list=grouped.get(b.id)||[],latest=list[0],released=results.filter(r=>r.brief_id===b.id);
    const within=Date.now()<=new Date(b.submission_cutoff).getTime();
    const maySubmit=within&&list.length<b.max_attempts&&(!latest||latest.status==='resubmission_requested');
@@ -128,14 +135,10 @@ function CourseworkWorkspace({moduleId}:{moduleId?:string}){
     <div className="mt-4 rounded-lg border border-warning/40 p-3 text-sm"><strong>Resubmission rule:</strong> Up to {b.max_attempts} attempt(s); {b.penalty_points_per_resubmission} internal percentage points deducted per permitted resubmission, only where permitted under the published {b.policy_reference} policy. No resubmissions after {new Date(b.submission_cutoff).toLocaleString()}.</div>
     {maySubmit&&<CourseworkFiles key={`${b.id}:${list.length}`} briefId={b.id} disabled={!!busy} onFiles={ids=>setAttachmentIds(old=>({...old,[b.id]:ids}))} onBusy={value=>setFileBusy(old=>({...old,[b.id]:value}))}/>}
     {list.map(a=><section key={a.id} className="mt-3 rounded-lg bg-secondary/30 p-3">
-     <p className="font-semibold text-sm">Attempt {a.attempt_no} — {a.status}</p><CourseworkFiles attemptId={a.id}/>
+     <p className="font-semibold text-sm">Attempt {a.attempt_no} — {a.status}</p><CourseworkFiles attemptId={a.id}/><SubmittedResponse key={`${uid}:${tenant}:${a.id}`} attempt={a.id} student={uid!} tenant={tenant!}/>
      <p className="mt-1 text-xs text-muted-foreground">Submitted {new Date(a.submitted_at).toLocaleString()}</p>
      {a.resubmission_guidance&&<p className="mt-2 whitespace-pre-wrap rounded-lg border border-primary/25 bg-card p-3 text-sm"><RotateCcw className="mr-1 inline size-4"/><strong>Independent marker's improvement plan:</strong> {a.resubmission_guidance}</p>}
-     {released.find(r=>r.attempt_id===a.id)&&<div className="mt-2 rounded-lg border bg-card p-3 text-sm">
-      <p className="font-bold">Approved score: {released.find(r=>r.attempt_id===a.id)?.final_score}/100</p>
-      <p className="mt-1 text-xs text-muted-foreground">Human-reviewed raw score: {released.find(r=>r.attempt_id===a.id)?.raw_score}; permitted resubmission penalty: {released.find(r=>r.attempt_id===a.id)?.penalty_points} points.</p>
-      <p className="mt-2 whitespace-pre-wrap">{released.find(r=>r.attempt_id===a.id)?.published_feedback}</p>
-     </div>}
+     {released.find(r=>r.attempt_id===a.id)&&<ReleasedFeedback result={released.find(r=>r.attempt_id===a.id)!} amendment={amendments.find(r=>r.attempt_id===a.id)}/>}
     </section>)}
     {maySubmit?<div className="mt-5"><label className="text-sm font-semibold">{latest?'Revised work responding to marker guidance':'Your original submitted evidence'}
       <Textarea rows={7} className="mt-2" maxLength={50000} value={drafts[b.id]||''} onChange={e=>setDrafts(p=>({...p,[b.id]:e.target.value}))}
@@ -145,5 +148,15 @@ function CourseworkWorkspace({moduleId}:{moduleId?:string}){
      </div>:<p className="mt-4 text-xs text-muted-foreground">{within?'Awaiting independent marking, IQA approval or an authorised revision request.':'The submission window is closed.'}</p>}
    </article>;
   })}</div>}
+  {!loading&&!error&&visible.length>10&&<nav aria-label="Coursework pages" className="mt-4 flex items-center gap-3"><Button variant="outline" disabled={page===0} onClick={()=>setPage(p=>p-1)}>Previous coursework</Button><span>Page {page+1} of {Math.ceil(visible.length/10)} · {visible.length} assessments</span><Button variant="outline" disabled={(page+1)*10>=visible.length} onClick={()=>setPage(p=>p+1)}>Next coursework</Button></nav>}
  </DashboardLayout>;
+}
+
+function ReleasedFeedback({result,amendment}:{result:Released;amendment?:Amendment}) {
+ return <div className="mt-2 rounded-lg border bg-card p-3 text-sm">
+  <p className="font-bold">Approved score: {amendment?.corrected_final_score??result.final_score}/100{amendment?' — independently amended':''}</p>
+  <p className="mt-1 text-xs text-muted-foreground">Human-reviewed raw score: {amendment?.corrected_raw_score??result.raw_score}; permitted resubmission penalty: {result.penalty_points} points.</p>
+  <p className="mt-2 whitespace-pre-wrap">{amendment?.corrected_feedback??result.published_feedback}</p>
+  {amendment&&<p className="mt-2 text-xs">Original released score: {amendment.original_final_score}/100. Amended {new Date(amendment.recorded_at).toLocaleString()}. <Link className="underline" to="/student/appeals">Read independent appeal decision</Link></p>}
+ </div>;
 }

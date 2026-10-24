@@ -8,3 +8,7 @@ it('stops on account changes and bounds chunked ID filters',async()=>{
  const query=vi.fn();await expect(pagedRows(query,()=>false)).rejects.toThrow('superseded');expect(query).not.toHaveBeenCalled();
  const sizes:number[]=[];await rowsByIds(Array.from({length:123},(_,i)=>String(i)),ids=>{sizes.push(ids.length);return ()=>({order:()=>({range:async()=>({data:[],error:null})})});});expect(sizes).toEqual([50,50,23]);
 });
+it('supports tables with a unique attempt key rather than an id column',async()=>{
+ const order=vi.fn(()=>({range:async()=>({data:[{attempt_id:'a'}],error:null})}));
+ expect(await pagedRows(()=>({order}),()=>true,'attempt_id')).toEqual([{attempt_id:'a'}]);expect(order).toHaveBeenCalledWith('attempt_id');
+});
