@@ -1,0 +1,1 @@
+export const parentPages=[['Overview','/parent'],['Attendance','/parent/attendance'],['Schedule','/parent/schedule'],['Progress','/parent/progress'],['Learning plans','/parent/learning'],['Messages','/parent/messages']];
