@@ -41,7 +41,7 @@ export default function STEMCoachLearningAccess({ enrolled }: { enrolled: boolea
         <GraduationCap className="h-5 w-5 text-primary" /> STEMCoach revision and practice
       </h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        Use interactive questions, diagnostics and personalised revision for eligible
+        STEMCoach is a separate learning-support brand of iTech Education Ltd. Use optional interactive questions, diagnostics and personalised revision for eligible
         school-level tuition subjects. OTHM, Qualifi and other regulated
         assessments remain within UniPathway's human-controlled academic system.
       </p>

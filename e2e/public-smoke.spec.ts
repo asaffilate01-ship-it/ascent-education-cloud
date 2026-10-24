@@ -171,9 +171,9 @@ test('study Explore options buttons navigate to working academy and qualificatio
  await expect(page.getByRole('button',{name:'OTHM',exact:true})).toHaveAttribute('aria-pressed','true');
 });
 
-test('The scholarships and free Ilmvero partnership pages render and keep visitors on UniPathway', async ({ page }) => {
+test('School partnerships offer optional standalone software and link to scholarships', async ({ page }) => {
   await page.goto('/school-partners');
-  await expect(page.getByRole('heading', { name: /Better school tools, more tuition opportunities/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /More learning opportunities for your school/i })).toBeVisible();
   await expect(page.getByText(/first 12 months/i).first()).toBeVisible();
   await page.getByRole('link', { name: /Explore scholarships/i }).click();
   await expect(page).toHaveURL(/\/scholarships(?:[/?#]|$)/);
