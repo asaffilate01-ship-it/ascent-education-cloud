@@ -39,7 +39,7 @@ function ClassroomWorkspace(){
   .sort((a,b)=>new Date(a.starts_at).getTime()-new Date(b.starts_at).getTime()),[sessions,showPast,moduleId]);
  const teacher=!!user?.roles.some(r=>['lecturer','programme_leader','centre_director','superadmin'].includes(r));
  return <DashboardLayout title="UniPathway Live Classroom" subtitle="Private lecture rooms with interactive whiteboard and on-demand materials">
-  {user?.role==='student'&&<ModuleJourney moduleId={moduleId||undefined}/>}
+  <ModuleJourney moduleId={moduleId||undefined} teacher={teacher}/>
   <section className="mb-5 rounded-xl border border-primary/25 bg-primary/5 p-4">
    <h2 className="flex items-center gap-2 font-bold"><ShieldCheck className="size-5"/>Invited students and allocated teachers only</h2>
    <p className="mt-2 text-sm text-muted-foreground">Students need an active enrolment AND an invitation for a specific class. For 100+ student lectures, everyone sees one presenter-controlled board without individual copies. The board can be shared into Teams recording by the lecturer. Microsoft Teams lobby, presenter and recording permissions must be configured separately.</p>

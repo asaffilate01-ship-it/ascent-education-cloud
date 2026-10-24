@@ -1,3 +1,5 @@
+import {useSearchParams} from 'react-router-dom';
+import ModuleJourney from '@/components/assessment/ModuleJourney';
 import {useCallback,useEffect,useState} from 'react';
 import {useAuth} from '@/contexts/AuthContext';
 import {db} from '@/lib/db';
@@ -10,14 +12,15 @@ import {BookOpen,ClipboardCheck,ShieldCheck,Plus} from 'lucide-react';
 type Module={id:string;title:string;tenant_id:string;lecturer_id:string|null};
 type Brief={id:string;title:string;module_id:string;status:string;assessment_type:string;due_at:string;submission_cutoff:string;max_attempts:number;penalty_points_per_resubmission:number;policy_reference:string};
 type Criterion={id:string;brief_id:string;criterion_code:string;learning_outcome:string;criterion_description:string;scoring_guidance:string;max_points:number;display_order:number};
-export default function LecturerAssessmentBriefs(){
+export default function LecturerAssessmentBriefs(){const {user}=useAuth();const [params]=useSearchParams();const filter=params.get('module')||'';return <BriefsWorkspace key={`${user?.id}:${user?.tenantId}:${filter}`} moduleFilter={filter}/>;}
+function BriefsWorkspace({moduleFilter}:{moduleFilter:string}){
  const {user}=useAuth();const uid=user?.id,tenant=user?.tenantId;
  const [modules,setModules]=useState<Module[]>([]);
  const [briefs,setBriefs]=useState<Brief[]>([]);
  const [criteria,setCriteria]=useState<Criterion[]>([]);
  const [loading,setLoading]=useState(true);const [error,setError]=useState('');
  const [saving,setSaving]=useState(false);
- const [moduleId,setModuleId]=useState('');
+ const [moduleId,setModuleId]=useState(moduleFilter);
  const [title,setTitle]=useState('');const [kind,setKind]=useState('coursework');
  const [teaching,setTeaching]=useState('');const [outcomes,setOutcomes]=useState('');
  const [expectations,setExpectations]=useState('');const [required,setRequired]=useState('');
@@ -40,8 +43,8 @@ export default function LecturerAssessmentBriefs(){
     .eq('tenant_id',tenant).eq('lecturer_id',uid).order('created_at',{ascending:false}).limit(180)
    ]);
    if(m.error||b.error)throw Error(m.error?.message||b.error?.message);
-   const mine=(b.data||[]) as Brief[];
-   setModules((m.data||[]) as Module[]);setBriefs(mine);
+   const mine=((b.data||[]) as Brief[]).filter(b=>!moduleFilter||b.module_id===moduleFilter);
+   setModules(((m.data||[]) as Module[]).filter(m=>!moduleFilter||m.id===moduleFilter));setBriefs(mine);
    if(!mine.length){setCriteria([]);return;}
    const res=await db.from('unipathway_assessment_criteria')
     .select('id,brief_id,criterion_code,learning_outcome,criterion_description,scoring_guidance,max_points,display_order')
@@ -50,7 +53,7 @@ export default function LecturerAssessmentBriefs(){
    setCriteria((res.data||[]) as Criterion[]);
   }catch(e){setError(e instanceof Error?e.message:'Cannot load private assignment briefs');}
   finally{setLoading(false);}
- },[uid,tenant]);
+ },[uid,tenant,moduleFilter]);
  useEffect(()=>{void load();},[load]);
  const create=async()=>{
   if(!uid||!tenant||!modules.some(x=>x.id===moduleId)||!title.trim()||teaching.trim().length<40
@@ -88,6 +91,7 @@ export default function LecturerAssessmentBriefs(){
  const chosen=briefs.find(b=>b.id===selected);
  const ownCriteria=criteria.filter(c=>c.brief_id===selected);
  return <DashboardLayout title="Lecturer Teaching and Assessment Briefs" subtitle="Document precisely what was taught; separate assessors and IQA will mark and approve the work">
+  <ModuleJourney moduleId={moduleFilter} teacher/>
   <section className="mb-5 rounded-xl border bg-primary/5 p-4"><h2 className="flex gap-2 font-semibold"><ShieldCheck className="size-5"/>Lecturer sets learning standards — not student grades</h2>
    <p className="mt-2 text-sm text-muted-foreground">Record the lesson progress, outcomes, student expectations and acceptable evidence. Add a transparent criterion rubric. A different assessor will evaluate coursework, Omniqora can suggest an advisory draft, and IQA separately approves the final mark. Resubmissions and any penalties require a manager-approved written policy.</p>
   </section>

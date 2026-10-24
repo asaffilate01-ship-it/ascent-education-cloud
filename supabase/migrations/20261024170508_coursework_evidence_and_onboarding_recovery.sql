@@ -146,3 +146,29 @@ BEGIN
 END $$;
 REVOKE ALL ON FUNCTION public.save_unipathway_onboarding_draft(uuid,jsonb,jsonb,int,int),public.create_unipathway_centre_from_draft(uuid,int) FROM PUBLIC,anon;
 GRANT EXECUTE ON FUNCTION public.save_unipathway_onboarding_draft(uuid,jsonb,jsonb,int,int),public.create_unipathway_centre_from_draft(uuid,int) TO authenticated;
+
+-- Recover centres created before durable drafts existed, without creating another tenant.
+CREATE FUNCTION public.list_unipathway_incomplete_centres() RETURNS TABLE(id uuid,name text)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
+BEGIN
+ IF auth.uid() IS NULL OR NOT public.has_role(auth.uid(),'superadmin') THEN RAISE EXCEPTION 'Platform administrator required' USING ERRCODE='42501'; END IF;
+ RETURN QUERY SELECT t.id,t.name FROM public.tenants t WHERE t.status='onboarding' ORDER BY t.name LIMIT 100;
+END $$;
+CREATE FUNCTION public.resume_unipathway_centre_setup(p_tenant uuid) RETURNS uuid
+LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
+DECLARE t public.tenants%ROWTYPE; o public.unipathway_centre_onboarding%ROWTYPE;
+BEGIN
+ IF auth.uid() IS NULL OR NOT public.has_role(auth.uid(),'superadmin') THEN RAISE EXCEPTION 'Platform administrator required' USING ERRCODE='42501'; END IF;
+ PERFORM pg_advisory_xact_lock(hashtextextended(p_tenant::text,1));
+ IF EXISTS(SELECT 1 FROM public.unipathway_onboarding_drafts WHERE id=p_tenant) THEN RETURN p_tenant; END IF;
+ SELECT * INTO t FROM public.tenants WHERE id=p_tenant AND status='onboarding' FOR UPDATE;
+ IF NOT FOUND THEN RAISE EXCEPTION 'Incomplete centre required'; END IF;
+ SELECT * INTO o FROM public.unipathway_centre_onboarding WHERE tenant_id=p_tenant;
+ INSERT INTO public.unipathway_onboarding_drafts(id,tenant_id,updated_by,step,form_data,documents)
+ VALUES(t.id,t.id,auth.uid(),1,jsonb_build_object('centreName',t.name,'slug',t.slug,'plan',t.plan,'brandName',coalesce(t.brand_name,t.name),
+ 'primaryColor',coalesce(t.primary_color,'#b91c1c'),'accentColor',coalesce(t.accent_color,'#D4A853'),
+ 'country',coalesce(o.country,''),'city',coalesce(o.city,''),'companyReg',coalesce(o.company_registration,''),'adminName','','adminEmail',''),coalesce(o.documents,'{}'::jsonb));
+ RETURN t.id;
+END $$;
+REVOKE ALL ON FUNCTION public.list_unipathway_incomplete_centres(),public.resume_unipathway_centre_setup(uuid) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.list_unipathway_incomplete_centres(),public.resume_unipathway_centre_setup(uuid) TO authenticated;

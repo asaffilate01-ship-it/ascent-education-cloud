@@ -53,6 +53,10 @@ export async function verifyCourseworkRecovery(db){
  ok((await db.query('select city from public.unipathway_centre_onboarding where tenant_id=$1',[draft])).rows[0].city==='Lahore','Resume updates existing centre details');
  await login(student);ok((await db.query('select * from public.unipathway_onboarding_drafts')).rows.length===0,'Student cannot see staff drafts');await denied(()=>create(2));
  await db.exec('RESET ROLE');await db.query("update public.tenants set status='active' where id=$1",[draft]);await login(root);await denied(()=>create(2));
+ await db.exec('RESET ROLE');await db.query("insert into public.tenants(id,name,slug,status) values($1,'Legacy incomplete centre','legacy-incomplete','onboarding')",[id(50)]);
+ await login(student);await denied(()=>db.query('select public.resume_unipathway_centre_setup($1)',[id(50)]));await denied(()=>db.query('select * from public.list_unipathway_incomplete_centres()'));
+ await login(root);ok(await rpc('select public.resume_unipathway_centre_setup($1) value',[id(50)])===id(50),'Older incomplete centre gets recoverable draft');ok(await rpc('select public.resume_unipathway_centre_setup($1) value',[id(50)])===id(50),'Legacy recovery retry reuses draft');
+ ok((await db.query('select tenant_id from public.unipathway_onboarding_drafts where id=$1',[id(50)])).rows[0].tenant_id===id(50),'Legacy draft references existing tenant');
  const offerKey='OTHM:QA approval fixture';
  const review=(publish,revision,evidence='QA approved fees and intake reference')=>rpc("select public.review_unipathway_course_offer($1,'upcoming','PKR test fee only','Approved entry requirements fixture',current_date+30,now()+interval '10 days',$2,$3,$4) value",[offerKey,publish,evidence,revision]);
  await login(student);await denied(()=>review(true,0));

@@ -1,3 +1,5 @@
+import {useSearchParams} from 'react-router-dom';
+import ModuleJourney from '@/components/assessment/ModuleJourney';
 import { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,12 +15,13 @@ type Module={id:string;title:string;lecturer_id:string|null;tenant_id:string;pro
 const safeName=(value:string)=>value.replace(/[^a-zA-Z0-9._-]/g,'_').slice(-100);
 const kinds=['slide','worksheet','reading','homework','video','whiteboard'] as const;
 const accepted=['application/pdf','application/vnd.openxmlformats-officedocument.presentationml.presentation','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','image/jpeg','image/png','video/mp4','text/plain'];
-export default function ModuleMaterials(){
+export default function ModuleMaterials(){const {user}=useAuth();const [params]=useSearchParams();const filter=params.get('module')||'';return <MaterialsWorkspace key={`${user?.id}:${user?.tenantId}:${filter}`} moduleFilter={filter}/>;}
+function MaterialsWorkspace({moduleFilter}:{moduleFilter:string}){
  const {user}=useAuth();
  const [tenant,setTenant]=useState<string|null>(user?.tenantId||null);
  const [modules,setModules]=useState<Module[]>([]);const [items,setItems]=useState<Material[]>([]);
  const [error,setError]=useState('');const [loading,setLoading]=useState(true);const [busy,setBusy]=useState(false);
- const [moduleId,setModuleId]=useState('');const [kind,setKind]=useState<(typeof kinds)[number]>('reading');
+ const [moduleId,setModuleId]=useState(moduleFilter);const [kind,setKind]=useState<(typeof kinds)[number]>('reading');
  const [title,setTitle]=useState('');const [file,setFile]=useState<File|null>(null);
  const staff=!!user?.roles.some(x=>['lecturer','programme_leader','centre_director','superadmin'].includes(x));
  useEffect(()=>{if(user?.tenantId){setTenant(user.tenantId);return;}if(user?.roles.includes('superadmin')){
@@ -35,7 +38,7 @@ export default function ModuleMaterials(){
         .eq('student_id',user?.id).eq('status','active')
    ]);
    if(m.error||materials.error||enrolments.error)throw Error(m.error?.message||materials.error?.message||enrolments.error?.message||'Materials unavailable');
-   const all=(m.data||[]) as Module[];
+   const all=((m.data||[]) as Module[]).filter(m=>!moduleFilter||m.id===moduleFilter);
    const isManager=staff&&!!user?.roles.some(x=>['centre_director','programme_leader','superadmin'].includes(x));
    const eligibleProgrammes=new Set<string>((enrolments.data||[]).map((e:{programme_id:string})=>e.programme_id));
    const visibleModules=isManager?all:staff?all.filter(x=>x.lecturer_id===user?.id):
@@ -81,6 +84,7 @@ export default function ModuleMaterials(){
   toast.success('Material released to enrolled learners.');await reload();
  };
  return <DashboardLayout title="Course materials and homework" subtitle="Module-based permissions for enrolled students and allocated lecturers">
+   <ModuleJourney moduleId={moduleFilter} teacher={staff}/>
    <div className="mb-5 rounded-xl border bg-primary/5 p-4"><h2 className="flex gap-2 font-semibold"><ShieldCheck className="size-5"/>Protected academic materials</h2>
     <p className="mt-2 text-sm text-muted-foreground">Unpublished resources are visible only to authorised teaching staff. Released material appears only for students actively enrolled in the module's programme. Lessons, reading notes, slides and homework are grouped by your enrolled module. PDFs, images and supported videos can open in the browser; Office files may download for opening locally. Files are private with expiring access links.</p></div>
    {staff&&<section className="mb-6 space-y-3 rounded-xl border p-5"><h2 className="font-semibold"><Upload className="mr-2 inline size-4"/>Upload teaching material</h2>

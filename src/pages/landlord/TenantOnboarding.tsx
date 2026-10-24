@@ -23,6 +23,7 @@ export default function TenantOnboarding() {
   const [params,setParams]=useSearchParams();
   const [draftTenantId] = useState(()=>params.get('draft')||crypto.randomUUID());
   const [revision,setRevision]=useState(0),[saving,setSaving]=useState(false),[restoreError,setRestoreError]=useState(''),[restoring,setRestoring]=useState(!!params.get('draft'));
+  const [incomplete,setIncomplete]=useState<Array<{id:string;name:string}>>([]);
   const [savedDrafts,setSavedDrafts]=useState<Array<{id:string;form_data:{centreName?:string};updated_at:string}>>([]);
   const [documentPaths,setDocumentPaths] = useState<Record<string,{path:string;fileName:string}>>({});
   const [createdTenantId,setCreatedTenantId]=useState<string|null>(null);
@@ -43,6 +44,7 @@ export default function TenantOnboarding() {
   });
 
   useEffect(()=>{let active=true;
+    void Promise.resolve(db.rpc('list_unipathway_incomplete_centres')).then(r=>{if(active){if(r.error)setRestoreError('Incomplete centres could not be verified. Reload before starting another setup.');else setIncomplete(r.data||[]);}}).catch(()=>{if(active)setRestoreError('Incomplete centres unavailable. Reload before starting another setup.');});
     void Promise.resolve(db.from('unipathway_onboarding_drafts').select('id,form_data,updated_at').order('updated_at',{ascending:false}).limit(50)).then(r=>{if(active){if(r.error)setRestoreError('Saved drafts could not be loaded. Please reload before creating a duplicate centre.');else setSavedDrafts(r.data||[]);}}).catch(()=>{if(active)setRestoreError('Saved drafts unavailable. Please reload.');});
     if(params.get('draft'))void Promise.resolve(db.from('unipathway_onboarding_drafts').select('*').eq('id',draftTenantId).single()).then(r=>{if(!active)return;if(r.error||!r.data)throw Error('Draft unavailable');const d=r.data;setFormData(old=>({...old,...d.form_data}));setDocumentPaths(d.documents||{});setUploadedDocs(Object.fromEntries(Object.entries(d.documents||{}).map(([k,v])=>[k,(v as {fileName:string}).fileName])));setStep(d.step);setRevision(d.revision);setCreatedTenantId(d.tenant_id);}).catch(()=>{if(active)setRestoreError('Draft could not be restored. Reload or return to saved drafts; no new centre was created.');}).finally(()=>{if(active)setRestoring(false);});
     return()=>{active=false;};
@@ -54,6 +56,8 @@ export default function TenantOnboarding() {
     try{const r=await db.rpc('save_unipathway_onboarding_draft',{p_id:draftTenantId,p_form:formData,p_documents:documents,p_step:step,p_revision:revision});if(r.error)throw Error(r.error.message||'Draft not saved');setRevision(r.data.revision);setParams({draft:draftTenantId},{replace:true});return r.data;}
     finally{setSaving(false);}
   }
+
+  async function resumeCentre(id:string){setSaving(true);try{const r=await db.rpc('resume_unipathway_centre_setup',{p_tenant:id});if(r.error)throw r.error;window.location.assign(`${window.location.pathname}?draft=${encodeURIComponent(r.data)}`);}catch{toast.error('Centre recovery could not be confirmed. Reload and retry; no new centre was created.');}finally{setSaving(false);}}
 
   const updateField = (key: string, value: string) => setFormData(prev => ({ ...prev, [key]: value }));
 
@@ -112,6 +116,7 @@ export default function TenantOnboarding() {
       <Button variant="outline" disabled={saving||launching||restoring||!!uploadingDoc||!!restoreError} onClick={()=>void saveDraft().then(()=>toast.success('Draft saved. You can resume it from this page.')).catch(e=>toast.error(e.message))}>{saving?'Saving…':'Save draft'}</Button>
       {createdTenantId&&<p className="text-sm">Centre saved in onboarding. Administrator setup can be retried.</p>}
       {!!savedDrafts.length&&<details><summary className="cursor-pointer text-sm font-semibold">Resume a saved setup</summary><ul className="mt-2 space-y-2">{savedDrafts.map(d=><li key={d.id}><a className="text-sm underline" href={`?draft=${encodeURIComponent(d.id)}`}>{d.form_data.centreName||'Unnamed centre'} · {new Date(d.updated_at).toLocaleString()}</a></li>)}</ul></details>}
+      {!!incomplete.length&&<details><summary className="cursor-pointer text-sm font-semibold">Resume an incomplete centre (up to 100)</summary><ul className="mt-2 space-y-2">{incomplete.map(c=><li key={c.id}><Button variant="outline" disabled={saving||launching||!!uploadingDoc} onClick={()=>void resumeCentre(c.id)}>{c.name}</Button></li>)}</ul><p className="mt-2 text-xs text-muted-foreground">Existing centre details are restored. Confirm the administrator's name and email before retrying their invitation.</p></details>}
       </section>
       <fieldset disabled={restoring||!!restoreError||saving||launching||!!uploadingDoc}>
       {/* Progress */}
