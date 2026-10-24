@@ -9,6 +9,7 @@
 - [ ] Switch on bot protection for enquiry forms so "Request counselling" works (waiting on user's Cloudflare Turnstile site key + secret key).
 - [x] Reset the 14 existing test dashboard accounts and create the requested Assessor, Awarding Body/EQA and Welfare Officer test accounts securely.
 - [x] Audit PRs 47–53 against Live; identify missing schema, private Storage and provider configuration.
+- [x] Make Pakistan-wide online learning prominent in homepage/search metadata and relevant course pages; retain Jhelum as the first physical centre and research Pakistan keyword demand.
 - [ ] Diagnose the user's actual /blog preview access, cache and loading state; fix the evidenced cause (prioritised before activation).
 - [ ] Connect Microsoft and validate consent/approved organisers (deferred by user; not a prerequisite for database preparation).
 - [ ] Reconcile and apply forward-only production migrations (ready for preparation; user deferred backup/export confirmation; recovery remains unverified; never replay fresh-staging replacements).
