@@ -46,7 +46,7 @@ export default function AddStaffModal({ open, onOpenChange, onStaffAdded }: AddS
       if (res.error) throw new Error(res.error.message || 'Failed to invite staff');
       if (res.data?.error) throw new Error(res.data.error);
 
-      toast({ title: 'Staff Invited', description: `${fullName} has been invited as ${STAFF_ROLES.find(r => r.value === role)?.label}.` });
+      toast({ title: res.data?.emailSent ? 'Invitation email issued' : 'Account access assigned', description: `${fullName}: ${STAFF_ROLES.find(r => r.value === role)?.label}.` });
       setFullName('');
       setEmail('');
       setRole('lecturer');

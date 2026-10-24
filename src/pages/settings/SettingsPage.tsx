@@ -1,3 +1,6 @@
+import { disableNativePush } from '@/lib/nativePush';
+import NativeNotifications from '@/components/native/NativeNotifications';
+import AccountOperations from '@/components/admin/AccountOperations';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Settings, Bell, Lock, Globe, Palette, Users, Shield, Database, Mail, Smartphone, Loader2, Camera, Upload, Download, Trash2, QrCode, LogOut, Check, X, ExternalLink, Plug } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -421,7 +424,7 @@ export default function SettingsPage() {
           {/* ─── NOTIFICATIONS (persisted) ─── */}
           {activeSection === 'notifications' && (
             <div className="max-w-lg">
-              <h3 className="text-lg font-bold mb-4">Notification Preferences</h3>
+              <NativeNotifications /><h3 className="text-lg font-bold mb-4">Notification Preferences</h3>
               {notifLoading ? (
                 <div className="flex items-center gap-2 py-8 text-muted-foreground text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Loading…</div>
               ) : (
@@ -754,6 +757,7 @@ export default function SettingsPage() {
                         onClick={async () => {
                           if (!user) return;
                           setDeletingAccount(true);
+                          try { await disableNativePush(); } catch { toast.error('Reconnect and disable device notifications before deleting your account.'); setDeletingAccount(false); return; }
                           const { error } = await supabase.rpc('delete_user_account', { _user_id: user.id });
                           if (error) { toast.error('Deletion failed'); setDeletingAccount(false); return; }
                           await logout();
@@ -772,35 +776,7 @@ export default function SettingsPage() {
           )}
 
           {/* ─── USER MANAGEMENT / DATA & BACKUP — placeholder for roles outside scope ─── */}
-          {activeSection === 'users' && (
-            <div className="max-w-lg">
-              <h3 className="text-lg font-bold mb-1">User Management</h3>
-              <p className="text-xs text-muted-foreground mb-6">Manage staff and student accounts</p>
-              <div className="space-y-3">
-                <div className="surface-data p-4 rounded-lg flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">Invite Users</p>
-                    <p className="text-xs text-muted-foreground">Send invitation emails to new staff or students</p>
-                  </div>
-                  <Button variant="outline" size="sm">Invite</Button>
-                </div>
-                <div className="surface-data p-4 rounded-lg flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">Bulk Import</p>
-                    <p className="text-xs text-muted-foreground">Upload CSV to create multiple accounts</p>
-                  </div>
-                  <Button variant="outline" size="sm">Import</Button>
-                </div>
-                <div className="surface-data p-4 rounded-lg flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">Role Assignments</p>
-                    <p className="text-xs text-muted-foreground">Manage role-based access for your centre</p>
-                  </div>
-                  <Button variant="outline" size="sm" onClick={() => navigate('/director/staff')}>Manage</Button>
-                </div>
-              </div>
-            </div>
-          )}
+          {activeSection === 'users' && <AccountOperations />}
 
           {activeSection === 'data' && (
             <div className="max-w-lg">

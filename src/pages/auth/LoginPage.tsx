@@ -1,3 +1,5 @@
+import { isNativeApp } from '@/lib/native';
+import { nativeGoogleSignIn } from '@/lib/nativeAuth';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -46,6 +48,7 @@ export default function LoginPage() {
     }
 
     setLoading(true);
+    try {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
 
@@ -62,10 +65,16 @@ export default function LoginPage() {
     } else {
       navigate('/student');
     }
+    } catch { toast.error('Sign-in could not be completed. Check your connection and secure device storage.'); } finally { setLoading(false); }
   };
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
+    if (isNativeApp()) {
+      try { await nativeGoogleSignIn(); } catch { toast.error('Google sign-in unavailable. Check your connection and try again.'); }
+      finally { setGoogleLoading(false); }
+      return;
+    }
     const { error } = await lovable.auth.signInWithOAuth('google', {
       redirect_uri: window.location.origin,
     });

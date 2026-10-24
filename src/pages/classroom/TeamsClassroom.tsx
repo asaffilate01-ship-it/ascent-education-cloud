@@ -1,3 +1,4 @@
+import TeamsLink from '@/components/native/TeamsLink';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -64,7 +65,7 @@ export default function TeamsClassroom(){
       <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><Users className="size-4"/>Planned class capacity: {s.capacity}. Actual Teams licence/provider limits apply.</p>
       <p className="mt-2 text-xs text-muted-foreground">{s.recording_enabled?'Teams recording requested; successful capture and release are separate.':'Teams recording not requested.'}</p>
       <div className="mt-4 flex flex-wrap items-center gap-2">
-       {joinable?<a className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground" href={s.join_url!} target="_blank" rel="noopener noreferrer">Join Teams <ExternalLink className="size-4"/></a>:
+       {joinable?<TeamsLink className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground" href={s.join_url!} target="_blank" rel="noopener noreferrer">Join Teams <ExternalLink className="size-4"/></TeamsLink>:
         <p className="text-xs font-semibold text-muted-foreground">{current>end+30*60_000?'Class completed':!joinWindow?'Teams join opens 20 minutes before start':'Verified Teams link not configured'}</p>}
        <Link className="inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-semibold" to={'/classroom/teaching/'+s.id}>Teaching desk · groups & recordings</Link>
        <Link className="inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-semibold" to={'/classroom/discussion/'+s.id}><Hand className="size-4"/>Raise hand / Ask a question</Link>

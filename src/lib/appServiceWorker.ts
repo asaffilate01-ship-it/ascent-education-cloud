@@ -1,3 +1,4 @@
+import { isNativeApp } from './native';
 type WorkerContext = {
   production: boolean;
   framed: boolean;
@@ -19,7 +20,7 @@ export async function initialiseAppWorker(): Promise<void> {
   if (!('serviceWorker' in navigator)) return;
   try {
     const allowed = canRegisterAppWorker({
-      production: import.meta.env.PROD,
+      production: import.meta.env.PROD && !isNativeApp(),
       framed: window.self !== window.top,
       hostname: window.location.hostname,
       search: window.location.search,

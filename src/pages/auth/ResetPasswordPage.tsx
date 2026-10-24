@@ -15,11 +15,10 @@ export default function ResetPasswordPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check for recovery token in URL hash
-    const hash = window.location.hash;
-    if (hash.includes('type=recovery')) {
-      setIsRecovery(true);
-    }
+    let active=true;
+    void supabase.auth.getUser().then(({data,error})=>{if(active)setIsRecovery(!error&&!!data.user);}).catch(()=>{if(active)setIsRecovery(false);});
+    const {data:{subscription}}=supabase.auth.onAuthStateChange((_event,session)=>{if(active)setIsRecovery(!!session?.user);});
+    return()=>{active=false;subscription.unsubscribe();};
   }, []);
 
   const handleReset = async (e: React.FormEvent) => {

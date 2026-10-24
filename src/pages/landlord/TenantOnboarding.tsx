@@ -1,3 +1,4 @@
+import { db } from '@/lib/db';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Building2, CheckCircle, ChevronRight, FileText, Globe, Palette, Users, CreditCard, Shield, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,6 +20,9 @@ export default function TenantOnboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [launching, setLaunching] = useState(false);
+  const [draftTenantId] = useState(()=>crypto.randomUUID());
+  const [documentPaths,setDocumentPaths] = useState<Record<string,{path:string;fileName:string}>>({});
+  const [createdTenantId,setCreatedTenantId]=useState<string|null>(null);
   const [uploadedDocs, setUploadedDocs] = useState<Record<string, string>>({});
   const [uploadingDoc, setUploadingDoc] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -39,15 +43,19 @@ export default function TenantOnboarding() {
 
   const handleDocUpload = async (docName: string, file: File | undefined) => {
     if (!file) return;
+    if(file.size>10*1024*1024||!['application/pdf','image/jpeg','image/png'].includes(file.type)){toast.error('Choose a PDF, JPG or PNG under 10 MB.');return;}
     setUploadingDoc(docName);
     try {
       const safeName = docName.toLowerCase().replace(/[^a-z0-9]/g, '-');
       const ext = file.name.split('.').pop();
-      const path = `onboarding/${formData.slug || 'new'}/${safeName}.${ext}`;
+      const path = `${draftTenantId}/${crypto.randomUUID()}-${safeName}.${ext}`;
 
-      const { error } = await supabase.storage.from('kyc-documents').upload(path, file, { upsert: true });
+      const { error } = await supabase.storage.from('unipathway-centre-documents').upload(path, file, { upsert: false });
       if (error) throw error;
 
+      const previous=documentPaths[docName]?.path;
+      setDocumentPaths(prev=>({...prev,[docName]:{path,fileName:file.name}}));
+      if(previous){const removed=await supabase.storage.from('unipathway-centre-documents').remove([previous]);if(removed.error)toast.error('New document uploaded; the earlier file still needs removal.');}
       setUploadedDocs(prev => ({ ...prev, [docName]: file.name }));
       toast.success(`${docName} uploaded`);
     } catch (e: any) {
@@ -58,15 +66,18 @@ export default function TenantOnboarding() {
   };
 
   const handleLaunch = async () => {
-    if (!formData.centreName || !formData.slug) {
-      toast.error('Centre name and slug are required');
+    if (!formData.centreName || !formData.slug || !formData.adminName || !formData.adminEmail || !formData.city.trim() || !formData.country.trim() || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(formData.slug)) {
+      toast.error('Enter centre name, city, country, a lowercase hyphenated slug and administrator name/email');
       return;
     }
     setLaunching(true);
     try {
+      let tenantId=createdTenantId;
+      if(!tenantId){
       const { data: tenant, error } = await supabase
         .from('tenants')
         .insert({
+          id: draftTenantId,
           name: formData.centreName,
           slug: formData.slug.toLowerCase().replace(/[^a-z0-9-]/g, ''),
           plan: formData.plan,
@@ -79,8 +90,13 @@ export default function TenantOnboarding() {
         .single();
 
       if (error) throw error;
-
-      toast.success(`${formData.centreName} created successfully!`);
+      tenantId=tenant.id;setCreatedTenantId(tenant.id);
+      }
+      const setup=await db.from('unipathway_centre_onboarding').upsert({tenant_id:tenantId,country:formData.country.trim(),city:formData.city.trim(),company_registration:formData.companyReg.trim(),documents:documentPaths,updated_at:new Date().toISOString()},{onConflict:'tenant_id'});
+      if(setup.error)throw new Error('Centre saved, but setup details were not saved. Retry before leaving this page.');
+      const invitation=await supabase.functions.invoke('invite-staff',{body:{tenantId,email:formData.adminEmail,fullName:formData.adminName,role:'centre_director'}});
+      if(invitation.error||invitation.data?.error||!invitation.data?.success)throw new Error('Centre saved in onboarding; administrator access is incomplete. '+(invitation.data?.error||'Retry administrator setup.'));
+      toast.success('Centre saved in onboarding. Administrator access assigned'+(invitation.data?.emailSent?' and invitation email issued.':'.'));
       navigate('/landlord');
     } catch (e: any) {
       toast.error(e.message || 'Failed to create centre');
@@ -189,7 +205,7 @@ export default function TenantOnboarding() {
         {step === 3 && (
           <div className="max-w-lg">
             <h3 className="text-lg font-bold mb-4">Compliance Documents</h3>
-            <p className="text-sm text-muted-foreground mb-4">Upload required documents for centre accreditation verification.</p>
+            <p className="text-sm text-muted-foreground mb-4">Upload PDFs or images under 10 MB. Files remain private to the platform owner; uploading does not confirm accreditation.</p>
             <div className="space-y-3">
               {['Business Registration Certificate', 'Centre Approval Application', 'Quality Assurance Policy', 'Assessment Policy', 'Complaints Procedure', 'Internal Verification System', 'Staff CVs & Qualifications'].map((doc) => (
                 <div key={doc} className="flex items-center justify-between p-3 border border-border rounded-lg">
@@ -206,7 +222,8 @@ export default function TenantOnboarding() {
                     <input
                       type="file"
                       className="hidden"
-                      accept=".pdf,.doc,.docx,.png,.jpg"
+                      accept=".pdf,.png,.jpg,.jpeg"
+                      disabled={!!uploadingDoc||launching}
                       onChange={(e) => handleDocUpload(doc, e.target.files?.[0])}
                     />
                     <Button variant="outline" size="sm" className="text-xs pointer-events-none" asChild={false}>
@@ -292,7 +309,7 @@ export default function TenantOnboarding() {
             </div>
             <div className="flex items-center gap-2 p-3 bg-success/5 border border-success/20 rounded-lg mb-4">
               <Shield className="w-4 h-4 text-success" />
-              <span className="text-sm">Data isolation, RBAC, and audit logging will be automatically configured.</span>
+              <span className="text-sm">The centre remains in onboarding. Administrator access, accreditation and provider activation must be checked before launch.</span>
             </div>
           </div>
         )}
@@ -307,9 +324,9 @@ export default function TenantOnboarding() {
               Next <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           ) : (
-            <Button className="px-8" onClick={handleLaunch} disabled={launching}>
+            <Button className="px-8" onClick={handleLaunch} disabled={launching||!!uploadingDoc}>
               {launching ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-1.5" />}
-              Launch Centre
+              Save centre and invite administrator
             </Button>
           )}
         </div>

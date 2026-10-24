@@ -1,3 +1,4 @@
+import {verifyOperations} from './lib/verify-unipathway-operations.mjs';
 import {verifyRecordingPipeline} from './lib/verify-unipathway-recording-pipeline.mjs';
 import {verifyTeamsTeaching} from './lib/verify-unipathway-teams-teaching.mjs';
 import {verifyGuidedAudio} from './lib/verify-unipathway-guided-audio.mjs';
@@ -20,7 +21,7 @@ const db=new PGlite({extensions:{pgcrypto}});
 try {
  await db.exec(`CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role BYPASSRLS;
  CREATE SCHEMA auth; CREATE SCHEMA storage; CREATE SCHEMA extensions;
- CREATE TABLE auth.users(id uuid PRIMARY KEY, email text,raw_user_meta_data jsonb DEFAULT '{}',raw_app_meta_data jsonb DEFAULT '{}',created_at timestamptz DEFAULT now(), updated_at timestamptz, instance_id uuid, encrypted_password text, email_confirmed_at timestamptz, aud text,role text,confirmation_token text,recovery_token text,email_change_token_new text,email_change text,email_change_token_current text,phone_change text,phone_change_token text,reauthentication_token text,email_change_confirm_status int DEFAULT 0,phone text,phone_confirmed_at timestamptz,confirmation_sent_at timestamptz,recovery_sent_at timestamptz,email_change_sent_at timestamptz,phone_change_sent_at timestamptz);
+ CREATE TABLE auth.users(id uuid PRIMARY KEY, email text,raw_user_meta_data jsonb DEFAULT '{}',raw_app_meta_data jsonb DEFAULT '{}',created_at timestamptz DEFAULT now(), invited_at timestamptz, updated_at timestamptz, instance_id uuid, encrypted_password text, email_confirmed_at timestamptz, aud text,role text,confirmation_token text,recovery_token text,email_change_token_new text,email_change text,email_change_token_current text,phone_change text,phone_change_token text,reauthentication_token text,email_change_confirm_status int DEFAULT 0,phone text,phone_confirmed_at timestamptz,confirmation_sent_at timestamptz,recovery_sent_at timestamptz,email_change_sent_at timestamptz,phone_change_sent_at timestamptz);
  CREATE TABLE auth.identities(id uuid PRIMARY KEY, user_id uuid, identity_data jsonb,provider text,provider_id text,last_sign_in_at timestamptz,created_at timestamptz,updated_at timestamptz,UNIQUE(provider_id,provider));
  CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
  CREATE FUNCTION auth.role() RETURNS text LANGUAGE sql STABLE AS $$ SELECT current_user::text $$;
@@ -51,6 +52,6 @@ try {
   catch(error){console.error(JSON.stringify({status:'blocked',passed,file,code:error.code,message:error.message}));process.exitCode=1;break;}
  }
  if(!process.exitCode&&fresh){await verifyFreshSchema(db);await verifyGuardianResults(db);await verifyAdmissionHandover(db);await verifyStripeLedger(db);
-    await verifyGuidedAudio(db);await verifyTeamsTeaching(db);await verifyRecordingPipeline(db);}
+    await verifyGuidedAudio(db);await verifyTeamsTeaching(db);await verifyRecordingPipeline(db);await verifyOperations(db);}
  if(!process.exitCode)console.log(JSON.stringify({status:deferred.length?'schema-only-provider-acceptance-pending':'passed',deferred,migrations:passed,scope:'Offline PostgreSQL with synthetic Auth/Storage; no live acceptance'}));
-}catch(error){console.error(JSON.stringify({status:'verification-failed',code:error.code,message:error.message}));process.exitCode=1;}finally{await db.close();}
+}catch(error){console.error(JSON.stringify({status:'verification-failed',code:error.code,message:error.message,where:error.where}));process.exitCode=1;}finally{await db.close();}

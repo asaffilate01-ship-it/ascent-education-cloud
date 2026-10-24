@@ -1,3 +1,4 @@
+import NativeCapture from '@/components/native/NativeCapture';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { Upload, Clock, CheckCircle, FileText, Loader2 } from 'lucide-react';
@@ -29,6 +30,7 @@ export default function StudentAssignments() {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [captured, setCaptured] = useState<{assignmentId:string;file:File}|null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -115,6 +117,7 @@ export default function StudentAssignments() {
       if (subErr) throw subErr;
 
       toast.success('Assignment submitted successfully!');
+      setCaptured(null);
       await fetchAssignments();
     } catch (err: any) {
       console.error('Upload error:', err);
@@ -248,6 +251,8 @@ export default function StudentAssignments() {
 
             {selected.submission_status === 'pending' && (
               <div className="space-y-3">
+                <NativeCapture disabled={uploading} onFile={file=>setCaptured({assignmentId:selected.id,file})}/>
+                {captured?.assignmentId===selected.id && <div className="rounded border p-3"><p>Ready: {captured.file.name}</p><Button disabled={uploading} onClick={()=>void handleFileUpload(selected.id,captured.file)}>Upload captured document</Button><Button variant="ghost" disabled={uploading} onClick={()=>setCaptured(null)}>Discard</Button></div>}
                 <input
                   ref={fileInputRef}
                   type="file"

@@ -1,3 +1,4 @@
+import { toast } from 'sonner';
 import { useAuth, ROLE_LABELS } from '@/contexts/AuthContext';
 import { UserRole } from '@/types/platform';
 import { NavLink } from 'react-router-dom';
@@ -56,6 +57,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
   ],
   centre_director: [
     { title: 'College', items: [
+      { label: 'Guardian support', icon: MessageSquare, path: '/director/guardian-support' },
       { label: 'Dashboard', icon: LayoutDashboard, path: '/director' },
       { label: 'Managed AWS Labs', icon: Cloud, path: '/director/managed-labs' },
       { label: 'Admissions', icon: UserPlus, path: '/director/admissions' },
@@ -107,6 +109,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
   ],
   admissions_admin: [
     { items: [
+      { label: 'Guardian support', icon: MessageSquare, path: '/admissions/guardian-support' },
       { label: 'Pipeline', icon: LayoutDashboard, path: '/admissions' },
       { label: 'Applications', icon: FolderOpen, path: '/admissions/applications' },
       { label: 'Employer Partnerships', icon: Briefcase, path: '/admissions/employers' },
@@ -124,6 +127,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
   ],
   lecturer: [
     { items: [
+      { label: 'Guardian support', icon: MessageSquare, path: '/lecturer/guardian-support' },
       { label: 'Dashboard', icon: LayoutDashboard, path: '/lecturer' },
       { label: 'Managed AWS Labs', icon: Cloud, path: '/lecturer/managed-labs' },
       { label: 'Teaching', icon: BookOpen, path: '/lecturer/teaching' },
@@ -471,7 +475,7 @@ export default function DashboardSidebar() {
         </button>
         {!collapsed && (
           <button
-            onClick={logout}
+            onClick={()=>void logout().catch(error=>toast.error(error instanceof Error?error.message:'Sign-out failed. Please retry.'))}
             className="flex items-center gap-2 text-xs text-sidebar-foreground/50 hover:text-sidebar-foreground transition-default ml-auto pr-2"
           >
             <LogOut className="w-3.5 h-3.5" />
