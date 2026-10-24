@@ -43,19 +43,22 @@ function StudentDashboardContent() {
   useEffect(()=>{
    if(!user?.id||!user.tenantId){setGradeLoading(false);setApproved([]);return;}
    let live=true;setGradeLoading(true);setGradeError('');
-   void Promise.all([
-    db.from('unipathway_assessment_released_results')
+   void (async()=>{
+    const a=await db.from('unipathway_assessment_released_results')
       .select('attempt_id,brief_id,final_score,released_at')
-      .eq('student_id',user.id).eq('tenant_id',user.tenantId).order('released_at',{ascending:false}).limit(100),
-    db.from('unipathway_assessment_grade_amendments')
+      .eq('student_id',user.id).eq('tenant_id',user.tenantId).order('released_at',{ascending:false}).limit(100);
+    if(a.error)throw a.error;
+    if(!live)return;
+    const ids=(a.data||[]).map((row:Approved)=>row.attempt_id);
+    const b=ids.length?await db.from('unipathway_assessment_grade_amendments')
       .select('attempt_id,corrected_final_score')
-      .eq('student_id',user.id).eq('tenant_id',user.tenantId).limit(100)
-   ]).then(([a,b])=>{
+      .eq('student_id',user.id).eq('tenant_id',user.tenantId).in('attempt_id',ids).limit(100):{data:[],error:null};
+
     if(!live)return;
     if(a.error||b.error){setApproved([]);setCorrections([]);setGradeError('Only independently released marks are available; the secure grade service is not ready.');}
     else {setApproved((a.data||[]) as Approved[]);setCorrections((b.data||[]) as Amendment[]);}
     setGradeLoading(false);
-   }).catch(()=>{if(live){setApproved([]);setCorrections([]);setGradeError('Secure approved grades are unavailable.');setGradeLoading(false);}});
+   })().catch(()=>{if(live){setApproved([]);setCorrections([]);setGradeError('Secure approved grades are unavailable.');setGradeLoading(false);}});
    return()=>{live=false;};
   },[user?.id,user?.tenantId,gradeRefresh]);
   const {data: modules} = modulesQuery;
