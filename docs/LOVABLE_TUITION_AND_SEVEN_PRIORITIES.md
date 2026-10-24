@@ -115,3 +115,11 @@ Coursework and invited classes now load independently: one unavailable panel doe
 The agenda shows up to five open-window tasks first, with closed tasks in a separately labelled expandable section and links to the correct module coursework. Counts cover the complete permitted history, while the class list intentionally previews the next five invitations. Full coursework/class tools retain their own access checks. No migration or deployment is included.
 
 Hosted acceptance: fail each panel independently, recover with refresh, switch accounts during a delayed request, and verify large enrolment histories. Check latest-attempt resubmission status, deadline/cutoff labels and module links against the actual programme rules. Open-window labels are a summary, not a guarantee that server submission rules will accept work.
+
+## Lecturer attendance report recovery
+
+The lecturer attendance report now loads only the lecturer's centre and assigned modules, with complete paginated mark reads and bounded learner-name queries. It has module filtering, full-history learner search, 20-row display pages and explicit refresh/recovery. A failed module, mark or name query hides the entire unverified snapshot. Account/role/centre changes reset the workspace. RLS remains authoritative.
+
+Present, late, absent, excused and other marks are separate. The displayed rate is (present + late) / (present + late + absent), weighted across recorded marks; excused/other marks are excluded and an empty denominator displays Not available. This aligns with the existing recorded-attendance chart calculation. The report no longer invents risk or perfect-attendance classifications from incomplete/unmarked sessions.
+
+The inactive Take Register button is replaced with View class invitations. This is a read-only report: manual register capture, live Teams presence and provider attendance reconciliation are not implemented by this phase. Hosted acceptance must verify assigned-module restrictions, reassignment, missing profiles, excused-only histories, large mark histories and failed-refresh recovery against approved centre attendance policies. No migration or deployment is included.
