@@ -9,6 +9,7 @@
 - [ ] Switch on bot protection for enquiry forms so "Request counselling" works (waiting on user's Cloudflare Turnstile site key + secret key).
 - [x] Reset the 14 existing test dashboard accounts and create the requested Assessor, Awarding Body/EQA and Welfare Officer test accounts securely.
 - [x] Audit PRs 47–53 against Live; identify missing schema, private Storage and provider configuration.
+- [ ] Connect Microsoft for organisational Teams and recording access, then validate consent and approved organisers (waiting on Microsoft connection).
 - [ ] Reconcile and apply forward-only production migrations (blocked by unconfirmed Live backup/export evidence; do not replay fresh-staging replacements).
 - [ ] Verify authorised Teams, guided audio and recording journeys (blocked by missing hosted foundations, Microsoft administrator setup and external worker hosting).
 - [x] Request publication of the latest application; confirm public homepage rendering and hosted legacy retirement response 410. Paid AWS and payments remain unconfigured.
