@@ -17,6 +17,7 @@ export default function TeamsClassroom(){
  const [boards,setBoards]=useState<Board[]>([]);
  const [loading,setLoading]=useState(true);const [error,setError]=useState('');
  const [boardError,setBoardError]=useState('');
+ const [showPast,setShowPast]=useState(false);const [refresh,setRefresh]=useState(0);
  useEffect(()=>{
   if(!user?.id){setSessions([]);setLoading(false);return;}
   let live=true;setLoading(true);setError('');setBoardError('');
@@ -31,9 +32,9 @@ export default function TeamsClassroom(){
    setLoading(false);
   }).catch(()=>{if(live){setError('Classroom service unavailable');setLoading(false);}});
   return()=>{live=false};
- },[user?.id,user?.tenantId]);
- const upcoming=useMemo(()=>[...sessions].filter(s=>s.status!=='cancelled')
-  .sort((a,b)=>new Date(a.starts_at).getTime()-new Date(b.starts_at).getTime()),[sessions]);
+ },[user?.id,user?.tenantId,refresh]);
+ const upcoming=useMemo(()=>[...sessions].filter(s=>s.status!=='cancelled' && (showPast ? new Date(s.ends_at).getTime()<Date.now() : new Date(s.ends_at).getTime()>=Date.now()))
+  .sort((a,b)=>new Date(a.starts_at).getTime()-new Date(b.starts_at).getTime()),[sessions,showPast]);
  const teacher=!!user?.roles.some(r=>['lecturer','programme_leader','centre_director','superadmin'].includes(r));
  return <DashboardLayout title="UniPathway Live Classroom" subtitle="Private lecture rooms with interactive whiteboard and on-demand materials">
   <section className="mb-5 rounded-xl border border-primary/25 bg-primary/5 p-4">
@@ -44,14 +45,15 @@ export default function TeamsClassroom(){
     <Link className="inline-flex items-center gap-2 text-sm font-bold underline" to="/lecturer/whiteboards"><PenTool className="size-4"/>Whiteboard Studio</Link>
    </div>}
   </section>
+  <div className="mb-5 flex flex-wrap gap-3"><button type="button" className="rounded-lg border px-4 py-2 text-sm" aria-pressed={!showPast} onClick={()=>setShowPast(false)}>Upcoming classes</button><button type="button" className="rounded-lg border px-4 py-2 text-sm" aria-pressed={showPast} onClick={()=>setShowPast(true)}>Past classes</button><button type="button" className="rounded-lg border px-4 py-2 text-sm" disabled={loading} onClick={()=>setRefresh(x=>x+1)}>Refresh classes</button></div>
   {loading&&<p role="status">Checking your class invitations…</p>}
   {error&&<div role="alert" className="rounded-xl border border-destructive/50 p-5">
     <AlertTriangle className="mr-2 inline size-5"/>Classroom could not be loaded: {error}
-    <p className="mt-2 text-xs text-muted-foreground">Confirm deployed classroom migrations and RLS. This screen cannot infer attendance or permissions from missing data.</p>
+    <p className="mt-2 text-xs text-muted-foreground">Try Refresh classes. If the problem continues, contact your centre with the error above.</p>
    </div>}
   {boardError&&!loading&&<p role="alert" className="mb-4 rounded-lg border p-3 text-sm">Whiteboards are not configured or accessible: {boardError}</p>}
   {!loading&&!error&&upcoming.length===0&&<div className="rounded-xl border p-8 text-center">
-   <Video className="mx-auto size-7 text-muted-foreground"/><h3 className="mt-3 font-semibold">No invited classes</h3>
+   <Video className="mx-auto size-7 text-muted-foreground"/><h3 className="mt-3 font-semibold">{showPast?'No past classes':'No upcoming classes'}</h3>
    <p className="mt-2 text-sm text-muted-foreground">Eligible lectures will appear after enrolment and an approved invitation.</p>
   </div>}
   {!loading&&!error&&<div className="grid gap-4 md:grid-cols-2">{upcoming.map(s=>{

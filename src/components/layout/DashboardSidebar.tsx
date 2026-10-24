@@ -326,6 +326,8 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
   parent_guardian: [
     { items: [
       { label: 'Dashboard', icon: LayoutDashboard, path: '/parent' },
+      { label: 'Attendance', icon: Calendar, path: '/parent/attendance' },
+      { label: 'Schedule', icon: CalendarDays, path: '/parent/schedule' },
       { label: 'Progress', icon: BarChart3, path: '/parent/progress' },
       { label: 'Activity Log', icon: Activity, path: '/my-activity' },
       { label: 'Messages', icon: MessageSquare, path: '/parent/messages' },
@@ -333,11 +335,34 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
   ],
 };
 
+const dailyPaths: Partial<Record<UserRole, string[]>> = {
+  student: ['/student', '/student/courses', '/student/classroom', '/student/assignments', '/student/library', '/student/grades', '/messaging'],
+  lecturer: ['/lecturer', '/lecturer/class-scheduler', '/lecturer/classroom', '/lecturer/attendance', '/lecturer/assessments', '/lecturer/materials', '/messaging'],
+  centre_director: ['/director', '/director/admissions', '/director/students', '/director/staff', '/director/schedule', '/director/finance', '/messaging'],
+  superadmin: ['/landlord', '/landlord/centres', '/landlord/users', '/landlord/readiness', '/landlord/finance', '/landlord/infrastructure', '/messaging'],
+};
+const conciseLabels: Record<string, string> = {
+  'Dashboard': 'Overview', 'My Coursework & Resubmissions': 'Assignments', 'Approved Results Only': 'Results',
+  'My Grade Appeals': 'Appeals', 'Class Scheduler & Invites': 'Schedule', 'Private Course Materials': 'Materials',
+  'Recorded Lesson Archive': 'Recordings', 'Coursework Briefs & Rubrics': 'Assignment briefs',
+  'Teaching Rubrics (not marking)': 'Teaching rubrics', 'Managed AWS Labs': 'Managed labs',
+};
+export function getNavigationSections(role: UserRole, search = ''): NavSection[] {
+  const original = NAV_CONFIG[role] || [];
+  const items = original.flatMap(s => s.items).map(item => ({ ...item, label: conciseLabels[item.label] || item.label }));
+  if (search.trim()) return [{ title: 'Search results', items: items.filter(i => `${i.label} ${i.path}`.toLowerCase().includes(search.trim().toLowerCase())) }];
+  const paths = dailyPaths[role];
+  if (!paths) return original.map(s => ({ ...s, items: s.items.map(i => ({ ...i, label: conciseLabels[i.label] || i.label })) }));
+  return [{ title: 'Your workspace', items: paths.flatMap(path => items.filter(i => i.path === path)) },
+    { title: 'More tools', items: items.filter(i => !paths.includes(i.path)) }];
+}
+
 export { NAV_CONFIG };
 
 export default function DashboardSidebar() {
   const { user, setRole, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
+  const [navSearch, setNavSearch] = useState('');
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
 
@@ -365,7 +390,7 @@ export default function DashboardSidebar() {
 
   if (!user) return null;
 
-  const sections = NAV_CONFIG[user.role] || [];
+  const sections = getNavigationSections(user.role, navSearch);
   const isLandlord = user.role === 'superadmin';
 
   const sidebarContent = (
@@ -392,6 +417,7 @@ export default function DashboardSidebar() {
         {/* Mobile close */}
         <button
           onClick={() => setMobileOpen(false)}
+          aria-label="Close navigation"
           className="lg:hidden p-1 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/50"
         >
           <X className="w-4 h-4" />
@@ -399,20 +425,24 @@ export default function DashboardSidebar() {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto py-3 px-2.5">
+      <nav aria-label="Workspace navigation" className="flex-1 overflow-y-auto py-3 px-2.5">
+        {!collapsed && <input aria-label="Find a page" placeholder="Find a page…" value={navSearch} onChange={e => setNavSearch(e.target.value)} className="mb-3 w-full rounded-lg border border-sidebar-border bg-sidebar-accent px-3 py-2 text-sm text-sidebar-foreground" />}
+        {navSearch && !sections.some(s => s.items.length) && <p className="px-3 text-sm">No matching pages. Try another name.</p>}
         {sections.map((section, si) => (
-          <div key={si} className={si > 0 ? 'mt-5' : ''}>
-            {section.title && !collapsed && (
-              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-sidebar-foreground/30 px-3 mb-1.5">
+          <details key={`${user.role}-${si}-${navSearch}`} open={collapsed || si === 0 || !!navSearch || section.items.some(i => i.path === location.pathname)} className={si > 0 ? 'mt-5' : ''}>
+            {section.title && (
+              <summary className="text-[10px] font-bold uppercase tracking-[0.12em] text-sidebar-foreground/30 px-3 mb-1.5">
                 {section.title}
-              </p>
+              </summary>
             )}
             <div className="space-y-0.5">
               {section.items.map((item) => (
                 <NavLink
                   key={item.path}
                   to={item.path}
-                  end={item.path === sections[0]?.items[0]?.path}
+                  end
+                  title={item.label}
+                  aria-label={item.label}
                   className={({ isActive }) =>
                     `flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-default ${
                       isActive
@@ -426,7 +456,7 @@ export default function DashboardSidebar() {
                 </NavLink>
               ))}
             </div>
-          </div>
+          </details>
         ))}
       </nav>
 
@@ -468,6 +498,7 @@ export default function DashboardSidebar() {
       {/* Footer */}
       <div className="px-2 py-2 border-t border-sidebar-border flex items-center gap-2">
         <button
+          aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
           onClick={() => setCollapsed(!collapsed)}
           className="hidden lg:block p-2 rounded-lg hover:bg-sidebar-accent transition-default text-sidebar-foreground/50"
         >
@@ -491,6 +522,7 @@ export default function DashboardSidebar() {
     <>
       {/* Mobile hamburger button */}
       <button
+        aria-label="Open navigation"
         onClick={() => setMobileOpen(true)}
         className="lg:hidden fixed top-3 left-3 z-50 p-2 rounded-lg bg-card/90 backdrop-blur-sm shadow-surface-md border border-border/50 hover:bg-card transition-default"
       >
