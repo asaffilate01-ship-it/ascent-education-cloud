@@ -70,9 +70,9 @@ function StudentDashboardContent() {
     ? Math.round(approved.reduce((sum,g)=>sum+Number(corrections.find(x=>x.attempt_id===g.attempt_id)?.corrected_final_score??g.final_score),0)/approved.length)
     : null;
 
-  if (!user?.tenantId) return <DashboardLayout title="My Dashboard"><p role="alert">A centre assignment is required.</p></DashboardLayout>;
+  if (!user?.tenantId) return <DashboardLayout title="Today"><p role="alert">A centre assignment is required.</p></DashboardLayout>;
   if (loading) return <DashboardSkeleton />;
-  if (queries.some(query => query.error)) return <DashboardLayout title="My Dashboard"><p role="alert">Your learning records could not be loaded completely.</p><Button onClick={() => queries.forEach(query => void query.refetch())}>Retry learning records</Button></DashboardLayout>;
+  if (queries.some(query => query.error)) return <DashboardLayout title="Today"><p role="alert">Your learning records could not be loaded completely.</p><Button onClick={() => queries.forEach(query => void query.refetch())}>Retry learning records</Button></DashboardLayout>;
 
   const stats = [
     { label: 'Courses', value: String(programmes.length), icon: BookOpen },
@@ -81,7 +81,8 @@ function StudentDashboardContent() {
   ];
 
   return (
-    <DashboardLayout title="My Dashboard" subtitle={`Welcome back, ${user?.name || 'Student'}`}>
+    <DashboardLayout title="Today" subtitle={`Welcome back, ${user?.name || 'Student'}`}>
+      <StudentLearningAgenda tenant={user.tenantId} student={user.id} moduleIds={moduleIds} />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {stats.map((stat, i) => (
           <motion.div key={stat.label} custom={i} initial="hidden" animate="visible" variants={fadeUp}>
@@ -118,13 +119,13 @@ function StudentDashboardContent() {
         </div>
 
       </div>
-      <StudentLearningAgenda tenant={user.tenantId} student={user.id} moduleIds={moduleIds} />
+
 
       <STEMCoachLearningAccess enrolled={enrolmentsQuery.data.length > 0} />
 
       <section className="mb-6 rounded-xl border bg-primary/5 p-4">
         <h3 className="font-semibold">Your verified learning progress</h3>
-        <p className="mt-2 text-sm text-muted-foreground">Coursework, resubmissions and IQA-approved grades now have separate secure workflows. Progress is not inferred from unapproved legacy submissions.</p>
+        <p className="mt-2 text-sm text-muted-foreground">View assignments, read released feedback or ask for a result review. Results appear after marking and quality approval.</p>
         <div className="mt-3 flex flex-wrap gap-2">
           <Button asChild variant="outline" size="sm"><Link to="/student/assignments">My current coursework</Link></Button>
           <Button asChild variant="outline" size="sm"><Link to="/student/grades">Approved results</Link></Button>

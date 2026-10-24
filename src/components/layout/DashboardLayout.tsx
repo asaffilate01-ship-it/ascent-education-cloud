@@ -39,6 +39,10 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
     isLast: i === pathSegments.length - 1,
   }));
 
+  const workspaceLinks = user?.role === 'student' && ['/student/library','/student/materials','/student/lesson-archive','/student/classroom'].includes(location.pathname)
+    ? [['Library','/student/library'],['Materials','/student/materials'],['Recordings','/student/lesson-archive'],['Classes','/student/classroom']]
+    : user?.role === 'lecturer' && ['/lecturer/classroom','/lecturer/class-scheduler','/lecturer/materials','/lecturer/lesson-archive','/lecturer/whiteboards','/lecturer/attendance'].includes(location.pathname)
+    ? [['Classes','/lecturer/classroom'],['Schedule','/lecturer/class-scheduler'],['Attendance','/lecturer/attendance'],['Materials','/lecturer/materials'],['Recordings','/lecturer/lesson-archive'],['Whiteboards','/lecturer/whiteboards']] : [];
   return (
     <div className="min-h-dvh bg-background">
       <DashboardSidebar />
@@ -99,7 +103,8 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
           transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
           className="p-3 sm:p-4 lg:p-6 pb-24 lg:pb-6"
         >
-          <div className="page-shell">{children}</div>
+          <div className="page-shell">{!!workspaceLinks.length && <nav aria-label="Learning workspace" className="mb-5 flex flex-wrap gap-2">{workspaceLinks.map(([label,to])=><Link key={to} to={to} aria-current={location.pathname===to?'page':undefined} className={`rounded-lg border px-3 py-2 text-sm font-medium ${location.pathname===to?'bg-primary text-primary-foreground':'bg-card hover:bg-accent'}`}>{label}</Link>)}</nav>}
+            {children}</div>
         </motion.main>
       </div>
 

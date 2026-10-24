@@ -15,6 +15,10 @@ type Criterion={id:string;brief_id:string;criterion_code:string;learning_outcome
 type Attempt={id:string;brief_id:string;attempt_no:number;status:string;submitted_at:string;resubmission_guidance:string|null;guidance_at:string|null;evidence_text:string};
 type Released={attempt_id:string;brief_id:string;student_id:string;final_score:number;raw_score:number;penalty_points:number;published_feedback:string;released_at:string};
 export default function StudentCoursework(){
+ const {user}=useAuth();
+ return <CourseworkWorkspace key={`${user?.id}:${user?.tenantId}:${user?.role}`}/>;
+}
+function CourseworkWorkspace(){
  const {user}=useAuth();const uid=user?.id,tenant=user?.tenantId;
  const [modules,setModules]=useState<Module[]>([]);const [briefs,setBriefs]=useState<Brief[]>([]);
  const [criteria,setCriteria]=useState<Criterion[]>([]);const [attempts,setAttempts]=useState<Attempt[]>([]);
@@ -73,18 +77,21 @@ export default function StudentCoursework(){
   if(work.length<30||work.length>50000){toast.error('Provide between 30 and 50,000 characters of original evidence.');return;}
   if(!window.confirm('Submit this attempt for independent human assessment? You cannot edit it after submission.'))return;
   setBusy(b.id);
-  const {error:e}=await db.rpc('submit_unipathway_assessment',{p_brief:b.id,p_evidence:work});
-  setBusy('');
-  if(e){toast.error('Submission blocked: '+e.message);return;}
-  toast.success('Attempt submitted to the independent marker queue. No automatic grade was issued.');
-  setDrafts(p=>({...p,[b.id]:''}));await load();
+  try {
+   const {error:e}=await db.rpc('submit_unipathway_assessment',{p_brief:b.id,p_evidence:work});
+   if(e)throw e;
+   toast.success('Assignment submitted. You can read your result after marking and approval.');
+   setDrafts(p=>({...p,[b.id]:''}));await load();
+  } catch {toast.error('Submission could not be confirmed. Your draft is still here. Refresh assignments to check whether it arrived before trying again.');}
+  finally {setBusy('');}
  };
- return <DashboardLayout title="My Homework & Coursework" subtitle="Published tasks, transparent rubrics, controlled resubmissions and independent assessment">
+ return <DashboardLayout title="Assignments" subtitle="Your tasks, submissions and released feedback">
   <section className="mb-5 rounded-xl border bg-primary/5 p-4"><h2 className="flex items-center gap-2 font-semibold"><ShieldCheck className="size-5"/>Fair marking and protected student evidence</h2>
    <p className="mt-2 text-sm text-muted-foreground">Review the teaching notes and exact learning outcomes before submitting. Your work goes to an independent marker; Omniqora may offer a private draft, but a separate IQA must approve release. No provisional mark is visible to you.</p>
   </section>
   {loading&&<p role="status">Checking your active enrolled assignments and released feedback…</p>}
-  {error&&<p role="alert" className="rounded-xl border border-destructive p-4">{error}. Private assessment tables and RLS must be deployed and tested before this feature is usable.</p>}
+  {error&&<p role="alert" className="rounded-xl border border-destructive p-4">Assignments could not be loaded. Please retry or contact your centre.</p>}
+  <Button className="mb-4" variant="outline" disabled={loading||!!busy} onClick={()=>void load()}>Refresh assignments</Button>
   {!loading&&!error&&!briefs.length&&<p className="rounded-xl border bg-card p-6 text-sm">Your lecturers have not published coursework under your currently enrolled modules yet.</p>}
   {!loading&&!error&&<div className="space-y-5">{briefs.map(b=>{
    const list=grouped.get(b.id)||[],latest=list[0],released=results.filter(r=>r.brief_id===b.id);

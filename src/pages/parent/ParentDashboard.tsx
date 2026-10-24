@@ -1,3 +1,4 @@
+import {Link,useLocation} from 'react-router-dom';
 import {GuardianActivity} from '@/components/guardian/GuardianAccess';
 import {useEffect,useState} from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -7,7 +8,16 @@ import {Button} from '@/components/ui/button';
 import {ShieldCheck,Users} from 'lucide-react';
 type Result={attempt_id:string;title:string;final_score:number;feedback:string;released_at:string;amended:boolean};
 type Student={id:string;verified:boolean;sharing:boolean;student_name:string|null;results:Result[]};
-export default function ParentDashboard(){const {user}=useAuth();return <ParentResults key={`${user?.id}:${user?.tenantId}:${user?.role}`} />;}
+const parentPages = [['Overview','/parent'],['Attendance','/parent/attendance'],['Schedule','/parent/schedule'],['Progress','/parent/progress'],['Messages','/parent/messages']];
+function ParentNavigation(){const {pathname}=useLocation();return <nav aria-label="Parent portal" className="mb-5 flex flex-wrap gap-2">{parentPages.map(([label,to])=><Button key={to} asChild variant={pathname===to?'default':'outline'}><Link to={to} aria-current={pathname===to?'page':undefined}>{label}</Link></Button>)}</nav>;}
+export default function ParentDashboard(){
+ const {user}=useAuth();const {pathname}=useLocation();const identity=`${user?.id}:${user?.tenantId}:${user?.role}`;
+ if(pathname==='/parent/progress')return <ParentResults key={identity}/>;
+ const view=pathname==='/parent/messages'?'communication':pathname==='/parent/attendance'?'attendance':pathname==='/parent/schedule'?'schedule':'all';
+ return <DashboardLayout title={parentPages.find(p=>p[1]===pathname)?.[0]||'Parent portal'} subtitle="Your learner’s shared updates"><ParentNavigation/>
+ {view==='all'?<section className="grid gap-4 sm:grid-cols-2">{parentPages.slice(1).map(([label,to])=><Link key={to} to={to} className="rounded-xl border bg-card p-6 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring"><h2 className="font-semibold">{label}</h2><p className="mt-2 text-sm text-muted-foreground">{label==='Progress'?'Read released results and feedback.':label==='Messages'?'Talk privately with authorised centre staff.':label==='Attendance'?'Check recorded attendance shared with you.':'See shared class dates and times.'}</p></Link>)}<p className="text-sm text-muted-foreground sm:col-span-2">Your centre verifies each learner link. Your learner chooses separately whether to share attendance, schedules, results and communication.</p></section>:<GuardianActivity key={`${identity}:${view}`} view={view}/>}
+ </DashboardLayout>;
+}
 function ParentResults(){
  const {user}=useAuth();const [students,setStudents]=useState<Student[]>([]),[selected,setSelected]=useState('');
  const [loading,setLoading]=useState(true),[error,setError]=useState(''),[refresh,setRefresh]=useState(0);
@@ -24,7 +34,7 @@ function ParentResults(){
    <h2 className="flex items-center gap-2 font-semibold"><ShieldCheck className="size-5"/>Verified, learner-approved access</h2>
    <p className="mt-2 text-sm text-muted-foreground">Your centre must verify the link and the learner must choose to share. Only independently marked, quality-approved released coursework results appear here. These are internal assessment points, not external examination grades or certificates.</p>
   </section>
-  <GuardianActivity />
+  <ParentNavigation />
   <Button variant="outline" disabled={loading} onClick={()=>setRefresh(x=>x+1)}>Refresh results</Button>
   {loading&&<p role="status" className="mt-5">Checking shared results…</p>}
   {error&&<p role="alert" className="mt-5 rounded-xl border border-destructive p-4">{error}</p>}

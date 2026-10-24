@@ -1,3 +1,4 @@
+import {Link} from 'react-router-dom';
 import {invoiceMonths, directorReport} from '@/lib/dashboardMetrics';
 import {downloadText} from '@/lib/downloadText';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -46,7 +47,7 @@ export default function LandlordDashboard() {
     { key: 'name', label: 'Centre', render: (t: any) => (
       <div>
         <p className="text-sm font-medium">{t.name}</p>
-        <p className="text-xs text-muted-foreground">{t.slug}.educloud.pk</p>
+        <p className="text-xs text-muted-foreground">Centre reference: {t.slug}</p>
       </div>
     )},
     { key: 'plan', label: 'Plan', render: (t: any) => (
@@ -80,6 +81,11 @@ export default function LandlordDashboard() {
         </div>
       }
     >
+      <section aria-label="Next actions" className="mb-6 grid gap-3 sm:grid-cols-3">
+        <Link to="/landlord/centres" className="rounded-xl border bg-card p-5 hover:bg-accent"><h2 className="font-semibold">Review centre onboarding</h2><p className="mt-2 text-sm text-muted-foreground">{tenants.filter(t=>t.status==='onboarding').length} centre(s) recorded as onboarding.</p></Link>
+        <Link to="/landlord/readiness" className="rounded-xl border bg-card p-5 hover:bg-accent"><h2 className="font-semibold">Check launch readiness</h2><p className="mt-2 text-sm text-muted-foreground">Review evidence and outstanding setup before launching a centre.</p></Link>
+        <Link to="/landlord/infrastructure" className="rounded-xl border bg-card p-5 hover:bg-accent"><h2 className="font-semibold">Review integrations</h2><p className="mt-2 text-sm text-muted-foreground">Inspect provider configuration. Live monitoring is not connected.</p></Link>
+      </section>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Total Centres" value={tenants.length} change={`${activeTenants} active`} changeType="positive" icon={Building2} />
         <StatCard label="Recorded centre student counts" value={totalStudents.toLocaleString()} icon={GraduationCap} />

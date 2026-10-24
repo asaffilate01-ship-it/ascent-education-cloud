@@ -212,3 +212,20 @@ test('education-first homepage leads to learning and European explorer rather th
   await action.click();
   await expect(page).toHaveURL(/\/europe(?:\/?$|\?)/);
 });
+
+test('focused course menu closes with Escape and course search recovers from no matches',async({page})=>{
+ await page.goto('/');
+ const consent=page.getByRole('dialog',{name:'Cookie preferences'});
+ if(await consent.isVisible())await consent.getByRole('button',{name:'Reject all'}).click();
+ const courses=page.getByRole('button',{name:'Courses',exact:true});
+ await courses.click();
+ await expect(courses).toHaveAttribute('aria-expanded','true');
+ await page.keyboard.press('Escape');
+ await expect(courses).toHaveAttribute('aria-expanded','false');
+ await page.goto('/study');
+ await page.getByLabel('Search subjects and training').fill('zzzz-no-subject');
+ await expect(page.getByRole('heading',{name:'No matching study options'})).toBeVisible();
+ await page.getByRole('button',{name:'Clear filters'}).click();
+ await expect(page.getByLabel('Search subjects and training')).toHaveValue('');
+ await expect(page.getByRole('heading',{name:'No matching study options'})).toHaveCount(0);
+});

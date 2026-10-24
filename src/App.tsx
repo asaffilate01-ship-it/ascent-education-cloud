@@ -530,6 +530,8 @@ function AppRoutes() {
         <Route path="/employer/candidates" element={<EmployerR><EmployerPortal /></EmployerR>} />
         <Route path="/employer/internships" element={<EmployerR><EmployerPortal /></EmployerR>} />
         <Route path="/parent" element={<ParentR><ParentDashboard /></ParentR>} />
+        <Route path="/parent/attendance" element={<ParentR><ParentDashboard /></ParentR>} />
+        <Route path="/parent/schedule" element={<ParentR><ParentDashboard /></ParentR>} />
         <Route path="/parent/progress" element={<ParentR><ParentDashboard /></ParentR>} />
         <Route path="/parent/messages" element={<ParentR><ParentDashboard /></ParentR>} />
 
