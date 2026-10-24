@@ -25,7 +25,8 @@
     "test:enquiry": "deno test supabase/functions/_shared/unipathway-turnstile.test.ts",
     "rehearse:fresh-staging": "node scripts/rehearse-unipathway-schema.mjs --fresh-staging",
     "test:fresh-schema": "node scripts/rehearse-unipathway-schema.mjs --fresh-staging --defer-provider-extensions",
-    "build:fresh-staging": "node scripts/build-unipathway-fresh-staging.mjs"
+    "build:fresh-staging": "node scripts/build-unipathway-fresh-staging.mjs",
+    "test:worker-operations": "node --test scripts/tests/worker-operations.test.mjs"
   },
   "dependencies": {
     "@aparajita/capacitor-secure-storage": "8.0.1",

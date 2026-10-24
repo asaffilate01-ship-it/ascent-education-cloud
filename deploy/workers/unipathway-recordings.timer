@@ -1,0 +1,11 @@
+[Unit]
+Description=Schedule UniPathway recordings queue processing
+
+[Timer]
+OnBootSec=2min
+OnUnitInactiveSec=2min
+RandomizedDelaySec=10s
+Unit=unipathway-recordings.service
+
+[Install]
+WantedBy=timers.target

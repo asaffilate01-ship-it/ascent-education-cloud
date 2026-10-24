@@ -31,6 +31,7 @@ jobs:
         with: {node-version: 24, cache: npm}
       - run: npm ci --ignore-scripts
       - run: npm run test
+      - run: npm run test:worker-operations
   database-tests:
     runs-on: ubuntu-latest
     steps:

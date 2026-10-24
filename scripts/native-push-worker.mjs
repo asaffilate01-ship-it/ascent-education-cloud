@@ -2,7 +2,9 @@
 import {readFile} from 'node:fs/promises';
 import {createClient} from '@supabase/supabase-js';
 import {createPushProviders} from './lib/native-push-providers.mjs';
+import {validateWorkerConfig} from './lib/worker-config.mjs';
 const env=process.env;
+validateWorkerConfig('push', env);
 if(env.NATIVE_PUSH_ENABLED!=='true')throw new Error('Native push is disabled');
 if(!/^https:\/\//.test(env.SUPABASE_URL||'')||!env.SUPABASE_SERVICE_ROLE_KEY||!/^[-a-f0-9]{36}$/i.test(env.UNIPATHWAY_TENANT_ID||''))throw new Error('Server Supabase and tenant configuration required');
 const fcmAccount=env.GOOGLE_APPLICATION_CREDENTIALS?JSON.parse(await readFile(env.GOOGLE_APPLICATION_CREDENTIALS,'utf8')):null;
