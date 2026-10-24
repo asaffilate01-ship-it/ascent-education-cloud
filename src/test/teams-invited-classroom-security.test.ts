@@ -51,7 +51,7 @@ describe('UniPathway invitation-only Teams classrooms and academic materials',()
  });
  it('does not show unallocated modules as a fallback',()=>{
   expect(lecturer).not.toContain('modules.slice(0, 6)');
-  expect(lecturer).toContain('return assigned;');
+  expect(lecturer).toContain('m.lecturer_id===user?.id&&m.tenant_id===user?.tenantId');
  });
  it('surfaces provider/migration errors and never claims unpublished Teams recordings are playable',()=>{
   expect(classroom).toContain("if(classes.error){setError(classes.error.message)");
