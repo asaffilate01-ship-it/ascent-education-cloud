@@ -1,0 +1,10 @@
+import {afterEach,it,vi,expect} from 'vitest';
+import {cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
+import GuardianLearning from '@/pages/tuition/GuardianLearning';
+const mock=vi.hoisted(()=>({rpc:vi.fn()}));
+vi.mock('@/lib/db',()=>({db:{rpc:mock.rpc}}));
+vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'p',tenantId:'t'}})}));
+vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:{children:React.ReactNode})=><main>{children}</main>}));
+afterEach(()=>{cleanup();vi.clearAllMocks();});
+it('withdraws shared progress on revocation or failed verification',async()=>{mock.rpc.mockResolvedValueOnce({data:[{id:'p',student_name:'Learner',module_title:'Maths',goal:'Understand fractions',skills:[{skill:'Fractions',baseline:'needs_support',outcome:'independent'}]}]}).mockResolvedValue({error:{message:'unavailable'}});render(<GuardianLearning/>);await screen.findByText('Understand fractions');fireEvent.click(screen.getByText('Refresh shared progress'));await screen.findByRole('alert');expect(screen.queryByText('Understand fractions')).toBeNull();});
+it('does not substitute official grades or sample learners when nothing is shared',async()=>{mock.rpc.mockResolvedValue({data:[]});render(<GuardianLearning/>);await waitFor(()=>expect(screen.getByText('No learning plans are currently shared with you.')).toBeInTheDocument());expect(screen.queryByText('Learner')).toBeNull();});

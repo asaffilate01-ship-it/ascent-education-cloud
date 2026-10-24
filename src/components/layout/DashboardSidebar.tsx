@@ -131,6 +131,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Dashboard', icon: LayoutDashboard, path: '/lecturer' },
       { label: 'Managed AWS Labs', icon: Cloud, path: '/lecturer/managed-labs' },
       { label: 'Teaching', icon: BookOpen, path: '/lecturer/teaching' },
+      { label: 'Tuition Learning Plans', icon: ClipboardCheck, path: '/lecturer/learning-plans' },
       { label: 'Coursework Briefs & Rubrics', icon: ClipboardCheck, path: '/lecturer/assessments' },
       { label: 'IELTS Academy', icon: GraduationCap, path: '/lecturer/ielts' },
       { label: 'Live Classroom', icon: Video, path: '/lecturer/classroom' },
@@ -273,6 +274,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
     { label: 'Module Materials', icon: BookOpen, path: '/student/materials' },
       { label: 'Microsoft 365', icon: Mail, path: '/student/microsoft' },
       { label: 'My Labs & Self Study', icon: Cloud, path: '/student/labs' },
+      { label: 'My Learning Plan', icon: ClipboardList, path: '/student/learning-plan' },
       { label: 'My Coursework & Resubmissions', icon: ClipboardList, path: '/student/assignments' },
       { label: 'Approved Results Only', icon: BarChart3, path: '/student/grades' },
       { label: 'My Grade Appeals', icon: Shield, path: '/student/appeals' },
@@ -328,6 +330,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Dashboard', icon: LayoutDashboard, path: '/parent' },
       { label: 'Attendance', icon: Calendar, path: '/parent/attendance' },
       { label: 'Schedule', icon: CalendarDays, path: '/parent/schedule' },
+      { label: 'Shared Learning', icon: BarChart3, path: '/parent/learning' },
       { label: 'Progress', icon: BarChart3, path: '/parent/progress' },
       { label: 'Activity Log', icon: Activity, path: '/my-activity' },
       { label: 'Messages', icon: MessageSquare, path: '/parent/messages' },
@@ -336,8 +339,8 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
 };
 
 const dailyPaths: Partial<Record<UserRole, string[]>> = {
-  student: ['/student', '/student/courses', '/student/classroom', '/student/assignments', '/student/library', '/student/grades', '/messaging'],
-  lecturer: ['/lecturer', '/lecturer/class-scheduler', '/lecturer/classroom', '/lecturer/attendance', '/lecturer/assessments', '/lecturer/materials', '/messaging'],
+  student: ['/student', '/student/courses', '/student/learning-plan', '/student/classroom', '/student/assignments', '/student/grades', '/messaging'],
+  lecturer: ['/lecturer', '/lecturer/learning-plans', '/lecturer/class-scheduler', '/lecturer/classroom', '/lecturer/attendance', '/lecturer/assessments', '/messaging'],
   centre_director: ['/director', '/director/admissions', '/director/students', '/director/staff', '/director/schedule', '/director/finance', '/messaging'],
   superadmin: ['/landlord', '/landlord/centres', '/landlord/users', '/landlord/readiness', '/landlord/finance', '/landlord/infrastructure', '/messaging'],
 };

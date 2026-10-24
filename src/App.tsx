@@ -86,6 +86,8 @@ const ModuleMaterials = lazy(() => import("./pages/learning/ModuleMaterials"));
 // Student
 const StudentDashboard = lazy(() => import("./pages/student/StudentDashboard"));
 const StudentCourses = lazy(() => import("./pages/student/StudentCourses"));
+const LearningPlans = lazy(() => import("./pages/tuition/LearningPlans"));
+const GuardianLearning = lazy(() => import("./pages/tuition/GuardianLearning"));
 const StudentCoursework = lazy(() => import("./pages/student/StudentCoursework"));
 const StudentReleasedResults = lazy(() => import("./pages/student/StudentReleasedResults"));
 const StudentAssessmentAppeals = lazy(() => import("./pages/student/StudentAssessmentAppeals"));
@@ -401,6 +403,7 @@ function AppRoutes() {
         <Route path="/lecturer/managed-labs" element={<LecturerR><LMSVirtualLabs /></LecturerR>} />
         <Route path="/lecturer" element={<LecturerR><LecturerDashboard /></LecturerR>} />
         <Route path="/lecturer/teaching" element={<LecturerR><LecturerTeaching /></LecturerR>} />
+        <Route path="/lecturer/learning-plans" element={<LecturerR><LearningPlans teacher /></LecturerR>} />
         <Route path="/lecturer/assessments" element={<LecturerR><LecturerAssessmentBriefs /></LecturerR>} />
         <Route path="/lecturer/ielts" element={<LecturerR><IELTSAcademy /></LecturerR>} />
         <Route path="/lecturer/classroom" element={<LecturerR><LiveClassroom /></LecturerR>} />
@@ -500,6 +503,7 @@ function AppRoutes() {
         <Route path="/student/microsoft" element={<StudentR><MicrosoftAccountCentre /></StudentR>} />
         <Route path="/student/lesson-archive" element={<StudentR><LessonArchive /></StudentR>} />
         <Route path="/student/materials" element={<StudentR><ModuleMaterials /></StudentR>} />
+        <Route path="/student/learning-plan" element={<StudentR><LearningPlans /></StudentR>} />
         <Route path="/student/assignments" element={<StudentR><StudentCoursework /></StudentR>} />
         <Route path="/student/grades" element={<StudentR><StudentReleasedResults /></StudentR>} />
         <Route path="/student/appeals" element={<StudentR><StudentAssessmentAppeals /></StudentR>} />
@@ -532,6 +536,7 @@ function AppRoutes() {
         <Route path="/parent" element={<ParentR><ParentDashboard /></ParentR>} />
         <Route path="/parent/attendance" element={<ParentR><ParentDashboard /></ParentR>} />
         <Route path="/parent/schedule" element={<ParentR><ParentDashboard /></ParentR>} />
+        <Route path="/parent/learning" element={<ParentR><GuardianLearning /></ParentR>} />
         <Route path="/parent/progress" element={<ParentR><ParentDashboard /></ParentR>} />
         <Route path="/parent/messages" element={<ParentR><ParentDashboard /></ParentR>} />
 

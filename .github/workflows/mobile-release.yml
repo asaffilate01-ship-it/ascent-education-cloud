@@ -1,0 +1,69 @@
+name: Prepare signed Android testing bundle
+on:
+  workflow_dispatch:
+    inputs:
+      build_number:
+        description: 'New increasing Android version code'
+        required: true
+        type: string
+      version:
+        description: 'Version, for example 1.0.1'
+        required: true
+        type: string
+      device_acceptance_url:
+        description: 'HTTPS evidence for real-device auth, uploads, Teams and notification tests'
+        required: true
+        type: string
+      acknowledgement:
+        description: 'Type DEVICE_ACCEPTANCE_COMPLETE'
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  android-testing-bundle:
+    runs-on: ubuntu-latest
+    environment: unipathway-mobile-release
+    timeout-minutes: 30
+    env:
+      RELEASE_ACK: ${{ inputs.acknowledgement }}
+      UNIPATHWAY_BUILD_NUMBER: ${{ inputs.build_number }}
+      UNIPATHWAY_VERSION_NAME: ${{ inputs.version }}
+      DEVICE_ACCEPTANCE_URL: ${{ inputs.device_acceptance_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 24, cache: npm}
+      - run: node scripts/release/validate-mobile-release.mjs
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: 21}
+      - uses: android-actions/setup-android@v3
+        with: {packages: platform-tools, log-accepted-android-sdk-licenses: false}
+      - run: npm ci --ignore-scripts
+      - run: npm run build
+      - run: npx cap sync android
+      - name: Build signed bundle using protected environment credentials
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+          UNIPATHWAY_ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          UNIPATHWAY_ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          UNIPATHWAY_ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${ANDROID_KEYSTORE_BASE64:?Missing signing keystore}"
+          : "${GOOGLE_SERVICES_JSON_BASE64:?Missing Firebase client configuration}"
+          export UNIPATHWAY_ANDROID_KEYSTORE="$RUNNER_TEMP/unipathway-release.jks"
+          trap 'rm -f "$UNIPATHWAY_ANDROID_KEYSTORE" android/app/google-services.json' EXIT
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$UNIPATHWAY_ANDROID_KEYSTORE"
+          printf '%s' "$GOOGLE_SERVICES_JSON_BASE64" | base64 --decode > android/app/google-services.json
+          chmod 600 "$UNIPATHWAY_ANDROID_KEYSTORE" android/app/google-services.json
+          bash android/gradlew -p android bundleRelease
+          jarsigner -verify android/app/build/outputs/bundle/release/app-release.aab > "$RUNNER_TEMP/signature-check.txt"
+          rg -q 'jar verified' "$RUNNER_TEMP/signature-check.txt"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: unipathway-signed-testing-bundle
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          retention-days: 7

@@ -1,0 +1,26 @@
+import {afterEach,it,vi,expect} from 'vitest';
+import {cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
+import {MemoryRouter} from 'react-router-dom';
+import LearningPlans from '@/pages/tuition/LearningPlans';
+const mock=vi.hoisted(()=>({rpc:vi.fn()}));
+vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'student',tenantId:'centre'}})}));
+vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:{children:React.ReactNode})=><main>{children}</main>}));
+vi.mock('@/components/assessment/ModuleJourney',()=>({default:()=>null}));
+vi.mock('@/lib/db',()=>({db:{rpc:mock.rpc,from:(table:string)=>{const rows:Record<string,unknown[]>={modules:[{id:'module',title:'Maths'}],unipathway_learning_plans:[{id:'plan',module_id:'module',student_id:'student',goal:'Understand equivalent fractions'}],unipathway_learning_tasks:[{id:'task',plan_id:'plan',position:1,skill:'Fractions',baseline:'needs_support',diagnostic_evidence:'Observed in tutor assessment',instruction:'Explain why two quarters equal one half.'}],unipathway_learning_attempts:[]};const q={select:()=>q,eq:()=>q,in:()=>q,order:()=>q,range:async()=>({data:rows[table]||[]})};return q;}}}));
+afterEach(()=>{cleanup();vi.clearAllMocks();});
+it('preserves learner work and the idempotency key after an uncertain submission',async()=>{
+ mock.rpc.mockImplementation(async(name:string)=>name==='submit_unipathway_learning_attempt'?{error:{message:'Network interrupted'}}:{data:[]});
+ render(<MemoryRouter><LearningPlans/></MemoryRouter>);
+ const answer=await screen.findByLabelText('Your working and explanation');
+ fireEvent.change(answer,{target:{value:'Two quarters make half of the same whole.'}});
+ fireEvent.click(screen.getByText('Send work or request help'));
+ await screen.findByRole('alert');
+ expect(answer).toHaveValue('Two quarters make half of the same whole.');
+ fireEvent.click(screen.getByText('Send work or request help'));
+ await waitFor(()=>expect(mock.rpc.mock.calls.filter(c=>c[0]==='submit_unipathway_learning_attempt')).toHaveLength(2));
+ const calls=mock.rpc.mock.calls.filter(c=>c[0]==='submit_unipathway_learning_attempt');
+ expect(calls[0][1]).toEqual(calls[1][1]);
+ expect(calls[0][1].p_id).toMatch(/^[0-9a-f-]{36}$/);
+ expect(screen.queryByText('Confirm teaching review')).toBeNull();
+ expect(screen.queryByText('Create or open plan')).toBeNull();
+});
