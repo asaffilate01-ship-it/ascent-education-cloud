@@ -107,3 +107,11 @@ Course materials now read all authorised modules, active enrolments and material
 Publishing and draft creation require a returned record before reporting completion. An uncertain response prompts refresh and review before retrying. Draft uploads are not automatically deleted on an uncertain metadata response, because that could remove a file whose metadata was saved. Interrupted uploads can leave a private unreferenced object requiring administrator reconciliation; automatic orphan cleanup is not added here. Account, role and module changes reset the workspace and suppress late actions/downloads.
 
 Hosted acceptance: find materials older than the former cap; verify lecturer assignment and student enrolment/release timing; interrupt a later metadata page, then refresh; revoke publishing access and verify no success notification; interrupt a draft-save acknowledgement and inspect drafts before retrying. Verify a late private link does not open after account switching. No migration or hosted deployment is included.
+
+## Student agenda recovery and task priorities
+
+Coursework and invited classes now load independently: one unavailable panel does not hide verified records in the other. Refresh and account-scope changes clear both old snapshots; cancelled requests cannot restore them. Coursework queries use bounded module/brief filters and complete ordered pages. The most recent attempt determines whether a submission is still needed.
+
+The agenda shows up to five open-window tasks first, with closed tasks in a separately labelled expandable section and links to the correct module coursework. Counts cover the complete permitted history, while the class list intentionally previews the next five invitations. Full coursework/class tools retain their own access checks. No migration or deployment is included.
+
+Hosted acceptance: fail each panel independently, recover with refresh, switch accounts during a delayed request, and verify large enrolment histories. Check latest-attempt resubmission status, deadline/cutoff labels and module links against the actual programme rules. Open-window labels are a summary, not a guarantee that server submission rules will accept work.
