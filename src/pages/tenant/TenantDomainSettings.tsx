@@ -50,11 +50,12 @@ export default function TenantDomainSettings() {
 
   const fetchDomains = async () => {
     setLoading(true);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('tenant_domains' as any)
       .select('*')
       .eq('tenant_id', tenantId);
-    if (data) setDomains(data as any[]);
+    if (error) { toast.error('Domains could not be loaded.'); setDomains([]); }
+    else if (data) setDomains(data as any[]);
     setLoading(false);
   };
 
@@ -85,7 +86,8 @@ export default function TenantDomainSettings() {
   };
 
   const removeDomain = async (id: string) => {
-    await supabase.from('tenant_domains' as any).delete().eq('id', id);
+    const {data,error} = await supabase.from('tenant_domains' as any).delete().eq('id', id).eq('tenant_id',tenantId).select('id');
+    if(error||!data?.length){toast.error('Domain was not removed. Refresh and check centre permissions.');return;}
     toast.success('Domain removed');
     fetchDomains();
   };

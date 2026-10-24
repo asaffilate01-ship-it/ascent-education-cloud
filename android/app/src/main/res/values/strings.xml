@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">UniPathway</string>
+    <string name="title_activity_main">UniPathway</string>
+    <string name="package_name">pk.edu.unipathway.app</string>
+    <string name="custom_url_scheme">pk.edu.unipathway.app</string>
+</resources>

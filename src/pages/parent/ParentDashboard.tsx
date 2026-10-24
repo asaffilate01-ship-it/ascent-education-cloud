@@ -1,3 +1,4 @@
+import {GuardianActivity} from '@/components/guardian/GuardianAccess';
 import {useEffect,useState} from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {useAuth} from '@/contexts/AuthContext';
@@ -23,6 +24,7 @@ function ParentResults(){
    <h2 className="flex items-center gap-2 font-semibold"><ShieldCheck className="size-5"/>Verified, learner-approved access</h2>
    <p className="mt-2 text-sm text-muted-foreground">Your centre must verify the link and the learner must choose to share. Only independently marked, quality-approved released coursework results appear here. These are internal assessment points, not external examination grades or certificates.</p>
   </section>
+  <GuardianActivity />
   <Button variant="outline" disabled={loading} onClick={()=>setRefresh(x=>x+1)}>Refresh results</Button>
   {loading&&<p role="status" className="mt-5">Checking shared results…</p>}
   {error&&<p role="alert" className="mt-5 rounded-xl border border-destructive p-4">{error}</p>}

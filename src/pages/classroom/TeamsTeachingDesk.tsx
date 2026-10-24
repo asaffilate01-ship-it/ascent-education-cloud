@@ -1,3 +1,4 @@
+import TeamsLink from '@/components/native/TeamsLink';
 import {useEffect,useState} from 'react';
 import {Link,useParams} from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -55,7 +56,7 @@ export function TeachingDesk({sessionId}:{sessionId:string}){
    <section className="rounded-xl border bg-card p-5 space-y-3">
     <h2 className="text-xl font-semibold">{session.title}</h2>
     <p className="text-sm text-muted-foreground">Microsoft Teams Education / Enterprise is the live classroom. Audio, cameras, screen sharing and room membership are controlled in Teams. This desk prepares the teaching plan and course resources.</p>
-    {isTeamsMeetingUrl(session.join_url)&&joinable?<a className="inline-block rounded-md bg-primary px-4 py-2 text-primary-foreground" target="_blank" rel="noopener noreferrer" href={session.join_url}>Open Teams classroom</a>:<p className="text-sm">{!isTeamsMeetingUrl(session.join_url)?'A verified Teams meeting link is required.':'Joining is available from 20 minutes before the class until 30 minutes after it ends.'}</p>}
+    {isTeamsMeetingUrl(session.join_url)&&joinable?<TeamsLink className="inline-block rounded-md bg-primary px-4 py-2 text-primary-foreground" target="_blank" rel="noopener noreferrer" href={session.join_url}>Open Teams classroom</TeamsLink>:<p className="text-sm">{!isTeamsMeetingUrl(session.join_url)?'A verified Teams meeting link is required.':'Joining is available from 20 minutes before the class until 30 minutes after it ends.'}</p>}
     <p className="text-sm">Join with your institutional work or school account. The lecturer appears in the participant list when joining your room. You control when to unmute or share your screen.</p>
    </section>
    <section className="rounded-xl border p-5 space-y-4">

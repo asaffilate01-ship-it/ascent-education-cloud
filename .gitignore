@@ -33,3 +33,6 @@ dist-ssr
 playwright-report/
 test-results/
 coverage/
+
+# Supabase local CLI cache
+supabase/.temp/

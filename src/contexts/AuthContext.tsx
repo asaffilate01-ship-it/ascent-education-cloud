@@ -1,3 +1,4 @@
+import { disableNativePush } from '@/lib/nativePush';
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { UserRole } from '@/types/platform';
@@ -126,8 +127,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Then get initial session
     supabase.auth.getSession().then(({ data: { session: s } }) => {
-      loadUser(s);
-    });
+      void loadUser(s);
+    }).catch(()=>{setUser(null);setSession(null);setLoading(false);});
 
     return () => subscription.unsubscribe();
   }, []);
@@ -137,7 +138,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    await supabase.auth.signOut();
+    await disableNativePush();
+    const {error} = await supabase.auth.signOut();
+    if (error) throw error;
     setUser(null);
     setSession(null);
   };

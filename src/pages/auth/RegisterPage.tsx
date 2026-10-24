@@ -1,3 +1,5 @@
+import { isNativeApp, NATIVE_AUTH_CALLBACK } from '@/lib/native';
+import { nativeGoogleSignIn } from '@/lib/nativeAuth';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -55,7 +57,7 @@ export default function RegisterPage() {
           phone: formData.phone,
           account_type: accountType,
         },
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: isNativeApp() ? NATIVE_AUTH_CALLBACK : window.location.origin,
       },
     });
     setLoading(false);
@@ -73,6 +75,11 @@ export default function RegisterPage() {
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
+    if (isNativeApp()) {
+      try { await nativeGoogleSignIn(); } catch { toast.error('Google sign-in unavailable. Check your connection and try again.'); }
+      finally { setGoogleLoading(false); }
+      return;
+    }
     const { error } = await lovable.auth.signInWithOAuth('google', {
       redirect_uri: window.location.origin,
     });

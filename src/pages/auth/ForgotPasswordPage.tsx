@@ -1,3 +1,4 @@
+import { isNativeApp, NATIVE_AUTH_CALLBACK } from '@/lib/native';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,7 +18,7 @@ export default function ForgotPasswordPage() {
 
     setLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: isNativeApp() ? `${NATIVE_AUTH_CALLBACK}?flow=recovery` : `${window.location.origin}/reset-password`,
     });
     setLoading(false);
 

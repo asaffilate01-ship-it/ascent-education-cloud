@@ -1,3 +1,4 @@
+import NativeBridge from '@/components/native/NativeBridge';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate, useLocation, useParams } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -18,6 +19,7 @@ const AIChatWidgetLazy = lazy(() => import("@/components/AIChatWidget"));
 
 // Auth
 const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
+const GuardianStaffDesk = lazy(() => import("./pages/parent/GuardianStaffDesk"));
 const RegisterPage = lazy(() => import("./pages/auth/RegisterPage"));
 const ForgotPasswordPage = lazy(() => import("./pages/auth/ForgotPasswordPage"));
 const ResetPasswordPage = lazy(() => import("./pages/auth/ResetPasswordPage"));
@@ -349,6 +351,9 @@ function AppRoutes() {
         {/* ========== CENTRE DIRECTOR ========== */}
         <Route path="/director/microsoft-education" element={<Director><MicrosoftEducationAdmin /></Director>} />
         <Route path="/director/managed-labs" element={<Director><LMSVirtualLabs /></Director>} />
+        <Route path="/director/guardian-support" element={<Director><GuardianStaffDesk /></Director>} />
+        <Route path="/lecturer/guardian-support" element={<LecturerR><GuardianStaffDesk /></LecturerR>} />
+        <Route path="/admissions/guardian-support" element={<Admissions><GuardianStaffDesk /></Admissions>} />
         <Route path="/director" element={<Director><CentreDirectorDashboard /></Director>} />
         <Route path="/director/admissions" element={<Director><AdmissionsCRM /></Director>} />
         <Route path="/director/programmes" element={<Director><ProgrammeManagement /></Director>} />
@@ -526,7 +531,7 @@ function AppRoutes() {
         <Route path="/employer/internships" element={<EmployerR><EmployerPortal /></EmployerR>} />
         <Route path="/parent" element={<ParentR><ParentDashboard /></ParentR>} />
         <Route path="/parent/progress" element={<ParentR><ParentDashboard /></ParentR>} />
-        <Route path="/parent/messages" element={<ParentR><MessagingInbox /></ParentR>} />
+        <Route path="/parent/messages" element={<ParentR><ParentDashboard /></ParentR>} />
 
         {/* ========== SHARED / FEATURE ========== */}
         <Route path="/onboarding" element={<P><StudentOnboarding /></P>} />
@@ -573,6 +578,7 @@ const App = () => (
           <RouteIndexing />
           <ScrollToTop />
           <AuthProvider>
+            <NativeBridge />
             <AppRoutes />
             <CookieConsent />
             <PWAInstallPrompt />
