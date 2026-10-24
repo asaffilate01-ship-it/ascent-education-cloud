@@ -6,7 +6,7 @@ const mock=vi.hoisted(()=>({tables:{} as Record<string,unknown>,signed:vi.fn()})
 vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:{children:React.ReactNode})=><main>{children}</main>}));
 vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'student',tenantId:'centre'}})}));
 vi.mock('@/integrations/supabase/client',()=>({supabase:{storage:{from:()=>({createSignedUrl:mock.signed})}}}));
-vi.mock('@/lib/db',()=>({db:{from:(name:string)=>{const q:Record<string,unknown>={then:(resolve:(value:unknown)=>unknown)=>Promise.resolve(mock.tables[name]||{data:[]}).then(resolve)};for(const method of ['select','eq','order','limit','in','lte'])q[method]=()=>q;return q;}}}));
+vi.mock('@/lib/db',()=>({db:{from:(name:string)=>{const filters:Array<{key:string;values:unknown[]}>=[];const q:Record<string,unknown>={then:(resolve:(value:unknown)=>unknown)=>Promise.resolve(mock.tables[name]||{data:[]}).then(resolve)};for(const method of ['select','eq','order','limit','in','lte'])q[method]=()=>q;q.in=(key:string,values:unknown[])=>{filters.push({key,values});return q;};q.range=(from:number,to:number)=>{const r=mock.tables[name] as {data?:unknown[];error?:unknown}|undefined;return Promise.resolve({...r,data:r?.data?.filter(row=>filters.every(f=>f.values.includes((row as Record<string,unknown>)[f.key]))).slice(from,to+1)});};return q;}}}));
 afterEach(cleanup);beforeEach(()=>{mock.signed.mockReset();mock.tables={student_enrolments:{data:[{programme_id:'p'}]},modules:{data:[{id:'m',title:'Maths',programme_id:'p'},{id:'other',title:'Other',programme_id:'not-enrolled'}]},unipathway_module_materials:{data:[{id:'a',module_id:'m',title:'Approved notes',kind:'document',object_path:'centre/m/a.pdf'},{id:'b',module_id:'other',title:'Not enrolled notes',kind:'document',object_path:'secret'}]},live_class_sessions:{data:[{id:'s',title:'Released class',module_id:'m'}]},live_class_artifacts:{data:[{id:'r',session_id:'s',artifact_type:'recording',storage_reference:'centre/s/r.mp4',available_at:'2020-01-01'}]}};});
 it('shows enrolled real resources and obtains short lived links only on request',async()=>{
  mock.signed.mockResolvedValue({data:{signedUrl:'https://storage.invalid/private'}});render(<Library userId="student" tenantId="centre"/>);
@@ -25,4 +25,18 @@ it('module navigation filters both materials and recordings without granting acc
 it('recording navigation selects released recordings for the enrolled module',async()=>{
  render(<MemoryRouter><Library userId="student" tenantId="centre" moduleId="m" initialKind="recording"/></MemoryRouter>);
  await screen.findByText('Released class');expect(screen.queryByText('Approved notes')).toBeNull();expect(screen.getByLabelText('Resource type')).toHaveValue('recording');
+});
+
+it('finds older authorised resources beyond 500 and paginates the displayed list',async()=>{
+ mock.tables.unipathway_module_materials={data:Array.from({length:601},(_,i)=>({id:`a${i}`,module_id:'m',title:i===600?'Oldest authorised worksheet':`Worksheet ${i}`,kind:'document',object_path:`centre/m/${i}.pdf`}))};
+ render(<Library userId="student" tenantId="centre"/>);
+ await screen.findByRole('navigation',{name:'Library pages'});
+ fireEvent.change(screen.getByLabelText('Search library'),{target:{value:'Oldest authorised'}});
+ await screen.findByText('Oldest authorised worksheet');expect(screen.queryByText('Next resources')).toBeNull();
+});
+it('resolves a released recording from a class beyond the first 500 sessions',async()=>{
+ mock.tables.live_class_sessions={data:Array.from({length:601},(_,i)=>({id:`s${i}`,title:`Class ${i}`,module_id:'m'}))};
+ mock.tables.live_class_artifacts={data:[{id:'old',session_id:'s600',artifact_type:'recording',storage_reference:'centre/s600/old.mp4',available_at:'2020-01-01'}]};
+ render(<Library userId="student" tenantId="centre" initialKind="recording"/>);
+ await screen.findByText('Class 600');expect(screen.getAllByText('Get private access')).toHaveLength(1);
 });
