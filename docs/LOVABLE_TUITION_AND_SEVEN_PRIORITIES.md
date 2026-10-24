@@ -91,3 +91,11 @@ Imports support pause after the current request, resume pending rows and skip in
 Account operations, the staff modal and centre setup now require a recognised server outcome with consistent email-issue metadata before reporting success. Structured provider errors are surfaced; a generic HTTP acknowledgement is insufficient. No new migration, function deployment or real invitation was performed in this phase.
 
 Hosted acceptance: with approved test recipients, interrupt an invitation acknowledgement, review the saved ledger and retry the same identity/role. Verify no duplicate access assignment, correct email-issue reporting, provider rate-limit pause, skip/resume, account-switch isolation and recovery after reload. Test centre setup completion and enrolment handover separately; imports still do not enrol learners. Actual delivery and expired-invite recovery remain live acceptance gates.
+
+## Coursework attachment operation recovery
+
+Attachment selection and requests are now scoped to the signed-in account, centre, brief and submitted attempt. Leaving or switching scope stops subsequent client operations and ignores late results; an upload/removal already sent to Storage cannot be recalled. Late downloads do not open after leaving the evidence screen. Native camera results from the previous attachment workspace are ignored.
+
+Uploading or removing a file blocks submission until the refreshed attachment manifest is successfully read. Failed refreshes remain blocked with an explicit retry; null/malformed responses are not treated as an empty list. Existing storage policies and submission validation still decide whether evidence exists and is permitted. This phase adds no migrations or hosted changes.
+
+Hosted/device acceptance: delay reservation, upload and download responses while switching accounts/assignments; verify no old file selection or late download appears. Fail the post-upload list request and confirm submission stays blocked until refresh succeeds. Interrupt an actual native camera/upload, recover the reserved attachment list and verify the final submission and assessor download under current permissions. Local tests do not establish device or provider acceptance.
