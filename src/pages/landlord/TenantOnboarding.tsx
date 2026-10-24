@@ -1,3 +1,4 @@
+import {invitationOutcome} from '@/lib/accountInvitation';
 import { db } from '@/lib/db';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Building2, CheckCircle, ChevronRight, FileText, Globe, Palette, Users, CreditCard, Shield, Loader2 } from 'lucide-react';
@@ -99,7 +100,7 @@ export default function TenantOnboarding() {
       if(centre.error)throw new Error(centre.error.message||'Centre setup could not be confirmed. Resume the saved draft to retry.');
       const tenantId=centre.data;setCreatedTenantId(tenantId);
       const invitation=await supabase.functions.invoke('invite-staff',{body:{tenantId,email:formData.adminEmail,fullName:formData.adminName,role:'centre_director'}});
-      if(invitation.error||invitation.data?.error||!invitation.data?.success)throw new Error('Centre saved in onboarding; administrator access is incomplete. '+(invitation.data?.error||'Retry administrator setup.'));
+      try{await invitationOutcome(invitation);}catch(error){throw new Error('Centre saved in onboarding; administrator access is incomplete. '+(error instanceof Error?error.message:'Retry administrator setup.'));}
       toast.success('Centre saved in onboarding. Administrator access assigned'+(invitation.data?.emailSent?' and invitation email issued.':'.'));
       navigate('/landlord');
     } catch (e: any) {
