@@ -1,3 +1,4 @@
+import {Button} from '@/components/ui/button';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatCard from '@/components/ui/StatCard';
 import { Globe, CreditCard, Users, Shield, Zap, Server, Loader2 } from 'lucide-react';
@@ -5,8 +6,8 @@ import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { useMemo } from 'react';
 
 export default function SuperadminPlatform() {
-  const { data: tenants, loading } = useSupabaseQuery('tenants');
-  const { data: profiles } = useSupabaseQuery('profiles');
+  const { data: tenants, loading, error: tenantError, refetch: refreshTenants } = useSupabaseQuery('tenants');
+  const { data: profiles, loading: profileLoading, error: profileError, refetch: refreshProfiles } = useSupabaseQuery('profiles');
 
   const stats = useMemo(() => {
     const t = tenants || [];
@@ -26,12 +27,13 @@ export default function SuperadminPlatform() {
     };
   }, [tenants]);
 
+  if(tenantError||profileError)return <DashboardLayout title="Platform Management"><p role="alert">Platform records are unavailable.</p><Button onClick={()=>{void refreshTenants();void refreshProfiles();}}>Retry platform records</Button></DashboardLayout>;
   return (
     <DashboardLayout title="Platform Management" subtitle="Features, subscriptions, and infrastructure">
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        <StatCard label="Active Tenants" value={loading ? '...' : String(stats.activeTenants)} icon={Globe} />
-        <StatCard label="Total MRR" value={loading ? '...' : `Rs.${stats.totalMRR.toLocaleString()}`} icon={CreditCard} />
-        <StatCard label="Platform Users" value={loading ? '...' : String(stats.totalUsers)} icon={Users} />
+        <StatCard label="Active Tenants" value={loading || profileLoading ? '...' : String(stats.activeTenants)} icon={Globe} />
+        <StatCard label="Recorded monthly revenue" value={loading || profileLoading ? '...' : `Rs.${stats.totalMRR.toLocaleString()}`} icon={CreditCard} />
+        <StatCard label="Platform Users" value={loading || profileLoading ? '...' : String(stats.totalUsers)} icon={Users} />
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
@@ -50,7 +52,7 @@ export default function SuperadminPlatform() {
                     <p className="text-sm font-semibold">{plan.name}</p>
                     <p className="text-lg font-bold text-primary">{plan.price}</p>
                   </div>
-                  <span className="text-xs text-muted-foreground">{plan.tenants} active</span>
+                  <span className="text-xs text-muted-foreground">{plan.tenants} recorded</span>
                 </div>
                 <ul className="text-xs text-muted-foreground space-y-1">
                   {plan.features.map((f) => (
@@ -72,9 +74,9 @@ export default function SuperadminPlatform() {
             </h3>
             <div className="space-y-2 text-sm">
               {[
-                { feature: 'GDPR Compliance', status: '✓ Active' },
-                { feature: 'Data Encryption (AES-256)', status: '✓ Active' },
-                { feature: 'Audit Trail Logging', status: '✓ Active' },
+                { feature: 'GDPR Compliance', status: 'Verification required' },
+                { feature: 'Data Encryption (AES-256)', status: 'Verification required' },
+                { feature: 'Audit Trail Logging', status: 'Verification required' },
                 { feature: 'Document Watermarking', status: '○ Planned' },
                 { feature: 'Exam Proctoring (AI)', status: '○ Planned' },
                 { feature: 'Offline-First Sync', status: '○ Planned' },
@@ -96,9 +98,9 @@ export default function SuperadminPlatform() {
                 { label: 'Database', value: 'PostgreSQL (Cloud)' },
                 { label: 'Auth', value: 'Cloud Auth + OAuth2' },
                 { label: 'Storage', value: 'Encrypted Object Storage' },
-                { label: 'Video', value: 'Jitsi Meet (8×8 JaaS)' },
+                { label: 'Video provider', value: 'Verify centre configuration' },
                 { label: 'Backend Functions', value: 'Edge Functions' },
-                { label: 'CDN', value: 'Cloudflare' },
+                { label: 'Service health', value: 'Monitoring not connected' },
               ].map((i) => (
                 <div key={i.label} className="flex items-center justify-between py-1">
                   <span className="text-muted-foreground">{i.label}</span>

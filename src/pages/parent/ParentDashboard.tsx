@@ -6,7 +6,8 @@ import {Button} from '@/components/ui/button';
 import {ShieldCheck,Users} from 'lucide-react';
 type Result={attempt_id:string;title:string;final_score:number;feedback:string;released_at:string;amended:boolean};
 type Student={id:string;verified:boolean;sharing:boolean;student_name:string|null;results:Result[]};
-export default function ParentDashboard(){
+export default function ParentDashboard(){const {user}=useAuth();return <ParentResults key={`${user?.id}:${user?.tenantId}:${user?.role}`} />;}
+function ParentResults(){
  const {user}=useAuth();const [students,setStudents]=useState<Student[]>([]),[selected,setSelected]=useState('');
  const [loading,setLoading]=useState(true),[error,setError]=useState(''),[refresh,setRefresh]=useState(0);
  useEffect(()=>{let active=true;setLoading(true);setError('');setStudents([]);setSelected('');

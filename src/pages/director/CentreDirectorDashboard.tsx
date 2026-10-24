@@ -22,6 +22,7 @@ export default function CentreDirectorDashboard() {
   const { data: invoices, loading: invLoading, error: invError, refetch: invRefresh } = useSupabaseQuery('invoices', scope);
   const { data: attendance, loading: attLoading, error: attError, refetch: attRefresh } = useSupabaseQuery('attendance_records', scope);
 
+  const enrolments=useSupabaseQuery('student_enrolments',{...scope,filters:[...(scope.filters||[]),{column:'status',operator:'eq',value:'active'}]});
   const revenueTrend = useMemo(() => invoiceMonths(invoices), [invoices]);
   const attendanceTrend = useMemo(() => attendanceWeeks(attendance), [attendance]);
   const exportReport = () => {
@@ -32,12 +33,12 @@ export default function CentreDirectorDashboard() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
-  const loading = progLoading || appLoading || invLoading || attLoading;
+  const loading = enrolments.loading || progLoading || appLoading || invLoading || attLoading;
   if (!user?.tenantId) return <DashboardLayout title="Centre Director"><p role="alert">A centre assignment is required.</p></DashboardLayout>;
   if (loading) return <DashboardSkeleton />;
-  if (progError || appError || invError || attError) return <DashboardLayout title="Centre Director"><p role="alert">Dashboard data could not be loaded completely.</p><Button onClick={() => {void progRefresh(); void appRefresh(); void invRefresh(); void attRefresh();}}>Retry dashboard</Button></DashboardLayout>;
+  if (enrolments.error || progError || appError || invError || attError) return <DashboardLayout title="Centre Director"><p role="alert">Dashboard data could not be loaded completely.</p><Button onClick={() => {void enrolments.refetch(); void progRefresh(); void appRefresh(); void invRefresh(); void attRefresh();}}>Retry dashboard</Button></DashboardLayout>;
 
-  const totalStudents = programmes.reduce((s, p) => s + (p.enrolled || 0), 0);
+  const totalStudents = new Set(enrolments.data.map(e=>e.student_id)).size;
   const totalRevenue = invoices.reduce((s, i) => s + Number(i.paid), 0);
   const activeProgrammes = programmes.filter((p) => p.status === 'active');
 
@@ -58,7 +59,7 @@ export default function CentreDirectorDashboard() {
 
   const totalBilled = invoices.reduce((s, i) => s + Number(i.amount), 0);
   const totalCollected = invoices.reduce((s, i) => s + Number(i.paid), 0);
-  const outstanding = totalBilled - totalCollected;
+  const outstanding = invoices.filter(i=>i.status!=='refunded').reduce((sum,i)=>sum+Math.max(0,Number(i.amount)-Number(i.paid)),0);
   const overdueCount = invoices.filter((i) => i.status === 'overdue').length;
   const commissions = invoices.filter((i) => i.type === 'commission').reduce((s, i) => s + Number(i.amount), 0);
 
@@ -90,7 +91,7 @@ export default function CentreDirectorDashboard() {
               <div key={p.id} className="flex items-center justify-between py-1.5 border-b border-border/30 last:border-0">
                 <div>
                   <p className="text-sm font-medium">{p.title}</p>
-                  <p className="text-xs text-muted-foreground">{p.awarding_body} · {p.enrolled || 0} students</p>
+                  <p className="text-xs text-muted-foreground">{p.awarding_body} · {new Set(enrolments.data.filter(e=>e.programme_id===p.id).map(e=>e.student_id)).size} students</p>
                 </div>
                 <StatusBadge status="Active" variant="success" />
               </div>

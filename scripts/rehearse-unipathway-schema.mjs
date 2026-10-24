@@ -1,3 +1,4 @@
+import {verifyGuidedAudio} from './lib/verify-unipathway-guided-audio.mjs';
 /** Offline PostgreSQL schema rehearsal. Never connects to a hosted database.
  * Supabase-owned Auth/Storage scaffolding is synthetic, not provider acceptance.
  * Stops at the first SQL error; no migration is silently skipped.
@@ -25,6 +26,8 @@ try {
  CREATE TABLE storage.buckets(id text PRIMARY KEY,name text,public boolean DEFAULT false,file_size_limit bigint,allowed_mime_types text[]);
  CREATE TABLE storage.objects(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),bucket_id text,name text,owner uuid,metadata jsonb);
  ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+ -- Synthetic Storage API table privileges; RLS policies still enforce object access.
+ GRANT SELECT,INSERT,UPDATE,DELETE ON storage.objects TO authenticated,anon,service_role;
  CREATE FUNCTION storage.foldername(text) RETURNS text[] LANGUAGE sql IMMUTABLE AS $$ SELECT string_to_array($1,'/') $$;
  CREATE SCHEMA realtime;
  CREATE TABLE realtime.messages(id bigint,extension text);
@@ -45,6 +48,7 @@ try {
   try{await db.exec(replacements.get(file)??readFileSync('supabase/migrations/'+file,'utf8'));passed++;}
   catch(error){console.error(JSON.stringify({status:'blocked',passed,file,code:error.code,message:error.message}));process.exitCode=1;break;}
  }
- if(!process.exitCode&&fresh){await verifyFreshSchema(db);await verifyGuardianResults(db);await verifyAdmissionHandover(db);await verifyStripeLedger(db);}
+ if(!process.exitCode&&fresh){await verifyFreshSchema(db);await verifyGuardianResults(db);await verifyAdmissionHandover(db);await verifyStripeLedger(db);
+    await verifyGuidedAudio(db);}
  if(!process.exitCode)console.log(JSON.stringify({status:deferred.length?'schema-only-provider-acceptance-pending':'passed',deferred,migrations:passed,scope:'Offline PostgreSQL with synthetic Auth/Storage; no live acceptance'}));
 }catch(error){console.error(JSON.stringify({status:'verification-failed',code:error.code,message:error.message}));process.exitCode=1;}finally{await db.close();}

@@ -82,9 +82,9 @@ export default function LandlordDashboard() {
     >
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Total Centres" value={tenants.length} change={`${activeTenants} active`} changeType="positive" icon={Building2} />
-        <StatCard label="Total Students" value={totalStudents.toLocaleString()} icon={GraduationCap} />
+        <StatCard label="Recorded centre student counts" value={totalStudents.toLocaleString()} icon={GraduationCap} />
         <StatCard label="Recorded current monthly revenue" value={`Rs.${totalMRR.toLocaleString()}`} changeType="positive" icon={CreditCard} />
-        <StatCard label="Platform Health" value="99.8%" change="Uptime (30d)" changeType="positive" icon={Shield} />
+        <StatCard label="Platform Health" value="Unverified" change="Monitoring not connected" changeType="neutral" icon={Shield} />
       </div>
 
       <div className="grid lg:grid-cols-3 gap-4 mb-6">
@@ -137,7 +137,7 @@ export default function LandlordDashboard() {
             {tenants.filter(t => t.status === 'suspended').length === 0 && (
               <div className="flex items-center gap-2 py-2">
                 <CheckCircle className="w-3.5 h-3.5 text-success" />
-                <p className="text-xs text-muted-foreground">All systems operational</p>
+                <p className="text-xs text-muted-foreground">No suspended centres in these records</p>
               </div>
             )}
           </div>
@@ -213,17 +213,13 @@ export default function LandlordDashboard() {
           </h3>
           <div className="space-y-2">
             {[
-              { label: 'Database', value: 'PostgreSQL', ok: true },
-              { label: 'Auth', value: 'OAuth2 + RBAC', ok: true },
-              { label: 'Storage', value: 'Encrypted', ok: true },
-              { label: 'Video', value: 'Jitsi Meet', ok: true },
-              { label: 'GDPR', value: 'Enforced', ok: true },
-              { label: 'RLS', value: 'All tables', ok: true },
+              { label: 'Service monitoring', value: 'Not connected', ok: false },
+              { label: 'Provider readiness', value: 'Requires verification', ok: false },
             ].map((i) => (
               <div key={i.label} className="flex items-center justify-between py-1">
                 <span className="text-sm text-muted-foreground">{i.label}</span>
-                <span className="text-xs font-medium flex items-center gap-1 text-success">
-                  <CheckCircle className="w-3 h-3" /> {i.value}
+                <span className="text-xs font-medium flex items-center gap-1 text-muted-foreground">
+                  {i.value}
                 </span>
               </div>
             ))}

@@ -1,0 +1,14 @@
+import {cleanup,render,screen} from '@testing-library/react';
+import {MemoryRouter} from 'react-router-dom';
+import {afterEach,beforeEach,expect,it,vi} from 'vitest';
+const mocks=vi.hoisted(()=>({query:vi.fn(),user:{id:'teacher',tenantId:'centre',role:'lecturer',name:'Tutor'}}));
+vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:mocks.user})}));
+vi.mock('@/hooks/useSupabaseQuery',()=>({useSupabaseQuery:(...args:unknown[])=>mocks.query(...args)}));
+vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:{children:React.ReactNode})=><main>{children}</main>}));
+import LecturerDashboard from '@/pages/lecturer/LecturerDashboard';
+import SuperadminPlatform from '@/pages/superadmin/SuperadminPlatform';
+beforeEach(()=>{mocks.query.mockReset().mockReturnValue({data:[],loading:false,error:null,refetch:vi.fn()});});afterEach(cleanup);
+it('never substitutes another lecturer module when unassigned',()=>{mocks.query.mockReturnValue({data:[{id:'other',title:'Other lecturer module',lecturer_id:'someone-else'}],loading:false,error:null});render(<MemoryRouter><LecturerDashboard/></MemoryRouter>);expect(screen.queryByText('Other lecturer module')).not.toBeInTheDocument();expect(screen.getByText(/No modules are assigned/)).toBeInTheDocument();expect(mocks.query.mock.calls[0][1].filters).toContainEqual({column:'lecturer_id',operator:'eq',value:'teacher'});});
+it('lecturer failures are not shown as zero assigned modules',()=>{mocks.query.mockReturnValue({data:[],loading:false,error:'offline'});render(<MemoryRouter><LecturerDashboard/></MemoryRouter>);expect(screen.getByRole('alert')).toHaveTextContent('could not be loaded');expect(screen.queryByText(/No modules are assigned/)).not.toBeInTheDocument();});
+it('platform management reports failed counts instead of zero users',()=>{mocks.query.mockReturnValue({data:[],loading:false,error:'offline'});render(<SuperadminPlatform/>);expect(screen.getByRole('alert')).toHaveTextContent('unavailable');expect(screen.queryByText('Platform Users')).not.toBeInTheDocument();});
+it('platform compliance labels require verification',()=>{render(<SuperadminPlatform/>);expect(screen.queryByText('✓ Active')).not.toBeInTheDocument();expect(screen.getAllByText('Verification required')).toHaveLength(3);expect(screen.getByText('Monitoring not connected')).toBeInTheDocument();});
