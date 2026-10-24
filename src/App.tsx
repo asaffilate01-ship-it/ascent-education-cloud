@@ -69,6 +69,8 @@ const EducationPartnershipReadiness = lazy(() => import("./pages/progression/Edu
 const AttendanceDashboard = lazy(() => import("./pages/attendance/AttendanceDashboard"));
 const AnalyticsDashboard = lazy(() => import("./pages/analytics/AnalyticsDashboard"));
 const MarketingDashboard = lazy(() => import("./pages/marketing/MarketingDashboard"));
+const MicrosoftEducationAdmin = lazy(() => import("./pages/settings/MicrosoftEducationAdmin"));
+const TeamsTeachingDesk = lazy(() => import("./pages/classroom/TeamsTeachingDesk"));
 const LiveClassroom = lazy(() => import("./pages/classroom/TeamsClassroom"));
 const LiveClassScheduler = lazy(() => import("./pages/classroom/LiveClassScheduler"));
 const WhiteboardStudio = lazy(() => import("./pages/classroom/WhiteboardStudio"));
@@ -344,6 +346,7 @@ function AppRoutes() {
         <Route path="/landlord/settings" element={<Landlord><SettingsPage /></Landlord>} />
 
         {/* ========== CENTRE DIRECTOR ========== */}
+        <Route path="/director/microsoft-education" element={<Director><MicrosoftEducationAdmin /></Director>} />
         <Route path="/director/managed-labs" element={<Director><LMSVirtualLabs /></Director>} />
         <Route path="/director" element={<Director><CentreDirectorDashboard /></Director>} />
         <Route path="/director/admissions" element={<Director><AdmissionsCRM /></Director>} />
@@ -400,6 +403,7 @@ function AppRoutes() {
         <Route path="/lecturer/materials" element={<LecturerR><ModuleMaterials /></LecturerR>} />
         <Route path="/lecturer/whiteboards" element={<LecturerR><WhiteboardStudio /></LecturerR>} />
         <Route path="/classroom/whiteboard/:boardId" element={<ClassroomBoardR><LiveWhiteboard /></ClassroomBoardR>} />
+        <Route path="/classroom/teaching/:sessionId" element={<ClassroomBoardR><TeamsTeachingDesk /></ClassroomBoardR>} />
         <Route path="/classroom/discussion/:sessionId" element={<ClassroomBoardR><LectureDiscussion /></ClassroomBoardR>} />
         <Route path="/lecturer/report-cards" element={<LecturerR><ReportCardGenerator /></LecturerR>} />
         <Route path="/lecturer/marking" element={<LecturerR><LecturerAssessmentBriefs /></LecturerR>} />

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import {isTeamsMeetingUrl as validTeamsUrl} from '@/lib/teamsTeaching';
 import { db } from '@/lib/db';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,6 @@ type Module={id:string;title:string;programme_id:string;tenant_id:string;lecture
 type Enrolment={student_id:string;programme_id:string;tenant_id:string;status:string};
 type Student={user_id:string;full_name:string|null;email:string|null;tenant_id:string|null};
 type Session={id:string;title:string;module_id:string|null;starts_at:string;ends_at:string;status:string;capacity:number};
-const validTeamsUrl=(input:string)=>{try{const u=new URL(input);return u.protocol==='https:'&&u.hostname==='teams.microsoft.com'&&u.pathname.startsWith('/l/');}catch{return false;}};
 export default function LiveClassScheduler(){
  const {user}=useAuth();
  const [tenantId,setTenantId]=useState<string|null>(user?.tenantId||null);
@@ -27,7 +27,7 @@ export default function LiveClassScheduler(){
  const [title,setTitle]=useState('');const [moduleId,setModuleId]=useState('');
  const [start,setStart]=useState('');const [end,setEnd]=useState('');
  const [joinUrl,setJoinUrl]=useState('');
- const [capacity,setCapacity]=useState(300);
+ const [capacity,setCapacity]=useState(20);
  const [recipient,setRecipient]=useState<Record<string,string>>({});
  const manager=!!user?.roles.some(x=>['programme_leader','centre_director','superadmin'].includes(x));
  useEffect(()=>{if(!user?.id)return;let active=true;(async()=>{
@@ -58,7 +58,7 @@ export default function LiveClassScheduler(){
  const available=useMemo(()=>sessions.filter(s=>modules.some(m=>m.id===s.module_id)),[sessions,modules]);
  const create=async()=>{
   if(!tenantId||!user?.id||!moduleId||!title.trim()||!start||!end||!validTeamsUrl(joinUrl)){
-   toast.error('Choose a module, dates and a valid https://teams.microsoft.com/l/ meeting link.');return;
+   toast.error('Choose a module, dates and a valid Microsoft Teams meeting link.');return;
   }
   if(new Date(end).getTime()<=new Date(start).getTime()){toast.error('Class must end after it starts.');return;}
   setSaving(true);
@@ -111,7 +111,7 @@ export default function LiveClassScheduler(){
       <label className="text-sm font-medium">Start time<Input className="mt-1" type="datetime-local" value={start} onChange={e=>setStart(e.target.value)}/></label>
       <label className="text-sm font-medium">End time<Input className="mt-1" type="datetime-local" value={end} onChange={e=>setEnd(e.target.value)}/></label>
     </div><label className="mt-3 block text-sm font-medium">Microsoft Teams calendar meeting URL<Input className="mt-1" type="url" value={joinUrl} placeholder="https://teams.microsoft.com/l/meetup-join/..." onChange={e=>setJoinUrl(e.target.value)}/></label>
-    <label className="mt-3 block text-sm font-medium">Planned lecture capacity<select aria-label="Planned lecture capacity" className="mt-1 w-full rounded-md border bg-background p-2" value={capacity} onChange={e=>setCapacity(Number(e.target.value))}>{[100,150,200,250,300,350,500,1000].map(n=><option value={n} key={n}>{n} learners</option>)}</select></label>
+    <label className="mt-3 block text-sm font-medium">Planned lecture capacity<select aria-label="Planned lecture capacity" className="mt-1 w-full rounded-md border bg-background p-2" value={capacity} onChange={e=>setCapacity(Number(e.target.value))}>{[20,30,50,100,150,200,250,300,350,500,1000].map(n=><option value={n} key={n}>{n} learners</option>)}</select></label>
     <p className="mt-2 text-xs text-muted-foreground">For 100–350 learners, test the chosen Teams/ACS limits and your Realtime plan. Capacity is a planning ceiling, not proof of admission or licensing. Larger meetings may require native Teams. Recording is requested, not guaranteed. Configure Teams recording/transcription and ensure learners receive the required notices and consent information.</p>
     <Button className="mt-3" disabled={saving||!tenantId} onClick={create}><Video className="mr-2 size-4"/>Schedule class</Button>
    </section>
