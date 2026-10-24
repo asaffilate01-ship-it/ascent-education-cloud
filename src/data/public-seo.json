@@ -1,0 +1,515 @@
+{
+  "/": {
+    "title": "UniPathway Jhelum | Tuition, IELTS & UK Qualifications",
+    "description": "Explore online and in-centre learning with UniPathway in Jhelum, Pakistan: school tuition, IELTS, UK qualification pathways and study abroad guidance.",
+    "keywords": [
+      "education centre Jhelum",
+      "online tuition Pakistan"
+    ]
+  },
+  "/education-centre": {
+    "title": "Education Centre in Jhelum, Pakistan | UniPathway",
+    "description": "Explore Matric, FSc, ICS and Cambridge tuition, languages and practical skills at UniPathway Centre in Jhelum, with online learning across Pakistan.",
+    "keywords": [
+      "education centre Jhelum",
+      "Matric tuition Jhelum",
+      "FSc tuition"
+    ]
+  },
+  "/tuition": {
+    "title": "Online & Jhelum Tuition: Years 8–12 | UniPathway",
+    "description": "Explore Years 8–12 tuition in maths, English, biology, chemistry and physics with UniPathway. Compare online and in-centre learning options in Pakistan.",
+    "keywords": [
+      "online tuition Pakistan",
+      "tuition Jhelum",
+      "GCSE subject tuition"
+    ]
+  },
+  "/ielts-preparation": {
+    "title": "IELTS Preparation in Jhelum & Online | UniPathway",
+    "description": "Prepare for IELTS Academic or General Training with guided practice, tutor support and mock-test coaching through UniPathway in Pakistan.",
+    "keywords": [
+      "IELTS preparation Jhelum",
+      "online IELTS preparation Pakistan"
+    ]
+  },
+  "/german-preparation": {
+    "title": "German Language Courses in Pakistan | UniPathway",
+    "description": "Explore German A1–C1 language preparation with UniPathway, including Goethe, telc and TestDaF exam preparation and guidance for studying in Germany.",
+    "keywords": [
+      "German language courses Pakistan",
+      "German A1 course"
+    ]
+  },
+  "/qualifications": {
+    "title": "UK Qualification Pathways in Pakistan | UniPathway",
+    "description": "Compare OTHM, Qualifi, ATHE and other UK qualification pathways with UniPathway. Check course availability, entry requirements and progression options.",
+    "keywords": [
+      "OTHM Pakistan",
+      "Qualifi Pakistan",
+      "ATHE qualifications"
+    ]
+  },
+  "/courses": {
+    "title": "Courses & Diploma Pathways in Pakistan | UniPathway",
+    "description": "Browse UniPathway programmes in business, computing and accounting. Ask about entry requirements, delivery, awarding bodies and current course availability.",
+    "keywords": [
+      "diploma courses Pakistan",
+      "business computing qualifications"
+    ]
+  },
+  "/tech-academy": {
+    "title": "AI, Coding & Cyber Security Courses | UniPathway",
+    "description": "Explore AI, Python, coding, cyber security, cloud and DevOps training with UniPathway Technology Academy, online and in centre in Pakistan.",
+    "keywords": [
+      "Python courses Pakistan",
+      "cyber security training",
+      "AI courses"
+    ]
+  },
+  "/finance-academy": {
+    "title": "Accounting & Finance Courses in Pakistan | UniPathway",
+    "description": "Explore bookkeeping, financial accounting, modelling and IFA or ACCA preparation with UniPathway. Ask about current courses and entry requirements.",
+    "keywords": [
+      "accounting courses Pakistan",
+      "ACCA preparation",
+      "bookkeeping training"
+    ]
+  },
+  "/beauty-aesthetics": {
+    "title": "Beauty & Aesthetics Training Plans | UniPathway",
+    "description": "Explore planned beauty and aesthetics training at UniPathway in Pakistan. Check course availability and accreditation status before enrolling.",
+    "keywords": [
+      "beauty training Pakistan",
+      "aesthetics courses Jhelum"
+    ]
+  },
+  "/uk": {
+    "title": "Study in the UK from Pakistan | UniPathway",
+    "description": "Explore UK university admissions, qualification and top-up pathways, IELTS preparation and application guidance for Pakistani students with UniPathway.",
+    "keywords": [
+      "study in UK from Pakistan",
+      "UK university pathways"
+    ]
+  },
+  "/germany": {
+    "title": "Study in Germany from Pakistan | UniPathway",
+    "description": "Explore German university pathways, language preparation, Studienkolleg and study costs with UniPathway guidance for students applying from Pakistan.",
+    "keywords": [
+      "study in Germany from Pakistan",
+      "German university admissions"
+    ]
+  },
+  "/usa": {
+    "title": "Study in the USA from Pakistan | UniPathway",
+    "description": "Explore US university study options, English preparation, application evidence and arrival planning with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in USA from Pakistan"
+    ]
+  },
+  "/canada": {
+    "title": "Study in Canada from Pakistan | UniPathway",
+    "description": "Explore Canadian university study options, language preparation and application planning with UniPathway. Check each institution’s entry requirements.",
+    "keywords": [
+      "study in Canada from Pakistan"
+    ]
+  },
+  "/australia": {
+    "title": "Study in Australia from Pakistan | UniPathway",
+    "description": "Explore Australian university pathways, English preparation, application evidence and arrival planning with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Australia from Pakistan"
+    ]
+  },
+  "/pakistan": {
+    "title": "Study & Skills Pathways in Pakistan | UniPathway",
+    "description": "Explore learning in Pakistan with UniPathway: school tuition, qualifications, language preparation, practical training and university progression guidance.",
+    "keywords": [
+      "study in Pakistan",
+      "skills courses Pakistan"
+    ]
+  },
+  "/europe": {
+    "title": "Study in Europe from Pakistan | UniPathway",
+    "description": "Compare European study destinations, language preparation and university entry requirements with UniPathway guidance for students in Pakistan.",
+    "keywords": [
+      "study in Europe from Pakistan"
+    ]
+  },
+  "/pathways": {
+    "title": "Study Abroad & University Pathways | UniPathway",
+    "description": "Compare university pathways in the UK, Germany, USA, Canada and Australia. Explore qualification recognition and application guidance from Pakistan.",
+    "keywords": [
+      "study abroad Pakistan",
+      "university progression pathways"
+    ]
+  },
+  "/university-progression": {
+    "title": "University Progression from UK Diplomas | UniPathway",
+    "description": "Research university progression after OTHM and Qualifi qualifications. Check institution-specific recognition, entry requirements and top-up options.",
+    "keywords": [
+      "OTHM university progression",
+      "Qualifi top up degree"
+    ]
+  },
+  "/study": {
+    "title": "Explore Courses, Tuition & Training | UniPathway",
+    "description": "Find UniPathway learning options in Pakistan: tuition, qualifications, IELTS, German, technology, accounting and practical training pathways.",
+    "keywords": [
+      "courses in Jhelum",
+      "online learning Pakistan"
+    ]
+  },
+  "/about": {
+    "title": "About UniPathway Education in Pakistan | UniPathway",
+    "description": "Learn about UniPathway’s online and in-centre teaching, qualification pathways, skills training and university progression guidance in Pakistan.",
+    "keywords": [
+      "UniPathway education Pakistan"
+    ]
+  },
+  "/contact": {
+    "title": "Contact UniPathway in Jhelum, Pakistan | UniPathway",
+    "description": "Contact UniPathway about tuition, IELTS, qualifications, skills courses and study abroad guidance. Discuss learning options at our Jhelum centre or online.",
+    "keywords": [
+      "UniPathway contact",
+      "education adviser Jhelum"
+    ]
+  },
+  "/school-partners": {
+    "title": "School Partnerships in Pakistan | UniPathway",
+    "description": "Explore UniPathway school partnerships, tuition support, student referrals and Ilmvero school-management access. Review programme terms and eligibility.",
+    "keywords": [
+      "school partnerships Pakistan"
+    ]
+  },
+  "/scholarships": {
+    "title": "Scholarship & Education Support | UniPathway",
+    "description": "Explore UniPathway Foundation education-support opportunities. Check eligibility, application requirements and funding availability before applying.",
+    "keywords": [
+      "education scholarships Pakistan"
+    ]
+  },
+  "/funded-courses": {
+    "title": "Funded Skills & Vocational Training | UniPathway",
+    "description": "Explore Pakistan skills schemes including PSDF, NAVTTC and PITB e-Rozgaar. Check official eligibility, provider approval and funding availability.",
+    "keywords": [
+      "funded courses Pakistan",
+      "NAVTTC skills",
+      "PSDF training"
+    ]
+  },
+  "/careers": {
+    "title": "Pakistan Careers, Internships & Training | UniPathway",
+    "description": "Explore career preparation, internships and employer-training pathways in Pakistan through UniPathway. Check current opportunities and eligibility.",
+    "keywords": [
+      "internships Pakistan",
+      "career training Pakistan"
+    ]
+  },
+  "/student-support": {
+    "title": "Student Support & Study Abroad Planning | UniPathway",
+    "description": "Explore UniPathway support for study planning, accommodation, arrival essentials and career readiness in Pakistan and overseas destinations.",
+    "keywords": [
+      "student support Pakistan",
+      "study abroad support"
+    ]
+  },
+  "/employer-learning": {
+    "title": "Employer Training & Workforce Skills | UniPathway",
+    "description": "Explore UniPathway learning for employers, including practical skills, staff development and training pathways. Discuss your organisation’s requirements.",
+    "keywords": [
+      "corporate training Pakistan",
+      "workforce skills"
+    ]
+  },
+  "/blog": {
+    "title": "Study Abroad & Learning Guides | UniPathway",
+    "description": "Read UniPathway guides for Pakistani students on university pathways, IELTS, German language preparation and qualification choices.",
+    "keywords": [
+      "study abroad guides Pakistan"
+    ]
+  },
+  "/blog/uk-student-visa-2026-checklist": {
+    "title": "UK Student Visa 2026 — Complete Checklist for Pakistani Applicants | UniPathway",
+    "description": "From CAS to maintenance funds and TB tests — the exact documents UKVI expects from Pakistani students in 2026.",
+    "keywords": []
+  },
+  "/blog/germany-blocked-account-sperrkonto-explained": {
+    "title": "Germany Sperrkonto (Blocked Account) — How Much You Really Need in 2026 | UniPathway",
+    "description": "The blocked account is Germany’s proof-of-funds requirement. Here is the current figure, the approved providers, and how to open one from Pakistan.",
+    "keywords": []
+  },
+  "/blog/ielts-vs-pte-vs-toefl-2026": {
+    "title": "IELTS vs PTE vs TOEFL in 2026 — Which One Should You Sit? | UniPathway",
+    "description": "Cost, speed, difficulty, and UK/Germany acceptance compared side by side so you pick the right English test.",
+    "keywords": []
+  },
+  "/blog/testdaf-vs-telc-vs-goethe": {
+    "title": "TestDaF vs telc vs Goethe — Choosing the Right German Certificate | UniPathway",
+    "description": "Which German exam do German universities and the visa office actually want? A plain-English comparison.",
+    "keywords": []
+  },
+  "/blog/choosing-otms-qualifi-iab-diploma": {
+    "title": "OTHM, QUALIFI or IAB — Which UK Awarding Body Fits Your Career? | UniPathway",
+    "description": "A quick guide to the three awarding bodies UniPathway partners with, and which pathway leads where.",
+    "keywords": []
+  },
+  "/privacy": {
+    "title": "Privacy Policy | UniPathway",
+    "description": "How UniPathway handles personal information, privacy choices and data requests. Read our privacy policy for students, applicants and website visitors.",
+    "keywords": []
+  },
+  "/terms": {
+    "title": "Terms of Service | UniPathway",
+    "description": "Read the terms governing UniPathway services, applications, course enquiries and use of this website.",
+    "keywords": []
+  },
+  "/cookies": {
+    "title": "Cookie Policy | UniPathway",
+    "description": "Learn how UniPathway uses cookies and how to manage cookie preferences when using our education website.",
+    "keywords": []
+  },
+  "/disclaimer": {
+    "title": "Disclaimer | UniPathway",
+    "description": "Read the scope and limitations of UniPathway education, university progression and application guidance.",
+    "keywords": []
+  },
+  "/europe/austria": {
+    "title": "Austria Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Austria, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Austria from Pakistan"
+    ]
+  },
+  "/europe/belgium": {
+    "title": "Belgium Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Belgium, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Belgium from Pakistan"
+    ]
+  },
+  "/europe/bulgaria": {
+    "title": "Bulgaria Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Bulgaria, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Bulgaria from Pakistan"
+    ]
+  },
+  "/europe/croatia": {
+    "title": "Croatia Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Croatia, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Croatia from Pakistan"
+    ]
+  },
+  "/europe/cyprus": {
+    "title": "Cyprus Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Cyprus, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Cyprus from Pakistan"
+    ]
+  },
+  "/europe/czechia": {
+    "title": "Czechia Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Czechia, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Czechia from Pakistan"
+    ]
+  },
+  "/europe/denmark": {
+    "title": "Denmark Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Denmark, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Denmark from Pakistan"
+    ]
+  },
+  "/europe/estonia": {
+    "title": "Estonia Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Estonia, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Estonia from Pakistan"
+    ]
+  },
+  "/europe/finland": {
+    "title": "Finland Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Finland, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Finland from Pakistan"
+    ]
+  },
+  "/europe/france": {
+    "title": "France Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in France, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in France from Pakistan"
+    ]
+  },
+  "/europe/germany": {
+    "title": "Germany Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Germany, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Germany from Pakistan"
+    ]
+  },
+  "/europe/greece": {
+    "title": "Greece Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Greece, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Greece from Pakistan"
+    ]
+  },
+  "/europe/hungary": {
+    "title": "Hungary Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Hungary, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Hungary from Pakistan"
+    ]
+  },
+  "/europe/ireland": {
+    "title": "Ireland Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Ireland, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Ireland from Pakistan"
+    ]
+  },
+  "/europe/italy": {
+    "title": "Italy Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Italy, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Italy from Pakistan"
+    ]
+  },
+  "/europe/latvia": {
+    "title": "Latvia Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Latvia, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Latvia from Pakistan"
+    ]
+  },
+  "/europe/lithuania": {
+    "title": "Lithuania Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Lithuania, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Lithuania from Pakistan"
+    ]
+  },
+  "/europe/luxembourg": {
+    "title": "Luxembourg Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Luxembourg, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Luxembourg from Pakistan"
+    ]
+  },
+  "/europe/malta": {
+    "title": "Malta Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Malta, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Malta from Pakistan"
+    ]
+  },
+  "/europe/netherlands": {
+    "title": "Netherlands Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Netherlands, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Netherlands from Pakistan"
+    ]
+  },
+  "/europe/poland": {
+    "title": "Poland Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Poland, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Poland from Pakistan"
+    ]
+  },
+  "/europe/portugal": {
+    "title": "Portugal Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Portugal, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Portugal from Pakistan"
+    ]
+  },
+  "/europe/romania": {
+    "title": "Romania Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Romania, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Romania from Pakistan"
+    ]
+  },
+  "/europe/slovakia": {
+    "title": "Slovakia Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Slovakia, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Slovakia from Pakistan"
+    ]
+  },
+  "/europe/slovenia": {
+    "title": "Slovenia Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Slovenia, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Slovenia from Pakistan"
+    ]
+  },
+  "/europe/spain": {
+    "title": "Spain Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Spain, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Spain from Pakistan"
+    ]
+  },
+  "/europe/sweden": {
+    "title": "Sweden Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Sweden, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Sweden from Pakistan"
+    ]
+  },
+  "/europe/iceland": {
+    "title": "Iceland Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Iceland, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Iceland from Pakistan"
+    ]
+  },
+  "/europe/norway": {
+    "title": "Norway Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Norway, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Norway from Pakistan"
+    ]
+  },
+  "/europe/liechtenstein": {
+    "title": "Liechtenstein Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Liechtenstein, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Liechtenstein from Pakistan"
+    ]
+  },
+  "/europe/north-macedonia": {
+    "title": "North Macedonia Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in North Macedonia, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in North Macedonia from Pakistan"
+    ]
+  },
+  "/europe/serbia": {
+    "title": "Serbia Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Serbia, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Serbia from Pakistan"
+    ]
+  },
+  "/europe/turkiye": {
+    "title": "Türkiye Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Türkiye, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Türkiye from Pakistan"
+    ]
+  },
+  "/europe/switzerland": {
+    "title": "Switzerland Study Guide for Pakistani Students | UniPathway",
+    "description": "Explore study options in Switzerland, language preparation and university entry requirements with UniPathway guidance for Pakistani students.",
+    "keywords": [
+      "study in Switzerland from Pakistan"
+    ]
+  }
+}
