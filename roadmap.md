@@ -8,3 +8,7 @@
 - [ ] Add real phone, WhatsApp and address (waiting on user).
 - [ ] Switch on bot protection for enquiry forms so "Request counselling" works (waiting on user's Cloudflare Turnstile site key + secret key).
 - [x] Reset the 14 existing test dashboard accounts and create the requested Assessor, Awarding Body/EQA and Welfare Officer test accounts securely.
+- [x] Audit PRs 47–53 against Live; identify missing schema, private Storage and provider configuration.
+- [ ] Reconcile and apply forward-only production migrations (blocked by unconfirmed Live backup/export evidence; do not replay fresh-staging replacements).
+- [ ] Verify authorised Teams, guided audio and recording journeys (blocked by missing hosted foundations, Microsoft administrator setup and external worker hosting).
+- [ ] Publish latest verified application and retire legacy classroom endpoint without enabling paid AWS or payments.
