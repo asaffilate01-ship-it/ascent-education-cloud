@@ -1,3 +1,4 @@
+import {invitationOutcome} from '@/lib/accountInvitation';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -43,8 +44,7 @@ export default function AddStaffModal({ open, onOpenChange, onStaffAdded }: AddS
         headers: { Authorization: `Bearer ${session?.access_token}` },
       });
 
-      if (res.error) throw new Error(res.error.message || 'Failed to invite staff');
-      if (res.data?.error) throw new Error(res.data.error);
+      await invitationOutcome(res);
 
       toast({ title: res.data?.emailSent ? 'Invitation email issued' : 'Account access assigned', description: `${fullName}: ${STAFF_ROLES.find(r => r.value === role)?.label}.` });
       setFullName('');
