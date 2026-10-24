@@ -36,3 +36,11 @@ coverage/
 
 # Supabase local CLI cache
 supabase/.temp/
+
+# Native distribution credentials and generated releases
+*.jks
+*.keystore
+*.p12
+*.mobileprovision
+android/app/google-services.json
+mobile-release/

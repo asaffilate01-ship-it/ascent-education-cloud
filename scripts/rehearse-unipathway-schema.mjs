@@ -1,3 +1,4 @@
+import {verifyTuition} from './lib/verify-unipathway-tuition.mjs';
 import {verifyCourseworkRecovery} from './lib/verify-unipathway-coursework-recovery.mjs';
 import {verifyOperations} from './lib/verify-unipathway-operations.mjs';
 import {verifyRecordingPipeline} from './lib/verify-unipathway-recording-pipeline.mjs';
@@ -53,6 +54,10 @@ try {
   catch(error){console.error(JSON.stringify({status:'blocked',passed,file,code:error.code,message:error.message}));process.exitCode=1;break;}
  }
  if(!process.exitCode&&fresh){await verifyFreshSchema(db);await verifyGuardianResults(db);await verifyAdmissionHandover(db);await verifyStripeLedger(db);
-    await verifyGuidedAudio(db);await verifyTeamsTeaching(db);await verifyRecordingPipeline(db);await verifyOperations(db);await verifyCourseworkRecovery(db);}
+    await verifyGuidedAudio(db);await verifyTeamsTeaching(db);await verifyRecordingPipeline(db);await verifyOperations(db);await verifyCourseworkRecovery(db);await verifyTuition(db);
+    const preflight=readFileSync('docs/activation/unipathway-preflight.sql','utf8').split('SELECT version,name FROM supabase_migrations.schema_migrations')[0];
+    const reports=await db.exec(preflight);
+    for(const report of reports)for(const row of report.rows){const status=row.schema_status||row.rpc_status||row.storage_status;if(!['PRESENT_RLS_ENABLED','PRESENT_GRANTS_CHECKED','PRIVATE'].includes(status))throw Error(`Activation preflight mismatch: ${JSON.stringify(row)}`);}
+    console.log(JSON.stringify({activationPreflightChecks:reports.reduce((n,r)=>n+r.rows.length,0),status:'passed'}));}
  if(!process.exitCode)console.log(JSON.stringify({status:deferred.length?'schema-only-provider-acceptance-pending':'passed',deferred,migrations:passed,scope:'Offline PostgreSQL with synthetic Auth/Storage; no live acceptance'}));
 }catch(error){console.error(JSON.stringify({status:'verification-failed',code:error.code,message:error.message,where:error.where}));process.exitCode=1;}finally{await db.close();}
