@@ -2,7 +2,7 @@
 
 Generated with `npm run audit:wiring`. Literal frontend calls only; absence does not prove an endpoint is unused (webhooks, schedules and external callers are outside this scan). Presence does not prove deployment, permissions, credentials or successful execution.
 
-Functions: 40. With literal frontend callers: 14. Without: 26.
+Functions: 43. With literal frontend callers: 17. Without: 26.
 
 | Function | Frontend callers |
 |---|---|
@@ -23,7 +23,7 @@ Functions: 40. With literal frontend callers: 14. Without: 26.
 | customer-portal | None found |
 | export-report | `src/pages/finance/FinanceDashboard.tsx` |
 | generate-certificate | `src/components/modals/CertificateDownloadModal.tsx` |
-| invite-staff | `src/components/modals/AddStaffModal.tsx` |
+| invite-staff | `src/components/admin/AccountOperations.tsx`, `src/components/modals/AddStaffModal.tsx`, `src/pages/landlord/TenantOnboarding.tsx` |
 | jaas-token | `src/pages/classroom/LiveClassroom.tsx` |
 | lab-provision | None found |
 | lecture-reminders | None found |
@@ -31,6 +31,7 @@ Functions: 40. With literal frontend callers: 14. Without: 26.
 | microsoft-education-provision | None found |
 | nadra-identity-connector | None found |
 | notify-application | `src/pages/tenant/apply/DestinationApply.tsx` |
+| omniqora-assessment-advisory | `src/pages/assessor/IndependentMarkerQueue.tsx` |
 | omniqora-cohort-intelligence | None found |
 | omniqora-education-event | None found |
 | omniqora-education-retrieve | None found |
@@ -45,4 +46,6 @@ Functions: 40. With literal frontend callers: 14. Without: 26.
 | send-sms | None found |
 | send-whatsapp | None found |
 | teaching-scheduler-agent | None found |
+| unipathway-aws-lab-gateway | `src/pages/labs/LMSVirtualLabs.tsx` |
+| unipathway-public-enquiry | `src/components/enquiry/InternationalEnquiryForm.tsx` |
 | webhook-stripe | None found |
