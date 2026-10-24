@@ -1,3 +1,4 @@
+import CourseworkFiles from '@/components/assessment/CourseworkFiles';
 import {useCallback,useEffect,useState} from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {useAuth} from '@/contexts/AuthContext';
@@ -7,7 +8,7 @@ import {Textarea} from '@/components/ui/textarea';
 import {toast} from 'sonner';
 import {ClipboardCheck,ShieldCheck,FileCheck} from 'lucide-react';
 type Allocation={attempt_id:string;qa_reviewer_id:string;marker_id:string};
-type Attempt={id:string;brief_id:string;student_id:string;status:string;attempt_no:number;submitted_at:string};
+type Attempt={evidence_text:string;id:string;brief_id:string;student_id:string;status:string;attempt_no:number;submitted_at:string};
 type Brief={id:string;title:string;lecturer_id:string;policy_reference:string;penalty_points_per_resubmission:number};
 type Mark={attempt_id:string;marker_id:string;revision:number;criteria_scores:Array<{code:string;points:number;reason:string;evidence:string;missing:string}>;raw_score:number;penalty_points:number;adjusted_score:number;feedback:string};
 type Decision={attempt_id:string;reviewer_id:string;mark_revision:number;decision:string;rationale:string};
@@ -33,7 +34,7 @@ export default function QualityAssessmentApproval(){
    const ids=a.map(x=>x.attempt_id);
    if(!ids.length){setQueue([]);setMarks([]);setBriefs([]);setDecisions([]);setResults([]);return;}
    const [at,m,d,r]=await Promise.all([
-    db.from('unipathway_assessment_attempts').select('id,brief_id,student_id,status,attempt_no,submitted_at')
+    db.from('unipathway_assessment_attempts').select('id,brief_id,student_id,status,attempt_no,submitted_at,evidence_text')
      .eq('tenant_id',tenant).in('id',ids).order('submitted_at',{ascending:false}),
     db.from('unipathway_assessment_human_marks')
      .select('attempt_id,marker_id,revision,criteria_scores,raw_score,penalty_points,adjusted_score,feedback')
@@ -115,6 +116,7 @@ export default function QualityAssessmentApproval(){
        {reviewed&&<p className="mt-3 rounded-lg border p-3 text-sm">Previous decision for this mark revision: <strong>{reviewed.decision}</strong>. {reviewed.rationale}</p>}
       </>}
      </div>
+      {attempt&&<><section className="my-4 rounded-lg border p-4"><h3 className="font-semibold">Student evidence</h3><p className="mt-2 whitespace-pre-wrap text-sm">{attempt.evidence_text}</p></section><CourseworkFiles attemptId={attempt.id}/></>}
      {attempt.status==='human_marked'&&mark&&!reviewed&&<section className="rounded-xl border bg-card p-5">
       <h2 className="flex gap-2 font-semibold"><ClipboardCheck className="size-5"/>Record the independent verification decision</h2>
       <label className="mt-3 block text-sm font-semibold">QA rationale and evidence<Textarea className="mt-1" rows={4} maxLength={4000} value={rationale} onChange={e=>setRationale(e.target.value)}

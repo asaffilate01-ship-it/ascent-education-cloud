@@ -1,6 +1,7 @@
+import ModuleJourney from '@/components/assessment/ModuleJourney';
 import TeamsLink from '@/components/native/TeamsLink';
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatusBadge from '@/components/ui/StatusBadge';
 import {isTeamsMeetingUrl as isTeamsUrl} from '@/lib/teamsTeaching';
@@ -11,8 +12,9 @@ import { AlertTriangle, BookOpen, Calendar, ExternalLink, Film, Hand, PenTool, S
 type Session={id:string;title:string;module_id:string|null;starts_at:string;ends_at:string;
  class_mode:string;status:string;join_url:string|null;recording_enabled:boolean;capacity:number};
 type Board={id:string;session_id:string;title:string};
-export default function TeamsClassroom(){
- const {user}=useAuth();
+export default function TeamsClassroom(){const {user}=useAuth();return <ClassroomWorkspace key={`${user?.id}:${user?.tenantId}`}/>;}
+function ClassroomWorkspace(){
+ const {user}=useAuth();const [params]=useSearchParams();const moduleId=params.get('module');
  const [sessions,setSessions]=useState<Session[]>([]);
  const [boards,setBoards]=useState<Board[]>([]);
  const [loading,setLoading]=useState(true);const [error,setError]=useState('');
@@ -33,10 +35,11 @@ export default function TeamsClassroom(){
   }).catch(()=>{if(live){setError('Classroom service unavailable');setLoading(false);}});
   return()=>{live=false};
  },[user?.id,user?.tenantId,refresh]);
- const upcoming=useMemo(()=>[...sessions].filter(s=>s.status!=='cancelled' && (showPast ? new Date(s.ends_at).getTime()<Date.now() : new Date(s.ends_at).getTime()>=Date.now()))
-  .sort((a,b)=>new Date(a.starts_at).getTime()-new Date(b.starts_at).getTime()),[sessions,showPast]);
+ const upcoming=useMemo(()=>[...sessions].filter(s=>(!moduleId||s.module_id===moduleId)&&s.status!=='cancelled' && (showPast ? new Date(s.ends_at).getTime()<Date.now() : new Date(s.ends_at).getTime()>=Date.now()))
+  .sort((a,b)=>new Date(a.starts_at).getTime()-new Date(b.starts_at).getTime()),[sessions,showPast,moduleId]);
  const teacher=!!user?.roles.some(r=>['lecturer','programme_leader','centre_director','superadmin'].includes(r));
  return <DashboardLayout title="UniPathway Live Classroom" subtitle="Private lecture rooms with interactive whiteboard and on-demand materials">
+  <ModuleJourney moduleId={moduleId||undefined} teacher={teacher}/>
   <section className="mb-5 rounded-xl border border-primary/25 bg-primary/5 p-4">
    <h2 className="flex items-center gap-2 font-bold"><ShieldCheck className="size-5"/>Invited students and allocated teachers only</h2>
    <p className="mt-2 text-sm text-muted-foreground">Students need an active enrolment AND an invitation for a specific class. For 100+ student lectures, everyone sees one presenter-controlled board without individual copies. The board can be shared into Teams recording by the lecturer. Microsoft Teams lobby, presenter and recording permissions must be configured separately.</p>

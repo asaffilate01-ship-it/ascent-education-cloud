@@ -1,5 +1,6 @@
+import ModuleJourney from '@/components/assessment/ModuleJourney';
 import {useCallback,useEffect,useState} from 'react';
-import {Link} from 'react-router-dom';
+import {Link,useSearchParams} from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {useAuth} from '@/contexts/AuthContext';
 import {db} from '@/lib/db';
@@ -7,9 +8,11 @@ import {Button} from '@/components/ui/button';
 import GuardianResultSharing from '@/components/assessment/GuardianResultSharing';
 import {GraduationCap,ShieldCheck} from 'lucide-react';
 type Grade={attempt_id:string;brief_id:string;final_score:number;raw_score:number;penalty_points:number;published_feedback:string;released_at:string};
-type Brief={id:string;title:string;policy_reference:string;assessment_type:string};
+type Brief={module_id:string;id:string;title:string;policy_reference:string;assessment_type:string};
 type Amendment={attempt_id:string;original_final_score:number;corrected_raw_score:number;corrected_final_score:number;corrected_feedback:string;recorded_at:string};
-export default function StudentReleasedResults(){
+export default function StudentReleasedResults(){const {user}=useAuth();return <ResultsWorkspace key={`${user?.id}:${user?.tenantId}`}/>;}
+function ResultsWorkspace(){
+ const [params]=useSearchParams();const moduleId=params.get('module');
  const {user}=useAuth();const uid=user?.id,tenant=user?.tenantId;
  const [grades,setGrades]=useState<Grade[]>([]);const [briefs,setBriefs]=useState<Brief[]>([]);
  const [amendments,setAmendments]=useState<Amendment[]>([]);
@@ -31,14 +34,16 @@ export default function StudentReleasedResults(){
    setAmendments((a.data||[]) as Amendment[]);
    if(!list.length){setBriefs([]);return;}
    const b=await db.from('unipathway_assessment_briefs')
-    .select('id,title,policy_reference,assessment_type').in('id',[...new Set(list.map(x=>x.brief_id))]);
+    .select('id,module_id,title,policy_reference,assessment_type').in('id',[...new Set(list.map(x=>x.brief_id))]);
    if(b.error)throw Error(b.error.message);
    setBriefs((b.data||[]) as Brief[]);
   }catch(e){setError(e instanceof Error?e.message:'Unable to load approved released results');}
   finally{setLoading(false);}
  },[uid,tenant]);
  useEffect(()=>{void load();},[load]);
+ const visible=grades.filter(g=>!moduleId||briefs.some(b=>b.id===g.brief_id&&b.module_id===moduleId));
  return <DashboardLayout title="Approved Grades & Feedback" subtitle="Only independently marked, IQA-approved results released to your own account">
+  <ModuleJourney moduleId={moduleId||undefined}/>
   <section className="mb-5 rounded-xl border bg-primary/5 p-4"><h2 className="flex gap-2 font-semibold"><ShieldCheck className="size-5"/>No provisional grades are shown</h2>
    <p className="mt-2 text-sm text-muted-foreground">Only results from a separate authorised marker and IQA release appear here. Internal rubric scores and practice examinations do not automatically become official board results, external certificates, professional-body examination outcomes or university credit. Contact your centre for appeals under the applicable policy.</p>
    <div className="mt-3 flex flex-wrap gap-2">
@@ -49,8 +54,8 @@ export default function StudentReleasedResults(){
   <GuardianResultSharing/>
   {loading&&<p role="status">Checking released results…</p>}
   {error&&<p role="alert" className="rounded-lg border border-destructive p-4">{error}. Private approved grades are not available unless verification succeeds.</p>}
-  {!loading&&!error&&!grades.length&&<div className="rounded-xl border bg-card p-8 text-center"><GraduationCap className="mx-auto size-7 text-muted-foreground"/><h2 className="mt-3 font-semibold">No released scores yet</h2><p className="mt-2 text-sm text-muted-foreground">Coursework may still be awaiting an independent marker or quality approval. Provisional results are intentionally hidden.</p></div>}
-  {!loading&&!error&&<div className="space-y-4">{grades.map(g=>{const correction=amendments.find(a=>a.attempt_id===g.attempt_id);
+  {!loading&&!error&&!visible.length&&<div className="rounded-xl border bg-card p-8 text-center"><GraduationCap className="mx-auto size-7 text-muted-foreground"/><h2 className="mt-3 font-semibold">No released scores yet</h2><p className="mt-2 text-sm text-muted-foreground">Coursework may still be awaiting an independent marker or quality approval. Provisional results are intentionally hidden.</p></div>}
+  {!loading&&!error&&<div className="space-y-4">{visible.map(g=>{const correction=amendments.find(a=>a.attempt_id===g.attempt_id);
    return <article key={g.attempt_id} className="rounded-xl border bg-card p-5">
    <p className="text-xs font-semibold uppercase text-success">{briefs.find(b=>b.id===g.brief_id)?.assessment_type||'Assessment'}</p>
    <h2 className="mt-2 text-lg font-bold">{briefs.find(b=>b.id===g.brief_id)?.title||'Reviewed coursework'}</h2>

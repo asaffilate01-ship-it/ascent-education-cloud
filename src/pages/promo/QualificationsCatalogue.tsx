@@ -1,4 +1,6 @@
-import { useMemo, useState } from 'react';
+import {db} from '@/lib/db';
+import {courseOfferKey,currentCourseOffer,type CourseOffer} from '@/lib/courseOffers';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { BookOpenCheck, GraduationCap, Search } from 'lucide-react';
 import PublicNav from '@/components/PublicNav';
@@ -11,6 +13,9 @@ import { qualificationSelection } from '@/lib/qualificationSelection';
 
 const bodies = ['All', 'OTHM', 'Qualifi'] as const;
 export default function QualificationsCatalogue() {
+  const [now,setNow]=useState(Date.now());useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),30000);return()=>clearInterval(timer);},[]);
+  const [offers,setOffers]=useState<CourseOffer[]>([]);const [offersError,setOffersError]=useState(false);
+  useEffect(()=>{let active=true;void Promise.resolve(db.from('unipathway_public_course_offers').select('*').eq('published',true)).then(r=>{if(!active)return;if(r.error)throw r.error;setOffers(r.data||[]);}).catch(()=>{if(active)setOffersError(true);});return()=>{active=false;};},[]);
   const [params, setParams] = useSearchParams();
   const requested = params.get('body');
   const body = bodies.includes(requested as typeof bodies[number]) ? requested! : 'All';
@@ -29,7 +34,7 @@ export default function QualificationsCatalogue() {
       <header className="max-w-4xl">
         <p className="text-label text-success">UK & international qualifications</p>
         <h1 className="mt-3 text-3xl font-extrabold sm:text-5xl">Choose a pathway that moves you forward</h1>
-        <p className="mt-4 text-muted-foreground">Explore proposed OTHM and Qualifi qualifications in business, technology, finance, health and other fields. These are official qualification titles for planning purposes, not confirmed UniPathway enrolment places. Each qualification's specification, centre authorisation, entry requirements and current teaching schedule must be confirmed.</p>
+        <p className="mt-4 text-muted-foreground">Explore proposed OTHM and Qualifi qualifications in business, technology, finance, health and other fields. Options without current confirmed details are for planning only. Admissions must verify centre authorisation, entry eligibility and a place on the chosen intake before enrolment.</p>
       </header>
       <section className="rounded-xl border bg-card p-5" aria-label="Filter qualification options">
         <div className="flex flex-wrap gap-2" role="group" aria-label="Awarding body">
@@ -41,12 +46,14 @@ export default function QualificationsCatalogue() {
         </div>
         <p className="mt-3 text-sm text-muted-foreground" role="status">{filtered.length} proposed qualification options match your selection.</p>
       </section>
+      {offersError&&<p role="status">Confirmed course details are temporarily unavailable. Please ask admissions before applying or paying.</p>}
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-label="Proposed qualifications">
-        {filtered.map(q=><article key={q.body+q.name} className="flex flex-col rounded-xl border bg-card p-5">
+        {filtered.map(q=>{const offer=offers.find(o=>o.course_key===courseOfferKey(q.body,q.name)&&currentCourseOffer(o,now));return <article key={q.body+q.name} className="flex flex-col rounded-xl border bg-card p-5">
           <span className="text-xs font-bold text-success">{q.body} · Level {q.level}</span>
           <h2 className="mt-2 text-lg font-bold">{q.name}</h2><p className="mt-2 text-sm text-muted-foreground">{q.category}</p>
+          {offer?<dl className="mt-4 space-y-2 text-sm"><div><dt className="font-semibold">Availability</dt><dd>{offer.availability==='open'?'Open for applications':offer.availability==='upcoming'?'Upcoming intake':'Applications closed'}</dd></div><div><dt className="font-semibold">Fees</dt><dd className="whitespace-pre-wrap">{offer.fees}</dd></div><div><dt className="font-semibold">Entry requirements</dt><dd className="whitespace-pre-wrap">{offer.entry_requirements}</dd></div><div><dt className="font-semibold">Intake date</dt><dd>{offer.intake_date}</dd></div><p className="text-xs text-muted-foreground">Reviewed {offer.verified_at.slice(0,10)} · Confirmation valid until {offer.valid_until.slice(0,10)}</p></dl>:<p className="mt-4 text-sm text-muted-foreground">Availability, fees, entry requirements and intake date await confirmation from admissions.</p>}
           <div className="mt-auto flex flex-wrap gap-3 pt-5 text-sm"><Link to="/contact" className="inline-flex items-center gap-1 font-semibold text-success hover:underline">Ask admissions</Link></div>
-        </article>)}
+        </article>})}
         {filtered.length===0&&<p>No matching qualifications. Try a different subject or search.</p>}
       </section>
       <section className="rounded-xl border bg-secondary/40 p-6">

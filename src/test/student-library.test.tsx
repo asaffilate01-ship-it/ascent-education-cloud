@@ -1,3 +1,4 @@
+import {MemoryRouter} from 'react-router-dom';
 import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 import {cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
 import {Library} from '@/pages/student/StudentLibrary';
@@ -15,4 +16,13 @@ it('shows enrolled real resources and obtains short lived links only on request'
 it('reports query and signed-access failures without demo fallback',async()=>{
  mock.tables.modules={error:{message:'denied'}};render(<Library userId="student" tenantId="centre"/>);await screen.findByRole('alert');expect(screen.queryByText('Approved notes')).toBeNull();
  mock.tables.modules={data:[{id:'m',title:'Maths',programme_id:'p'}]};fireEvent.click(screen.getByText('Refresh library'));await screen.findByText('Approved notes');mock.signed.mockResolvedValue({error:{message:'revoked'}});fireEvent.click(screen.getAllByText('Get private access')[0]);await waitFor(()=>expect(screen.getByRole('alert')).toHaveTextContent('no longer available'));expect(screen.queryByRole('link')).toBeNull();
+});
+
+it('module navigation filters both materials and recordings without granting access',async()=>{
+ render(<MemoryRouter><Library userId="student" tenantId="centre" moduleId="other"/></MemoryRouter>);
+ await screen.findByText('No published resources match your library yet.');expect(screen.queryByText('Approved notes')).toBeNull();expect(screen.queryByText('Not enrolled notes')).toBeNull();expect(screen.queryByText('Released class')).toBeNull();
+});
+it('recording navigation selects released recordings for the enrolled module',async()=>{
+ render(<MemoryRouter><Library userId="student" tenantId="centre" moduleId="m" initialKind="recording"/></MemoryRouter>);
+ await screen.findByText('Released class');expect(screen.queryByText('Approved notes')).toBeNull();expect(screen.getByLabelText('Resource type')).toHaveValue('recording');
 });

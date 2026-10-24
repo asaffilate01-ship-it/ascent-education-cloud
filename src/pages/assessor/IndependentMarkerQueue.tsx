@@ -1,3 +1,4 @@
+import CourseworkFiles from '@/components/assessment/CourseworkFiles';
 import {useCallback,useEffect,useMemo,useState} from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {useAuth} from '@/contexts/AuthContext';
@@ -137,7 +138,7 @@ export default function IndependentMarkerQueue(){
        ['Expected coursework',brief.student_expectations],
        ['Required student evidence',brief.required_evidence]
       ] as const).map(([name,text])=><details key={name} className="mt-3 rounded-lg border p-3"><summary className="cursor-pointer text-sm font-semibold">{name}</summary><p className="mt-2 whitespace-pre-wrap text-sm">{text}</p></details>)}
-      <h3 className="mt-4 font-semibold">Submitted evidence</h3><pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap rounded-lg border bg-secondary/30 p-3 text-sm font-sans">{current.evidence_text}</pre>
+      <h3 className="mt-4 font-semibold">Submitted evidence</h3><pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap rounded-lg border bg-secondary/30 p-3 text-sm font-sans">{current.evidence_text}</pre>{current.id&&<CourseworkFiles attemptId={current.id}/>}
      </div>
      <div className="rounded-xl border bg-card p-5"><div className="flex flex-wrap items-center justify-between gap-2">
       <h2 className="font-semibold"><Sparkles className="mr-1 inline size-4"/>Omniqora Intelligence — optional draft</h2>

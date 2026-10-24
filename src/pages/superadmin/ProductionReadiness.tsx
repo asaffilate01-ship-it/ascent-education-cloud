@@ -1,3 +1,4 @@
+import CourseOfferEditor from '@/components/assessment/CourseOfferEditor';
 import ConnectionCoverage from '@/components/progression/ConnectionCoverage';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import type {SupabaseClient} from '@supabase/supabase-js';
@@ -12,7 +13,7 @@ import {localDateTime,supportDueValue} from '@/lib/supportDesk';
 const db:SupabaseClient=supabase;
 export default function ProductionReadiness(){
  const {user}=useAuth();const allowed=user?.roles.some(r=>['superadmin','centre_director'].includes(r));
- return <DashboardLayout title="Production Readiness" subtitle="Launch decisions require recorded operational evidence">{allowed&&user?.tenantId?<><ConnectionCoverage/><Workspace key={`${user.tenantId}-${user.id}`} tenant={user.tenantId}/></>:<p>Centre leadership access required.</p>}</DashboardLayout>;
+ return <DashboardLayout title="Production Readiness" subtitle="Launch decisions require recorded operational evidence">{allowed&&user?.tenantId?<><ConnectionCoverage/>{user.roles.includes('superadmin')&&<CourseOfferEditor/>}<Workspace key={`${user.tenantId}-${user.id}`} tenant={user.tenantId}/></>:<p>Centre leadership access required.</p>}</DashboardLayout>;
 }
 function Workspace({tenant}:{tenant:string}){
  const [integrations,setIntegrations]=useState<EducationTables['production_integrations']['Row'][]>([]),[checks,setChecks]=useState<ReadinessCheck[]>([]);

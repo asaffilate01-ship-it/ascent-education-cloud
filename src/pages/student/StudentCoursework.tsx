@@ -1,3 +1,6 @@
+import {useSearchParams} from 'react-router-dom';
+import ModuleJourney from '@/components/assessment/ModuleJourney';
+import CourseworkFiles from '@/components/assessment/CourseworkFiles';
 import {useCallback,useEffect,useMemo,useState} from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {useAuth} from '@/contexts/AuthContext';
@@ -15,10 +18,10 @@ type Criterion={id:string;brief_id:string;criterion_code:string;learning_outcome
 type Attempt={id:string;brief_id:string;attempt_no:number;status:string;submitted_at:string;resubmission_guidance:string|null;guidance_at:string|null;evidence_text:string};
 type Released={attempt_id:string;brief_id:string;student_id:string;final_score:number;raw_score:number;penalty_points:number;published_feedback:string;released_at:string};
 export default function StudentCoursework(){
- const {user}=useAuth();
- return <CourseworkWorkspace key={`${user?.id}:${user?.tenantId}:${user?.role}`}/>;
+ const {user}=useAuth();const [params]=useSearchParams();
+ return <CourseworkWorkspace moduleId={params.get('module')||undefined} key={`${user?.id}:${user?.tenantId}:${user?.role}`}/>;
 }
-function CourseworkWorkspace(){
+function CourseworkWorkspace({moduleId}:{moduleId?:string}){
  const {user}=useAuth();const uid=user?.id,tenant=user?.tenantId;
  const [modules,setModules]=useState<Module[]>([]);const [briefs,setBriefs]=useState<Brief[]>([]);
  const [criteria,setCriteria]=useState<Criterion[]>([]);const [attempts,setAttempts]=useState<Attempt[]>([]);
@@ -26,6 +29,9 @@ function CourseworkWorkspace(){
  const [drafts,setDrafts]=useState<Record<string,string>>({});
  const [loading,setLoading]=useState(true);const [busy,setBusy]=useState('');
  const [error,setError]=useState('');
+ const [attachmentIds,setAttachmentIds]=useState<Record<string,string[]>>({});
+ const [fileBusy,setFileBusy]=useState<Record<string,boolean>>({});
+ const [requestIds]=useState<Record<string,string>>({});
  const load=useCallback(async()=>{
   if(!uid||!tenant){setLoading(false);setError('Assigned student and authorised centre profile required.');return;}
   setLoading(true);setError('');
@@ -69,7 +75,7 @@ function CourseworkWorkspace(){
   return map;
  },[attempts]);
  const submit=async(b:Brief)=>{
-  if(busy)return;
+  if(busy||fileBusy[b.id]!==false){toast.error('Wait for attachments to load or finish uploading.');return;}
   const list=grouped.get(b.id)||[],latest=list[0];
   const allowed=(!latest||latest.status==='resubmission_requested')&&list.length<b.max_attempts&&Date.now()<=new Date(b.submission_cutoff).getTime();
   if(!allowed){toast.error('Submission requires an open window and a marker-issued resubmission instruction.');return;}
@@ -78,22 +84,24 @@ function CourseworkWorkspace(){
   if(!window.confirm('Submit this attempt for independent human assessment? You cannot edit it after submission.'))return;
   setBusy(b.id);
   try {
-   const {error:e}=await db.rpc('submit_unipathway_assessment',{p_brief:b.id,p_evidence:work});
+   requestIds[b.id] ||= crypto.randomUUID();
+   const {error:e}=await db.rpc('submit_unipathway_coursework',{p_brief:b.id,p_evidence:work,p_uploads:attachmentIds[b.id]||[],p_request:requestIds[b.id]});
    if(e)throw e;
    toast.success('Assignment submitted. You can read your result after marking and approval.');
-   setDrafts(p=>({...p,[b.id]:''}));await load();
+   setDrafts(p=>({...p,[b.id]:''}));delete requestIds[b.id];await load();
   } catch {toast.error('Submission could not be confirmed. Your draft is still here. Refresh assignments to check whether it arrived before trying again.');}
   finally {setBusy('');}
  };
  return <DashboardLayout title="Assignments" subtitle="Your tasks, submissions and released feedback">
+  <ModuleJourney moduleId={moduleId}/>
   <section className="mb-5 rounded-xl border bg-primary/5 p-4"><h2 className="flex items-center gap-2 font-semibold"><ShieldCheck className="size-5"/>Fair marking and protected student evidence</h2>
    <p className="mt-2 text-sm text-muted-foreground">Review the teaching notes and exact learning outcomes before submitting. Your work goes to an independent marker; Omniqora may offer a private draft, but a separate IQA must approve release. No provisional mark is visible to you.</p>
   </section>
   {loading&&<p role="status">Checking your active enrolled assignments and released feedback…</p>}
   {error&&<p role="alert" className="rounded-xl border border-destructive p-4">Assignments could not be loaded. Please retry or contact your centre.</p>}
   <Button className="mb-4" variant="outline" disabled={loading||!!busy} onClick={()=>void load()}>Refresh assignments</Button>
-  {!loading&&!error&&!briefs.length&&<p className="rounded-xl border bg-card p-6 text-sm">Your lecturers have not published coursework under your currently enrolled modules yet.</p>}
-  {!loading&&!error&&<div className="space-y-5">{briefs.map(b=>{
+  {!loading&&!error&&!briefs.filter(b=>!moduleId||b.module_id===moduleId).length&&<p className="rounded-xl border bg-card p-6 text-sm">Your lecturers have not published coursework under your currently enrolled modules yet.</p>}
+  {!loading&&!error&&<div className="space-y-5">{briefs.filter(b=>!moduleId||b.module_id===moduleId).map(b=>{
    const list=grouped.get(b.id)||[],latest=list[0],released=results.filter(r=>r.brief_id===b.id);
    const within=Date.now()<=new Date(b.submission_cutoff).getTime();
    const maySubmit=within&&list.length<b.max_attempts&&(!latest||latest.status==='resubmission_requested');
@@ -118,8 +126,9 @@ function CourseworkWorkspace(){
     <div className="mt-2 space-y-2">{rubric.map(c=><div key={c.id} className="rounded-lg border p-3 text-sm"><p className="font-semibold">{c.criterion_code} — {c.max_points} rubric points</p>
      <p className="mt-1">{c.learning_outcome}</p><p className="mt-1 text-muted-foreground">{c.criterion_description}</p><p className="mt-1 text-xs text-muted-foreground">Marker standard: {c.scoring_guidance}</p></div>)}</div>
     <div className="mt-4 rounded-lg border border-warning/40 p-3 text-sm"><strong>Resubmission rule:</strong> Up to {b.max_attempts} attempt(s); {b.penalty_points_per_resubmission} internal percentage points deducted per permitted resubmission, only where permitted under the published {b.policy_reference} policy. No resubmissions after {new Date(b.submission_cutoff).toLocaleString()}.</div>
+    {maySubmit&&<CourseworkFiles key={`${b.id}:${list.length}`} briefId={b.id} disabled={!!busy} onFiles={ids=>setAttachmentIds(old=>({...old,[b.id]:ids}))} onBusy={value=>setFileBusy(old=>({...old,[b.id]:value}))}/>}
     {list.map(a=><section key={a.id} className="mt-3 rounded-lg bg-secondary/30 p-3">
-     <p className="font-semibold text-sm">Attempt {a.attempt_no} — {a.status}</p>
+     <p className="font-semibold text-sm">Attempt {a.attempt_no} — {a.status}</p><CourseworkFiles attemptId={a.id}/>
      <p className="mt-1 text-xs text-muted-foreground">Submitted {new Date(a.submitted_at).toLocaleString()}</p>
      {a.resubmission_guidance&&<p className="mt-2 whitespace-pre-wrap rounded-lg border border-primary/25 bg-card p-3 text-sm"><RotateCcw className="mr-1 inline size-4"/><strong>Independent marker's improvement plan:</strong> {a.resubmission_guidance}</p>}
      {released.find(r=>r.attempt_id===a.id)&&<div className="mt-2 rounded-lg border bg-card p-3 text-sm">
@@ -132,7 +141,7 @@ function CourseworkWorkspace(){
       <Textarea rows={7} className="mt-2" maxLength={50000} value={drafts[b.id]||''} onChange={e=>setDrafts(p=>({...p,[b.id]:e.target.value}))}
        placeholder="Include your own coursework response, reasoning, calculations, source references or practical observations…"/></label>
       <div className="mt-2 flex flex-wrap items-center justify-between gap-2"><span className="text-xs text-muted-foreground">{(drafts[b.id]||'').length}/50000 characters</span>
-       <Button disabled={!!busy||(drafts[b.id]||'').trim().length<30} onClick={()=>submit(b)}><BookOpen className="mr-1 size-4"/>{latest?'Submit revised work':'Submit coursework'}</Button></div>
+       <Button disabled={!!busy||fileBusy[b.id]!==false||(drafts[b.id]||'').trim().length<30} onClick={()=>submit(b)}><BookOpen className="mr-1 size-4"/>{latest?'Submit revised work':'Submit coursework'}</Button></div>
      </div>:<p className="mt-4 text-xs text-muted-foreground">{within?'Awaiting independent marking, IQA approval or an authorised revision request.':'The submission window is closed.'}</p>}
    </article>;
   })}</div>}
