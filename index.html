@@ -3,6 +3,28 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+    <script>
+      // Stale offline copies must never outlive a preview: before anything else loads,
+      // remove service workers and caches when framed (editor preview), on preview hosts,
+      // or when offline support is explicitly disabled with ?sw=off.
+      (function () {
+        if (!('serviceWorker' in navigator)) return;
+        var host = location.hostname.toLowerCase();
+        var preview = host.indexOf('id-preview--') === 0 || host.indexOf('preview--') === 0 ||
+          /(^|\.)lovableproject(-dev)?\.com$/.test(host) || /(^|\.)beta\.lovable\.dev$/.test(host);
+        var framed = window.self !== window.top;
+        var off = new URLSearchParams(location.search).get('sw') === 'off';
+        if (!preview && !framed && !off) return;
+        navigator.serviceWorker.getRegistrations().then(function (regs) {
+          regs.forEach(function (r) { r.unregister(); });
+        });
+        if (window.caches) {
+          caches.keys().then(function (names) {
+            names.forEach(function (n) { caches.delete(n); });
+          });
+        }
+      })();
+    </script>
     <title>UniPathway — Qualifications, Tuition, IELTS & University Pathways</title>
     <meta name="description" content="UniPathway offers Years 8–12 tuition, UK and international qualifications, IELTS and accountancy preparation, technology courses and university progression guidance." />
     <meta name="author" content="UniPathway" />
