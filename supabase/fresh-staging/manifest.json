@@ -1,0 +1,71 @@
+{
+  "scope": "Fresh empty staging only. Never use for production upgrade or migration-history repair.",
+  "overrides": [
+    {
+      "file": "20260316034033_fc6363a4-77d1-4f03-a528-ebf55c1dcec4.sql",
+      "sourceSha256": "7ae5fed62e94f4e7fb2684c133eb111d3ea53ce52c4af43a91f2dcc65f1015e0",
+      "replacementSha256": "23be74a9034df77c8e9520fb7a4347bb41c62299723792a470f1f1880a091da3",
+      "reason": "Omit historical shared-password identity provisioning; retain extension."
+    },
+    {
+      "file": "20260316050618_8c09f8b4-2f28-4a0b-a93f-7a9967761899.sql",
+      "sourceSha256": "b6f10e0025591b326b619619363cb7d7308f785f4b8f71ec67d238c5089d2430",
+      "replacementSha256": "f696ad3bae25536f05ca1dfa12aea53280f8f4937b9e1ceae38dc13bfe958e74",
+      "reason": "Retain signup trigger and extension; omit demo tenant and identity provisioning."
+    },
+    {
+      "file": "20260316053920_95f85ace-d826-4b22-9443-d8bf57031bc0.sql",
+      "sourceSha256": "2870735250525f73f26cff069d7d5f8e40f458e89c63bd27c7d7de1b08648ca4",
+      "replacementSha256": "d2a26fc7438a48c4f850b5566b1c640dea6e5a89599502ca0c0ced2b38bd2b59",
+      "reason": "Omit data-only repair of historical Auth rows."
+    },
+    {
+      "file": "20260316060647_11d03e1b-a05b-48f7-9fce-ee9d42fcdd49.sql",
+      "sourceSha256": "ec776e03555f8d8d5d3c4ad6a7c6755caa4d19760b2b04f5f182cb7a3c3dd007",
+      "replacementSha256": "8ac3327ff2ec763f00c6a85ebb4f263f98abda5b4b3686a98371f80b2007dac5",
+      "reason": "Retain signup trigger; omit attendance, notification and message fixtures referencing external IDs."
+    },
+    {
+      "file": "20260316221958_f1661fa9-3532-4226-845e-99a83ed929b5.sql",
+      "sourceSha256": "5a2f0434c05b5308de7e485fb73b91b0525d59664b4594ac5f7ffc66833042d2",
+      "replacementSha256": "d2a26fc7438a48c4f850b5566b1c640dea6e5a89599502ca0c0ced2b38bd2b59",
+      "reason": "Omit data-only repair of historical Auth rows."
+    },
+    {
+      "file": "20260316061642_90fdd9aa-4fc5-42e2-a0aa-693df1c4ac10.sql",
+      "sourceSha256": "1dea32810c5ed5dfaf4a2801ebf859215814dfef189351174da55bfd933d65f3",
+      "replacementSha256": "3a9bdd2755df62a7657d54b3dc4987d61aad3367151634e2c0f16f5aeba5326b",
+      "reason": "Data-only demonstration tenants, applications, invoices, grades, attendance and notifications; no schema changes."
+    },
+    {
+      "file": "20260927120000_schools_student_life_competitions.sql",
+      "sourceSha256": "6ee8565b1fb8bf7fa8aa5e51d568b26cce94f2e5415fa8876c55b94d57f4f5b8",
+      "replacementSha256": "227f62e3a1a6fb11e05fd032c06b239f1bb2c0fe84ce460be3c446a6779e8dd0",
+      "reason": "Quote PostgreSQL reserved keyword placing as a column identifier; preserve schema and policies."
+    },
+    {
+      "file": "20260929110000_microsoft_education_live_classroom.sql",
+      "sourceSha256": "2201f4e6c77709dd3a6701aca49a98d826a887813eedda8adcb4b99a790a2fbd",
+      "replacementSha256": "c3649a986a8a718c433710e577d99c712920555e57f4e994618a492d6e66dbd1",
+      "reason": "Replace the identical pre-existing live artifacts policy before creating it; later invited-classroom ACL still applies."
+    },
+    {
+      "file": "20260929140001_teams_classroom_phase4.sql",
+      "sourceSha256": "d08ec1befad55155760425eec478ed4ee4e8321c82e8c324a64fe6142fb31722",
+      "replacementSha256": "92894d2ba3875ade2c49312203cba807f774c7eae84a52dc350f54bb74bf6577",
+      "reason": "Replace duplicate phase-4 policy definitions without changing their predicates."
+    },
+    {
+      "file": "20260929200000_interactive_virtual_labs.sql",
+      "sourceSha256": "97032b0e40d46f0ee070286ed520dd4e2cd709488c49c14af3d6c1a154368ffb",
+      "replacementSha256": "639162bffc52a1f0cfda3145b9e6218110fe7d84f45c2ae89366c84082276b06",
+      "reason": "Reconcile the pre-existing lecturer-session table with optional interactive-session columns; preserve legacy constraints and foreign keys. Active learning uses uni_lab_runs."
+    },
+    {
+      "file": "20261020110000_large_lecture_whiteboard_realtime.sql",
+      "sourceSha256": "93987662ee8e075bbe3410fe8cfb31faa8dfc4a621c0fee6e350990acd800c39",
+      "replacementSha256": "922481446eb2a72e9ea4d0e263b331931b31f2c5c11cf16657ea66a7ad1d725b",
+      "reason": "Repair truncated colour validation and duplicated content after COMMIT; retain one complete whiteboard migration with explicit null-safe colour and text validation."
+    }
+  ]
+}

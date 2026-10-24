@@ -57,6 +57,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
   centre_director: [
     { title: 'College', items: [
       { label: 'Dashboard', icon: LayoutDashboard, path: '/director' },
+      { label: 'Managed AWS Labs', icon: Cloud, path: '/director/managed-labs' },
       { label: 'Admissions', icon: UserPlus, path: '/director/admissions' },
       { label: 'Programmes', icon: BookOpen, path: '/director/programmes' },
       { label: 'Syllabuses & Board Readiness', icon: GraduationCap, path: '/director/syllabuses' },
@@ -123,6 +124,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
   lecturer: [
     { items: [
       { label: 'Dashboard', icon: LayoutDashboard, path: '/lecturer' },
+      { label: 'Managed AWS Labs', icon: Cloud, path: '/lecturer/managed-labs' },
       { label: 'Teaching', icon: BookOpen, path: '/lecturer/teaching' },
       { label: 'Coursework Briefs & Rubrics', icon: ClipboardCheck, path: '/lecturer/assessments' },
       { label: 'IELTS Academy', icon: GraduationCap, path: '/lecturer/ielts' },
@@ -173,6 +175,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
   programme_leader: [
     { items: [
       { label: 'Dashboard', icon: LayoutDashboard, path: '/programme' },
+      { label: 'Managed AWS Labs', icon: Cloud, path: '/programme/managed-labs' },
       { label: 'Modules', icon: BookOpen, path: '/programme/modules' },
       { label: 'Curriculum & Accreditation', icon: Award, path: '/programme/beauty-accreditation' },
       { label: 'Knowledge Library', icon: BookOpen, path: '/programme/knowledge' },
@@ -257,6 +260,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
   student: [
     { title: 'Learning', items: [
       { label: 'Dashboard', icon: LayoutDashboard, path: '/student' },
+      { label: 'Managed AWS Labs', icon: Cloud, path: '/student/managed-labs' },
       { label: 'Courses', icon: BookOpen, path: '/student/courses' },
       { label: 'IELTS Preparation', icon: GraduationCap, path: '/student/ielts' },
       { label: 'Live Classroom', icon: Video, path: '/student/classroom' },

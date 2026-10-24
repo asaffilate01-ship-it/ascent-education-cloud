@@ -4,6 +4,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import {useAuth} from '@/contexts/AuthContext';
 import {db} from '@/lib/db';
 import {Button} from '@/components/ui/button';
+import GuardianResultSharing from '@/components/assessment/GuardianResultSharing';
 import {GraduationCap,ShieldCheck} from 'lucide-react';
 type Grade={attempt_id:string;brief_id:string;final_score:number;raw_score:number;penalty_points:number;published_feedback:string;released_at:string};
 type Brief={id:string;title:string;policy_reference:string;assessment_type:string};
@@ -45,6 +46,7 @@ export default function StudentReleasedResults(){
     <Button variant="outline" size="sm" asChild><Link to="/student/appeals">Submit or view an independent grade appeal</Link></Button>
    </div>
   </section>
+  <GuardianResultSharing/>
   {loading&&<p role="status">Checking released results…</p>}
   {error&&<p role="alert" className="rounded-lg border border-destructive p-4">{error}. Private approved grades are not available unless verification succeeds.</p>}
   {!loading&&!error&&!grades.length&&<div className="rounded-xl border bg-card p-8 text-center"><GraduationCap className="mx-auto size-7 text-muted-foreground"/><h2 className="mt-3 font-semibold">No released scores yet</h2><p className="mt-2 text-sm text-muted-foreground">Coursework may still be awaiting an independent marker or quality approval. Provisional results are intentionally hidden.</p></div>}

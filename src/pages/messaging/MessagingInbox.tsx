@@ -2,6 +2,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Search, Send, Paperclip, Star, Archive, Plus, MessageSquare, Check, CheckCheck, Circle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { db } from '@/lib/db';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -25,6 +26,8 @@ interface Message {
   created_at: string;
   mine: boolean;
   read: boolean;
+  attachment_path?: string | null;
+  attachment_name?: string | null;
 }
 
 export default function MessagingInbox() {
@@ -152,6 +155,7 @@ export default function MessagingInbox() {
           id: m.id, sender_name: m.sender_name, content: m.content,
           created_at: new Date(m.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
           mine: m.sender_id === user?.id, read: m.read,
+          attachment_path:m.attachment_path, attachment_name:m.attachment_name,
         })));
         // Mark as read
         await supabase.from('messages').update({ read: true })
@@ -174,6 +178,7 @@ export default function MessagingInbox() {
             id: m.id, sender_name: m.sender_name, content: m.content,
             created_at: new Date(m.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
             mine: m.sender_id === user?.id, read: m.read,
+          attachment_path:m.attachment_path, attachment_name:m.attachment_name,
           }];
         });
         // Auto mark as read if it's not mine
@@ -204,9 +209,10 @@ export default function MessagingInbox() {
 
   const handleSend = async () => {
     if (!message.trim() || !user || !selectedConvo) return;
-    await supabase.from('messages').insert({
+    const {error}=await supabase.from('messages').insert({
       conversation_id: selectedConvo, sender_id: user.id, sender_name: user.name, content: message,
     });
+    if(error){toast.error('Message was not sent. Please retry.');return;}
     setMessage('');
     // Clear typing
     supabase.from('user_presence').upsert({
@@ -218,9 +224,9 @@ export default function MessagingInbox() {
   const handleCreateConversation = async () => {
     if (!newConvoName.trim() || !user) return;
     setCreating(true);
-    const { data: convo, error } = await supabase.from('conversations').insert({ name: newConvoName.trim(), type: 'direct' }).select().single();
-    if (error || !convo) { toast.error('Failed to create conversation'); setCreating(false); return; }
-    await supabase.from('conversation_participants').insert({ conversation_id: convo.id, user_id: user.id });
+    const {data:id,error}=await db.rpc('create_unipathway_private_conversation',{p_name:newConvoName.trim()});
+    if(error||!id){toast.error('Private conversation could not be created. Contact centre support.');setCreating(false);return;}
+    const convo={id,name:newConvoName.trim(),type:'direct'};
     setConversations(prev => [{ id: convo.id, name: convo.name || 'Conversation', type: convo.type, lastMessage: '', lastTime: 'Now', unread: 0, avatar: (convo.name || 'C').slice(0, 2).toUpperCase() }, ...prev]);
     setSelectedConvo(convo.id);
     setNewConvoName(''); setNewConvoOpen(false); setCreating(false);
@@ -230,15 +236,24 @@ export default function MessagingInbox() {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user || !selectedConvo) return;
-    const path = `${user.id}/${Date.now()}_${file.name}`;
-    const { error } = await supabase.storage.from('resources').upload(path, file);
-    if (error) { toast.error('File upload failed'); return; }
-    const { data: urlData } = supabase.storage.from('resources').getPublicUrl(path);
-    await supabase.from('messages').insert({
-      conversation_id: selectedConvo, sender_id: user.id, sender_name: user.name,
-      content: `📎 [${file.name}](${urlData.publicUrl})`,
+    if(!user.tenantId){toast.error('Approved centre assignment required');return;}
+    if(file.size>10*1024*1024){toast.error('Attachments must be 10 MB or smaller');return;}
+    const path=`${user.tenantId}/${selectedConvo}/${user.id}/${crypto.randomUUID()}`;
+    const bucket=supabase.storage.from('private-message-attachments');
+    const {error}=await bucket.upload(path,file,{contentType:file.type||'application/octet-stream'});
+    if(error){toast.error('Private upload failed. No file was shared.');return;}
+    const {error:messageError}=await db.from('messages').insert({
+      conversation_id:selectedConvo,sender_id:user.id,sender_name:user.name,
+      content:'Private attachment',attachment_path:path,attachment_name:file.name.slice(0,255)
     });
-    toast.success('File shared');
+    if(messageError){await bucket.remove([path]);toast.error('Attachment was not shared. Please retry.');return;}
+    toast.success('Private file shared with conversation members');
+    e.target.value='';
+  };
+  const openAttachment=async(path:string)=>{
+    const {data,error}=await supabase.storage.from('private-message-attachments').createSignedUrl(path,60,{download:true});
+    if(error||!data?.signedUrl){toast.error('Attachment access denied or expired');return;}
+    window.open(data.signedUrl,'_blank','noopener,noreferrer');
   };
 
   const filteredConvos = conversations.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
@@ -345,6 +360,7 @@ export default function MessagingInbox() {
                     {!m.mine && <p className="text-[10px] font-semibold text-primary mb-0.5 ml-1">{m.sender_name}</p>}
                     <div className={`p-3 rounded-xl text-xs leading-relaxed ${m.mine ? 'bg-primary text-primary-foreground rounded-br-sm' : 'bg-secondary rounded-bl-sm'}`}>
                       {m.content}
+                      {m.attachment_path&&<Button variant="outline" size="sm" className="mt-2 block" onClick={()=>void openAttachment(m.attachment_path!)}>Download {m.attachment_name||'attachment'}</Button>}
                     </div>
                     <div className={`flex items-center gap-1 mt-0.5 ${m.mine ? 'justify-end mr-1' : 'ml-1'}`}>
                       <span className="text-[9px] text-muted-foreground">{m.created_at}</span>

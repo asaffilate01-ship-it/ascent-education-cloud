@@ -20,7 +20,7 @@ it('only queries enrolled programmes and never reads provisional legacy submissi
  mocks.query.mockImplementation((table:string)=>({data:records[table]||[],loading:false,error:null}));
  mocks.from.mockImplementation(()=>{
   const chain:Record<string,unknown>={};
-  for(const key of ['select','eq','order','limit'])chain[key]=()=>chain;
+  for(const key of ['select','eq','order','limit','in','gte','range'])chain[key]=()=>chain;
   chain.then=(resolve:(v:unknown)=>unknown,reject?:(e:unknown)=>unknown)=>
    Promise.resolve({data:[],error:null}).then(resolve,reject);
   return chain;
@@ -28,11 +28,25 @@ it('only queries enrolled programmes and never reads provisional legacy submissi
  render(<MemoryRouter><StudentDashboard/></MemoryRouter>);
  expect(mocks.query.mock.calls.find(c=>c[0]==='programmes')?.[1].filters)
   .toContainEqual({column:'id',operator:'in',value:['p1']});
- expect(mocks.query.mock.calls.find(c=>c[0]==='assignments')?.[1].filters)
-  .toContainEqual({column:'module_id',operator:'in',value:['m1']});
+ expect(mocks.query.mock.calls.find(c=>c[0]==='assignments')).toBeUndefined();
  expect(mocks.query.mock.calls.find(c=>c[0]==='submissions')).toBeUndefined();
- expect(screen.getByText('Scheduled legacy task')).toBeInTheDocument();
+ expect(screen.queryByText('Scheduled legacy task')).not.toBeInTheDocument();
  expect(await screen.findByText('No independently released grades yet')).toBeInTheDocument();
  expect(mocks.from).toHaveBeenCalled();
  expect(screen.queryByText('99%')).not.toBeInTheDocument();
+});
+it('loads corrections for the displayed released attempts rather than an unrelated capped history',async()=>{
+ mocks.query.mockReturnValue({data:[],loading:false,error:null});
+ const filter=vi.fn();
+ mocks.from.mockImplementation((table:string)=>{
+  const chain:Record<string,unknown>={};
+  for(const key of ['select','eq','order','limit','gte','range'])chain[key]=()=>chain;
+  chain.in=(...args:unknown[])=>{filter(table,...args);return chain;};
+  chain.then=(resolve:(v:unknown)=>unknown)=>Promise.resolve(resolve({data:table==='unipathway_assessment_released_results'?[{attempt_id:'latest',brief_id:'brief',final_score:72,released_at:'2026-10-24'}]:table==='unipathway_assessment_grade_amendments'?[{attempt_id:'latest',corrected_final_score:78}]:[],error:null}));
+  return chain;
+ });
+ render(<MemoryRouter><StudentDashboard/></MemoryRouter>);
+ expect(await screen.findByText('78/100')).toBeInTheDocument();
+ expect(filter).toHaveBeenCalledWith('unipathway_assessment_grade_amendments','attempt_id',['latest']);
+ expect(screen.queryByText('72/100')).not.toBeInTheDocument();
 });

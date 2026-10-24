@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useState } from 'react';
 import AddLeadModal from '@/components/modals/AddLeadModal';
 import KanbanBoard from '@/components/admissions/KanbanBoard';
+import AdmissionHandover from '@/components/admissions/AdmissionHandover';
 import ServiceActivationQueue from '@/components/admissions/ServiceActivationQueue';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
@@ -40,11 +41,12 @@ export default function AdmissionsCRM() {
   const [stageFilter, setStageFilter] = useState<string>('all');
   const [destFilter, setDestFilter] = useState<string>('all');
   const [sourceFilter, setSourceFilter] = useState<string>('all');
-  const { data: applications, loading, refetch } = useSupabaseQuery('applications', {
+  const { data: applications, loading, error, refetch } = useSupabaseQuery('applications', {
     orderBy: { column: 'updated_at', ascending: false },
   });
 
   if (loading) return <DashboardSkeleton />;
+  if(error)return <DashboardLayout title="Admissions Pipeline"><div role="alert" className="rounded border border-destructive p-4">Applications could not be loaded. <Button onClick={()=>void refetch()}>Retry</Button></div></DashboardLayout>;
 
   const filtered = applications.filter((app) => {
     if (stageFilter !== 'all' && app.stage !== stageFilter) return false;
@@ -86,13 +88,13 @@ export default function AdmissionsCRM() {
         <div className="flex items-center gap-2">
           <div className="flex items-center rounded-md border border-border overflow-hidden">
             <button
-              onClick={() => setView('kanban')}
+              aria-label="Kanban view" onClick={() => setView('kanban')}
               className={`p-1.5 transition-colors ${view === 'kanban' ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:text-foreground'}`}
             >
               <LayoutGrid className="w-3.5 h-3.5" />
             </button>
             <button
-              onClick={() => setView('table')}
+              aria-label="Table view" onClick={() => setView('table')}
               className={`p-1.5 transition-colors ${view === 'table' ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:text-foreground'}`}
             >
               <List className="w-3.5 h-3.5" />
@@ -111,6 +113,7 @@ export default function AdmissionsCRM() {
         <StatCard label="Enrolled" value={String(enrolled)} icon={TrendingUp} />
       </div>
 
+      <AdmissionHandover applications={applications} onRefetch={()=>void refetch()}/>
       <ServiceActivationQueue />
 
       {/* Pipeline Funnel */}

@@ -10,6 +10,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import IELTSReadingLab from '@/components/ielts/IELTSReadingLab';
+import GuidedAudioLab from '@/components/ielts/GuidedAudioLab';
+import IELTSAudioWorkstation from '@/components/ielts/IELTSAudioWorkstation';
 import IELTSListeningLab from '@/components/ielts/IELTSListeningLab';
 import IELTSSpeakingPractice from '@/components/ielts/IELTSSpeakingPractice';
 import IELTSSpeakingTutorQueue from '@/components/ielts/IELTSSpeakingTutorQueue';
@@ -255,6 +257,8 @@ export default function IELTSAcademy() {
            </div>:<div className="border rounded-xl p-4 text-sm text-muted-foreground"><GraduationCap className="w-5 h-5 mb-2"/> Save your Academic or General Training plan to enable practice submissions and track your learning.</div>}
          </section>
        </div>}
+       <GuidedAudioLab />
+       <IELTSAudioWorkstation key={`${tenant}:${student}`} />
        <IELTSMockRehearsals track={activeTrack}/>
         <section className="surface-card p-5 space-y-3">
          <h3 className="font-semibold flex items-center gap-2"><BookOpen className="w-4 h-4" /> Official format and practice resources</h3>

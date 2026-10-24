@@ -27,22 +27,7 @@ const controlledStages=[
  ['20261020170000','Grade appeal gate'],
  ['20261020180000','Legacy grade isolation']
 ];
-const riskFlags=(sql)=>{
- const warnings=[];
- // PostgreSQL disallows subselects in CHECK constraints; staging reset cannot
- // succeed if a migration contains this old pattern.
- if(/\bCHECK\s*\((?:[^;]{0,500}?)\(\s*SELECT\b/i.test(sql))
-  warnings.push('CHECK_CONTAINS_SUBQUERY');
- if(/\bDISABLE\s+ROW\s+LEVEL\s+SECURITY\b/i.test(sql))
-  warnings.push('DISABLES_RLS');
- if(/\bTRUNCATE\s+(?:TABLE\s+)?(?:public\.|auth\.|storage\.)/i.test(sql))
-  warnings.push('TRUNCATES_DATA');
- if(/\bDROP\s+TABLE\s+(?!IF\s+EXISTS)/i.test(sql))
-  warnings.push('DROP_TABLE_REVIEW');
- if(/\bDELETE\s+FROM\s+auth\.users\b/i.test(sql))
-  warnings.push('DELETES_AUTH_USERS');
- return warnings;
-};
+import {riskFlags} from './lib/unipathway-migration-risk.mjs';
 
 export function inventoryMigrations({directory=MIGRATIONS_DIR,appliedVersions=[]}={}){
  const rawNames=readdirSync(directory).filter(x=>x.endsWith('.sql')).sort();

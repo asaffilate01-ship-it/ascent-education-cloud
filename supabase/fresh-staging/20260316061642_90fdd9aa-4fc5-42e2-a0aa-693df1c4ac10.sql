@@ -1,0 +1,1 @@
+-- Historical demonstration data excluded from a fresh empty staging database.

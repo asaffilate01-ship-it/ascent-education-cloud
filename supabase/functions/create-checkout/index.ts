@@ -1,3 +1,4 @@
+import { invoicePaymentMinorUnits } from "../_shared/invoice-payment.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { corsHeaders, rateLimit, rateLimitResponse, getClientIp } from "../_shared/cors.ts";
@@ -66,17 +67,15 @@ Deno.serve(async (req) => {
     // Read the invoice through the caller's own session so RLS decides visibility.
     const { data: invoice, error: invErr } = await supabaseClient
       .from("invoices")
-      .select("id, tenant_id, amount, paid, type, student_id")
+      .select("id, tenant_id, amount, paid, type, student_id, status")
       .eq("id", invoiceId!)
       .maybeSingle();
 
     if (invErr || !invoice) return json({ error: "Invoice not found or not accessible" }, 404);
 
-    const balance = Number(invoice.amount) - Number(invoice.paid ?? 0);
-    const requested = Number(amount);
-    const payable = Number.isFinite(requested) && requested > 0 ? Math.min(requested, balance) : balance;
-
-    if (!(payable > 0)) return json({ error: "This invoice has no outstanding balance" }, 400);
+    let unitAmount: number;
+    try { unitAmount = invoicePaymentMinorUnits(invoice,user.id,amount); }
+    catch(error){ return json({error:error instanceof Error?error.message:'Invoice payment is unavailable'},400); }
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -85,7 +84,7 @@ Deno.serve(async (req) => {
       line_items: [{
         price_data: {
           currency: "pkr",
-          unit_amount: Math.round(payable * 100),
+          unit_amount: unitAmount,
           product_data: { name: `UniPathway ${invoice.type ?? "tuition"} invoice` },
         },
         quantity: 1,

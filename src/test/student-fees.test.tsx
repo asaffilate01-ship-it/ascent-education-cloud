@@ -1,0 +1,16 @@
+import {cleanup,fireEvent,render,screen} from '@testing-library/react';
+import {MemoryRouter} from 'react-router-dom';
+import {beforeEach,afterEach,expect,it,vi} from 'vitest';
+import StudentFees from '@/pages/student/StudentFees';
+const mocks=vi.hoisted(()=>({query:vi.fn(),notice:vi.fn(),success:vi.fn(),error:vi.fn(),invoke:vi.fn()}));
+vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'student'}})}));
+vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:{children:React.ReactNode})=><main>{children}</main>}));
+vi.mock('sonner',()=>({toast:Object.assign(mocks.notice,{success:mocks.success,error:mocks.error})}));
+vi.mock('@/integrations/supabase/client',()=>({supabase:{from:()=>({select:()=>({eq:()=>({order:mocks.query})})}),functions:{invoke:mocks.invoke}}}));
+afterEach(cleanup);beforeEach(()=>{vi.clearAllMocks();mocks.query.mockResolvedValue({data:[],error:null});});
+const show=(path='/student/finance')=>render(<MemoryRouter initialEntries={[path]}><StudentFees/></MemoryRouter>);
+it('does not treat a success URL as verified payment',async()=>{show('/student/finance?payment=success');await screen.findByText('No invoices yet');expect(mocks.success).not.toHaveBeenCalled();expect(mocks.notice).toHaveBeenCalledWith('Payment verification pending',expect.any(Object));});
+it('does not claim cancellation proves no charge occurred',async()=>{show('/student/finance?payment=cancelled');await screen.findByText('No invoices yet');expect(mocks.notice).toHaveBeenCalledWith('Checkout closed',expect.objectContaining({description:expect.stringContaining('not been confirmed')}));});
+it('fails closed on query errors and supports retry',async()=>{mocks.query.mockResolvedValueOnce({error:{message:'denied'}}).mockResolvedValueOnce({data:[],error:null});show();await screen.findByRole('alert');expect(screen.queryByText('No invoices yet')).not.toBeInTheDocument();expect(screen.queryByText('Outstanding')).not.toBeInTheDocument();fireEvent.click(screen.getByText('Retry invoices'));await screen.findByText('No invoices yet');});
+it('does not offer payment on a refunded invoice',async()=>{mocks.query.mockResolvedValue({data:[{id:'a',amount:100,paid:0,status:'refunded',type:'tuition'}]});show();await screen.findByText('refunded');expect(screen.queryByRole('button',{name:'Pay now'})).not.toBeInTheDocument();});
+it('does not offset an unpaid invoice with another invoice overpayment',async()=>{mocks.query.mockResolvedValue({data:[{id:'a',amount:100,paid:200,status:'paid'},{id:'b',amount:80,paid:0,status:'pending'}]});show();await screen.findByText('pending');const label=screen.getByText('Outstanding');expect(label.parentElement).toHaveTextContent('Rs. 80');});

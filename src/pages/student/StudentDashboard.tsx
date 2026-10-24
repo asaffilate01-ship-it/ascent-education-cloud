@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
 import { useEffect, useState } from 'react';
 import { db } from '@/lib/db';
+import StudentLearningAgenda from '@/components/student/StudentLearningAgenda';
 import STEMCoachLearningAccess from '@/components/student/STEMCoachLearningAccess';
 
 const fadeUp = {
@@ -21,6 +22,10 @@ const fadeUp = {
 };
 
 export default function StudentDashboard() {
+  const {user} = useAuth();
+  return <StudentDashboardContent key={`${user?.id}:${user?.tenantId}:${user?.role}`} />;
+}
+function StudentDashboardContent() {
   const { user } = useAuth();
   const scope = [{column: 'tenant_id', operator: 'eq' as const, value: user?.tenantId}];
   const enrolmentsQuery = useSupabaseQuery('student_enrolments', {enabled: !!user?.tenantId, filters: [...scope, {column: 'student_id', operator: 'eq', value: user?.id}, {column: 'status', operator: 'eq', value: 'active'}]});
@@ -28,41 +33,42 @@ export default function StudentDashboard() {
   const programmesQuery = useSupabaseQuery('programmes', {enabled: programmeIds.length > 0, filters: [...scope, {column: 'id', operator: 'in', value: programmeIds}]});
   const modulesQuery = useSupabaseQuery('modules', {enabled: programmeIds.length > 0, filters: [...scope, {column: 'programme_id', operator: 'in', value: programmeIds}]});
   const moduleIds = modulesQuery.data.map(row => row.id);
-  const assignmentsQuery = useSupabaseQuery('assignments', {enabled: moduleIds.length > 0, filters: [...scope, {column: 'module_id', operator: 'in', value: moduleIds}], orderBy: {column: 'deadline', ascending: true}});
   type Approved={attempt_id:string;brief_id:string;final_score:number;released_at:string};
   type Amendment={attempt_id:string;corrected_final_score:number};
   const [approved,setApproved]=useState<Approved[]>([]);
   const [corrections,setCorrections]=useState<Amendment[]>([]);
+  const [gradeRefresh,setGradeRefresh]=useState(0);
   const [gradeError,setGradeError]=useState('');
   const [gradeLoading,setGradeLoading]=useState(true);
   useEffect(()=>{
    if(!user?.id||!user.tenantId){setGradeLoading(false);setApproved([]);return;}
    let live=true;setGradeLoading(true);setGradeError('');
-   void Promise.all([
-    db.from('unipathway_assessment_released_results')
+   void (async()=>{
+    const a=await db.from('unipathway_assessment_released_results')
       .select('attempt_id,brief_id,final_score,released_at')
-      .eq('student_id',user.id).eq('tenant_id',user.tenantId).order('released_at',{ascending:false}).limit(100),
-    db.from('unipathway_assessment_grade_amendments')
+      .eq('student_id',user.id).eq('tenant_id',user.tenantId).order('released_at',{ascending:false}).limit(100);
+    if(a.error)throw a.error;
+    if(!live)return;
+    const ids=(a.data||[]).map((row:Approved)=>row.attempt_id);
+    const b=ids.length?await db.from('unipathway_assessment_grade_amendments')
       .select('attempt_id,corrected_final_score')
-      .eq('student_id',user.id).eq('tenant_id',user.tenantId).limit(100)
-   ]).then(([a,b])=>{
+      .eq('student_id',user.id).eq('tenant_id',user.tenantId).in('attempt_id',ids).limit(100):{data:[],error:null};
+
     if(!live)return;
     if(a.error||b.error){setApproved([]);setCorrections([]);setGradeError('Only independently released marks are available; the secure grade service is not ready.');}
     else {setApproved((a.data||[]) as Approved[]);setCorrections((b.data||[]) as Amendment[]);}
     setGradeLoading(false);
-   }).catch(()=>{if(live){setApproved([]);setCorrections([]);setGradeError('Secure approved grades are unavailable.');setGradeLoading(false);}});
+   })().catch(()=>{if(live){setApproved([]);setCorrections([]);setGradeError('Secure approved grades are unavailable.');setGradeLoading(false);}});
    return()=>{live=false;};
-  },[user?.id,user?.tenantId]);
-  const {data: assignments} = assignmentsQuery;
+  },[user?.id,user?.tenantId,gradeRefresh]);
   const {data: modules} = modulesQuery;
   const {data: programmes} = programmesQuery;
-  const queries = [enrolmentsQuery, programmesQuery, modulesQuery, assignmentsQuery];
+  const queries = [enrolmentsQuery, programmesQuery, modulesQuery];
   const loading = queries.some(query => query.loading);
 
   const approvedAverage = approved.length>0
     ? Math.round(approved.reduce((sum,g)=>sum+Number(corrections.find(x=>x.attempt_id===g.attempt_id)?.corrected_final_score??g.final_score),0)/approved.length)
     : null;
-  const upcomingAssignments = assignments.filter((a) => new Date(a.deadline) > new Date());
 
   if (!user?.tenantId) return <DashboardLayout title="My Dashboard"><p role="alert">A centre assignment is required.</p></DashboardLayout>;
   if (loading) return <DashboardSkeleton />;
@@ -71,11 +77,7 @@ export default function StudentDashboard() {
   const stats = [
     { label: 'Courses', value: String(programmes.length), icon: BookOpen },
     { label: 'Modules', value: String(modules.length), change: 'enrolled', changeType: 'neutral' as const, icon: Video },
-    { label: 'Upcoming Legacy Tasks', value: String(upcomingAssignments.length), change: `${upcomingAssignments.filter(a => {
-      const days = (new Date(a.deadline).getTime() - Date.now()) / 86400000;
-      return days <= 7;
-    }).length} this week`, changeType: 'negative' as const, icon: ClipboardList },
-    { label: 'Approved Average', value: gradeError||gradeLoading?'—':approvedAverage===null?'—':`${approvedAverage}%`, change: 'IQA-released results only', changeType: 'positive' as const, icon: BarChart3 },
+    { label: 'Approved Average', value: gradeError||gradeLoading?'—':approvedAverage===null?'—':`${approvedAverage}%`, change: 'Latest 100 released attempts; not a qualification grade', changeType: 'positive' as const, icon: BarChart3 },
   ];
 
   return (
@@ -95,6 +97,7 @@ export default function StudentDashboard() {
             <BookOpen className="w-4 h-4 text-primary" /> My Modules
           </h3>
           <div className="space-y-2">
+            {!modules.length&&<p>No modules are available for your active enrolments.</p>}
             {modules.slice(0, 5).map((mod) => (
               <div key={mod.id} className="flex items-center gap-4 py-3 border-b border-border/30 last:border-0">
                 <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
@@ -114,35 +117,8 @@ export default function StudentDashboard() {
           </div>
         </div>
 
-        {/* Upcoming Deadlines */}
-        <div className="surface-card p-5">
-          <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-            <Clock className="w-4 h-4 text-destructive" /> Scheduled legacy tasks
-          </h3>
-          <div className="space-y-3">
-            {upcomingAssignments.slice(0, 4).map((a) => {
-              const daysLeft = Math.ceil((new Date(a.deadline).getTime() - Date.now()) / 86400000);
-              const urgent = daysLeft <= 3;
-              return (
-                <div key={a.id} className={`p-3 rounded-lg ${urgent ? 'bg-destructive/5 border border-destructive/20' : 'surface-data'}`}>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-sm font-medium">{a.title}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Due {new Date(a.deadline).toLocaleDateString()} · {daysLeft}d left
-                      </p>
-                    </div>
-                    {urgent && <StatusBadge status="Urgent" variant="danger" />}
-                  </div>
-                </div>
-              );
-            })}
-            {upcomingAssignments.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-4">No upcoming deadlines</p>
-            )}
-          </div>
-        </div>
       </div>
+      <StudentLearningAgenda tenant={user.tenantId} student={user.id} moduleIds={moduleIds} />
 
       <STEMCoachLearningAccess enrolled={enrolmentsQuery.data.length > 0} />
 
@@ -163,7 +139,7 @@ export default function StudentDashboard() {
             <TrendingUp className="w-4 h-4 text-primary" /> Recent Grades
           </h3>
           <div className="space-y-3">
-            {gradeError&&<p role="alert" className="text-sm text-muted-foreground">{gradeError}</p>}
+            {gradeError&&<div><p role="alert">{gradeError}</p><Button onClick={()=>setGradeRefresh(x=>x+1)}>Retry approved grades</Button></div>}
             {gradeLoading&&<p role="status" className="text-sm text-muted-foreground">Verifying independent marks…</p>}
             {!gradeError&&!gradeLoading&&approved.slice(0,5).map(g=>{
              const score=corrections.find(x=>x.attempt_id===g.attempt_id)?.corrected_final_score??g.final_score;

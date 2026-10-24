@@ -1,0 +1,1 @@
+-- Fresh Auth has no legacy token rows to repair.
