@@ -123,3 +123,13 @@ The lecturer attendance report now loads only the lecturer's centre and assigned
 Present, late, absent, excused and other marks are separate. The displayed rate is (present + late) / (present + late + absent), weighted across recorded marks; excused/other marks are excluded and an empty denominator displays Not available. This aligns with the existing recorded-attendance chart calculation. The report no longer invents risk or perfect-attendance classifications from incomplete/unmarked sessions.
 
 The inactive Take Register button is replaced with View class invitations. This is a read-only report: manual register capture, live Teams presence and provider attendance reconciliation are not implemented by this phase. Hosted acceptance must verify assigned-module restrictions, reassignment, missing profiles, excused-only histories, large mark histories and failed-refresh recovery against approved centre attendance policies. No migration or deployment is included.
+
+## Connected lecturer teaching workspace
+
+The teaching page now links to module overviews, materials, class scheduling and invitations, with assigned-module search and display pagination. It no longer reads legacy assignment/submission counts. Its weekly plan shows all saved start times across seven days, effective dates and recurrence, with hours calculated from actual start/end durations. Conservative overlap warnings include date-window and time overlap; they still require human review of recurrence.
+
+Shared scheduled-lecture reads now use complete ordered pagination, centre filtering and account-aware recovery through the existing query hook. Realtime refresh is centre-filtered. The teaching page and academic timeline hide unverified snapshots and offer refresh when their required reads fail.
+
+The destructive Auto-Schedule All shortcut is removed from the teaching page: its existing database function deletes current-term module rows before recreating them. This phase does not alter or invoke that legacy function. Staff are directed to the existing invited-class scheduler for deliberate scheduling. Saved weekly plans are explicitly separate from Teams meetings, attendance and actual delivery.
+
+Hosted acceptance: verify assigned modules and peer exclusion; inspect weekend/non-standard saved slots, durations and effective dates; follow module/material/scheduler links; interrupt schedule and timeline queries; switch accounts during reads. Confirm actual invitations and Teams delivery separately. Legacy recurring-plan editing/replacement needs a reviewed backend workflow before being exposed again. No migration or deployment is included.

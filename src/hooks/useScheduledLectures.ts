@@ -1,6 +1,7 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import {useSupabaseQuery} from '@/hooks/useSupabaseQuery';
 import { toast } from 'sonner';
 
 export interface ScheduledLecture {
@@ -31,7 +32,7 @@ export interface LectureWithModule extends ScheduledLecture {
   lecturer_name?: string;
 }
 
-const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const TIME_SLOTS = [
   { start: '09:00', end: '10:30', label: '09:00–10:30' },
   { start: '10:30', end: '12:00', label: '10:30–12:00' },
@@ -45,53 +46,22 @@ export { DAY_NAMES, TIME_SLOTS };
 
 export function useScheduledLectures() {
   const { user } = useAuth();
-  const [lectures, setLectures] = useState<LectureWithModule[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchLectures = useCallback(async () => {
-    if (!user) return;
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('scheduled_lectures')
-        .select(`
-          *,
-          modules!inner(title, code, programme_id, programmes!inner(title))
-        `)
-        .eq('is_active', true)
-        .order('day_of_week')
-        .order('start_time');
-
-      if (error) throw error;
-
-      const enriched: LectureWithModule[] = (data || []).map((row: any) => ({
-        ...row,
-        module_title: row.modules?.title || '',
-        module_code: row.modules?.code || null,
-        programme_title: row.modules?.programmes?.title || '',
-      }));
-
-      setLectures(enriched);
-    } catch (e: any) {
-      console.error('Failed to fetch lectures:', e);
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    fetchLectures();
-
-    // Realtime subscription
-    const channel = supabase
-      .channel('scheduled_lectures_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'scheduled_lectures' }, () => {
-        fetchLectures();
-      })
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
-  }, [fetchLectures]);
+  const {data,loading,error,refetch:fetchLectures}=useSupabaseQuery('scheduled_lectures',{
+    enabled:!!user?.id&&!!user?.tenantId,
+    select:'*, modules!inner(title, code, programme_id, programmes!inner(title))',
+    filters:[{column:'tenant_id',operator:'eq',value:user?.tenantId},{column:'is_active',operator:'eq',value:true}],
+    orderBy:{column:'day_of_week',ascending:true},
+  });
+  const lectures=useMemo<LectureWithModule[]>(()=>data.map(row=>{
+    const joined=row as unknown as ScheduledLecture & {modules?:{title:string;code:string|null;programmes?:{title:string}}};
+    return {...joined,module_title:joined.modules?.title||'',module_code:joined.modules?.code||null,programme_title:joined.modules?.programmes?.title||''};
+  }),[data]);
+  useEffect(()=>{
+    if(!user?.id||!user.tenantId)return;
+    const channel=supabase.channel(`scheduled_lectures_${user.id}_${user.tenantId}`)
+      .on('postgres_changes',{event:'*',schema:'public',table:'scheduled_lectures',filter:`tenant_id=eq.${user.tenantId}`},()=>{void fetchLectures();}).subscribe();
+    return()=>{void supabase.removeChannel(channel);};
+  },[user?.id,user?.tenantId,fetchLectures]);
 
   // Group by day for timetable view
   const timetable = useMemo(() => {
@@ -176,5 +146,5 @@ export function useScheduledLectures() {
     }
   };
 
-  return { lectures, myLectures, timetable, conflicts, loading, autoSchedule, addLecture, removeLecture, refetch: fetchLectures };
+  return { lectures, myLectures, timetable, conflicts, loading, error, autoSchedule, addLecture, removeLecture, refetch: fetchLectures };
 }

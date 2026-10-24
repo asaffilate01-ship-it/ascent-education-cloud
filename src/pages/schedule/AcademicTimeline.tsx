@@ -42,9 +42,9 @@ export default function AcademicTimeline() {
     new Set(['lecture', 'module', 'assignment', 'exam', 'residential', 'milestone'])
   );
 
-  const { data: academicEvents, loading: evLoading } = useSupabaseQuery('academic_events');
-  const { data: assignments, loading: asLoading } = useSupabaseQuery('assignments');
-  const { myLectures, loading: slLoading } = useScheduledLectures();
+  const { data: academicEvents, loading: evLoading, error: evError, refetch: refreshEvents } = useSupabaseQuery('academic_events');
+  const { data: assignments, loading: asLoading, error: asError, refetch: refreshAssignments } = useSupabaseQuery('assignments');
+  const { myLectures, loading: slLoading, error: slError, refetch: refreshLectures } = useScheduledLectures();
 
   const loading = evLoading || asLoading || slLoading;
   const ay = getAcademicYear();
@@ -137,6 +137,7 @@ export default function AcademicTimeline() {
   const subtitle = isLecturer ? 'Your teaching schedule, deadlines, and key dates' : 'Modules, lectures, assignments, and milestones';
 
   if (loading) return <DashboardSkeleton />;
+  if(evError||asError||slError)return <DashboardLayout title="Academic timeline"><p role="alert">Your timeline could not be verified. Refresh to retry.</p><Button onClick={()=>void Promise.all([refreshEvents(),refreshAssignments(),refreshLectures()])}>Refresh timeline</Button></DashboardLayout>;
 
   return (
     <DashboardLayout title={title} subtitle={subtitle}>
