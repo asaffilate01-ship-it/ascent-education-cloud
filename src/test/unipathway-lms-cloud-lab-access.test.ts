@@ -14,8 +14,8 @@ describe('UniPathway LMS cloud/coding labs',()=>{
   expect(routes).toContain('<StudentR><LabLearningHub /></StudentR>');
   expect(routes).toContain('<LecturerR><LabInstructorPlanner /></LecturerR>');
   expect(courses).toContain("useSupabaseQuery('student_enrolments'");
-  expect(courses).toContain('enrolledProgrammeIds');
-  expect(courses).toContain('myProgrammes.map((prog)');
+  expect(courses).toContain('enrolled.has(p.id)');
+  expect(courses).toContain('<ModuleJourney moduleId={m.id}/>');
   expect(nav).toContain("path: '/student/labs'");
   expect(nav).toContain("path: '/lecturer/labs'");
   expect(student).toContain("to=\"/student/materials\"");

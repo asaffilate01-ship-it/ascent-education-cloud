@@ -1,0 +1,11 @@
+import {afterEach,it,expect,vi} from 'vitest';
+import {cleanup,render,screen} from '@testing-library/react';
+import {MemoryRouter} from 'react-router-dom';
+import StudentCourses from '@/pages/student/StudentCourses';
+import ModuleJourney from '@/components/assessment/ModuleJourney';
+vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'student',tenantId:'centre'}})}));
+vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:{children:React.ReactNode})=><main>{children}</main>}));
+vi.mock('@/hooks/useSupabaseQuery',()=>({useSupabaseQuery:(table:string)=>({loading:false,error:null,data:table==='student_enrolments'?[{programme_id:'p'}]:table==='programmes'?[{id:'p',title:'My course'},{id:'other',title:'Not enrolled'}]:[{id:'m',programme_id:'p',title:'Archived module',status:'archived'},{id:'secret',programme_id:'other',title:'Other module'}]})}));
+afterEach(cleanup);
+it('keeps module identity in every learning destination',()=>{render(<MemoryRouter><ModuleJourney moduleId="module-1"/></MemoryRouter>);for(const label of ['Classes','Materials','Recordings','Assignments','Results'])expect(screen.getByRole('link',{name:label}).getAttribute('href')).toContain('module=module-1');expect(screen.getByRole('link',{name:'Recordings'})).toHaveAttribute('href','/student/library?module=module-1&kind=recording');});
+it('shows only enrolled modules and does not equate archiving with achievement',()=>{render(<MemoryRouter><StudentCourses/></MemoryRouter>);expect(screen.getByText('My course')).toBeInTheDocument();expect(screen.queryByText('Not enrolled')).toBeNull();expect(screen.queryByText('Other module')).toBeNull();expect(screen.getByText(/Module status: archived/)).toBeInTheDocument();expect(screen.queryByText(/100%|Complete/)).toBeNull();});

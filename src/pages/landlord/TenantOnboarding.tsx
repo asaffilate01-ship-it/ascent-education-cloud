@@ -2,10 +2,10 @@ import { db } from '@/lib/db';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Building2, CheckCircle, ChevronRight, FileText, Globe, Palette, Users, CreditCard, Shield, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const STEPS = [
   { id: 1, title: 'Centre Details', icon: Building2 },
@@ -13,14 +13,17 @@ const STEPS = [
   { id: 3, title: 'Compliance Docs', icon: FileText },
   { id: 4, title: 'Branding', icon: Palette },
   { id: 5, title: 'Admin Account', icon: Users },
-  { id: 6, title: 'Review & Launch', icon: CheckCircle },
+  { id: 6, title: 'Review & Save', icon: CheckCircle },
 ];
 
 export default function TenantOnboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [launching, setLaunching] = useState(false);
-  const [draftTenantId] = useState(()=>crypto.randomUUID());
+  const [params,setParams]=useSearchParams();
+  const [draftTenantId] = useState(()=>params.get('draft')||crypto.randomUUID());
+  const [revision,setRevision]=useState(0),[saving,setSaving]=useState(false),[restoreError,setRestoreError]=useState(''),[restoring,setRestoring]=useState(!!params.get('draft'));
+  const [savedDrafts,setSavedDrafts]=useState<Array<{id:string;form_data:{centreName?:string};updated_at:string}>>([]);
   const [documentPaths,setDocumentPaths] = useState<Record<string,{path:string;fileName:string}>>({});
   const [createdTenantId,setCreatedTenantId]=useState<string|null>(null);
   const [uploadedDocs, setUploadedDocs] = useState<Record<string, string>>({});
@@ -39,6 +42,19 @@ export default function TenantOnboarding() {
     brandName: '',
   });
 
+  useEffect(()=>{let active=true;
+    void Promise.resolve(db.from('unipathway_onboarding_drafts').select('id,form_data,updated_at').order('updated_at',{ascending:false}).limit(50)).then(r=>{if(active){if(r.error)setRestoreError('Saved drafts could not be loaded. Please reload before creating a duplicate centre.');else setSavedDrafts(r.data||[]);}}).catch(()=>{if(active)setRestoreError('Saved drafts unavailable. Please reload.');});
+    if(params.get('draft'))void Promise.resolve(db.from('unipathway_onboarding_drafts').select('*').eq('id',draftTenantId).single()).then(r=>{if(!active)return;if(r.error||!r.data)throw Error('Draft unavailable');const d=r.data;setFormData(old=>({...old,...d.form_data}));setDocumentPaths(d.documents||{});setUploadedDocs(Object.fromEntries(Object.entries(d.documents||{}).map(([k,v])=>[k,(v as {fileName:string}).fileName])));setStep(d.step);setRevision(d.revision);setCreatedTenantId(d.tenant_id);}).catch(()=>{if(active)setRestoreError('Draft could not be restored. Reload or return to saved drafts; no new centre was created.');}).finally(()=>{if(active)setRestoring(false);});
+    return()=>{active=false;};
+  // Draft identity is fixed for this mounted workspace; resume links load another workspace.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[draftTenantId]);
+  async function saveDraft(documents=documentPaths){
+    setSaving(true);
+    try{const r=await db.rpc('save_unipathway_onboarding_draft',{p_id:draftTenantId,p_form:formData,p_documents:documents,p_step:step,p_revision:revision});if(r.error)throw Error(r.error.message||'Draft not saved');setRevision(r.data.revision);setParams({draft:draftTenantId},{replace:true});return r.data;}
+    finally{setSaving(false);}
+  }
+
   const updateField = (key: string, value: string) => setFormData(prev => ({ ...prev, [key]: value }));
 
   const handleDocUpload = async (docName: string, file: File | undefined) => {
@@ -54,7 +70,9 @@ export default function TenantOnboarding() {
       if (error) throw error;
 
       const previous=documentPaths[docName]?.path;
-      setDocumentPaths(prev=>({...prev,[docName]:{path,fileName:file.name}}));
+      const nextDocuments={...documentPaths,[docName]:{path,fileName:file.name}};
+      await saveDraft(nextDocuments);
+      setDocumentPaths(nextDocuments);
       if(previous){const removed=await supabase.storage.from('unipathway-centre-documents').remove([previous]);if(removed.error)toast.error('New document uploaded; the earlier file still needs removal.');}
       setUploadedDocs(prev => ({ ...prev, [docName]: file.name }));
       toast.success(`${docName} uploaded`);
@@ -72,28 +90,10 @@ export default function TenantOnboarding() {
     }
     setLaunching(true);
     try {
-      let tenantId=createdTenantId;
-      if(!tenantId){
-      const { data: tenant, error } = await supabase
-        .from('tenants')
-        .insert({
-          id: draftTenantId,
-          name: formData.centreName,
-          slug: formData.slug.toLowerCase().replace(/[^a-z0-9-]/g, ''),
-          plan: formData.plan,
-          status: 'onboarding' as const,
-          primary_color: formData.primaryColor,
-          accent_color: formData.accentColor,
-          brand_name: formData.brandName || formData.centreName,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      tenantId=tenant.id;setCreatedTenantId(tenant.id);
-      }
-      const setup=await db.from('unipathway_centre_onboarding').upsert({tenant_id:tenantId,country:formData.country.trim(),city:formData.city.trim(),company_registration:formData.companyReg.trim(),documents:documentPaths,updated_at:new Date().toISOString()},{onConflict:'tenant_id'});
-      if(setup.error)throw new Error('Centre saved, but setup details were not saved. Retry before leaving this page.');
+      const saved=await saveDraft();
+      const centre=await db.rpc('create_unipathway_centre_from_draft',{p_id:draftTenantId,p_revision:saved.revision});
+      if(centre.error)throw new Error(centre.error.message||'Centre setup could not be confirmed. Resume the saved draft to retry.');
+      const tenantId=centre.data;setCreatedTenantId(tenantId);
       const invitation=await supabase.functions.invoke('invite-staff',{body:{tenantId,email:formData.adminEmail,fullName:formData.adminName,role:'centre_director'}});
       if(invitation.error||invitation.data?.error||!invitation.data?.success)throw new Error('Centre saved in onboarding; administrator access is incomplete. '+(invitation.data?.error||'Retry administrator setup.'));
       toast.success('Centre saved in onboarding. Administrator access assigned'+(invitation.data?.emailSent?' and invitation email issued.':'.'));
@@ -107,6 +107,13 @@ export default function TenantOnboarding() {
 
   return (
     <DashboardLayout title="Onboard New Centre" subtitle="Step-by-step setup for new tenant">
+      <section className="mb-5 space-y-3 rounded-xl border p-4"><h2 className="font-semibold">Save and resume setup</h2><p className="text-sm text-muted-foreground">Save your draft before leaving. Uploaded document details are saved with the draft. Centre creation and setup details are saved together; retrying administrator setup reuses the same centre.</p>
+      {restoring&&<p role="status">Restoring saved setup…</p>}{restoreError&&<p role="alert">{restoreError}</p>}
+      <Button variant="outline" disabled={saving||launching||restoring||!!uploadingDoc||!!restoreError} onClick={()=>void saveDraft().then(()=>toast.success('Draft saved. You can resume it from this page.')).catch(e=>toast.error(e.message))}>{saving?'Saving…':'Save draft'}</Button>
+      {createdTenantId&&<p className="text-sm">Centre saved in onboarding. Administrator setup can be retried.</p>}
+      {!!savedDrafts.length&&<details><summary className="cursor-pointer text-sm font-semibold">Resume a saved setup</summary><ul className="mt-2 space-y-2">{savedDrafts.map(d=><li key={d.id}><a className="text-sm underline" href={`?draft=${encodeURIComponent(d.id)}`}>{d.form_data.centreName||'Unnamed centre'} · {new Date(d.updated_at).toLocaleString()}</a></li>)}</ul></details>}
+      </section>
+      <fieldset disabled={restoring||!!restoreError||saving||launching||!!uploadingDoc}>
       {/* Progress */}
       <div className="surface-card p-4 mb-6">
         <div className="flex items-center justify-between">
@@ -143,7 +150,7 @@ export default function TenantOnboarding() {
               <div>
                 <label className="text-label mb-1.5 block">URL Slug</label>
                 <div className="flex items-center bg-secondary rounded-lg">
-                  <span className="text-xs text-muted-foreground pl-3">educloud.pk/</span>
+                  <span className="text-xs text-muted-foreground pl-3">Centre reference: </span>
                   <input value={formData.slug} onChange={(e) => updateField('slug', e.target.value)} placeholder="unipathway" className="flex-1 bg-transparent text-sm px-1 py-2.5 outline-none text-foreground" />
                 </div>
               </div>
@@ -331,6 +338,7 @@ export default function TenantOnboarding() {
           )}
         </div>
       </div>
+      </fieldset>
     </DashboardLayout>
   );
 }

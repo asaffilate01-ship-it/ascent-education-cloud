@@ -1,3 +1,4 @@
+import CourseworkFiles from '@/components/assessment/CourseworkFiles';
 import {useCallback,useEffect,useState} from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {useAuth} from '@/contexts/AuthContext';
@@ -92,7 +93,7 @@ export default function AppealReviewerQueue(){
       <p className="mt-2 whitespace-pre-wrap text-sm">{brief?.teaching_summary}</p>
       <p className="mt-2 text-xs text-muted-foreground">Policy: {brief?.policy_reference}</p>
       <h3 className="mt-4 font-semibold">Original submitted work</h3>
-      <pre className="mt-2 max-h-56 overflow-auto whitespace-pre-wrap rounded-lg border p-3 font-sans text-sm">{attempt?.evidence_text||'Not available'}</pre>
+      <pre className="mt-2 max-h-56 overflow-auto whitespace-pre-wrap rounded-lg border p-3 font-sans text-sm">{attempt?.evidence_text||'Not available'}</pre>{attempt?.id&&<CourseworkFiles attemptId={attempt?.id}/>}
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
        <p className="rounded-lg bg-secondary p-3 text-sm">Original approved final: <strong>{original?.final_score??'—'}/100</strong></p>
        <p className="rounded-lg bg-secondary p-3 text-sm">Raw: <strong>{original?.raw_score??'—'}</strong> · penalty {original?.penalty_points??'—'}</p>

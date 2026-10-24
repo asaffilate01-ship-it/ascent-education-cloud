@@ -1,0 +1,68 @@
+import assert from 'node:assert/strict';
+export async function verifyCourseworkRecovery(db){
+ const id=n=>`81000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
+ const [tenant,student,peer,lecturer,manager,marker,qa,root,programme,module,brief,draft]=Array.from({length:12},(_,i)=>id(i+1));
+ let checks=0;const ok=(v,m)=>{assert.ok(v,m);checks++;};
+ const login=async user=>{await db.exec('RESET ROLE');await db.query("select set_config('request.jwt.claim.sub',$1,true)",[user]);await db.exec('SET LOCAL ROLE authenticated');};
+ const denied=async fn=>{await db.exec('SAVEPOINT denied');await assert.rejects(fn);await db.exec('ROLLBACK TO SAVEPOINT denied');checks++;};
+ const rpc=async(sql,args=[])=> (await db.query(sql,args)).rows[0]?.value;
+ const evidence='Original coursework evidence includes calculations, observations and source references.';
+ await db.exec('BEGIN');
+ await db.query("insert into public.tenants(id,name,slug) values($1,'Coursework QA','unipathway')",[tenant]);
+ for(const [user,role] of [[student,'student'],[peer,'student'],[lecturer,'lecturer'],[manager,'programme_leader'],[marker,'assessor'],[qa,'iqa_officer'],[root,'superadmin']]){
+  await db.query('insert into auth.users(id,email,email_confirmed_at) values($1,$2,now())',[user,`${user}@example.invalid`]);
+  await db.query('delete from public.user_roles where user_id=$1',[user]);
+  await db.query('insert into public.user_roles(user_id,tenant_id,role) values($1,$2,$3)',[user,tenant,role]);
+ }
+ await db.query("insert into public.programmes(id,tenant_id,title,level,awarding_body) values($1,$2,'Evidence programme','3','OTHM')",[programme,tenant]);
+ await db.query("insert into public.modules(id,programme_id,tenant_id,title,lecturer_id) values($1,$2,$3,'Evidence module',$4)",[module,programme,tenant,lecturer]);
+ await db.query('insert into public.student_enrolments(student_id,programme_id,tenant_id) values($1,$2,$3)',[student,programme,tenant]);
+ await db.query("insert into public.unipathway_assessment_briefs(id,tenant_id,module_id,lecturer_id,title,assessment_type,teaching_summary,learning_outcomes,student_expectations,required_evidence,due_at,submission_cutoff,policy_reference) values($1,$2,$3,$4,'Evidence assignment','coursework',$5,$5,$5,$5,now()+interval '1 day',now()+interval '2 days','QA-POLICY')",[brief,tenant,module,lecturer,evidence]);
+ await db.query("insert into public.unipathway_assessment_criteria(tenant_id,brief_id,criterion_code,learning_outcome,criterion_description,scoring_guidance,max_points,display_order) values($1,$2,'LO1','Explain evidence and observations',$3,$3,50,1),($1,$2,'LO2','Evaluate evidence and observations',$3,$3,50,2)",[tenant,brief,evidence]);
+ await login(manager);await db.query('select public.publish_unipathway_assessment_brief($1)',[brief]);
+ const reserve=(name='evidence.pdf',mime='application/pdf',size=120)=>rpc('select row_to_json(public.reserve_unipathway_coursework_file($1,$2,$3,$4)) value',[brief,name,mime,size]);
+ const submit=(uploads,request=id(30),text=evidence)=>rpc('select public.submit_unipathway_coursework($1,$2,$3,$4) value',[brief,text,uploads,request]);
+ await login(peer);await denied(()=>reserve());
+ await login(student);await denied(()=>db.query('select public.get_user_tenant_id($1)',[peer]));ok(await rpc('select public.current_unipathway_tenant_id() value')===tenant,'Policy helper returns only caller centre');await denied(()=>reserve('script.exe','application/octet-stream'));await denied(()=>reserve('large.pdf','application/pdf',20971521));
+ const file=await reserve();ok(file.student_id===student,'Owner is assigned from authenticated identity');
+ await denied(()=>submit([file.id]));
+ await denied(()=>db.query("insert into storage.objects(bucket_id,name,metadata) values('unipathway-coursework','forged/path','{}')"));
+ await db.query("insert into storage.objects(bucket_id,name,metadata) values('unipathway-coursework',$1,$2)",[file.storage_path,JSON.stringify({size:120,mimetype:'application/pdf'})]);
+ await denied(()=>db.query('select public.discard_unipathway_coursework_file($1)',[file.id]));
+ await login(peer);ok((await db.query('select * from public.unipathway_coursework_uploads')).rows.length===0,'Peer cannot read private manifest');
+ ok((await db.query("select * from storage.objects where bucket_id='unipathway-coursework'")).rows.length===0,'Peer cannot download object');
+ await denied(()=>db.query('select public.discard_unipathway_coursework_file($1)',[file.id]));
+ await login(student);const attempt=await submit([file.id]);ok(!!attempt,'Completed upload submitted');
+ ok(await submit([file.id])===attempt,'Same request returns original attempt');
+ await denied(()=>submit([file.id],id(30),evidence+' changed'));await denied(()=>submit([file.id],id(31)));
+ ok((await db.query("delete from storage.objects where bucket_id='unipathway-coursework' returning id")).rows.length===0,'Submitted file cannot be deleted');
+ ok((await db.query("update storage.objects set metadata='{}' where bucket_id='unipathway-coursework' returning id")).rows.length===0,'Submitted file cannot be overwritten');
+ await denied(()=>db.query('select public.discard_unipathway_coursework_file($1)',[file.id]));
+ await login(marker);ok((await db.query('select * from public.unipathway_coursework_uploads')).rows.length===0,'Unallocated marker has no file access');
+ await login(manager);await db.query('select public.allocate_unipathway_independent_marker($1,$2,$3)',[attempt,marker,qa]);
+ for(const reviewer of [marker,qa]){await login(reviewer);ok((await db.query("select * from storage.objects where bucket_id='unipathway-coursework'")).rows.length===1,'Allocated reviewer can download evidence');}
+ await login(lecturer);ok((await db.query('select * from public.unipathway_coursework_uploads')).rows.length===0,'Teaching lecturer has no marking evidence access');
+ const form={centreName:'Recovered centre',slug:'recovered-centre',city:'Jhelum',country:'Pakistan',plan:'starter',primaryColor:'#123456',accentColor:'#abcdef'};
+ const save=(revision=0)=>rpc('select row_to_json(public.save_unipathway_onboarding_draft($1,$2,$3,6,$4)) value',[draft,JSON.stringify(form),'{}',revision]);
+ const create=(revision=1)=>rpc('select public.create_unipathway_centre_from_draft($1,$2) value',[draft,revision]);
+ await login(manager);await denied(()=>save());
+ await login(root);const saved=await save();ok(saved.revision===1,'Draft persisted');await denied(()=>save());
+ ok(await create()===draft,'Centre created from durable draft');ok(await create()===draft,'Retry reuses centre');
+ await db.exec('RESET ROLE');ok((await db.query('select id from public.tenants where id=$1',[draft])).rows.length===1,'No duplicate centre');await login(root);
+ form.city='Lahore';await save(1);await denied(()=>create(1));await create(2);
+ ok((await db.query('select city from public.unipathway_centre_onboarding where tenant_id=$1',[draft])).rows[0].city==='Lahore','Resume updates existing centre details');
+ await login(student);ok((await db.query('select * from public.unipathway_onboarding_drafts')).rows.length===0,'Student cannot see staff drafts');await denied(()=>create(2));
+ await db.exec('RESET ROLE');await db.query("update public.tenants set status='active' where id=$1",[draft]);await login(root);await denied(()=>create(2));
+ const offerKey='OTHM:QA approval fixture';
+ const review=(publish,revision,evidence='QA approved fees and intake reference')=>rpc("select public.review_unipathway_course_offer($1,'upcoming','PKR test fee only','Approved entry requirements fixture',current_date+30,now()+interval '10 days',$2,$3,$4) value",[offerKey,publish,evidence,revision]);
+ await login(student);await denied(()=>review(true,0));
+ await login(root);await denied(()=>review(true,0,'short'));ok(await review(false,0)===1,'Draft course offer saved with audit');
+ await db.exec('RESET ROLE;SET LOCAL ROLE anon');ok((await db.query('select * from public.unipathway_public_course_offers')).rows.length===0,'Draft offers hidden from public');await denied(()=>db.query('select * from public.unipathway_course_offer_reviews'));
+ await login(root);await denied(()=>review(true,0));await review(true,1);
+ await db.exec('RESET ROLE;SET LOCAL ROLE anon');ok((await db.query('select * from public.unipathway_public_course_offers')).rows.length===1,'Current confirmed offer is public');
+ await db.exec('RESET ROLE');await db.query("update public.unipathway_public_course_offers set valid_until=now()-interval '1 day' where course_key=$1",[offerKey]);await db.exec('SET LOCAL ROLE anon');ok((await db.query('select * from public.unipathway_public_course_offers')).rows.length===0,'Expired confirmation disappears');
+ await login(root);await review(true,2);await db.query('select public.withdraw_unipathway_course_offer($1,$2,3)',[offerKey,'QA withdrawal reason reference']);
+ ok((await db.query('select * from public.unipathway_course_offer_reviews where course_key=$1',[offerKey])).rows.length===4,'Every review and withdrawal audited');
+ await db.exec('RESET ROLE;SET LOCAL ROLE anon');ok((await db.query('select * from public.unipathway_public_course_offers')).rows.length===0,'Withdrawn details are hidden');
+ await db.exec('ROLLBACK');console.log(JSON.stringify({courseworkRecoveryChecks:checks,status:'passed'}));
+}
