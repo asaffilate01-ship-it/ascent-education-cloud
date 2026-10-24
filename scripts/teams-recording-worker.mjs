@@ -8,6 +8,8 @@ import {join} from 'node:path';
 import {Readable,Transform} from 'node:stream';
 import {pipeline} from 'node:stream/promises';
 import {recordingId,belongsToSession,listRecordings} from './lib/teams-recordings.mjs';
+import {validateWorkerConfig} from './lib/worker-config.mjs';
+validateWorkerConfig('recordings', process.env);
 const required=['SUPABASE_URL','SUPABASE_SERVICE_ROLE_KEY','UNIPATHWAY_TENANT_ID','MS_TENANT_ID','MS_CLIENT_ID','MS_CLIENT_SECRET'];
 for(const name of required)if(!process.env[name])throw new Error(`Missing server configuration: ${name}`);
 const env=process.env;

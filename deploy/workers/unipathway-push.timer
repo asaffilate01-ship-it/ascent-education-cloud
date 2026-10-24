@@ -1,0 +1,11 @@
+[Unit]
+Description=Schedule UniPathway push queue processing
+
+[Timer]
+OnBootSec=2min
+OnUnitInactiveSec=1min
+RandomizedDelaySec=10s
+Unit=unipathway-push.service
+
+[Install]
+WantedBy=timers.target

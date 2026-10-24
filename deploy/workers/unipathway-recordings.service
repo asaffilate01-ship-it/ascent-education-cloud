@@ -1,0 +1,26 @@
+[Unit]
+Description=UniPathway recordings queue worker
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=unipathway-worker
+Group=unipathway-worker
+WorkingDirectory=/opt/unipathway
+Environment=NODE_ENV=production
+EnvironmentFile=/etc/unipathway/recordings.env
+ExecStartPre=/usr/bin/node scripts/check-worker-config.mjs recordings
+ExecStart=/usr/bin/node scripts/teams-recording-worker.mjs --scan
+TimeoutStartSec=50min
+TimeoutStopSec=30s
+KillMode=control-group
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+RestrictSUIDSGID=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true

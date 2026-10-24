@@ -49,3 +49,7 @@ iOS: on the authorised Mac install the distribution certificate/private key and 
 ## Cross-brand boundary
 
 This implementation is in the UniPathway repository. It does not modify or deploy STEMCoach, Skillfinch or TrainDirekt. Reuse the learning workflow through separately reviewed implementations/connectors with brand-specific curricula, permissions and consent. No shared learner identity or automatic data transfer has been assumed.
+
+## Worker-host deployment preparation
+
+Reviewed systemd services/timers and offline configuration validation are now in `deploy/workers/README.md`. They schedule the existing recording and notification workers with non-overlapping runs, deadlines and filesystem restrictions. `npm run test:worker-operations` tests configuration rejection and offline CLI behaviour. No host has been provisioned or timer activated; Microsoft/FCM/APNs connectivity and device receipt still require live acceptance.
