@@ -12,6 +12,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { lazy, Suspense } from "react";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { studyDestinations } from "@/lib/studyDestinations";
+import RouteIndexing from '@/components/RouteIndexing';
 import ScrollToTop from "@/components/ScrollToTop";
 const AIChatWidgetLazy = lazy(() => import("@/components/AIChatWidget"));
 
@@ -569,6 +570,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <RouteIndexing />
           <ScrollToTop />
           <AuthProvider>
             <AppRoutes />
