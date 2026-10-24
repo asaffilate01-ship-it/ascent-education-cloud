@@ -56,3 +56,7 @@ Hosted migration history contains only four entries (20260813103749, 20260816114
 ## Remaining production gate
 
 Backup/export evidence, forward schema reconciliation, Microsoft administrator setup and a deployable worker authentication solution must precede real invitation, audio, recording and withdrawal acceptance. Merged PRs and passing synthetic tests do not satisfy that gate.
+
+### Updated instruction — 24 October, 16:11 UTC
+
+The user deferred recovery confirmation and Microsoft setup. Neither is a blocker for preparing additive, forward-only database changes. The earlier audit remains historical evidence, not a claim that backups were verified. Recovery is still unverified, and no database activation occurred merely by changing this task status. Microsoft credentials, consent and organiser mappings remain required for actual Teams and recording-provider operation. Preserve private media, tenant permissions, existing data and disabled paid providers throughout preparation.
