@@ -1,0 +1,50 @@
+import assert from 'node:assert/strict';
+export async function verifyDailyRegister(db){
+ const id=n=>`72000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
+ const [tenant,teacher,student,peer,programme,module]=[1,2,3,4,5,6].map(id);
+ let checks=0;const ok=(v,m)=>{assert.ok(v,m);checks++;};
+ const login=async user=>{await db.exec('RESET ROLE');await db.query("select set_config('request.jwt.claim.sub',$1,true)",[user]);await db.exec('SET LOCAL ROLE authenticated');};
+ const denied=async fn=>{await db.exec('SAVEPOINT denied');await assert.rejects(fn);await db.exec('ROLLBACK TO SAVEPOINT denied');checks++;};
+ const save=(s=student,status='present',date='2026-01-01')=>db.query('select public.save_unipathway_daily_mark($1,$2,$3,$4) id',[module,s,date,status]);
+ await db.exec('BEGIN');
+ await db.query("insert into public.tenants(id,name,slug) values($1,'Register QA','unipathway')",[tenant]);
+ for(const [user,role] of [[teacher,'lecturer'],[student,'student'],[peer,'lecturer']]){
+  await db.query('insert into auth.users(id,email) values($1,$2)',[user,`${user}@example.invalid`]);
+  await db.query('delete from public.user_roles where user_id=$1',[user]);
+  await db.query('insert into public.user_roles(user_id,tenant_id,role) values($1,$2,$3)',[user,tenant,role]);
+ }
+ await db.query("insert into public.programmes(id,tenant_id,title,level,awarding_body) values($1,$2,'Register programme','3','OTHM')",[programme,tenant]);
+ await db.query("insert into public.modules(id,tenant_id,programme_id,title,lecturer_id) values($1,$2,$3,'Register module',$4)",[module,tenant,programme,teacher]);
+ await db.query('insert into public.student_enrolments(student_id,tenant_id,programme_id) values($1,$2,$3)',[student,tenant,programme]);
+ await login(teacher);
+ const roster=(await db.query('select public.get_unipathway_daily_register($1,$2) value',[module,'2026-01-01'])).rows[0].value;
+ ok(roster.learners.length===1&&roster.learners[0].student_id===student,'Only enrolled learner appears');
+ const first=(await save()).rows[0].id;ok((await save()).rows[0].id===first,'Exact retry returns original mark');
+ await denied(()=>save(student,'absent'));await denied(()=>save(peer));await denied(()=>save(student,'present','2099-01-01'));
+ await denied(()=>db.query("insert into public.attendance_records(tenant_id,module_id,student_id,status) values($1,$2,$3,'present')",[tenant,module,student]));
+ await denied(()=>db.query("update public.attendance_records set status='absent' where id=$1",[first]));
+ await denied(()=>db.query('delete from public.attendance_records where id=$1',[first]));
+ await login(student);await denied(()=>save());await denied(()=>db.query('select public.get_unipathway_daily_register($1,$2)',[module,'2026-01-01']));
+ await login(peer);await denied(()=>save());
+ await db.exec('RESET ROLE');
+ ok((await db.query('select * from public.attendance_records where module_id=$1',[module])).rows.length===1,'One saved record');
+ ok((await db.query('select recorded_by from public.attendance_records where id=$1',[first])).rows[0].recorded_by===teacher,'Author recorded');
+ await db.query("insert into public.attendance_records(tenant_id,module_id,student_id,date,status) values($1,$2,$3,'2026-01-02','late')",[tenant,module,student]);
+ await login(teacher);await denied(()=>save(student,'late','2026-01-02'));
+ await db.exec('RESET ROLE');await db.query("update public.tenants set slug='register-qa-centre' where id=$1",[tenant]);
+ await db.query("insert into public.tenants(id,name,slug) values($1,'Other register QA','unipathway')",[id(20)]);
+ await db.query('insert into auth.users(id,email) values($1,$2)',[id(21),'other-register@example.invalid']);
+ await db.query('delete from public.user_roles where user_id=$1',[id(21)]);
+ await db.query("insert into public.user_roles(user_id,tenant_id,role) values($1,$2,'lecturer')",[id(21),id(20)]);
+ await login(id(21));await denied(()=>save());
+ await db.exec('RESET ROLE');
+ await db.query('delete from public.user_roles where user_id=$1',[teacher]);await login(teacher);await denied(()=>save());
+ await db.exec('RESET ROLE');await db.query("insert into public.user_roles(user_id,tenant_id,role) values($1,$2,'lecturer')",[teacher,tenant]);
+ await db.exec('RESET ROLE');await db.query("update public.student_enrolments set status='withdrawn' where student_id=$1",[student]);
+ await login(teacher);await denied(()=>save());
+ await db.exec('RESET ROLE');await db.query('update public.modules set lecturer_id=$1 where id=$2',[peer,module]);
+ await login(teacher);await denied(()=>save());
+ await db.exec('RESET ROLE;SET LOCAL ROLE anon');await denied(()=>db.query('select public.get_unipathway_daily_register($1,$2)',[module,'2026-01-01']));
+ await db.exec('RESET ROLE;ROLLBACK');
+ console.log(JSON.stringify({dailyRegisterChecks:checks,status:'passed'}));
+}

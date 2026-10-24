@@ -19,6 +19,8 @@ WITH expected(signature) AS (VALUES
  ('public.submit_unipathway_learning_attempt(uuid,uuid,text,boolean)'),
  ('public.review_unipathway_learning_attempt(uuid,text,text)'),
  ('public.send_unipathway_guardian_message_once(uuid,text,uuid)'),
+ ('public.get_unipathway_daily_register(uuid,date)'),
+ ('public.save_unipathway_daily_mark(uuid,uuid,date,public.attendance_status)'),
  ('public.get_unipathway_guardian_learning()'))
 SELECT signature,CASE WHEN to_regprocedure(signature) IS NULL THEN 'MISSING' WHEN NOT has_function_privilege('authenticated',to_regprocedure(signature),'EXECUTE') THEN 'AUTHENTICATED_EXECUTE_MISSING' WHEN has_function_privilege('anon',to_regprocedure(signature),'EXECUTE') THEN 'UNEXPECTED_ANONYMOUS_EXECUTE' ELSE 'PRESENT_GRANTS_CHECKED' END AS rpc_status FROM expected;
 WITH expected(id) AS (VALUES ('unipathway-coursework'),('unipathway-module-materials'),('unipathway-class-media'),('unipathway-centre-documents'))
