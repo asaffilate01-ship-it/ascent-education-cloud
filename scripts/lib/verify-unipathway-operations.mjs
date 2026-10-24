@@ -48,9 +48,23 @@ export async function verifyOperations(db) {
  await login(parent);await db.query('select public.send_unipathway_guardian_message($1,$2)',[link,'Please contact me']);
  await login(lecturer);ok((await db.query('select * from public.unipathway_guardian_messages')).rows.length===1,'Assigned lecturer reads scoped conversation');
  await login(peer);ok((await db.query('select * from public.unipathway_guardian_messages')).rows.length===0,'Peer cannot read messages');
- await login(outsider);ok((await activity()).length===0,'Other centre has no guardian access');
+ const sendOnce=(request,body='Retry-safe guardian message')=>rpc('select public.send_unipathway_guardian_message_once($1,$2,$3) value',[link,body,request]);
+ await login(parent);const message=await sendOnce(id(150));
+ ok(message===await sendOnce(id(150)),'Identical retry returns the original message');
+ ok((await db.query('select * from public.unipathway_guardian_messages where request_id=$1',[id(150)])).rows.length===1,'Retry creates one message only');
+ await denied(()=>sendOnce(id(150),'Changed message'));
+ await denied(()=>sendOnce(null));await denied(()=>sendOnce(id(151),' '));
+ await denied(()=>db.query('insert into public.unipathway_guardian_messages(link_id,author_id,body) values($1,$2,$3)',[link,parent,'Direct write']));
+ for(let n=160;n<168;n++)await sendOnce(id(n),`Rate-limit fixture ${n}`);
+ ok(message===await sendOnce(id(150)),'Retry remains safe when the author rate limit is reached');
+ await denied(()=>sendOnce(id(168),'Over the rate limit'));
+ await denied(()=>db.query('select public.send_unipathway_guardian_message($1,$2)',[link,'Legacy shares the same limit']));
+ await login(lecturer);ok((await sendOnce(id(150),'Author scoped request'))!==message,'Request IDs are scoped to author');
+ await login(peer);await denied(()=>sendOnce(id(169)));
+ await login(outsider);ok((await activity()).length===0,'Other centre has no guardian access');await denied(()=>sendOnce(id(170)));
+
  await login(student);await db.query("select public.set_unipathway_guardian_scope($1,'communication',false)",[link]);
- await login(parent);ok((await db.query('select * from public.unipathway_guardian_messages')).rows.length===0,'Revoking communication removes access to conversation');
+ await login(parent);ok((await db.query('select * from public.unipathway_guardian_messages')).rows.length===0,'Revoking communication removes access to conversation');await denied(()=>sendOnce(id(150)));await denied(()=>sendOnce(id(171)));
  await login(director);await denied(()=>db.query('update public.parent_student_links set student_id=$1 where id=$2',[peer,link]));
  await db.query('select public.verify_unipathway_guardian_link($1,$2,$3)',[`${parent}@example.invalid`,`${student}@example.invalid`,'Consent verification QA evidence']);
  await login(parent);ok((await activity())[0].schedule.length===0,'Reverification clears previous schedule permission');
@@ -81,6 +95,6 @@ export async function verifyOperations(db) {
  await db.exec('RESET ROLE');await db.query('insert into public.notification_preferences(user_id,grade_releases_push) values($1,false)',[student]);
  await db.exec('SET LOCAL ROLE service_role');ok(await rpc('select public.authorise_unipathway_push($1,$2) value',[pending.id,pending.lease])===null,'Preference revocation suppresses an already leased push');
  await db.exec('RESET ROLE');
- await db.exec('SET LOCAL ROLE anon');await denied(()=>activity());await denied(()=>prepare('anonymous@example.invalid'));
+ await db.exec('SET LOCAL ROLE anon');await denied(()=>activity());await denied(()=>prepare('anonymous@example.invalid'));await denied(()=>sendOnce(id(172)));
  await db.exec('ROLLBACK');console.log(JSON.stringify({operationsGuardianNativeChecks:checks,status:'passed'}));
 }
