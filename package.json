@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "worker:teams-recordings": "node scripts/teams-recording-worker.mjs",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
@@ -111,6 +112,7 @@
     "postcss": "^8.5.6",
     "postgres": "^3.4.9",
     "tailwindcss": "^3.4.17",
+    "tus-js-client": "4.3.1",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
     "vite": "5.4.19",

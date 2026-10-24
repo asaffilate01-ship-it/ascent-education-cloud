@@ -1,3 +1,4 @@
+import {verifyRecordingPipeline} from './lib/verify-unipathway-recording-pipeline.mjs';
 import {verifyTeamsTeaching} from './lib/verify-unipathway-teams-teaching.mjs';
 import {verifyGuidedAudio} from './lib/verify-unipathway-guided-audio.mjs';
 /** Offline PostgreSQL schema rehearsal. Never connects to a hosted database.
@@ -50,6 +51,6 @@ try {
   catch(error){console.error(JSON.stringify({status:'blocked',passed,file,code:error.code,message:error.message}));process.exitCode=1;break;}
  }
  if(!process.exitCode&&fresh){await verifyFreshSchema(db);await verifyGuardianResults(db);await verifyAdmissionHandover(db);await verifyStripeLedger(db);
-    await verifyGuidedAudio(db);await verifyTeamsTeaching(db);}
+    await verifyGuidedAudio(db);await verifyTeamsTeaching(db);await verifyRecordingPipeline(db);}
  if(!process.exitCode)console.log(JSON.stringify({status:deferred.length?'schema-only-provider-acceptance-pending':'passed',deferred,migrations:passed,scope:'Offline PostgreSQL with synthetic Auth/Storage; no live acceptance'}));
 }catch(error){console.error(JSON.stringify({status:'verification-failed',code:error.code,message:error.message}));process.exitCode=1;}finally{await db.close();}

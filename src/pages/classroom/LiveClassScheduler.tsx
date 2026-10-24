@@ -27,6 +27,9 @@ export default function LiveClassScheduler(){
  const [title,setTitle]=useState('');const [moduleId,setModuleId]=useState('');
  const [start,setStart]=useState('');const [end,setEnd]=useState('');
  const [joinUrl,setJoinUrl]=useState('');
+ const [organiserId,setOrganiserId]=useState('');
+ const [organisers,setOrganisers]=useState<{user_id:string;display_name:string}[]>([]);
+ const [organiserError,setOrganiserError]=useState('');
  const [capacity,setCapacity]=useState(20);
  const [recipient,setRecipient]=useState<Record<string,string>>({});
  const manager=!!user?.roles.some(x=>['programme_leader','centre_director','superadmin'].includes(x));
@@ -55,6 +58,11 @@ export default function LiveClassScheduler(){
   }).catch(()=>{if(active){setError('Cannot load secure classroom scheduling.');setLoading(false);}});
   return()=>{active=false};
  },[tenantId,user?.id,manager]);
+ useEffect(()=>{let active=true;setOrganiserId('');setOrganisers([]);setOrganiserError('');
+  if(!moduleId)return;
+  void Promise.resolve(db.rpc('unipathway_module_organisers',{p_module:moduleId})).then(r=>{if(!active)return;if(r.error)setOrganiserError('Connected organiser list unavailable. Check Teams setup.');else setOrganisers(r.data||[]);}).catch(()=>{if(active)setOrganiserError('Connected organiser list unavailable.');});
+  return()=>{active=false;};
+ },[moduleId,user?.id]);
  const available=useMemo(()=>sessions.filter(s=>modules.some(m=>m.id===s.module_id)),[sessions,modules]);
  const create=async()=>{
   if(!tenantId||!user?.id||!moduleId||!title.trim()||!start||!end||!validTeamsUrl(joinUrl)){
@@ -63,7 +71,7 @@ export default function LiveClassScheduler(){
   if(new Date(end).getTime()<=new Date(start).getTime()){toast.error('Class must end after it starts.');return;}
   setSaving(true);
   const {data,error:e}=await db.from('live_class_sessions').insert({
-   tenant_id:tenantId,module_id:moduleId,organiser_user_id:user.id,title:title.trim(),
+   tenant_id:tenantId,module_id:moduleId,organiser_user_id:organiserId||user.id,title:title.trim(),
    starts_at:new Date(start).toISOString(),ends_at:new Date(end).toISOString(),
    join_url:joinUrl.trim(),provider:'microsoft_teams',status:'scheduled',capacity,
    recording_enabled:true,transcript_enabled:true,whiteboard_enabled:true
@@ -110,9 +118,12 @@ export default function LiveClassScheduler(){
       <label className="text-sm font-medium">Class name<Input className="mt-1" value={title} onChange={e=>setTitle(e.target.value)} maxLength={120}/></label>
       <label className="text-sm font-medium">Start time<Input className="mt-1" type="datetime-local" value={start} onChange={e=>setStart(e.target.value)}/></label>
       <label className="text-sm font-medium">End time<Input className="mt-1" type="datetime-local" value={end} onChange={e=>setEnd(e.target.value)}/></label>
-    </div><label className="mt-3 block text-sm font-medium">Microsoft Teams calendar meeting URL<Input className="mt-1" type="url" value={joinUrl} placeholder="https://teams.microsoft.com/l/meetup-join/..." onChange={e=>setJoinUrl(e.target.value)}/></label>
+    </div><label className="mt-3 block text-sm font-medium">Microsoft meeting organiser<select className="mt-1 w-full rounded-md border bg-background p-2" value={organiserId} onChange={e=>setOrganiserId(e.target.value)}><option value="">My own Microsoft account</option>{organisers.filter(o=>o.user_id!==user?.id).map(o=><option key={o.user_id} value={o.user_id}>{o.display_name}</option>)}</select></label>
+    {organiserError&&<p role="alert" className="text-sm">{organiserError}</p>}
+    <p className="mt-2 text-xs text-muted-foreground">Choose the actual owner of the Teams calendar meeting. A connected coordinator can organise several classes while assigned lecturers teach as co-organisers or presenters. Assign those roles in Teams; this selection does not change Microsoft roles or licences.</p>
+    <label className="mt-3 block text-sm font-medium">Microsoft Teams calendar meeting URL<Input className="mt-1" type="url" value={joinUrl} placeholder="https://teams.microsoft.com/l/meetup-join/..." onChange={e=>setJoinUrl(e.target.value)}/></label>
     <label className="mt-3 block text-sm font-medium">Planned lecture capacity<select aria-label="Planned lecture capacity" className="mt-1 w-full rounded-md border bg-background p-2" value={capacity} onChange={e=>setCapacity(Number(e.target.value))}>{[20,30,50,100,150,200,250,300,350,500,1000].map(n=><option value={n} key={n}>{n} learners</option>)}</select></label>
-    <p className="mt-2 text-xs text-muted-foreground">For 100–350 learners, test the chosen Teams/ACS limits and your Realtime plan. Capacity is a planning ceiling, not proof of admission or licensing. Larger meetings may require native Teams. Recording is requested, not guaranteed. Configure Teams recording/transcription and ensure learners receive the required notices and consent information.</p>
+    <p className="mt-2 text-xs text-muted-foreground">Validate the chosen native Teams meeting limits and your Realtime plan. Capacity is a planning ceiling, not proof of admission or licensing. Recording is requested, not guaranteed. Configure Teams recording/transcription and ensure learners receive the required notices and consent information.</p>
     <Button className="mt-3" disabled={saving||!tenantId} onClick={create}><Video className="mr-2 size-4"/>Schedule class</Button>
    </section>
    <section className="space-y-3"><h2 className="flex items-center gap-2 text-xl font-bold"><Users className="size-5"/>Invite eligible students</h2>

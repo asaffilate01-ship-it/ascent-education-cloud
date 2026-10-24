@@ -5,6 +5,7 @@ import {arrangeTeachingGroups,isTeamsMeetingUrl} from '@/lib/teamsTeaching';
 import {TeachingDesk} from '@/pages/classroom/TeamsTeachingDesk';
 const mocks=vi.hoisted(()=>({rpc:vi.fn(),from:vi.fn()}));
 vi.mock('@/lib/db',()=>({db:mocks}));
+vi.mock('@/integrations/supabase/client',()=>({supabase:{storage:{from:vi.fn()}}}));
 vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'student',tenantId:'centre',roles:['student']}})}));
 vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:{children:React.ReactNode})=>children}));
 vi.mock('@/components/classroom/LectureInteractions',()=>({default:()=>null}));
