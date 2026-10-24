@@ -11,4 +11,4 @@
 - [x] Audit PRs 47–53 against Live; identify missing schema, private Storage and provider configuration.
 - [ ] Reconcile and apply forward-only production migrations (blocked by unconfirmed Live backup/export evidence; do not replay fresh-staging replacements).
 - [ ] Verify authorised Teams, guided audio and recording journeys (blocked by missing hosted foundations, Microsoft administrator setup and external worker hosting).
-- [ ] Publish latest verified application and retire legacy classroom endpoint without enabling paid AWS or payments.
+- [x] Request publication of the latest application; confirm public homepage rendering and hosted legacy retirement response 410. Paid AWS and payments remain unconfigured.
