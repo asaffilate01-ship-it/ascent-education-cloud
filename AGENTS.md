@@ -6,3 +6,4 @@
 - Redirect the legacy /index address to the root public homepage so saved preview addresses open the current experience.
 - Keep test-account passwords in the DEV_ACCOUNT_PASSWORD Cloud secret and the role/email allowlist in seed-dev-users/accounts.ts; preserve existing profiles and roles when resetting passwords so testing cannot silently alter access.
 - Public imagery must suit UniPathway’s Pakistan audience: women and girls should wear modest clothing with legs covered. Use Pakistan-appropriate or location-neutral scenes for general learning pages; identifiable overseas landmarks belong only on the matching destination pages. Do not imply illustrative imagery depicts actual UniPathway premises.
+- Never show men and women together in the same marketing image. Use separate men-only or women-only scenes, individual learners, or study materials without groups. Apply this to homepage, heroes, articles, thumbnails and social previews as well as future replacements.

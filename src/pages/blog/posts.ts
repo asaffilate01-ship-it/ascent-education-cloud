@@ -104,7 +104,7 @@ export const BLOG_POSTS: BlogPost[] = [
     date: '2026-03-04',
     readMinutes: 4,
     cover: diplomaGuidanceCover,
-    coverAlt: 'Counsellor and Pakistani student reviewing a diploma pathway brochure together',
+    coverAlt: 'An individual reviewing documents at a desk',
     body: [
       'OTHM, QUALIFI, and IAB are Ofqual-regulated UK awarding bodies. UniPathway delivers Level 3–5 diplomas across all three.',
       'OTHM diplomas cover business, computing, health and social care, and more. They articulate into the final year of many UK bachelor’s degrees.',

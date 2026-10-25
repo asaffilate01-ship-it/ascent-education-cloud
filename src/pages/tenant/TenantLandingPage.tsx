@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { motion } from 'framer-motion';
 import TenantNav from '@/components/TenantNav';
-import tenantHero from '@/assets/unipathway-hero.jpg';
+import tenantHero from '@/assets/blog/english-exams.jpg';
 import SocialIcons from '@/components/SocialIcons';
 import unipathwayLogo from '@/assets/unipathway-logo.png';
 import { openCookiePreferences } from '@/components/CookieConsent';
@@ -167,7 +167,7 @@ function LegacyTenantLandingPage() {
                 <div className="absolute inset-0 rounded-2xl" style={{ background: `linear-gradient(135deg, ${pc}15, transparent)` }} />
                 <img
                   src={theme.heroImageUrl || tenantHero}
-                  alt={`${theme.brandName} students learning together`}
+                  alt={`${theme.brandName} individual online learning`}
                   className="w-full rounded-2xl shadow-2xl border border-border/30 object-cover aspect-[16/10]"
                   loading="eager"
                 />
