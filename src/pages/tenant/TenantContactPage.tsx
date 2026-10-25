@@ -1,6 +1,5 @@
 import PublicFooter from '@/components/PublicFooter';
 import SocialIcons from '@/components/SocialIcons';
-import WhatsAppLink from '@/components/WhatsAppLink';
 import PublicHero from '@/components/PublicHero';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -72,7 +71,7 @@ export default function TenantContactPage() {
                 </div>
               ))}
 
-              <WhatsAppLink className="w-full" />
+
               <SocialIcons />
 
             </div>

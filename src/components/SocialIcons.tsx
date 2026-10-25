@@ -8,7 +8,7 @@ export default function SocialIcons({className='',iconClassName='size-5',variant
   {href:SOCIAL_LINKS.facebook,label:'Facebook'}, {href:SOCIAL_LINKS.instagram,label:'Instagram'},
   {href:SOCIAL_LINKS.twitter,label:'X'}, {href:SOCIAL_LINKS.linkedin,label:'LinkedIn'},
   {href:SOCIAL_LINKS.youtube,label:'YouTube'}, {href:SOCIAL_LINKS.tiktok,label:'TikTok'},
-  {href:SOCIAL_LINKS.google,label:'Google'}, {href:SOCIAL_LINKS.whatsapp,label:'WhatsApp'},
+  {href:SOCIAL_LINKS.google,label:'Google'},
  ];
  const base='flex size-11 shrink-0 items-center justify-center rounded-full border transition-colors';
  const colours=variant==='dark'?'border-white/20 bg-white/10 text-white':'border-primary/15 bg-primary/5 text-primary';

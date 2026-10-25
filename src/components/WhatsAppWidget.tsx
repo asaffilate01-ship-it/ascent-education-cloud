@@ -4,8 +4,6 @@ import { X, ArrowUpRight } from 'lucide-react';
 import { WhatsappGlyph } from '@/components/SocialIcons';
 import { SOCIAL_LINKS } from '@/lib/publicContact';
 
-export const OPEN_WHATSAPP_WIDGET = 'unipathway:open-whatsapp';
-
 export default function WhatsAppWidget() {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState('Hello UniPathway, I would like advice about courses.');
@@ -13,10 +11,6 @@ export default function WhatsAppWidget() {
   const returnFocus = useRef<HTMLElement | null>(null);
   const show = () => { returnFocus.current = document.activeElement as HTMLElement; setOpen(true); };
   const close = () => { setOpen(false); returnFocus.current?.focus(); };
-  useEffect(() => {
-    window.addEventListener(OPEN_WHATSAPP_WIDGET, show);
-    return () => window.removeEventListener(OPEN_WHATSAPP_WIDGET, show);
-  }, []);
   useEffect(() => { if (open) closeRef.current?.focus(); }, [open]);
   const url = SOCIAL_LINKS.whatsapp ? new URL(SOCIAL_LINKS.whatsapp) : null;
   if (url) url.searchParams.set('text', message.trim());
