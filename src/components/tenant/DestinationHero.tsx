@@ -1,3 +1,4 @@
+import { HeroImage } from '@/components/PublicHero';
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
@@ -14,7 +15,7 @@ interface Props {
 export default function DestinationHero({ flag, eyebrow, title, subtitle, bullets, destination }: Props) {
   const { slug } = useParams();
   return (
-    <section className="relative overflow-hidden">
+    <section className="public-hero relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent" />
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20 grid lg:grid-cols-2 gap-10 items-center">
         <div>
@@ -40,9 +41,7 @@ export default function DestinationHero({ flag, eyebrow, title, subtitle, bullet
             </Link>
           </div>
         </div>
-        <div className="hidden lg:flex justify-center">
-          <div className="text-[14rem] leading-none select-none opacity-90">{flag}</div>
-        </div>
+        <HeroImage topic={destination} />
       </div>
     </section>
   );

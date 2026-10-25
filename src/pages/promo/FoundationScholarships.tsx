@@ -1,3 +1,5 @@
+import PublicHero from '@/components/PublicHero';
+import PageContents from '@/components/PageContents';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Award, BookOpenCheck, GraduationCap, HandHeart, HeartHandshake, ShieldCheck } from 'lucide-react';
 import PublicNav from '@/components/PublicNav';
@@ -21,12 +23,14 @@ export default function FoundationScholarships(){
   <Seo canonical="/scholarships" title="UniPathway Foundation — Opportunity Fund & Scholarships" description="Learn about proposed merit-and-need scholarships, confidential financial need reviews and employer-supported study opportunities."/>
   <PublicNav/>
   <main className="mx-auto max-w-7xl space-y-12 px-5 py-12 sm:px-8">
-   <header className="rounded-2xl border bg-[#F3F6FA] p-7 dark:bg-slate-950 sm:p-10">
+   <PublicHero topic="campus">
     <p className="text-label text-success">UniPathway Foundation • Opportunity Fund</p>
     <h1 className="mt-3 max-w-4xl text-3xl font-extrabold text-[#0B2D5B] dark:text-white sm:text-5xl">Talent deserves opportunity, regardless of family income.</h1>
-    <p className="mt-5 max-w-4xl leading-relaxed text-slate-700 dark:text-slate-200">We are developing merit-and-need scholarships for students who show promise and face genuine financial barriers. The programme may also accept support from participating employers and organisations. Availability depends on actual approved funding; the existence of this page does not mean a scholarship is open or guaranteed.</p>
+    <p className="mt-5 max-w-4xl leading-relaxed text-slate-700 dark:text-slate-200">We are planning scholarships based on academic potential and financial need. Explore the criteria and application steps below. Awards depend on approved funding; applications are not yet presented as open or guaranteed.</p>
     <div className="mt-6 flex flex-wrap gap-3"><Button asChild><Link to="/contact">Discuss scholarship eligibility <ArrowRight className="ml-2 size-4"/></Link></Button><Button asChild variant="outline"><Link to="/study">Explore learning pathways</Link></Button></div>
-   </header>
+   </PublicHero>
+<PageContents/>
+
    <section><p className="text-label text-success">How eligibility is assessed</p><h2 className="mt-2 text-2xl font-bold">Merit and need, with thoughtful individual assessment</h2><div className="mt-5 grid gap-4 md:grid-cols-3">{criteria.map(({icon:Icon,title,text})=><article key={title} className="rounded-xl border bg-card p-6"><Icon className="size-7 text-success"/><h3 className="mt-4 text-lg font-bold">{title}</h3><p className="mt-3 text-sm leading-relaxed text-muted-foreground">{text}</p></article>)}</div></section>
    <section><div className="flex items-center gap-2"><BookOpenCheck className="size-6 text-success"/><h2 className="text-2xl font-bold">The application and decision process</h2></div><div className="mt-5 grid gap-4 md:grid-cols-2">{steps.map((x,i)=><article key={x.title} className="rounded-xl border p-5"><p className="text-sm font-bold text-success">0{i+1}</p><h3 className="mt-2 font-bold">{x.title}</h3><p className="mt-2 text-sm text-muted-foreground">{x.detail}</p></article>)}</div></section>
    <section className="grid gap-5 lg:grid-cols-2">

@@ -1,3 +1,5 @@
+import PublicHero from '@/components/PublicHero';
+import PageContents from '@/components/PageContents';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, BookOpenCheck, Building2, GraduationCap, Search, ShieldCheck } from 'lucide-react';
@@ -35,12 +37,14 @@ export default function UniversityProgressionDirectory(){
   <Seo canonical="/university-progression" title="OTHM & Qualifi University Progression Directory | UniPathway" description="Find named universities in the UK, USA and Australia appearing on OTHM and Qualifi progression lists, with private UniPathway eligibility guidance and no offsite links."/>
   <PublicNav/>
   <main className="mx-auto max-w-7xl space-y-10 px-5 py-12 sm:px-8">
-   <header className="max-w-4xl">
+   <PublicHero topic="campus">
     <p className="text-label text-success">University progression</p>
     <h1 className="mt-3 text-3xl font-extrabold sm:text-5xl">Find universities that list OTHM or Qualifi progression routes.</h1>
     <p className="mt-4 text-muted-foreground">Explore named institutions from the awarding bodies' published progression listings. These are <strong>qualification- and degree-specific possibilities</strong>, not a blanket recognition of every diploma, an admissions offer, or evidence that UniPathway has a recruitment agreement with the institution.</p>
     <p className="mt-2 text-sm text-muted-foreground">Our internal catalogue snapshot was reviewed on {verifiedProgressionSnapshot}. As universities and agreements change, advisers must recheck current terms before individual recommendations.</p>
-   </header>
+   </PublicHero>
+<PageContents/>
+
 
    <section className="grid gap-4 sm:grid-cols-3" aria-label="Progression coverage">
     {[{country:'UK',label:'United Kingdom'}, {country:'USA',label:'United States'}, {country:'Australia',label:'Australia'}].map(x=><article key={x.country} className="rounded-xl border bg-card p-5">

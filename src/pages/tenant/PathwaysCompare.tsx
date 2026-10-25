@@ -1,3 +1,5 @@
+import PublicHero from '@/components/PublicHero';
+import PageContents from '@/components/PageContents';
 import TenantNav from '@/components/TenantNav';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -27,17 +29,18 @@ export default function PathwaysCompare() {
     (requestedBody==='OTHM'||requestedBody==='Qualifi') ? requestedBody : undefined;
   if (requested === 'Pakistan') return <Navigate to="/pakistan" replace />;
   return (
-    <div className="min-h-dvh bg-background text-foreground">
+    <div className="public-site min-h-dvh bg-background text-foreground">
       <Seo title="Study Abroad & University Admissions | UniPathway" description="Explore university admissions outside Pakistan, including the UK, Germany, USA, Australia and Canada. Request personalised guidance." canonical="/pathways" />
       <TenantNav brandName="UniPathway" />
       <main className="mx-auto max-w-6xl space-y-10 px-4 py-10 sm:px-6 lg:px-8 lg:py-16">
-        <header className="max-w-3xl">
+        <PublicHero topic="campus">
           <p className="text-sm font-bold uppercase tracking-wide text-success">Study abroad & university admissions</p>
           <h1 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-5xl">University progression, built on real learning</h1>
           <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
             UniPathway teaches and trains learners in Pakistan through tuition, qualifications, digital and professional skills, and language preparation. We then help them research universities, strengthen entry evidence, plan applications and prepare for the next stage of student life. Choose a destination to begin.
           </p>
-        </header>
+        </PublicHero>
+<PageContents/>
 
         <div className="grid gap-4 md:grid-cols-2">
           <section className="rounded-xl border bg-secondary/40 p-5"><p className="font-semibold">Explore all European countries</p><p className="mt-2 text-sm text-muted-foreground">Not limited to Germany: compare all EU destinations, study languages, academic subject themes and example institutions without leaving UniPathway.</p><Button asChild variant="outline" className="mt-3"><Link to="/europe">Explore European study pathways <ArrowRight className="ml-2 size-4"/></Link></Button></section>

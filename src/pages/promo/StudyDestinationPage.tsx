@@ -1,3 +1,5 @@
+import PublicHero from '@/components/PublicHero';
+import PageContents from '@/components/PageContents';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ArrowUpRight, BookOpenCheck, BriefcaseBusiness, CheckCircle2, FileCheck, Globe2, Languages, Landmark, MapPin, ShieldCheck } from 'lucide-react';
 import type {Destination} from '@/lib/studyDestinations';
@@ -25,7 +27,9 @@ export default function StudyDestinationPage({destination}:{destination:Destinat
   <Seo canonical={'/'+destination.key} title={'Study in '+destination.name+' from Pakistan | UniPathway'} description={destination.headline+'. Academic routes, languages, application evidence, universities and practical arrival guidance.'}/>
   <PublicNav/>
   <main className="mx-auto max-w-7xl space-y-12 px-5 py-12 sm:px-8">
-   <header className="rounded-2xl border bg-[#F3F6FA] p-6 dark:bg-slate-950 sm:p-10"><div className="flex items-center gap-3"><span className="text-4xl" aria-hidden>{destination.flag}</span><p className="text-label text-success">Study in {destination.name}</p></div><h1 className="mt-4 max-w-4xl text-3xl font-extrabold leading-tight text-[#0B2D5B] dark:text-white sm:text-5xl">{destination.headline}</h1><p className="mt-5 max-w-4xl text-base leading-relaxed text-slate-700 dark:text-slate-200">{destination.intro}</p><div className="mt-6 flex flex-wrap gap-3"><Button asChild><Link to="/contact">Speak to admissions <ArrowRight className="ml-1 size-4"/></Link></Button><Button asChild variant="outline"><Link to="/pathways">Compare all destinations</Link></Button></div></header>
+   <PublicHero topic={destination.key === 'pakistan' ? 'study' : destination.key}><div className="flex items-center gap-3"><span className="text-4xl" aria-hidden>{destination.flag}</span><p className="text-label text-success">Study in {destination.name}</p></div><h1 className="mt-4 max-w-4xl text-3xl font-extrabold leading-tight text-[#0B2D5B] dark:text-white sm:text-5xl">{destination.headline}</h1><p className="mt-5 max-w-4xl text-base leading-relaxed text-slate-700 dark:text-slate-200">{destination.intro}</p><div className="mt-6 flex flex-wrap gap-3"><Button asChild><Link to="/contact">Speak to admissions <ArrowRight className="ml-1 size-4"/></Link></Button><Button asChild variant="outline"><Link to="/pathways">Compare all destinations</Link></Button></div></PublicHero>
+<PageContents/>
+
    <section aria-labelledby="routes"><p className="text-label text-success">Entry pathways</p><h2 id="routes" className="mt-2 text-2xl font-bold">Academic routes and progression from Pakistan</h2><div className="mt-5 grid gap-4 md:grid-cols-2">{destination.routes.map(x=><article key={x.title} className="rounded-xl border bg-card p-5"><Globe2 className="size-6 text-success"/><h3 className="mt-3 text-lg font-bold">{x.title}</h3><p className="mt-2 text-sm text-muted-foreground">{x.detail}</p></article>)}</div></section>
    <StudyDestinationSections destination={destination} compact/>
   </main><PublicFooter/>

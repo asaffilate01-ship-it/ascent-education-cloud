@@ -1,3 +1,5 @@
+import PublicHero from '@/components/PublicHero';
+import PageContents from '@/components/PageContents';
 import {useMemo,useState} from 'react';
 import {Link,useParams} from 'react-router-dom';
 import {ArrowRight,BookOpenCheck,CheckCircle2,GraduationCap,Languages,MapPinned,Search,ShieldCheck} from 'lucide-react';
@@ -31,7 +33,9 @@ export default function EuropeStudyDirectory(){
  ),[term,membership,subject]);
  return <div className="public-site min-h-dvh bg-background"><Seo canonical="/europe" title="Study Across Europe | Courses, Language Preparation & University Guidance | UniPathway" description="Explore study possibilities across all 27 EU countries and selected other European destinations, supported by UniPathway tuition, practical training, qualifications and language preparation."/><PublicNav/>
  <main className="mx-auto max-w-7xl space-y-12 px-5 py-12 sm:px-8">
-  <header className="rounded-2xl border bg-[#F3F6FA] p-6 dark:bg-slate-950 sm:p-10"><p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#16884D]">UniPathway — Europe study pathways</p><h1 className="mt-3 max-w-5xl text-3xl font-extrabold text-[#0B2D5B] dark:text-white sm:text-5xl">Learn in Pakistan. Build your skills. Explore your future in Europe.</h1><p className="mt-5 max-w-4xl leading-relaxed text-slate-700 dark:text-slate-200">We are an education and training platform, not simply an overseas admissions service. Prepare through online or in-centre tuition, UK and international qualifications, professional training, English/German language learning and academic mentoring—then explore genuine university opportunities, documentation and practical arrival support.</p><div className="mt-6 flex flex-wrap gap-3"><Button asChild><Link to="/study">Start with learning and training <ArrowRight className="ml-2 size-4"/></Link></Button><Button asChild variant="outline"><Link to="/contact">Speak to an education adviser</Link></Button></div></header>
+  <PublicHero topic="campus"><p className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#16884D]">UniPathway — Europe study pathways</p><h1 className="mt-3 max-w-5xl text-3xl font-extrabold text-[#0B2D5B] dark:text-white sm:text-5xl">Find your study route to Europe.</h1><p className="mt-5 max-w-4xl leading-relaxed text-slate-700 dark:text-slate-200">Compare countries, subjects and teaching languages. UniPathway can help you prepare in Pakistan and understand the documents and entry requirements for your chosen university. Admission and course availability must be confirmed individually.</p><div className="mt-6 flex flex-wrap gap-3"><Button asChild><Link to="/study">Start with learning and training <ArrowRight className="ml-2 size-4"/></Link></Button><Button asChild variant="outline"><Link to="/contact">Speak to an education adviser</Link></Button></div></PublicHero>
+<PageContents/>
+
 
   <section aria-labelledby="journey-heading"><p className="text-label text-success">Education-first approach</p><h2 id="journey-heading" className="mt-2 text-2xl font-bold">We teach, train, prepare, guide and support</h2><p className="mb-5 mt-2 max-w-4xl text-sm text-muted-foreground">A progressive learning journey instead of a one-off application transaction. Available programmes, teaching centres and entitlements are confirmed during admissions.</p><ServiceJourney/></section>
 
