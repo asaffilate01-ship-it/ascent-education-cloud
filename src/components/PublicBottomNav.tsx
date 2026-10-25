@@ -4,7 +4,7 @@ import { isMobileTabActive } from '@/lib/mobileTabRoutes';
 
 const items = [
   { label: 'Home', to: '/', icon: Home },
-  { label: 'Study', to: '/study', icon: BookOpen },
+  { label: 'Courses', to: '/study', icon: BookOpen },
   { label: 'Apply', to: '/apply', icon: Send, primary: true },
   { label: 'Abroad', to: '/pathways', icon: Globe2 },
   { label: 'Sign in', to: '/login', icon: LogIn },
@@ -21,7 +21,7 @@ export default function PublicBottomNav() {
           return (
             <li key={to} className="flex justify-center">
               {primary ? (
-                <Link to={to} className="-mt-6 flex size-14 flex-col items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg ring-4 ring-background active:scale-95 transition-transform">
+                <Link to={to} aria-current={active ? 'page' : undefined} className="-mt-6 flex size-14 flex-col items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg ring-4 ring-background active:scale-95 transition-transform">
                   <Icon className="size-5" /><span className="text-[10px] font-bold">{label}</span>
                 </Link>
               ) : (

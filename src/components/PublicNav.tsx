@@ -63,13 +63,25 @@ export default function PublicNav() {
   useEffect(() => { document.body.style.overflow = open ? 'hidden' : ''; return () => { document.body.style.overflow = ''; }; }, [open]);
 
   useEffect(() => {
-    const close = (event: KeyboardEvent) => { if (event.key === 'Escape') { setOpen(false); setStudyOpen(false); setDestinationsOpen(false); } };
+    const close = (event: KeyboardEvent) => { if (event.key === 'Escape') { setOpen(false); setStudyOpen(false); setDestinationsOpen(false); headerRef.current?.querySelector<HTMLButtonElement>('button[aria-label="Close menu"]')?.focus(); } };
     const outside = (event: PointerEvent) => { if (!headerRef.current?.contains(event.target as Node)) { setStudyOpen(false); setDestinationsOpen(false); } };
     document.addEventListener('keydown', close);
     document.addEventListener('pointerdown', outside);
     return () => { document.removeEventListener('keydown', close); document.removeEventListener('pointerdown', outside); };
   }, []);
-  return <><WhatsAppWidget /><PublicBottomNav /><header ref={headerRef} className={cn('sticky top-0 z-50 border-b bg-background/85 backdrop-blur-xl transition-shadow', scrolled ? 'border-border shadow-surface-lg' : 'border-transparent')}>
+  useEffect(() => {
+    if (!open) return;
+    const containFocus = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab') return;
+      const controls = Array.from(headerRef.current?.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input, summary') || []).filter(el => el.getClientRects().length > 0);
+      const first = controls[0], last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    };
+    document.addEventListener('keydown', containFocus);
+    return () => document.removeEventListener('keydown', containFocus);
+  }, [open]);
+  return <>{!open && <WhatsAppWidget />}<PublicBottomNav /><header ref={headerRef} className={cn('sticky top-0 z-50 border-b bg-background/85 backdrop-blur-xl transition-shadow', scrolled ? 'border-border shadow-surface-lg' : 'border-transparent')}>
     <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-5 px-4 sm:h-20 sm:px-8 lg:h-24">
       <Link to="/" aria-label="UniPathway home" className="shrink-0"><BrandLogo className="h-11 lg:h-14" /></Link>
       <nav aria-label="Main navigation" className="hidden items-center gap-1 lg:flex">
@@ -96,14 +108,15 @@ export default function PublicNav() {
       <Button variant="outline" size="icon" className="rounded-full lg:hidden" aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open} onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</Button>
     </div>
     {open && <nav aria-label="Mobile navigation" className="h-[calc(100dvh-4rem)] overflow-y-auto border-t border-border bg-background px-4 pb-28 pt-4 animate-in fade-in-0 slide-in-from-top-2 sm:h-[calc(100dvh-5rem)] sm:px-8 lg:hidden">
+      <div className="mb-6 grid grid-cols-2 gap-2">{[['All courses','/study'],['Contact admissions','/contact'],['About UniPathway','/about'],['Student sign in','/login']].map(([label,to])=><Link key={to} to={to} className="flex min-h-12 items-center rounded-xl border bg-card px-4 text-sm font-semibold">{label}</Link>)}</div>
       <label htmlFor="mobile-course-search" className="text-label">Find a course or service</label>
       <input id="mobile-course-search" type="search" value={courseQuery} onChange={e => setCourseQuery(e.target.value)} placeholder="Try IELTS, tuition, technology…" className="mt-2 min-h-12 w-full rounded-xl border border-border bg-card px-4 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" />
       <p role="status" className="mt-2 text-xs text-muted-foreground">{courseQuery ? `${matchingCourses.length} matching options` : 'Explore our most popular courses'}</p>
       {courseQuery && matchingCourses.length === 0 && <p className="mt-3 text-sm">No matches. <Link className="underline" to="/contact">Ask an adviser for help</Link>.</p>}
       <div className="mt-3 grid gap-2 sm:grid-cols-2">{(courseQuery ? matchingCourses : primaryStudyLinks).map(({ label, detail, to, icon: Icon }) => <Link key={to} to={to} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 active:scale-[0.99] transition-transform"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-success/10 text-success"><Icon className="size-5" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-bold">{label}</span><span className="block text-xs leading-relaxed text-muted-foreground">{detail}</span></span><ArrowRight className="size-4 shrink-0 text-muted-foreground" /></Link>)}</div>
-      <p className="text-label mt-7">Study abroad</p>
+      <details className="mt-6 rounded-xl border p-4"><summary className="cursor-pointer py-2 font-semibold">Explore study-abroad destinations</summary>
       <div className="mt-3 flex flex-wrap gap-2">{destinationLinks.map(({ label, to }) => <Link key={to} to={to} className="rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold">{label}</Link>)}</div>
-      <div className="mt-7 grid grid-cols-2 gap-2">{[['About', '/about'], ['Contact', '/contact'], ['Blog', '/blog'], ['Sign in', '/login']].map(([label, to]) => <Link key={to} to={to} className="rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold">{label}</Link>)}</div>
+      </details><div className="mt-7 grid grid-cols-2 gap-2">{[['Learning advice', '/blog'], ['Apply now', '/apply']].map(([label, to]) => <Link key={to} to={to} className="rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold">{label}</Link>)}</div>
       <div className="mt-5"><SocialIcons className="mt-3" /></div>
       <Button size="lg" className="mt-5 w-full rounded-full" asChild><Link to="/apply">Apply now <ArrowRight /></Link></Button>
     </nav>}
