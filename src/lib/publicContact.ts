@@ -20,6 +20,6 @@ export const SOCIAL_LINKS = {
   twitter: socialUrl(import.meta.env.VITE_PUBLIC_X_URL, ['x.com', 'twitter.com']),
   linkedin: socialUrl(import.meta.env.VITE_PUBLIC_LINKEDIN_URL, ['linkedin.com']),
   youtube: socialUrl(import.meta.env.VITE_PUBLIC_YOUTUBE_URL, ['youtube.com', 'youtu.be']),
-  tiktok: socialUrl(import.meta.env.VITE_PUBLIC_TIKTOK_URL, ['tiktok.com']),
+  tiktok: socialUrl(import.meta.env.VITE_PUBLIC_TIKTOK_URL, ['tiktok.com']) || 'https://www.tiktok.com/@unipathway.pk',
   whatsapp: whatsappUrl(import.meta.env.VITE_PUBLIC_WHATSAPP_NUMBER),
 };
