@@ -1,7 +1,7 @@
 import PublicFooter from '@/components/PublicFooter';
 import SocialIcons from '@/components/SocialIcons';
 import PublicHero from '@/components/PublicHero';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { MapPin, Phone, Mail, Clock, Send, Globe, MessageSquare, MessageCircle } from 'lucide-react';
 import { useState } from 'react';
@@ -12,7 +12,9 @@ import { useTenantBranding } from '@/hooks/useTenantBranding';
 import Seo from '@/components/Seo';
 export default function TenantContactPage() {
   const { slug } = useParams();
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
+  const [params] = useSearchParams();
+  const requestedCourse = (params.get('course') || '').slice(0,240);
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', subject: params.get('subject') === 'Course Enquiry' || requestedCourse ? 'Course Enquiry' : '', message: requestedCourse ? `I would like to enquire about ${requestedCourse}. Please confirm entry requirements, delivery, duration, fees and the next intake.` : '' });
   const [sending, setSending] = useState(false);
   const { brandName, primaryColor } = useTenantBranding();
 
@@ -25,9 +27,9 @@ export default function TenantContactPage() {
     setSending(true);
     try {
       const { data, error } = await supabase.functions.invoke('contact-form', {
-        body: { ...formData, tenant_slug: slug },
+        body: { ...formData, tenant_slug: slug || 'unipathway' },
       });
-      if (error) throw error;
+      if (error || !data?.success) throw new Error('Your message could not be confirmed. Please try again.');
       toast.success('Message sent. Our admissions team will reply using your contact details.');
       setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
     } catch (err: any) {
@@ -96,6 +98,7 @@ export default function TenantContactPage() {
                   <label htmlFor="contact-subject" className="text-label mb-1.5 block">Subject</label>
                   <select id="contact-subject" name="subject" value={formData.subject} onChange={(e) => setFormData(p => ({ ...p, subject: e.target.value }))} className="w-full bg-secondary text-base sm:text-sm px-3 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-primary/20">
                     <option value="">Select a topic</option>
+                    <option>Course Enquiry</option>
                     <option>Admissions Enquiry</option>
                     <option>Fee Information</option>
                     <option>Programme Details</option>

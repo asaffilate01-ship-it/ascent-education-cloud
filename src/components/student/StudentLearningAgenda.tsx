@@ -35,10 +35,17 @@ export default function StudentLearningAgenda({tenant, student, moduleIds}: {ten
   const pending=(current?.data.briefs||[]).filter(b=>!latest.has(b.id)||latest.get(b.id)?.status==='resubmission_requested')
     .sort((a,b)=>Date.parse(a.due_at)-Date.parse(b.due_at)||a.id.localeCompare(b.id));
   const now=Date.now(),open=pending.filter(b=>Date.parse(b.submission_cutoff)>=now),closed=pending.filter(b=>Date.parse(b.submission_cutoff)<now);
-  const task=(brief:Brief)=><article className="border rounded p-3 space-y-1" key={brief.id}><p>{brief.title}</p><p className="text-sm text-muted-foreground">Due {new Date(brief.due_at).toLocaleString()} · {Date.parse(brief.submission_cutoff)<now?'Submission window closed—contact your programme team':Date.parse(brief.due_at)<now?'Overdue—check submission rules':'Upcoming'}</p><Link className="text-sm underline" to={`/student/assignments?${new URLSearchParams({module:brief.module_id})}`}>Open module coursework</Link></article>;
+  const task=(brief:Brief)=><article className="border rounded p-3 space-y-1" key={brief.id}><p>{brief.title}</p><p className="text-sm text-muted-foreground">Due {new Date(brief.due_at).toLocaleString('en-PK',{timeZone:'Asia/Karachi'})} · {Date.parse(brief.submission_cutoff)<now?'Submission window closed—contact your programme team':Date.parse(brief.due_at)<now?'Overdue—check submission rules':'Upcoming'}</p><Link className="text-sm underline" to={`/student/assignments?${new URLSearchParams({module:brief.module_id})}`}>Open module coursework</Link></article>;
   return <section className="surface-card p-5 mb-6 space-y-4" aria-label="Current learning agenda">
-    <h3 className="font-semibold">Coursework and invited classes</h3>
-    <section className="space-y-3" aria-label="Coursework agenda">
+    <h3 className="text-lg font-bold">Your next steps</h3>
+    <section className="space-y-3" aria-label="Invited class agenda"><h4 className="text-sm font-semibold">Your next classes · Pakistan time</h4>
+      {!invited?<p role="status">Loading your class invitations…</p>:invited.error?<p role="alert">Your class invitations could not be verified. Refresh to retry.</p>:<>
+        {!invited.data.length&&<p className="text-sm text-muted-foreground">No upcoming class invitations are available.</p>}
+        {invited.data.map(session=><article className="rounded-lg border p-3" key={session.id}><p className="font-medium">{session.title}</p><p className="text-sm text-muted-foreground">{new Date(session.starts_at).toLocaleString('en-PK',{timeZone:'Asia/Karachi'})}</p><Link className="inline-flex min-h-11 items-center text-sm font-semibold underline" to="/student/classroom">Open class invitation →</Link></article>)}
+      </>}
+    </section>
+
+    <section className="space-y-3" aria-label="Coursework agenda"><h4 className="font-semibold">Work due · Pakistan time</h4>
       {!current?<p role="status">Loading your coursework…</p>:current.error?<p role="alert">Your coursework could not be verified. Refresh to retry.</p>:<>
         <h4 className="text-sm font-semibold">{open.length} coursework {open.length===1?'task':'tasks'} with an open submission window</h4>
         {!pending.length&&<p className="text-sm text-muted-foreground">No published coursework currently needs a submission.</p>}
@@ -47,12 +54,6 @@ export default function StudentLearningAgenda({tenant, student, moduleIds}: {ten
         {closed.length>0&&<details className="space-y-3"><summary className="cursor-pointer text-sm font-semibold">{closed.length} {closed.length===1?'task with a closed submission window':'tasks with closed submission windows'}</summary>{closed.slice(0,5).map(task)}{closed.length>5&&<p className="text-sm">Open coursework to review all closed tasks.</p>}</details>}
       </>}
     </section>
-    <section className="space-y-3" aria-label="Invited class agenda"><h4 className="text-sm font-semibold">Next invited classes</h4>
-      {!invited?<p role="status">Loading your class invitations…</p>:invited.error?<p role="alert">Your class invitations could not be verified. Refresh to retry.</p>:<>
-        {!invited.data.length&&<p className="text-sm text-muted-foreground">No upcoming class invitations are available.</p>}
-        {invited.data.map(session=><p className="text-sm" key={session.id}>{session.title} · {new Date(session.starts_at).toLocaleString()}</p>)}
-      </>}
-    </section>
-    <div className="flex flex-wrap gap-2"><Button variant="outline" onClick={()=>setRefresh(x=>x+1)}>Refresh agenda</Button><Button asChild variant="outline"><Link to="/student/assignments">Open coursework</Link></Button><Button asChild variant="outline"><Link to="/student/classroom">View class invitations</Link></Button><Button asChild variant="outline"><Link to="/student/ielts">IELTS and audio lab</Link></Button></div>
+    <div className="flex flex-wrap gap-2"><Button variant="outline" onClick={()=>setRefresh(x=>x+1)}>Refresh agenda</Button><Button asChild variant="outline"><Link to="/student/assignments">Open coursework</Link></Button><Button asChild variant="outline"><Link to="/student/classroom">View class invitations</Link></Button><Button asChild variant="outline"><Link to="/student/materials">Materials and resources</Link></Button></div>
   </section>;
 }

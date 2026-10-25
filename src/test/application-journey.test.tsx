@@ -1,0 +1,17 @@
+import {cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
+import {MemoryRouter,Routes,Route} from 'react-router-dom';
+import {afterEach,beforeEach,expect,it,vi} from 'vitest';
+import DestinationApply from '@/pages/tenant/apply/DestinationApply';
+const mock=vi.hoisted(()=>({invoke:vi.fn(),toast:vi.fn()}));
+vi.mock('@/integrations/supabase/client',()=>({supabase:{functions:{invoke:mock.invoke}}}));
+vi.mock('@/components/TenantNav',()=>({default:()=>null}));
+vi.mock('@/components/Seo',()=>({default:()=>null}));
+vi.mock('@/hooks/use-toast',()=>({useToast:()=>({toast:mock.toast})}));
+const key='unipathway-application:unipathway:uk';
+const form={full_name:'Test Student',email:'student@example.test',phone:'+923001112233',country:'Pakistan',study_level:'bachelors',intake:'2027',prior_qualification:'Intermediate',language_status:'preparing',ack_admission_decision:true,ack_financial:true,ack_no_guarantee:true};
+const mount=()=>render(<MemoryRouter initialEntries={['/tenant/unipathway/apply/uk']}><Routes><Route path="/tenant/:slug/apply/:destination" element={<DestinationApply/>}/></Routes></MemoryRouter>);
+beforeEach(()=>{localStorage.clear();mock.invoke.mockReset();mock.toast.mockReset();});
+afterEach(cleanup);
+it('saves and restores an optional browser draft',async()=>{let view=mount();fireEvent.change(screen.getByRole('textbox',{name:'Full name'}),{target:{value:'Test Student'}});fireEvent.click(screen.getByText('Save draft on this browser'));expect(JSON.parse(localStorage.getItem(key)!).form.full_name).toBe('Test Student');view.unmount();mount();expect(await screen.findByDisplayValue('Test Student')).toBeInTheDocument();});
+it('expires old drafts',()=>{localStorage.setItem(key,JSON.stringify({version:1,savedAt:Date.now()-8*86400000,form}));mount();expect(screen.getByRole('textbox',{name:'Full name'})).toHaveValue('');expect(localStorage.getItem(key)).toBeNull();});
+for(const success of [true,false])it(`confirms only a persisted server intake: ${success}`,async()=>{localStorage.setItem(key,JSON.stringify({version:1,savedAt:Date.now(),form}));mock.invoke.mockResolvedValue({data:success?{success:true,id:'saved-reference'}:{success:false},error:null});mount();await screen.findByDisplayValue('Test Student');for(let i=0;i<4;i++)fireEvent.click(screen.getByRole('button',{name:/Continue/}));fireEvent.click(screen.getByRole('button',{name:'Submit application'}));await waitFor(()=>expect(mock.invoke).toHaveBeenCalledWith('contact-form',expect.objectContaining({body:expect.objectContaining({tenant_slug:'unipathway',name:'Test Student'})})));if(success){await screen.findByRole('heading',{name:'Application received'});expect(localStorage.getItem(key)).toBeNull();}else{await waitFor(()=>expect(mock.toast).toHaveBeenCalledWith(expect.objectContaining({title:'Could not submit'})));expect(localStorage.getItem(key)).not.toBeNull();expect(screen.queryByRole('heading',{name:'Application received'})).not.toBeInTheDocument();}});

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import Seo from '@/components/Seo';
 import TenantNav from '@/components/TenantNav';
@@ -66,21 +66,44 @@ const DOC_LABELS: Record<string, string> = {
   tb_test: 'TB test certificate (Pakistan)',
 };
 
-export default function DestinationApply() {
-  const { slug, destination } = useParams();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [step, setStep] = useState<Step>(0);
-  const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState<FormState>({
+const EMPTY_FORM: FormState = {
     full_name: '', email: '', phone: '', country: 'Pakistan',
     study_level: '', intake: '', prior_qualification: '', prior_institution: '', prior_year: '', prior_grade: '',
     language_status: '', language_score: '', needs_prep_course: false,
     ack_admission_decision: false, ack_financial: false, ack_no_guarantee: false,
     notes: '',
-  });
+  };
+
+export default function DestinationApply() {
+  const { slug, destination } = useParams();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [savedNotice, setSavedNotice] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const draftKey = `unipathway-application:${slug}:${destination}`;
+  const [step, setStep] = useState<Step>(0);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [checklist, setChecklist] = useState<Record<string, boolean>>({});
 
+  useEffect(() => {
+    setForm(EMPTY_FORM); setChecklist({}); setStep(0); setSubmitted(false); setSavedNotice('');
+    try {
+      const raw = localStorage.getItem(draftKey);
+      if (!raw) return;
+      const draft = JSON.parse(raw);
+      if (draft.version !== 1 || !Number.isFinite(draft.savedAt) || Date.now() - draft.savedAt > 7 * 86400000) {localStorage.removeItem(draftKey); return;}
+      if (draft.form && typeof draft.form.full_name === 'string') {
+        setForm(previous => Object.fromEntries(Object.entries(previous).map(([key,value]) => [key, typeof draft.form[key] === typeof value ? draft.form[key] : value])) as unknown as FormState);
+        setChecklist(Object.fromEntries(Object.entries(draft.checklist || {}).filter(([,value])=>typeof value==='boolean')) as Record<string,boolean>);
+        setSavedNotice('Your saved draft has been restored. Review each step before submitting.');
+      }
+    } catch {setSavedNotice('Your saved draft could not be restored. You can start again.');}
+  }, [draftKey]);
+  const saveDraft = () => {
+    try {localStorage.setItem(draftKey, JSON.stringify({version:1,savedAt:Date.now(),form,checklist}));setSavedNotice('Draft saved on this browser for up to 7 days. Do not save personal details on a shared computer.');}
+    catch {setSavedNotice('This browser could not save your draft. Please keep this tab open.');}
+  };
   if (destination !== 'germany' && destination !== 'uk') {
     return <Navigate to={`/tenant/${slug}`} replace />;
   }
@@ -90,7 +113,7 @@ export default function DestinationApply() {
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setForm((f) => ({ ...f, [k]: v }));
 
   const canAdvance = () => {
-    if (step === 0) return form.full_name && form.email && form.phone && form.country;
+    if (step === 0) return form.full_name.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()) && /^(?:\+92|0092|0)\d{9,10}$/.test(form.phone.replace(/[\s()-]/g,'')) && form.country === 'Pakistan';
     if (step === 1) return form.study_level && form.intake && form.prior_qualification;
     if (step === 2) return form.language_status;
     if (step === 3) return form.ack_admission_decision && form.ack_financial && form.ack_no_guarantee;
@@ -98,59 +121,33 @@ export default function DestinationApply() {
   };
 
   const submit = async () => {
+    if (submitting) return;
+    if (!form.full_name.trim() || !form.email.trim() || !form.study_level || !form.intake || !form.prior_qualification || !form.language_status || !form.ack_admission_decision || !form.ack_financial || !form.ack_no_guarantee) {setStep(0); toast({title:'Review your application',description:'Complete each step before submitting.',variant:'destructive'}); return;}
     setSubmitting(true);
     try {
-      // Look up tenant id by slug (public tenants view)
-      const { data: tenant } = await supabase.from('tenants' as any).select('id').eq('slug', slug).maybeSingle();
-
-      const document_checklist = docs.map((k) => ({
-        key: k, label: DOC_LABELS[k] || k,
-        status: checklist[k] ? 'uploaded' : 'pending',
-        required: true,
-      }));
-
       const summary = [
         `Destination: ${dest.toUpperCase()}`,
         `Study level: ${form.study_level}`,
         `Intake: ${form.intake}`,
-        `Country: ${form.country}`,
+        `Country: Pakistan`,
         `Prior: ${form.prior_qualification} — ${form.prior_institution} (${form.prior_year}, ${form.prior_grade})`,
-        `Language: ${form.language_status}${form.language_score ? ' — ' + form.language_score : ''}${form.needs_prep_course ? ' + prep course requested' : ''}`,
+        `Language: ${form.language_status} ${form.language_score}; preparation requested: ${form.needs_prep_course ? 'yes' : 'no'}`,
+        'Admission, financial and no-guarantee acknowledgements accepted.',
+        `Documents available (not uploaded): ${docs.filter(k => checklist[k]).map(k => DOC_LABELS[k]).join(', ') || 'None confirmed'}`,
         form.notes ? `Notes: ${form.notes}` : '',
       ].filter(Boolean).join('\n');
+      // Public intake uses the existing server endpoint. Never grant anonymous
+      // users direct application-table writes or let them choose an approval stage.
+      const {data, error} = await supabase.functions.invoke('contact-form', {
+        body: {name: form.full_name.trim(), email: form.email.trim(), phone: form.phone,
+          subject: `Study ${dest.toUpperCase()} application review`, message: summary,
+          tenant_slug: slug || 'unipathway'},
+      });
+      if (error || !data?.success || !data?.id) throw new Error('Your application could not be confirmed. Please try again; your draft is still available.');
 
-      const payload: any = {
-        student_name: form.full_name,
-        email: form.email,
-        phone: form.phone,
-        stage: 'applied',
-        source: `consultancy_${dest}`,
-        level: form.study_level,
-        notes: summary,
-        tenant_id: (tenant as any)?.id ?? null,
-        // Additive columns (present after migration):
-        destination: dest,
-        study_level: form.study_level,
-        intake: form.intake,
-        document_checklist,
-      };
-
-      const { error } = await supabase.from('applications').insert(payload);
-      if (error) throw error;
-
-      // Confirmation email + admissions alert (never blocks the applicant).
-      supabase.functions.invoke('notify-application', {
-        body: {
-          name: form.full_name,
-          email: form.email,
-          destination: dest,
-          intake: form.intake,
-          tenantId: (tenant as any)?.id ?? null,
-        },
-      }).catch(() => undefined);
-
-      toast({ title: 'Application received', description: 'Check your inbox — our counselling team will contact you within one working day.' });
-      navigate(`/tenant/${slug}/${dest}`);
+      toast({ title: 'Application received', description: 'Our counselling team will review your details and contact you.' });
+      try {localStorage.removeItem(draftKey);} catch {}
+      setSubmitted(true);
     } catch (e: any) {
       toast({ title: 'Could not submit', description: e.message, variant: 'destructive' });
     } finally {
@@ -164,22 +161,23 @@ export default function DestinationApply() {
     <div className="min-h-dvh bg-background text-foreground">
       <Seo
         title={dest === 'germany' ? 'Apply to Study in Germany — UniPathway' : 'Apply to Study in the UK — UniPathway'}
-        description="Start your UniPathway application in five short steps. Our counselling team confirms eligibility, documents and next actions within one working day."
+        description="Start your UniPathway application in five short steps. Our counselling team confirms eligibility, documents and next actions."
         canonical={`/apply/${dest}`}
       />
       <TenantNav brandName="UniPathway" />
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
+      {submitted ? <main className="mx-auto max-w-2xl px-5 py-16"><Check className="size-10 text-success"/><h1 className="mt-4 text-3xl font-bold">Application received</h1><p className="mt-4 text-muted-foreground">Your counselling team will review your details and contact you about eligibility and next steps. The document checklist records what you have available; no documents have been uploaded yet.</p><Button className="mt-6" onClick={()=>navigate('/study')}>Explore learning options</Button></main> : <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 pb-28">
         <div className="mb-6">
           <span className="text-xs font-bold uppercase tracking-widest text-primary">{flag} · Application</span>
           <h1 className="text-2xl sm:text-3xl font-extrabold mt-2">Start your consultancy application</h1>
           <p className="text-sm text-muted-foreground mt-2">
-            Five short steps. We will contact you within one working day to confirm eligibility, documents and next actions.
+            Five short steps. Our admissions team will review your details and confirm eligibility, documents and next actions.
           </p>
         </div>
 
+        <div className="mb-5 rounded-xl border p-4"><p className="font-semibold">Step {step+1} of {STEPS.length}: {STEPS[step]}</p><progress className="mt-3 h-2 w-full" max={STEPS.length} value={step+1} aria-label="Application progress"/><div className="mt-3 flex flex-wrap gap-3"><Button type="button" variant="outline" onClick={saveDraft}>Save draft on this browser</Button><Button type="button" variant="ghost" onClick={()=>{try{localStorage.removeItem(draftKey);setSavedNotice('Saved copy removed from this browser.');}catch{setSavedNotice('The saved copy could not be removed.');}}}>Remove saved draft</Button></div><p className="mt-2 text-xs text-muted-foreground">Saving is optional. Use your own device because the draft contains your personal details.</p>{savedNotice&&<p role="status" className="mt-2 text-sm">{savedNotice}</p>}</div>
         {/* Stepper */}
-        <div className="flex items-center gap-2 mb-6 overflow-x-auto">
+        <div className="hidden sm:flex items-center gap-2 mb-6 overflow-x-auto">
           {STEPS.map((label, i) => (
             <div key={i} className="flex items-center gap-2 flex-shrink-0">
               <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${i < step ? 'bg-primary text-primary-foreground' : i === step ? 'bg-primary/15 text-primary ring-2 ring-primary' : 'bg-muted text-muted-foreground'}`}>
@@ -195,9 +193,9 @@ export default function DestinationApply() {
           {step === 0 && (
             <>
               <div className="grid sm:grid-cols-2 gap-4">
-                <Field label="Full name"><Input value={form.full_name} onChange={(e) => set('full_name', e.target.value)} /></Field>
-                <Field label="Email"><Input type="email" value={form.email} onChange={(e) => set('email', e.target.value)} /></Field>
-                <Field label="Phone / WhatsApp (Pakistan)"><Input type="tel" autoComplete="tel" value={form.phone} onChange={(e) => set('phone', e.target.value)} placeholder="+92 ..." /></Field>
+                <Field label="Full name"><Input aria-label="Full name" autoComplete="name" maxLength={200} value={form.full_name} onChange={(e) => set('full_name', e.target.value)} /></Field>
+                <Field label="Email"><Input aria-label="Email" autoComplete="email" maxLength={254} type="email" value={form.email} onChange={(e) => set('email', e.target.value)} /></Field>
+                <Field label="Phone / WhatsApp (Pakistan)"><Input aria-label="Phone / WhatsApp (Pakistan)" maxLength={20} type="tel" autoComplete="tel" value={form.phone} onChange={(e) => set('phone', e.target.value)} placeholder="+92 ..." /></Field>
                 <Field label="Country of residence">
                   <Input value="Pakistan" readOnly aria-label="Country of residence" />
                   <p className="mt-1 text-xs text-muted-foreground">UniPathway enrols students based in Pakistan.</p>
@@ -336,7 +334,7 @@ export default function DestinationApply() {
                 ))}
               </div>
               <Field label="Anything you'd like your counsellor to know?">
-                <Textarea rows={3} value={form.notes} onChange={(e) => set('notes', e.target.value)} />
+                <Textarea maxLength={2000} rows={3} value={form.notes} onChange={(e) => set('notes', e.target.value)} />
               </Field>
             </div>
           )}
@@ -356,16 +354,16 @@ export default function DestinationApply() {
             )}
           </div>
         </div>
-      </div>
+      </div>}
     </div>
   );
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-1.5">
-      <Label className="text-xs font-semibold">{label}</Label>
+    <fieldset className="min-w-0 space-y-1.5">
+      <legend className="text-xs font-semibold">{label}</legend>
       {children}
-    </div>
+    </fieldset>
   );
 }

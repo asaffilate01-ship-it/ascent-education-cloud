@@ -1,3 +1,4 @@
+import CourseAtAGlance from '@/components/CourseAtAGlance';
 import PublicHero from '@/components/PublicHero';
 import PageContents from '@/components/PageContents';
 import { useMemo, useState } from 'react';
@@ -28,7 +29,7 @@ export default function AcademyPage({kind}:{kind:AcademyKind}){
          <div className="mt-6 flex flex-wrap gap-3"><Button asChild><Link to="/contact">Ask about enrolling <ArrowRight className="ml-1 size-4"/></Link></Button><Button asChild variant="outline"><Link to="/qualifications">Explore awarding-body diplomas</Link></Button></div>
        </div>
        </PublicHero>
-<PageContents/>
+<CourseAtAGlance course={title}/><PageContents/>
 <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{[{icon:BookOpen,title:'Structured syllabuses',desc:'Clear modules and objectives'},{icon:Laptop,title:'Practical projects',desc:'Exercises and portfolios'},{icon:ClipboardCheck,title:'Tutor feedback',desc:'Assignments and revision'},{icon:GraduationCap,title:'Progression advice',desc:'Next course and career step'}].map(({icon:Icon,title,desc})=><div key={title} className="rounded-xl border bg-white p-4 dark:bg-card"><Icon className="size-6 text-success"/><h2 className="mt-2 text-sm font-bold">{title}</h2><p className="mt-1 text-xs text-muted-foreground">{desc}</p></div>)}</div>
 
      <section aria-labelledby="academy-programmes-heading" className="space-y-5">
@@ -42,7 +43,7 @@ export default function AcademyPage({kind}:{kind:AcademyKind}){
          <p className="text-xs font-bold uppercase tracking-wide text-success">{track.level}</p><h3 className="mt-2 text-xl font-bold">{track.title}</h3><p className="mt-2 text-sm text-muted-foreground">{track.summary}</p>
          <div className="mt-5"><h4 className="text-sm font-semibold">Topics and modules</h4><ul className="mt-3 space-y-2">{track.topics.map(item=><li key={item} className="flex items-start gap-2 text-sm"><CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success"/><span>{item}</span></li>)}</ul></div>
          <div className="mt-5 border-t pt-4"><p className="text-sm font-semibold">Practical outcome</p><p className="mt-1 text-sm text-muted-foreground">{track.practical}</p><p className="mt-3 text-sm font-semibold">Who it suits</p><p className="mt-1 text-sm text-muted-foreground">{track.forWhom}</p><p className="mt-3 text-xs text-muted-foreground">{track.certification}</p></div>
-         <Button asChild variant="outline" className="mt-auto self-start pt-5"><Link to="/contact">Request course details</Link></Button>
+         <Button asChild variant="outline" className="mt-auto self-start pt-5"><Link to={`/contact?${new URLSearchParams({course:track.title})}`}>Request course details</Link></Button>
        </article>)}</div>
      </section>
      <section className="grid gap-5 rounded-xl border bg-secondary/40 p-6 md:grid-cols-2">

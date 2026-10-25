@@ -35,6 +35,7 @@ const TenantContactPage = lazy(() => import("./pages/tenant/TenantContactPage"))
 const GermanyPathway = lazy(() => import("./pages/tenant/GermanyPathway"));
 const UKPathway = lazy(() => import("./pages/tenant/UKPathway"));
 const PathwaysCompare = lazy(() => import("./pages/tenant/PathwaysCompare"));
+const ApplyStart = lazy(() => import("./pages/promo/ApplyStart"));
 const DestinationApply = lazy(() => import("./pages/tenant/apply/DestinationApply"));
 const IELTSPreparationPage = lazy(() => import("./pages/ielts/IELTSPreparationPage"));
 const IELTSAcademy = lazy(() => import("./pages/ielts/IELTSAcademy"));
@@ -305,10 +306,10 @@ function AppRoutes() {
         <Route path="/germany" element={<RedirectToTenant suffix="/germany" />} />
         <Route path="/uk" element={<RedirectToTenant suffix="/uk" />} />
         <Route path="/pathways" element={<RedirectToTenant suffix="/pathways" />} />
-        <Route path="/apply" element={<Navigate to="/tenant/unipathway/apply/uk" replace />} />
+        <Route path="/apply" element={<ApplyStart />} />
         <Route path="/ielts-preparation" element={<IELTSPreparationPage />} />
         <Route path="/apply/:destination" element={<ApplyRedirect />} />
-        <Route path="/tenant/:slug/apply" element={<Navigate to="/tenant/unipathway/apply/uk" replace />} />
+        <Route path="/tenant/:slug/apply" element={<Navigate to="/apply" replace />} />
 
 
         <Route path="/tenant/:slug" element={<TenantLandingPage />} />

@@ -1,3 +1,4 @@
+import CourseAtAGlance from '@/components/CourseAtAGlance';
 import { HeroImage } from '@/components/PublicHero';
 import PageContents from '@/components/PageContents';
 import { Link } from 'react-router-dom';
@@ -29,7 +30,7 @@ export default function IELTSPreparationPage() {
           </div></div>
         </div>
       </section>
-      <div className="mx-auto max-w-7xl px-5 py-6 sm:px-8"><PageContents/></div>
+      <div className="mx-auto max-w-7xl px-5 py-6 sm:px-8"><CourseAtAGlance course="IELTS preparation" duration="Proposed eight-week guided programme; confirm your timetable at enrolment." entry="A starting-level assessment helps identify the right preparation pathway."/><PageContents/></div>
       <section className="max-w-7xl mx-auto px-5 sm:px-8 py-16">
         <p className="text-label text-primary">THE FOUR CORE SKILLS</p>
         <h2 className="text-3xl font-bold mt-3">Structured preparation, practical feedback</h2>
