@@ -134,7 +134,10 @@ const AIChatWidget = forwardRef<HTMLDivElement>(function AIChatWidget(_props, re
                 </div>
                 <div>
                   <p className="text-sm font-bold">AI Study Tutor</p>
-                  <p className="text-[10px] text-muted-foreground">Powered by Lovable AI</p>
+                  <p className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                    <img src="/brand/omniqora-icon.png" alt="" aria-hidden="true" width={16} height={16} className="size-4 shrink-0 object-contain" />
+                    <span>Powered by Omniqora</span>
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-1">
