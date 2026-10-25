@@ -3810,6 +3810,7 @@ export type Database = {
         | "assessor"
         | "awarding_body_eqa"
         | "welfare_officer"
+        | "security_officer"
       application_stage:
         | "lead"
         | "contacted"
@@ -4025,6 +4026,7 @@ export const Constants = {
         "assessor",
         "awarding_body_eqa",
         "welfare_officer",
+        "security_officer",
       ],
       application_stage: [
         "lead",

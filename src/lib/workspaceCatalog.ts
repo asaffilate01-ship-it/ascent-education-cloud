@@ -1,6 +1,7 @@
 export type WorkspaceGroup={title:string;items:{label:string;to:string;description:string}[]};
 const group=(title:string,items:[string,string,string][]):WorkspaceGroup=>({title,items:items.map(([label,to,description])=>({label,to,description}))});
 export const workspaceCatalog:Record<string,WorkspaceGroup[]>={
+ security_officer:[group('Security',[['CCTV live and playback','/security','View authorised cameras and request time-limited playback.']])],
  student:[
   group('Study',[
    ['Courses, modules and subjects','/student/courses','Your enrolled programmes and module learning journeys.'],

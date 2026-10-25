@@ -26,6 +26,7 @@ export const PUBLIC_BOTTOM_NAV: BottomNavItem[] = [
 ];
 
 export const BOTTOM_NAV: Record<UserRole, BottomNavItem[]> = {
+  security_officer: [{label:'CCTV',icon:ShieldCheck,path:'/security'},{label:'Alerts',icon:Bell,path:'/notifications'},{label:'Workspace',icon:Home,path:'/workspace'}],
   student: [
     { label: 'Home', icon: Home, path: '/student' },
     { label: 'Courses', icon: BookOpen, path: '/student/courses' },

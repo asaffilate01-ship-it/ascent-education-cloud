@@ -1,3 +1,4 @@
+import IdentityConnectionStatus from '@/components/IdentityConnectionStatus';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,7 +15,7 @@ import { Upload, FileCheck, AlertCircle, CheckCircle2, Clock, Shield, Camera, Fi
 import { motion } from 'framer-motion';
 
 const DOCUMENT_TYPES = [
-  { key: 'passport', label: 'Passport / CNIC', icon: User, description: 'Government-issued photo ID for identity verification', required: true },
+  { key: 'passport', label: 'CNIC / B-form / Juvenile Card / Passport', icon: User, description: 'Government-issued photo ID for identity verification', required: true },
   { key: 'selfie', label: 'Selfie for Face Match', icon: Camera, description: 'Clear photo for identity verification against your ID', required: true },
   { key: 'transcript', label: 'Academic Transcripts', icon: FileText, description: 'Official transcripts from previous institution(s)', required: true },
   { key: 'qualification', label: 'Qualification Certificates', icon: GraduationCap, description: 'Degree/diploma certificates (originals or attested copies)', required: true },
@@ -101,6 +102,7 @@ export default function StudentOnboarding() {
 
   return (
     <DashboardLayout title="Student Onboarding">
+      <IdentityConnectionStatus />
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Student Onboarding</h1>

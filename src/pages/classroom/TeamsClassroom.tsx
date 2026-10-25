@@ -1,3 +1,4 @@
+import { pakistanClassTime, classJoinState } from '@/lib/classroomExperience';
 import ModuleJourney from '@/components/assessment/ModuleJourney';
 import TeamsLink from '@/components/native/TeamsLink';
 import { useEffect, useMemo, useState } from 'react';
@@ -19,6 +20,8 @@ function ClassroomWorkspace(){
  const [boards,setBoards]=useState<Board[]>([]);
  const [loading,setLoading]=useState(true);const [error,setError]=useState('');
  const [boardError,setBoardError]=useState('');
+ const [now,setNow]=useState(Date.now());
+ useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),30000);return()=>clearInterval(timer);},[]);
  const [showPast,setShowPast]=useState(false);const [refresh,setRefresh]=useState(0);
  useEffect(()=>{
   if(!user?.id){setSessions([]);setLoading(false);return;}
@@ -35,14 +38,15 @@ function ClassroomWorkspace(){
   }).catch(()=>{if(live){setError('Classroom service unavailable');setLoading(false);}});
   return()=>{live=false};
  },[user?.id,user?.tenantId,refresh]);
- const upcoming=useMemo(()=>[...sessions].filter(s=>(!moduleId||s.module_id===moduleId)&&s.status!=='cancelled' && (showPast ? new Date(s.ends_at).getTime()<Date.now() : new Date(s.ends_at).getTime()>=Date.now()))
-  .sort((a,b)=>new Date(a.starts_at).getTime()-new Date(b.starts_at).getTime()),[sessions,showPast,moduleId]);
+ const upcoming=useMemo(()=>[...sessions].filter(s=>(!moduleId||s.module_id===moduleId)&&s.status!=='cancelled' && (showPast ? classJoinState(s,now)==='ended' : classJoinState(s,now)!=='ended'))
+  .sort((a,b)=>(showPast?-1:1)*(new Date(a.starts_at).getTime()-new Date(b.starts_at).getTime())),[sessions,showPast,moduleId,now]);
  const teacher=!!user?.roles.some(r=>['lecturer','programme_leader','centre_director','superadmin'].includes(r));
  return <DashboardLayout title="UniPathway Live Classroom" subtitle="Private lecture rooms with interactive whiteboard and on-demand materials">
   <ModuleJourney moduleId={moduleId||undefined} teacher={teacher}/>
   <section className="mb-5 rounded-xl border border-primary/25 bg-primary/5 p-4">
    <h2 className="flex items-center gap-2 font-bold"><ShieldCheck className="size-5"/>Invited students and allocated teachers only</h2>
-   <p className="mt-2 text-sm text-muted-foreground">Students need an active enrolment AND an invitation for a specific class. For 100+ student lectures, everyone sees one presenter-controlled board without individual copies. The board can be shared into Teams recording by the lecturer. Microsoft Teams lobby, presenter and recording permissions must be configured separately.</p>
+   <p className="mt-2 text-sm text-muted-foreground">Your invited classes appear below. Join opens 20 minutes before the start. All times are Pakistan Standard Time (PKT). Have your microphone, headphones and course notes ready; your teacher controls access to the live board and released recordings.</p>
+   {teacher&&<p className="mt-2 text-xs text-muted-foreground">Microsoft Teams lobby, presenter and recording permissions must be configured separately.</p>}
    {teacher&&<div className="mt-3 flex flex-wrap gap-4">
     <Link className="inline-flex items-center gap-2 text-sm font-bold underline" to="/lecturer/class-scheduler"><Calendar className="size-4"/>Class scheduling and bulk invitations</Link>
     <Link className="inline-flex items-center gap-2 text-sm font-bold underline" to="/lecturer/whiteboards"><PenTool className="size-4"/>Whiteboard Studio</Link>
@@ -60,21 +64,21 @@ function ClassroomWorkspace(){
    <p className="mt-2 text-sm text-muted-foreground">Eligible lectures will appear after enrolment and an approved invitation.</p>
   </div>}
   {!loading&&!error&&<div className="grid gap-4 md:grid-cols-2">{upcoming.map(s=>{
-    const current=Date.now(),start=new Date(s.starts_at).getTime(),end=new Date(s.ends_at).getTime();
-    const joinWindow=current>=start-20*60_000&&current<=end+30*60_000;
+    const state=classJoinState(s,now);
+    const joinWindow=state==='open';
     const joinable=joinWindow&&isTeamsUrl(s.join_url);
     const board=boards.find(b=>b.session_id===s.id);
     return <article key={s.id} className="rounded-xl border bg-card p-5">
       <div className="flex items-center justify-between gap-3"><h3 className="font-bold">{s.title}</h3><StatusBadge status={s.status}/></div>
-      <p className="mt-2 text-sm text-muted-foreground">{new Date(s.starts_at).toLocaleString()} · {s.class_mode}</p>
+      <p className="mt-2 text-sm text-muted-foreground">{pakistanClassTime(s.starts_at)+' PKT'} · {s.class_mode}</p>
       <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><Users className="size-4"/>Planned class capacity: {s.capacity}. Actual Teams licence/provider limits apply.</p>
       <p className="mt-2 text-xs text-muted-foreground">{s.recording_enabled?'Teams recording requested; successful capture and release are separate.':'Teams recording not requested.'}</p>
       <div className="mt-4 flex flex-wrap items-center gap-2">
-       {joinable?<TeamsLink className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground" href={s.join_url!} target="_blank" rel="noopener noreferrer">Join Teams <ExternalLink className="size-4"/></TeamsLink>:
-        <p className="text-xs font-semibold text-muted-foreground">{current>end+30*60_000?'Class completed':!joinWindow?'Teams join opens 20 minutes before start':'Verified Teams link not configured'}</p>}
-       <Link className="inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-semibold" to={'/classroom/teaching/'+s.id}>Teaching desk · groups & recordings</Link>
-       <Link className="inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-semibold" to={'/classroom/discussion/'+s.id}><Hand className="size-4"/>Raise hand / Ask a question</Link>
-       {board?<Link className="inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-semibold" to={'/classroom/whiteboard/'+board.id}><PenTool className="size-4"/>Open live board & replay</Link>:
+       {joinable?<TeamsLink className="inline-flex items-center gap-2 min-h-11 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground" href={s.join_url!} target="_blank" rel="noopener noreferrer">Join Teams <ExternalLink className="size-4"/></TeamsLink>:
+        <p className="text-xs font-semibold text-muted-foreground">{state==='ended'?'Class completed':!joinWindow?'Teams join opens 20 minutes before start':'Verified Teams link not configured'}</p>}
+       <Link className="inline-flex items-center gap-2 min-h-11 rounded-md border px-4 py-2 text-sm font-semibold" to={'/classroom/teaching/'+s.id}>{teacher?'Teaching desk · groups & recordings':'Class resources & recordings'}</Link>
+       <Link className="inline-flex items-center gap-2 min-h-11 rounded-md border px-4 py-2 text-sm font-semibold" to={'/classroom/discussion/'+s.id}><Hand className="size-4"/>Raise hand / Ask a question</Link>
+       {board?<Link className="inline-flex items-center gap-2 min-h-11 rounded-md border px-4 py-2 text-sm font-semibold" to={'/classroom/whiteboard/'+board.id}><PenTool className="size-4"/>Open live board & replay</Link>:
        <span className="text-xs text-muted-foreground">{boardError?'Board unavailable':'Lecturer has not created the board yet'}</span>}
       </div>
      </article>;

@@ -1,3 +1,4 @@
+import SecurityWorkspace from '@/pages/security/SecurityWorkspace';
 import NativeBridge from '@/components/native/NativeBridge';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate, useLocation, useParams } from "react-router-dom";
@@ -331,6 +332,7 @@ function AppRoutes() {
         <Route path="/blog" element={<BlogListPage />} />
         <Route path="/blog/:slug" element={<BlogPostPage />} />
         <Route path="/verify" element={<CertificateVerification />} />
+        <Route path="/security" element={<RoleGuard allowed={['security_officer','centre_director','superadmin']}><SecurityWorkspace /></RoleGuard>} />
         <Route path="/live-classroom" element={<P><LiveClassroom /></P>} />
 
         {/* ========== LANDLORD ========== */}

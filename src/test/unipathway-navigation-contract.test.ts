@@ -11,7 +11,7 @@ import type { UserRole } from '@/types/platform';
 
 const roles: UserRole[] = [
   'superadmin','centre_director','admissions_admin','lecturer','assessor',
-  'programme_leader','iqa_officer','awarding_body_eqa','welfare_officer',
+  'programme_leader','iqa_officer','awarding_body_eqa','welfare_officer','security_officer',
   'exams_officer','finance_officer','marketing_officer','agent','student',
   'parent_guardian','university_partner','employer_partner',
 ];
