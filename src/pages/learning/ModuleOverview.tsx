@@ -27,7 +27,7 @@ function Workspace({student,tenant,moduleId,teacher}:{student?:string;tenant?:st
     {error&&<p className="mt-5" role="alert">{error}</p>}
     {!loading&&!error&&!state?.module&&<p className="mt-5" role="alert">This module is unavailable or you no longer have access. Contact your centre if your enrolment or teaching assignment has changed.</p>}
     {!loading&&state?.module&&<><ModuleJourney moduleId={moduleId} teacher={teacher}/><p className="mb-5 text-sm text-muted-foreground">Class access, resource release and submission rules are checked again when you open each tool. Practice feedback is separate from released assessment results.</p>
-      <div className="grid gap-5 lg:grid-cols-2">{state.panels.map(panel=><section key={panel.title} className="surface-card p-5" aria-label={panel.title}>
+      <Button asChild className="mb-5"><Link to={`/${teacher?'lecturer':'student'}/lessons?module=${moduleId}`}>{teacher?'Build and publish lessons':'Continue your next lesson'}</Link></Button><div className="grid gap-5 lg:grid-cols-2">{state.panels.map(panel=><section key={panel.title} className="surface-card p-5" aria-label={panel.title}>
         <h2 className="text-lg font-bold">{panel.title}</h2><p role={panel.error?'alert':undefined} className={`mt-2 text-sm ${panel.error?'text-destructive':'text-muted-foreground'}`}>{panel.summary}</p>
         <ul className="my-4 space-y-3">{panel.items.map(item=><li className="rounded-lg border p-3" key={item.id}><Link className="font-semibold underline" to={item.to}>{item.title}</Link><p className="mt-1 text-sm text-muted-foreground">{item.detail}</p></li>)}</ul>
         <Button variant="outline" asChild><Link to={panel.to}>Open {panel.title.toLowerCase()}</Link></Button>

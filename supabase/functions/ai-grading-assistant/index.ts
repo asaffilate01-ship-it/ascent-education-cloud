@@ -1,3 +1,4 @@
+import { omniqoraCompletion, OmniqoraError } from '../_shared/omniqora.ts';
 import { corsHeaders, rateLimit, rateLimitResponse, getClientIp } from '../_shared/cors.ts'
 import { authenticateRequest } from '../_shared/auth.ts'
 
@@ -19,10 +20,10 @@ Guidelines:
 - Reference learning outcomes and assessment criteria
 - Use the "sandwich" method: strength → improvement area → encouragement
 - Suggest specific improvements with examples
-- Flag academic integrity concerns if plagiarism score is high
+- Do not infer misconduct or authorship from a score. Human review requires evidence.
 - Consider word count compliance
 - Keep feedback between 150-300 words
-- End with a suggested grade band: Distinction (70-100), Merit (60-69), Pass (40-59), Refer (0-39)`
+- Do not propose a grade without the approved rubric and actual learner evidence. State what evidence is missing.`
 
     const userPrompt = `Please generate constructive feedback for this submission:
 
@@ -33,16 +34,15 @@ Word Count: ${wordCount || 'Unknown'}
 Plagiarism Score: ${plagiarismScore || 0}%
 ${submissionContext ? `Additional Context: ${String(submissionContext).slice(0, 1000)}` : ''}
 
-Generate detailed, actionable feedback with a suggested grade band.`
+Generate formative feedback only. Do not issue a grade or misconduct finding.`
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await omniqoraCompletion(req, 'ai-grading-assistant', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-3-flash-preview',
+
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
@@ -60,7 +60,7 @@ Generate detailed, actionable feedback with a suggested grade band.`
     })
   } catch (error) {
     return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
-      status: 500,
+      status: error instanceof OmniqoraError ? error.status : 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }

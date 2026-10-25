@@ -1,3 +1,4 @@
+import { omniqoraCompletion, OmniqoraError } from '../_shared/omniqora.ts';
 import { corsHeaders, rateLimit, rateLimitResponse, getClientIp } from '../_shared/cors.ts'
 import { authenticateRequest } from '../_shared/auth.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -10,6 +11,6 @@ Deno.serve(async(req)=>{if(req.method==='OPTIONS')return new Response(null,{head
  const candidates=eligible.map((e:any)=>({userId:e.user_id,eligibilityScore:e.eligibility_score,reasons:e.reasons,availability:(availability||[]).filter((a:any)=>a.user_id===e.user_id)}));
  // AI suggests only from academically approved candidates; human approval remains required.
  const prompt=JSON.stringify({moduleId,cohortReference,requiredSlots,candidates,rules:['Do not select outside availability','Prefer best competency fit','Balance weekly workload','Avoid timetable clashes','Return ranked assignments with reasons']});
- const resp=await fetch('https://ai.gateway.lovable.dev/v1/chat/completions',{method:'POST',headers:{Authorization:`Bearer ${Deno.env.get('LOVABLE_API_KEY')}`,'Content-Type':'application/json'},body:JSON.stringify({model:'google/gemini-3-flash-preview',messages:[{role:'system',content:'You are a teaching timetable optimisation agent. Only schedule lecturers supplied as academically eligible. Return JSON {proposals:[{userId,slot,score,reasons}]}. Never approve or publish a timetable.'},{role:'user',content:prompt}],temperature:0.1,response_format:{type:'json_object'}})});
+ const resp=await omniqoraCompletion(req, 'teaching-scheduler-agent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'system',content:'You are a teaching timetable optimisation agent. Only schedule lecturers supplied as academically eligible. Return JSON {proposals:[{userId,slot,score,reasons}]}. Never approve or publish a timetable.'},{role:'user',content:prompt}],temperature:0.1,response_format:{type:'json_object'}})});
  const data=await resp.json();return new Response(JSON.stringify(JSON.parse(data.choices?.[0]?.message?.content||'{}')),{headers:{...corsHeaders,'Content-Type':'application/json'}});
- }catch(e){return new Response(JSON.stringify({error:e instanceof Error?e.message:'Unknown error'}),{status:500,headers:{...corsHeaders,'Content-Type':'application/json'}})}})
+ }catch(e){return new Response(JSON.stringify({error:e instanceof Error?e.message:'Unknown error'}),{status:e instanceof OmniqoraError ? e.status : 500,headers:{...corsHeaders,'Content-Type':'application/json'}})}})

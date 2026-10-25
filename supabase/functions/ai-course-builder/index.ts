@@ -1,3 +1,4 @@
+import { omniqoraCompletion, OmniqoraError } from '../_shared/omniqora.ts';
 import { corsHeaders, rateLimit, rateLimitResponse, getClientIp } from '../_shared/cors.ts'
 import { authenticateRequest } from '../_shared/auth.ts'
 
@@ -48,14 +49,13 @@ Return a JSON object with: { pathway_title, description, weeks: [{week_number, t
       })
     }
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await omniqoraCompletion(req, 'ai-course-builder', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-3-flash-preview',
+
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
@@ -98,7 +98,7 @@ Return a JSON object with: { pathway_title, description, weeks: [{week_number, t
     })
   } catch (error) {
     return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: error instanceof OmniqoraError ? error.status : 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }
 })
