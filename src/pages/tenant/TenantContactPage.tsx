@@ -1,3 +1,6 @@
+import PublicFooter from '@/components/PublicFooter';
+import SocialIcons from '@/components/SocialIcons';
+import WhatsAppLink from '@/components/WhatsAppLink';
 import PublicHero from '@/components/PublicHero';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -26,7 +29,7 @@ export default function TenantContactPage() {
         body: { ...formData, tenant_slug: slug },
       });
       if (error) throw error;
-      toast.success('Message sent! We\'ll get back to you within 24 hours.');
+      toast.success('Message sent. Our admissions team will reply using your contact details.');
       setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
     } catch (err: any) {
       toast.error(err.message || 'Failed to send message. Please try again.');
@@ -37,7 +40,7 @@ export default function TenantContactPage() {
 
   return (
     <div className="public-site min-h-dvh bg-background">
-      <Seo title="Contact UniPathway — Talk to an Admissions Adviser" description="Speak to a UniPathway adviser about UK and Germany study pathways, diplomas, language courses and visa guidance. We reply within 24 hours." canonical="/contact" />
+      <Seo title="Contact UniPathway — Talk to an Admissions Adviser" description="Speak to a UniPathway adviser about UK and Germany study pathways, diplomas, language courses and visa guidance. Ask about online and in-class learning." canonical="/contact" />
       <TenantNav brandName={brandName} primaryColor={primaryColor} activePage="contact" />
 
       <section className="py-12 sm:py-16">
@@ -64,47 +67,35 @@ export default function TenantContactPage() {
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase">{item.label}</p>
-                    <p className="text-sm">{item.value}</p>
+                    <p className="text-sm">{item.icon === Mail ? <a className="inline-flex min-h-11 items-center underline underline-offset-4" href={`mailto:${item.value}`}>{item.value}</a> : item.value}</p>
                   </div>
                 </div>
               ))}
 
-              {/* WhatsApp CTA */}
-              <a
-                href={`https://wa.me/923001234567?text=${encodeURIComponent('Hi, I would like to enquire about your programmes.')}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 w-full px-4 py-3 rounded-xl bg-[#25D366]/10 border border-[#25D366]/20 hover:bg-[#25D366]/20 transition-all group mt-2"
-              >
-                <div className="w-10 h-10 rounded-full bg-[#25D366] flex items-center justify-center shrink-0">
-                  <MessageCircle className="w-5 h-5 text-primary-foreground" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-[#25D366] group-hover:underline">Chat on WhatsApp</p>
-                  <p className="text-[11px] text-muted-foreground">Get instant replies — tap to start</p>
-                </div>
-              </a>
+              <WhatsAppLink className="w-full" />
+              <SocialIcons />
+
             </div>
 
             {/* Form */}
-            <form id="contact-form" onSubmit={handleSubmit} className="lg:col-span-2 surface-card p-4 sm:p-6">
+            <form id="contact-form" aria-busy={sending} onSubmit={handleSubmit} className="scroll-mt-28 lg:col-span-2 surface-card p-4 sm:p-6">
               <h3 className="text-lg font-bold mb-4">Send us a message</h3>
               <div className="grid sm:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="text-label mb-1.5 block">Full Name *</label>
-                  <input value={formData.name} onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))} className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-primary/20" placeholder="Your name" />
+                  <label htmlFor="contact-name" className="text-label mb-1.5 block">Full Name *</label>
+                  <input id="contact-name" name="name" required autoComplete="name" value={formData.name} onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))} className="w-full bg-secondary text-base sm:text-sm px-3 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-primary/20" placeholder="Your name" />
                 </div>
                 <div>
-                  <label className="text-label mb-1.5 block">Email *</label>
-                  <input type="email" value={formData.email} onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))} className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-primary/20" placeholder="you@example.com" />
+                  <label htmlFor="contact-email" className="text-label mb-1.5 block">Email *</label>
+                  <input id="contact-email" name="email" required autoComplete="email" type="email" value={formData.email} onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))} className="w-full bg-secondary text-base sm:text-sm px-3 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-primary/20" placeholder="you@example.com" />
                 </div>
                 <div>
-                  <label className="text-label mb-1.5 block">Phone / WhatsApp</label>
-                  <input value={formData.phone} onChange={(e) => setFormData(p => ({ ...p, phone: e.target.value }))} className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-primary/20" placeholder="+92" />
+                  <label htmlFor="contact-phone" className="text-label mb-1.5 block">Phone / WhatsApp</label>
+                  <input id="contact-phone" name="phone" type="tel" autoComplete="tel" value={formData.phone} onChange={(e) => setFormData(p => ({ ...p, phone: e.target.value }))} className="w-full bg-secondary text-base sm:text-sm px-3 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-primary/20" placeholder="+92" />
                 </div>
                 <div>
-                  <label className="text-label mb-1.5 block">Subject</label>
-                  <select value={formData.subject} onChange={(e) => setFormData(p => ({ ...p, subject: e.target.value }))} className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-primary/20">
+                  <label htmlFor="contact-subject" className="text-label mb-1.5 block">Subject</label>
+                  <select id="contact-subject" name="subject" value={formData.subject} onChange={(e) => setFormData(p => ({ ...p, subject: e.target.value }))} className="w-full bg-secondary text-base sm:text-sm px-3 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-primary/20">
                     <option value="">Select a topic</option>
                     <option>Admissions Enquiry</option>
                     <option>Fee Information</option>
@@ -117,12 +108,12 @@ export default function TenantContactPage() {
                 </div>
               </div>
               <div className="mb-4">
-                <label className="text-label mb-1.5 block">Message *</label>
-                <textarea
+                <label htmlFor="contact-message" className="text-label mb-1.5 block">Message *</label>
+                <textarea id="contact-message" name="message" required
                   value={formData.message}
                   onChange={(e) => setFormData(p => ({ ...p, message: e.target.value }))}
                   rows={5}
-                  className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none resize-none focus:ring-2 focus:ring-primary/20"
+                  className="w-full bg-secondary text-base sm:text-sm px-3 py-2.5 rounded-lg outline-none resize-none focus:ring-2 focus:ring-primary/20"
                   placeholder="How can we help you?"
                 />
               </div>
@@ -133,6 +124,7 @@ export default function TenantContactPage() {
           </div>
         </div>
       </section>
+      <PublicFooter />
     </div>
   );
 }

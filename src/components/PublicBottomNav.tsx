@@ -25,7 +25,7 @@ export default function PublicBottomNav() {
                   <Icon className="size-5" /><span className="text-[10px] font-bold">{label}</span>
                 </Link>
               ) : (
-                <Link to={to} aria-current={active ? 'page' : undefined} className={`flex flex-col items-center gap-0.5 px-2 py-1 text-[11px] font-semibold active:scale-95 transition-transform ${active ? 'text-primary' : 'text-muted-foreground'}`}>
+                <Link to={to} aria-current={active ? 'page' : undefined} className={`flex min-h-11 min-w-11 flex-col items-center justify-center gap-0.5 px-2 py-1 text-[11px] font-semibold active:scale-95 transition-transform ${active ? 'text-primary' : 'text-muted-foreground'}`}>
                   <Icon className="size-5" />{label}
                 </Link>
               )}

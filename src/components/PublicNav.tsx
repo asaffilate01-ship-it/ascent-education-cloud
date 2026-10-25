@@ -1,3 +1,5 @@
+import SocialIcons from '@/components/SocialIcons';
+import WhatsAppLink from '@/components/WhatsAppLink';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ArrowRight, BookOpen, BriefcaseBusiness, ChevronDown, Globe2, GraduationCap, Menu, School, X } from 'lucide-react';
@@ -39,18 +41,20 @@ export const destinationLinks = [
   { label: 'Canada', detail: 'English/French study routes and university options', to: '/canada' },
 ];
 
-const primaryStudyLinks = studyLinks.filter(link => ['/study', '/qualifications', '/tuition', '/ielts-preparation', '/german-preparation', '/tech-academy', '/finance-academy'].includes(link.to));
+const primaryStudyLinks = studyLinks.filter(link => ['/study', '/qualifications', '/tuition', '/ielts-preparation', '/german-preparation', '/tech-academy', '/finance-academy', '/beauty-aesthetics'].includes(link.to));
 
 const linkCls = (active: boolean) => cn('relative rounded-full px-4 py-2 text-sm font-semibold transition-colors', active ? 'bg-primary/5 text-primary' : 'text-foreground/80 hover:bg-accent hover:text-foreground');
 
 export default function PublicNav() {
   const headerRef = useRef<HTMLElement>(null);
+  const [courseQuery, setCourseQuery] = useState('');
+  const matchingCourses = studyLinks.filter(link => `${link.label} ${link.detail}`.toLowerCase().includes(courseQuery.trim().toLowerCase()));
   const [open, setOpen] = useState(false);
   const [studyOpen, setStudyOpen] = useState(false);
   const [destinationsOpen, setDestinationsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { pathname } = useLocation();
-  useEffect(() => { setOpen(false); setStudyOpen(false); setDestinationsOpen(false); }, [pathname]);
+  useEffect(() => { setOpen(false); setStudyOpen(false); setDestinationsOpen(false); setCourseQuery(''); }, [pathname]);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll(); window.addEventListener('scroll', onScroll, { passive: true });
@@ -92,11 +96,15 @@ export default function PublicNav() {
       <Button variant="outline" size="icon" className="rounded-full lg:hidden" aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open} onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</Button>
     </div>
     {open && <nav aria-label="Mobile navigation" className="h-[calc(100dvh-4rem)] overflow-y-auto border-t border-border bg-background px-4 pb-28 pt-4 animate-in fade-in-0 slide-in-from-top-2 sm:h-[calc(100dvh-5rem)] sm:px-8 lg:hidden">
-      <p className="text-label">Explore learning</p>
-      <div className="mt-3 grid gap-2 sm:grid-cols-2">{primaryStudyLinks.map(({ label, detail, to, icon: Icon }) => <Link key={to} to={to} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 active:scale-[0.99] transition-transform"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-success/10 text-success"><Icon className="size-5" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-bold">{label}</span><span className="block truncate text-xs text-muted-foreground">{detail}</span></span><ArrowRight className="size-4 shrink-0 text-muted-foreground" /></Link>)}</div>
+      <label htmlFor="mobile-course-search" className="text-label">Find a course or service</label>
+      <input id="mobile-course-search" type="search" value={courseQuery} onChange={e => setCourseQuery(e.target.value)} placeholder="Try IELTS, tuition, technology…" className="mt-2 min-h-12 w-full rounded-xl border border-border bg-card px-4 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" />
+      <p role="status" className="mt-2 text-xs text-muted-foreground">{courseQuery ? `${matchingCourses.length} matching options` : 'Explore our most popular courses'}</p>
+      {courseQuery && matchingCourses.length === 0 && <p className="mt-3 text-sm">No matches. <Link className="underline" to="/contact">Ask an adviser for help</Link>.</p>}
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">{(courseQuery ? matchingCourses : primaryStudyLinks).map(({ label, detail, to, icon: Icon }) => <Link key={to} to={to} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 active:scale-[0.99] transition-transform"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-success/10 text-success"><Icon className="size-5" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-bold">{label}</span><span className="block text-xs leading-relaxed text-muted-foreground">{detail}</span></span><ArrowRight className="size-4 shrink-0 text-muted-foreground" /></Link>)}</div>
       <p className="text-label mt-7">Study abroad</p>
       <div className="mt-3 flex flex-wrap gap-2">{destinationLinks.map(({ label, to }) => <Link key={to} to={to} className="rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold">{label}</Link>)}</div>
       <div className="mt-7 grid grid-cols-2 gap-2">{[['About', '/about'], ['Contact', '/contact'], ['Blog', '/blog'], ['Sign in', '/login']].map(([label, to]) => <Link key={to} to={to} className="rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold">{label}</Link>)}</div>
+      <div className="mt-5"><WhatsAppLink className="w-full" /><SocialIcons className="mt-3" /></div>
       <Button size="lg" className="mt-5 w-full rounded-full" asChild><Link to="/apply">Apply now <ArrowRight /></Link></Button>
     </nav>}
   </header></>;
