@@ -1,6 +1,6 @@
 # Education operations workflow — UniPathway, Ilmvero, Skillfinch and TrainDirekt
 
-Version: 1.0 — 25 October 2026
+Version: 1.1 — 25 October 2026
 Status: implementation specification, not deployed functionality.
 Owner: Amer Saleem / education operations.
 Delivery: extend the existing applications; preserve Lovable-managed databases and publish later. Keep brands separate and connect shared intelligence and communications through Omniqora. iTechEducation is the promotional umbrella, not a newly imposed technical landlord.
@@ -128,7 +128,35 @@ Each checklist is versioned by programme, intake and awarding/funding body and m
 
 Separate learner admission, awarding-body registration and funding approval. Capture registration references, claim milestones, attendance requirements, assessment evidence, external verification, certificate claims and progression. Do not advertise an award or publicly funded place as confirmed before the relevant approval.
 
-Funding may clear the student’s obligation while the sponsor invoice remains outstanding. Do not suspend a funded student merely because a sponsor payment is late unless the applicable approved policy and agreement permit it. Course-specific attendance and make-up rules override the tuition replacement policy.
+Funding may clear the student’s obligation while the sponsor invoice remains outstanding. Do not automatically suspend a funded student because a sponsor payment is late. Sponsor debt is collected from the sponsor and is not automatically transferred to the learner. Course-specific attendance and make-up rules override the tuition replacement policy.
+
+### Funding allocation, collections and protected learner access
+
+Required across all four platforms following the owner's clarification:
+- Record payer type: government scheme, employer, external sponsor/funder, student/guardian or split funding. Link the funder organisation and billing contact to the learner's specific enrolment, course, intake and fee period.
+- Capture funding agreement/award/PO reference, approval evidence and verifier, approved amount or percentage, eligible fee components, coverage dates, currency, claim milestones, submission deadlines, payment terms and any learner contribution. Funding applications awaiting approval are not confirmed funding.
+- Maintain separate funding approval, claim, invoice, receipt/allocation and learner-access statuses. An approved funding commitment can clear an enrolment for activation before the sponsor pays; it is not recorded as cash received.
+- Allocate each fee line to its responsible payer(s). Enforce that allocations reconcile to the net fee without overlapping/double-funded amounts. Split funding may include several sponsors and a student contribution; chase each party only for its own share.
+- Sponsor collections dashboard: approved/unclaimed funding, evidence missing, claims ready/submitted/queried/rejected, invoices due/overdue, receipts, outstanding balance, next action, named accounts owner and follow-up date. Send automated reminders/escalations to the responsible funder's billing contact and accounts team, not debt demands to the learner for the sponsor's share.
+- Support cohort invoices and bulk remittances with a learner/course/period allocation schedule. Reconcile partial receipts against the specified allocations; keep unidentified money in an exception queue until accounts matches it. Never mark every student paid merely because one bulk transfer arrived.
+- Once approved funding is allocated to an activated enrolment, late or unpaid sponsor invoices must NOT automatically suspend the student's login, card, LMS, classes or materials. Access checks use the student's own liability and approved funding coverage, never the combined course balance.
+- In split-funded cases, only the learner's genuinely overdue agreed contribution may enter the normal finance review process; sponsor arrears remain excluded. Clearing the learner's contribution must not wait for sponsor settlement.
+- Missing/stale funding data or a failed funding lookup must not newly trigger non-payment suspension. Retain the last verified entitlement for an existing active learner and send an urgent finance exception; this does not activate a new unapproved enrolment or override a separate safeguarding/security hold.
+- Pending, expired, disputed, reduced or withdrawn funding creates an admissions/finance review, with advance expiry alerts and notification to the learner. Do not automatically transfer sponsor debt to the student or silently revoke existing access. Any revised learner liability requires a recorded agreed arrangement; any resulting change to access requires an authorised, reasoned decision.
+- Retain Superadmin-only initial activation. Funding approval is one prerequisite, not permission for finance, an agent or an automated job to activate the student.
+- Student/guardian view distinguishes total fees, approved sponsor coverage, student's own amount due and access clearance. Finance sees sponsor debts and collection history; teachers see teaching eligibility only. An optional sponsor portal is limited to its own sponsored allocations and authorised evidence.
+
+Example: for a fee of 100,000, an approved sponsor covers 80,000 and the learner pays their agreed 20,000. The learner's obligation is cleared and teaching access remains active even while accounts chases the sponsor's 80,000.
+
+Acceptance tests:
+- Fully funded active learner retains login/card/class access when a sponsor invoice becomes overdue.
+- Split-funded learner with own contribution paid retains access despite sponsor arrears.
+- Student reminders and personal balances exclude sponsor liabilities.
+- Two sponsors plus a student contribution reconcile exactly; overlapping allocation is rejected.
+- A bulk/partial sponsor payment is applied only to its matched learner/course/period lines, without duplicate receipt allocation.
+- Funding approval does not mark an invoice paid and does not bypass Superadmin activation.
+- Funding lookup failure, claim rejection or funding withdrawal produces a review task, not automatic learner suspension or debt transfer.
+- A change in one enrolment's funding does not alter unrelated enrolments or expose another learner's records.
 
 ## 9. Teacher, assessor and staff onboarding
 
