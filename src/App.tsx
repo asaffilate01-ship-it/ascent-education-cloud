@@ -69,6 +69,7 @@ const ProductionReadiness = lazy(() => import("./pages/superadmin/ProductionRead
 const SupportDesk = lazy(() => import("./pages/progression/SupportDesk"));
 const GlobalEducationPartners = lazy(() => import("./pages/progression/GlobalEducationPartners"));
 const EducationPartnershipReadiness = lazy(() => import("./pages/progression/EducationPartnershipReadiness"));
+const Placements = lazy(() => import("./pages/careers/Placements"));
 const RoleWorkspace = lazy(() => import("./pages/RoleWorkspace"));
 const AttendanceCorrections = lazy(() => import("./pages/attendance/AttendanceCorrections"));
 const AttendanceDashboard = lazy(() => import("./pages/attendance/AttendanceDashboard"));
@@ -549,6 +550,11 @@ function AppRoutes() {
         <Route path="/parent/messages" element={<ParentR><ParentDashboard /></ParentR>} />
 
         {/* ========== SHARED / FEATURE ========== */}
+        <Route path="/student/placements" element={<StudentR><Placements /></StudentR>} />
+        <Route path="/lecturer/placements" element={<LecturerR><Placements /></LecturerR>} />
+        <Route path="/director/placements" element={<Director><Placements /></Director>} />
+        <Route path="/programme/placements" element={<Programme><Placements /></Programme>} />
+        <Route path="/landlord/placements" element={<Landlord><Placements /></Landlord>} />
         <Route path="/workspace" element={<P><RoleWorkspace /></P>} />
         <Route path="/onboarding" element={<P><StudentOnboarding /></P>} />
         <Route path="/onboarding/lecturer" element={<LecturerR><LecturerOnboarding /></LecturerR>} />

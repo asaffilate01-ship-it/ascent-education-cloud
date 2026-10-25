@@ -29,6 +29,7 @@ interface NavSection {
 const NAV_CONFIG: Record<UserRole, NavSection[]> = {
   superadmin: [
     { title: 'Platform', items: [
+      { label: 'Placements', icon: Briefcase, path: '/landlord/placements' },
       { label: 'Overview', icon: LayoutDashboard, path: '/landlord' },
       { label: 'All Centres', icon: Building2, path: '/landlord/centres' },
       { label: 'Employer Partnerships', icon: Briefcase, path: '/landlord/employers' },
@@ -58,6 +59,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
   ],
   centre_director: [
     { title: 'College', items: [
+      { label: 'Placements', icon: Briefcase, path: '/director/placements' },
       { label: 'Guardian support', icon: MessageSquare, path: '/director/guardian-support' },
       { label: 'Dashboard', icon: LayoutDashboard, path: '/director' },
       { label: 'Managed AWS Labs', icon: Cloud, path: '/director/managed-labs' },
@@ -129,6 +131,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
   ],
   lecturer: [
     { items: [
+      { label: 'Placements', icon: Briefcase, path: '/lecturer/placements' },
       { label: 'Guardian support', icon: MessageSquare, path: '/lecturer/guardian-support' },
       { label: 'Dashboard', icon: LayoutDashboard, path: '/lecturer' },
       { label: 'Managed AWS Labs', icon: Cloud, path: '/lecturer/managed-labs' },
@@ -183,6 +186,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
   ],
   programme_leader: [
     { items: [
+      { label: 'Placements', icon: Briefcase, path: '/programme/placements' },
       { label: 'Dashboard', icon: LayoutDashboard, path: '/programme' },
       { label: 'Managed AWS Labs', icon: Cloud, path: '/programme/managed-labs' },
       { label: 'Modules', icon: BookOpen, path: '/programme/modules' },
@@ -268,6 +272,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
   ],
   student: [
     { title: 'Learning', items: [
+      { label: 'Placements', icon: Briefcase, path: '/student/placements' },
       { label: 'Dashboard', icon: LayoutDashboard, path: '/student' },
       { label: 'Managed AWS Labs', icon: Cloud, path: '/student/managed-labs' },
       { label: 'Courses', icon: BookOpen, path: '/student/courses' },

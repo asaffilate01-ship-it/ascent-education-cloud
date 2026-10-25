@@ -1,3 +1,4 @@
+import {verifyPlacements} from './lib/verify-unipathway-placements.mjs';
 import {verifyAttendanceCorrections} from './lib/verify-unipathway-attendance-corrections.mjs';
 import {verifyDailyRegister} from './lib/verify-unipathway-daily-register.mjs';
 import {verifyTuition} from './lib/verify-unipathway-tuition.mjs';
@@ -56,7 +57,7 @@ try {
   catch(error){console.error(JSON.stringify({status:'blocked',passed,file,code:error.code,message:error.message}));process.exitCode=1;break;}
  }
  if(!process.exitCode&&fresh){await verifyFreshSchema(db);await verifyGuardianResults(db);await verifyAdmissionHandover(db);await verifyStripeLedger(db);
-    await verifyGuidedAudio(db);await verifyTeamsTeaching(db);await verifyRecordingPipeline(db);await verifyOperations(db);await verifyCourseworkRecovery(db);await verifyTuition(db);await verifyDailyRegister(db);await verifyAttendanceCorrections(db);
+    await verifyGuidedAudio(db);await verifyTeamsTeaching(db);await verifyRecordingPipeline(db);await verifyOperations(db);await verifyCourseworkRecovery(db);await verifyTuition(db);await verifyDailyRegister(db);await verifyAttendanceCorrections(db);await verifyPlacements(db);
     const preflight=readFileSync('docs/activation/unipathway-preflight.sql','utf8').split('SELECT version,name FROM supabase_migrations.schema_migrations')[0];
     const reports=await db.exec(preflight);
     for(const report of reports)for(const row of report.rows){const status=row.schema_status||row.rpc_status||row.storage_status;if(!['PRESENT_RLS_ENABLED','PRESENT_GRANTS_CHECKED','PRIVATE'].includes(status))throw Error(`Activation preflight mismatch: ${JSON.stringify(row)}`);}
