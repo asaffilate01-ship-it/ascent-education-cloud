@@ -1,3 +1,4 @@
+import { supabase } from '@/integrations/supabase/client';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { MessageCircle, X, Send, Sparkles, Loader2, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -25,77 +26,38 @@ const AIChatWidget = forwardRef<HTMLDivElement>(function AIChatWidget(_props, re
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages]);
 
+  const activeRequest = useRef<AbortController | null>(null);
+  const requestVersion = useRef(0);
+  const [notice, setNotice] = useState('');
+  const [remaining, setRemaining] = useState<number | null>(null);
+  useEffect(() => {
+    requestVersion.current++;
+    activeRequest.current?.abort(); activeRequest.current=null;
+    setMessages([]); setInput(''); setOpen(false); setLoading(false); setNotice(''); setRemaining(null);
+    return () => { requestVersion.current++; activeRequest.current?.abort(); activeRequest.current=null; };
+  }, [user?.id, user?.tenantId]);
   const sendMessage = useCallback(async () => {
-    if (!input.trim() || loading) return;
-    const userMsg: Message = { role: 'user', content: input.trim() };
-    const allMessages = [...messages, userMsg];
-    setMessages(allMessages);
-    setInput('');
-    setLoading(true);
-
-    let assistantSoFar = '';
-    const upsertAssistant = (chunk: string) => {
-      assistantSoFar += chunk;
-      setMessages(prev => {
-        const last = prev[prev.length - 1];
-        if (last?.role === 'assistant') {
-          return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content: assistantSoFar } : m));
-        }
-        return [...prev, { role: 'assistant', content: assistantSoFar }];
-      });
-    };
-
+    if (!user || !input.trim() || activeRequest.current || input.length>2000) return;
+    const version=++requestVersion.current;
+    const controller=new AbortController();activeRequest.current=controller;
+    const userMsg: Message={role:'user',content:input.trim()};
+    const history=[...messages.slice(-18),userMsg];
+    while(history.length>1&&history.reduce((n,m)=>n+m.content.length,0)>20000)history.shift();
+    setMessages(history);setInput('');setLoading(true);setNotice('');
+    const current=()=>version===requestVersion.current&&!controller.signal.aborted;
     try {
-      const resp = await fetch(TUTOR_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({ messages: allMessages }),
-      });
-
-      if (!resp.ok || !resp.body) {
-        const err = await resp.json().catch(() => ({ error: 'Failed' }));
-        upsertAssistant(err.error || 'Sorry, something went wrong. Please try again.');
-        setLoading(false);
-        return;
-      }
-
-      const reader = resp.body.getReader();
-      const decoder = new TextDecoder();
-      let textBuffer = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        textBuffer += decoder.decode(value, { stream: true });
-
-        let newlineIndex: number;
-        while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
-          let line = textBuffer.slice(0, newlineIndex);
-          textBuffer = textBuffer.slice(newlineIndex + 1);
-          if (line.endsWith('\r')) line = line.slice(0, -1);
-          if (line.startsWith(':') || line.trim() === '') continue;
-          if (!line.startsWith('data: ')) continue;
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === '[DONE]') break;
-          try {
-            const parsed = JSON.parse(jsonStr);
-            const content = parsed.choices?.[0]?.delta?.content;
-            if (content) upsertAssistant(content);
-          } catch {
-            textBuffer = line + '\n' + textBuffer;
-            break;
-          }
-        }
-      }
-    } catch {
-      upsertAssistant('Connection error. Please try again.');
-    }
-
-    setLoading(false);
-  }, [input, messages, loading]);
+      const {data,error}=await supabase.auth.getSession();
+      if(!current())return;
+      if(error||!data.session||data.session.user.id!==user.id)throw Error('Your session has expired. Please sign in again.');
+      const resp=await fetch(TUTOR_URL,{method:'POST',signal:controller.signal,headers:{'Content-Type':'application/json',apikey:import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,Authorization:`Bearer ${data.session.access_token}`},body:JSON.stringify({messages:history})});
+      const result=await resp.json();if(!current())return;
+      if(typeof result.usage?.remaining==='number')setRemaining(result.usage.remaining);
+      if(!resp.ok)throw Error(result.error||'Study tutor unavailable. Please try again.');
+      if(typeof result.reply!=='string')throw Error('No answer received. Please try again.');
+      setMessages(prev=>[...prev,{role:'assistant',content:result.reply}]);
+    } catch(error) {if(current()){setNotice(error instanceof Error?error.message:'Connection error. Please try again.');setMessages(messages);setInput(userMsg.content);}}
+    finally {if(current()){setLoading(false);activeRequest.current=null;}}
+  },[input,messages,user]);
 
   if (!user) return null;
 
@@ -108,6 +70,7 @@ const AIChatWidget = forwardRef<HTMLDivElement>(function AIChatWidget(_props, re
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             exit={{ scale: 0 }}
+            aria-label="Open AI Study Tutor"
             onClick={() => setOpen(true)}
             className="fixed bottom-20 lg:bottom-6 right-4 z-50 w-14 h-14 rounded-full gradient-primary text-primary-foreground shadow-xl hover:shadow-2xl transition-all flex items-center justify-center"
           >
@@ -141,15 +104,17 @@ const AIChatWidget = forwardRef<HTMLDivElement>(function AIChatWidget(_props, re
                 </div>
               </div>
               <div className="flex items-center gap-1">
-                <button onClick={() => setMessages([])} className="p-1.5 rounded-lg hover:bg-accent transition-colors" title="Clear chat">
+                <button disabled={loading} onClick={() => {setMessages([]);setNotice('');}} className="p-1.5 rounded-lg hover:bg-accent transition-colors" title="Clear chat">
                   <Trash2 className="w-3.5 h-3.5 text-muted-foreground" />
                 </button>
-                <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg hover:bg-accent transition-colors">
+                <button aria-label="Close study tutor" onClick={() => setOpen(false)} className="p-1.5 rounded-lg hover:bg-accent transition-colors">
                   <X className="w-4 h-4 text-muted-foreground" />
                 </button>
               </div>
             </div>
 
+            <div className="border-b px-4 py-2 text-[11px] text-muted-foreground">50 questions/day · 5/minute · resets at midnight PKT. {remaining!==null&&`${remaining} remaining today.`} Requests sent to Omniqora count even if interrupted.</div>
+            {notice&&<p role="alert" className="px-4 py-2 text-xs text-destructive">{notice}</p>}
             {/* Messages */}
             <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-3">
               {messages.length === 0 && (
@@ -205,14 +170,15 @@ const AIChatWidget = forwardRef<HTMLDivElement>(function AIChatWidget(_props, re
                 className="flex items-center gap-2"
               >
                 <input
+                  aria-label="Ask your study tutor" maxLength={2000}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Ask a question…"
-                  className="flex-1 bg-background border border-border rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground"
+                  className="min-w-0 flex-1 bg-background border border-border rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground"
                   disabled={loading}
                 />
                 <button
-                  type="submit"
+                  aria-label="Send question" type="submit"
                   disabled={!input.trim() || loading}
                   className="p-2.5 rounded-xl gradient-primary text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-md"
                 >

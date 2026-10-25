@@ -5,7 +5,7 @@ import WhatsAppLink from '@/components/WhatsAppLink';
 afterEach(cleanup);
 it('shows every brand without placeholder destinations or coming-soon text',()=>{
  render(<SocialIcons/>);
- for(const name of ['Facebook','Instagram','X','LinkedIn','YouTube','Google','WhatsApp'])expect(screen.getByRole('img',{name,exact:true})).toBeInTheDocument();
+ for(const name of ['Facebook','Instagram','X','LinkedIn','YouTube','Google','WhatsApp'])expect(screen.getByRole('img',{name})).toBeInTheDocument();
  expect(screen.getByRole('link',{name:'TikTok (opens in a new tab)'})).toHaveAttribute('href','https://www.tiktok.com/@unipathway.pk');
  expect(screen.queryByText(/coming soon/i)).not.toBeInTheDocument();
  expect(screen.getAllByRole('link')).toHaveLength(1);
