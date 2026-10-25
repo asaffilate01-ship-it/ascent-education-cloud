@@ -1,15 +1,13 @@
 import type { ReactNode } from 'react';
-import english from '@/assets/blog/english-exams.jpg';
-import german from '@/assets/blog/german-exams.jpg';
 
 const images = {
   study: { src: '/images/heroes/tuition.jpg', alt: 'Independent study with notes and learning materials' },
   guidance: { src: '/images/heroes/finance.jpg', alt: 'An individual reviewing documents at a desk' },
-  english: { src: english, alt: 'Learner practising listening skills with headphones' },
-  german: { src: german, alt: 'German language study materials' },
-  technology: { src: english, alt: 'An individual learning at a computer' },
-  finance: { src: '/images/heroes/finance.jpg', alt: 'Reviewing financial documents at a desk' },
-  beauty: { src: '/images/heroes/beauty.jpg', alt: 'Make-up tools and beauty products' },
+  english: { src: '/images/heroes/academy-english-v1.webp', alt: 'Female tutor and adult learner practising English with headphones' },
+  german: { src: '/images/heroes/academy-german-v1.webp', alt: 'German vocabulary workbook, flashcards and headphones' },
+  technology: { src: '/images/heroes/academy-technology-v1.webp', alt: 'Two male students learning programming and electronics' },
+  finance: { src: '/images/heroes/academy-accountancy-v1.webp', alt: 'Two male learners studying accountancy with a spreadsheet and calculator' },
+  beauty: { src: '/images/heroes/academy-beauty-v1.webp', alt: 'Female instructor and learner practising make-up on a training mannequin' },
   campus: { src: '/images/heroes/tuition.jpg', alt: 'Independent study with notes and learning materials' },
   germany: { src: '/images/heroes/germany.jpg', alt: 'Brandenburg Gate in Berlin' },
   uk: { src: '/images/heroes/uk.jpg', alt: 'London skyline beside the River Thames' },
@@ -23,7 +21,8 @@ export type HeroTopic = keyof typeof images;
 
 export function HeroImage({ topic, className = '' }: { topic: HeroTopic; className?: string }) {
   const photo = images[topic];
-  return <img src={photo.src} alt={photo.alt} width={1200} height={800} fetchPriority="high" decoding="async" className={`aspect-[3/2] w-full rounded-2xl object-cover ${className}`} />;
+  const srcSet = photo.src.endsWith('.webp') ? `${photo.src.replace('.webp', '-640.webp')} 640w, ${photo.src} 1200w` : undefined;
+  return <img src={photo.src} srcSet={srcSet} sizes="(max-width: 1023px) calc(100vw - 80px), 560px" alt={photo.alt} width={1200} height={800} fetchPriority="high" decoding="async" className={`aspect-[3/2] w-full rounded-2xl object-cover ${className}`} />;
 }
 
 /** Text remains separate from the photograph for readable contrast at every size. */
