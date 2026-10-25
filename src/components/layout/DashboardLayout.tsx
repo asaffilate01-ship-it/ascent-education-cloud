@@ -68,7 +68,7 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
               </div>
             )}
             <h1 className="break-words text-sm sm:text-base lg:text-lg font-bold text-foreground leading-tight tracking-tight">{title}</h1>
-            {subtitle && <p className="text-[10px] lg:text-xs text-muted-foreground hidden sm:block">{subtitle}</p>}
+            {subtitle && <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{subtitle}</p>}
           </div>
           <div className="flex shrink-0 items-center gap-1 lg:gap-2">
             <Link className="hidden md:inline-flex min-h-11 items-center rounded-lg border px-3 text-xs hover:bg-accent" to="/workspace">Workspace</Link>
@@ -108,7 +108,7 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
           transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
           className="p-3 sm:p-4 lg:p-6 pb-24 lg:pb-6"
         >
-          <div className="page-shell min-w-0">{actions && <div className="mb-4 flex flex-wrap gap-2">{actions}</div>}<WorkspaceShortcuts />{!!workspaceLinks.length && <nav aria-label="Learning workspace" className="mb-5 flex flex-wrap gap-2">{workspaceLinks.map(([label,to])=><Link key={to} to={to} aria-current={location.pathname===to?'page':undefined} className={`rounded-lg border px-3 py-2 text-sm font-medium ${location.pathname===to?'bg-primary text-primary-foreground':'bg-card hover:bg-accent'}`}>{label}</Link>)}</nav>}
+          <div className="page-shell min-w-0">{actions && <div className="mb-4 flex flex-wrap gap-2">{actions}</div>}<WorkspaceShortcuts />{!!workspaceLinks.length && <nav aria-label="Learning workspace" className="mb-5 flex flex-wrap gap-2">{workspaceLinks.map(([label,to])=><Link key={to} to={to} aria-current={location.pathname===to?'page':undefined} className={`inline-flex min-h-11 items-center rounded-lg border px-3 py-2 text-sm font-medium ${location.pathname===to?'bg-primary text-primary-foreground':'bg-card hover:bg-accent'}`}>{label}</Link>)}</nav>}
             {children}</div>
         </motion.main>
       </div>
