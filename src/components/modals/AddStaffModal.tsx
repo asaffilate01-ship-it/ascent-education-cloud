@@ -17,6 +17,7 @@ const STAFF_ROLES = [
   { value: 'finance_officer', label: 'Finance Officer' },
   { value: 'marketing_officer', label: 'Marketing Officer' },
   { value: 'agent', label: 'Agent' },
+  { value: 'security_officer', label: 'Security Officer' },
 ];
 
 interface AddStaffModalProps {

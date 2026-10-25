@@ -1,4 +1,4 @@
-export const accountRoles=['student','parent_guardian','admissions_admin','lecturer','assessor','programme_leader','iqa_officer','exams_officer','finance_officer','marketing_officer','agent','welfare_officer'] as const;
+export const accountRoles=['student','parent_guardian','admissions_admin','lecturer','assessor','programme_leader','iqa_officer','exams_officer','finance_officer','marketing_officer','agent','welfare_officer','security_officer'] as const;
 export type AccountRow={email:string;fullName:string;role:string;status?:string;error?:string};
 export function parseAccountCsv(text:string):AccountRow[]{
  if(text.length>100000)throw new Error('CSV must be under 100 KB.');

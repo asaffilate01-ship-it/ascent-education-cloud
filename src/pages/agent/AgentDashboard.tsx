@@ -22,15 +22,17 @@ export default function AgentDashboard() {
   const { user } = useAuth();
   const [addLeadOpen, setAddLeadOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const { data: applications, loading, refetch } = useSupabaseQuery('applications', {
+  const { data: applications, loading, error, refetch } = useSupabaseQuery('applications', {
     orderBy: { column: 'updated_at', ascending: false },
+    filters: [{column:'agent_id',operator:'eq',value:user?.id}], enabled:!!user?.id,
   });
   const { data: invoices } = useSupabaseQuery('invoices');
 
-  if (loading) return <DashboardSkeleton />;
+  if (loading) return <DashboardLayout title="Agent dashboard"><DashboardSkeleton /></DashboardLayout>;
+  if (error) return <DashboardLayout title="Agent dashboard"><div role="alert" className="rounded-xl border p-5"><p>Applications could not be loaded. Your records have not been changed.</p><Button className="mt-3" onClick={()=>void refetch()}>Try again</Button></div></DashboardLayout>;
 
   const myApps = user?.id
-    ? applications.filter(a => a.agent_id === user.id || a.source === 'agent')
+    ? applications.filter(a => a.agent_id === user.id)
     : applications;
 
   const filtered = search

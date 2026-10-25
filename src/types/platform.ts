@@ -8,6 +8,7 @@ export type UserRole =
   | 'iqa_officer'
   | 'awarding_body_eqa'
   | 'welfare_officer'
+  | 'security_officer'
   | 'exams_officer'
   | 'finance_officer'
   | 'marketing_officer'

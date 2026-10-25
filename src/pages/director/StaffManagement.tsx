@@ -29,6 +29,7 @@ const ROLE_DISPLAY: Record<string, string> = {
   exams_officer: 'Exams Officer',
   finance_officer: 'Finance Officer',
   marketing_officer: 'Marketing Officer',
+  security_officer: 'Security Officer',
 };
 
 export default function StaffManagement() {
@@ -53,7 +54,7 @@ export default function StaffManagement() {
 
     const staffRoles = new Set([
       'centre_director', 'admissions_admin', 'lecturer', 'programme_leader',
-      'iqa_officer', 'exams_officer', 'finance_officer', 'marketing_officer',
+      'iqa_officer', 'exams_officer', 'finance_officer', 'marketing_officer', 'security_officer',
     ]);
 
     const roleMap: Record<string, string[]> = {};

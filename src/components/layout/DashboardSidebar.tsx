@@ -12,7 +12,7 @@ import {
   Handshake, Monitor, Clock, Cloud, Menu, X,
   Bus, Heart, Sparkles, CalendarDays, Activity, Brain, Mail, Trophy
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 
 interface NavItem {
@@ -27,10 +27,12 @@ interface NavSection {
 }
 
 const NAV_CONFIG: Record<UserRole, NavSection[]> = {
+  security_officer: [{title: 'Security', items: [{label: 'CCTV live & playback', icon: Shield, path: '/security'}]}],
   superadmin: [
     { title: 'Platform', items: [
       { label: 'Placements', icon: Briefcase, path: '/landlord/placements' },
       { label: 'Overview', icon: LayoutDashboard, path: '/landlord' },
+      { label: 'CCTV live & playback', icon: Shield, path: '/security' },
       { label: 'All Centres', icon: Building2, path: '/landlord/centres' },
       { label: 'Employer Partnerships', icon: Briefcase, path: '/landlord/employers' },
       { label: 'Global Partners', icon: Globe, path: '/landlord/global-partners' },
@@ -70,6 +72,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Grade Appeal Sign-off', icon: Shield, path: '/director/assessment-appeals' },
       { label: 'CIBTAC / CPD Accreditation', icon: Award, path: '/director/beauty-accreditation' },
       { label: 'IELTS Academy', icon: GraduationCap, path: '/director/ielts' },
+      { label: 'CCTV live & playback', icon: Shield, path: '/security' },
       { label: 'Staff', icon: Users, path: '/director/staff' },
       { label: 'Students', icon: GraduationCap, path: '/director/students' },
       { label: 'Employer Partnerships', icon: Briefcase, path: '/director/employers' },
@@ -376,11 +379,30 @@ export default function DashboardSidebar() {
   const [navSearch, setNavSearch] = useState('');
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const asideRef = useRef<HTMLElement>(null);
 
   // Close mobile menu on route change
   useEffect(() => {
-    setMobileOpen(false);
+    setMobileOpen(false); setNavSearch('');
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const previous = document.activeElement as HTMLElement | null;
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const controls = () => Array.from(asideRef.current?.querySelectorAll<HTMLElement>('a,button,input,select,summary') || []).filter(el => el.offsetParent !== null && !el.hasAttribute('disabled'));
+    controls()[0]?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { setMobileOpen(false); return; }
+      if (event.key !== 'Tab') return;
+      const items = controls(), first = items[0], last = items[items.length-1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = overflow; document.removeEventListener('keydown', onKey); previous?.focus(); };
+  }, [mobileOpen]);
 
   // Swipe to close on mobile
   useEffect(() => {
@@ -456,7 +478,7 @@ export default function DashboardSidebar() {
                   title={item.label}
                   aria-label={item.label}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-default ${
+                    `flex min-h-11 items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-default ${
                       isActive
                         ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-md shadow-sidebar-primary/20'
                         : 'text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent'
@@ -535,7 +557,8 @@ export default function DashboardSidebar() {
       {/* Mobile hamburger button */}
       <button
         aria-label="Open navigation"
-        onClick={() => setMobileOpen(true)}
+        aria-expanded={mobileOpen}
+        onClick={() => { setCollapsed(false); setMobileOpen(true); }}
         className="lg:hidden fixed top-3 left-3 z-50 p-2 rounded-lg bg-card/90 backdrop-blur-sm shadow-surface-md border border-border/50 hover:bg-card transition-default"
       >
         <Menu className="w-5 h-5 text-foreground" />
@@ -550,7 +573,7 @@ export default function DashboardSidebar() {
       )}
 
       {/* Sidebar */}
-      <aside
+      <aside ref={asideRef} role={mobileOpen ? "dialog" : undefined} aria-modal={mobileOpen || undefined} aria-label="Dashboard navigation"
         className={`fixed left-0 top-0 h-dvh bg-sidebar text-sidebar-foreground flex flex-col z-50 transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)]
           ${collapsed ? 'w-16' : 'w-60'}
           ${mobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'}

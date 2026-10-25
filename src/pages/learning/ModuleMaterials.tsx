@@ -61,10 +61,13 @@ function MaterialsWorkspace({moduleFilter}:{moduleFilter:string}){
  const filtered=items.filter(m=>`${m.title} ${m.kind} ${m.publication_status} ${modules.find(x=>x.id===m.module_id)?.title||''}`.toLowerCase().includes(search.toLowerCase()));
  const download=async(m:Material)=>{
   if(operation.current||loading)return;operation.current=true;setBusy(true);
+  const preview=window.open('about:blank','_blank');
+  if(preview)preview.opener=null;
   try{const {data,error:e}=await supabase.storage.from('unipathway-module-materials').createSignedUrl(m.object_path,120);
-   if(!mounted.current)return;if(e||!data?.signedUrl)throw Error('Unavailable');
-   window.open(data.signedUrl,'_blank','noopener,noreferrer');
-  }catch{if(mounted.current)toast.error('File not available to this account. Refresh materials and retry.');}
+   if(!mounted.current){preview?.close();return;}if(e||!data?.signedUrl)throw Error('Unavailable');
+   if(preview)preview.location.replace(data.signedUrl);
+   else {toast.error('Allow pop-ups to open this private file, then try again.');}
+  }catch{preview?.close();if(mounted.current)toast.error('File not available to this account. Refresh materials and retry.');}
   finally{operation.current=false;if(mounted.current)setBusy(false);}
  };
  const upload=async()=>{
