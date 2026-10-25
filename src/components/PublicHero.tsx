@@ -12,7 +12,7 @@ const images = {
   technology: { src: '/images/heroes/technology.jpg', alt: 'Collaborative work using a laptop' },
   finance: { src: '/images/heroes/finance.jpg', alt: 'Reviewing financial documents at a desk' },
   beauty: { src: '/images/heroes/beauty.jpg', alt: 'Make-up tools and beauty products' },
-  campus: { src: '/images/heroes/campus.jpg', alt: 'Graduates celebrating their achievement' },
+  campus: { src: students, alt: 'Students in modest clothing holding books on a campus' },
   germany: { src: '/images/heroes/germany.jpg', alt: 'Brandenburg Gate in Berlin' },
   uk: { src: '/images/heroes/uk.jpg', alt: 'London skyline beside the River Thames' },
   usa: { src: '/images/heroes/usa.jpg', alt: 'Statue of Liberty in New York' },
