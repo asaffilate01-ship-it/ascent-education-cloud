@@ -1,6 +1,6 @@
 # Education operations workflow — UniPathway, Ilmvero, Skillfinch and TrainDirekt
 
-Version: 1.1 — 25 October 2026
+Version: 1.2 — 25 October 2026
 Status: implementation specification, not deployed functionality.
 Owner: Amer Saleem / education operations.
 Delivery: extend the existing applications; preserve Lovable-managed databases and publish later. Keep brands separate and connect shared intelligence and communications through Omniqora. iTechEducation is the promotional umbrella, not a newly imposed technical landlord.
@@ -33,6 +33,54 @@ Agents have a verified staff/partner identity, cities/territory, assigned leads,
 Events record venue, accessibility, capacity, sessions, staff, budget, registration, family headcount, consent, QR check-in and follow-up. Deduplicate by verified contact plus human review; do not merge different children because they share a parent phone. Track lead → visit → assessment → offer → paid → activated conversion by city, campaign and agent.
 
 No agent commission is invented. If introduced, keep rules, approvals and clawbacks separate from student fees.
+
+### Agent dashboards: student recruitment and school onboarding
+
+Required agent workspaces:
+- UniPathway: agents recruit and provisionally onboard students for the relevant tuition, qualification and other approved programme routes.
+- Skillfinch: agents recruit and provisionally onboard learners for approved training programmes, including employer/government/external-funded routes.
+- TrainDirekt: agents recruit and provisionally onboard learners using the relevant German programme, language, identity and funding configuration.
+- Ilmvero: agents recruit and onboard schools as prospective customer organisations. A school lead is not a student application, and an agent referral does not make the agent a school administrator.
+
+Shared agent account and controls:
+- Approved agent profile with organisation/person, contact, territory/city, languages, assigned brands/programmes, manager, agreement and active/suspended status. Access to one brand does not grant access to another.
+- Dashboard cards for assigned leads, tasks due/overdue, upcoming appointments, applications/onboarding in progress, missing actions, converted referrals and outcomes by period.
+- Searchable pipeline, assigned prospect detail, activity history, notes, next action, calendar, reminders, document-request status, visit/demo booking and approved marketing materials.
+- Unique referral link/code and event/campaign attribution tied to an approved agent identity. Verify attribution server-side; a supplied referral code is not authority to read or edit a record.
+- Deduplicate prospects before creating new applications; route ownership disputes to an authorised manager without revealing another agent's private lead data.
+- Separate originating referral agent from current operational owner. Reassignment is audited and does not silently change historical attribution.
+- If commissions are enabled later, show only the agent's agreed commission terms and pending/approved/paid/reversed statements. Do not assume a rate or entitlement; finance controls approval and payout, and student fees remain separate.
+- Manager view supports assignment/reassignment, territory coverage, workload, funnel performance and inactive-agent handover. Revoking an agent's access preserves the institution's records and ownership history.
+
+Student recruitment dashboard:
+1. Create a minimum-data lead with contact permission, learner/guardian contact, location, programme interest, delivery preference, intended intake and referral source.
+2. Arrange family/admissions appointments, open days or remote consultations; track attendance and follow-up.
+3. Assist with provisional applications and issue secure self-service document requests. Show completion/verification status rather than unrestricted identity scans or sensitive evidence.
+4. Track admissions review, assessment appointment/completion, offer issued/accepted, funding pending/approved, finance clearance and Superadmin activation.
+5. Display a limited outcome such as awaiting applicant action, awaiting admissions, awaiting funding review, cleared for activation, enrolled, deferred or declined. Finance details are disclosed only where expressly authorised for the agent's task.
+6. Handover to admissions/academic/finance owners with open tasks and reasons; track referral conversion through verified enrolment rather than agent-declared success.
+
+Agents cannot verify their own identity/qualification evidence, approve funding, mark fees paid, alter assessed results, approve discounts, issue active cards, activate students or suspend teaching access. Student/guardian document uploads go directly into the restricted admissions workflow. A funded student's pending sponsor payment must not appear as student non-payment.
+
+Ilmvero school recruitment dashboard:
+1. Capture school legal/trading name, branch/campus, address/city/country, website, authorised decision-maker, role/contact details and permission to follow up.
+2. Record school type, curriculum/boards, year groups, indicative student/staff numbers, current system, requested modules, migration needs and target start date. Do not collect individual pupil records at prospect stage.
+3. Use the pipeline: lead → contacted → discovery → demo booked/completed → proposal → agreement → verification → onboarding → trial/pilot if agreed → ready for activation → active; also support deferred/lost with reasons.
+4. Track quotation/subscription proposal and approval status, agreement, responsible school administrator, implementation owner, onboarding checklist, training bookings and approved import/migration status.
+5. Hand over school organisation verification, tenant creation, administrator invitation, subscription clearance and go-live approval to authorised Ilmvero platform staff. The recruiting agent cannot self-create an active tenant, grant school-admin privileges or bypass activation checks.
+6. After handover, show permitted referral/onboarding/renewal outcomes. Do not grant access to the school's pupils, parents, staff HR, grades, attendance or finance merely because the agent recruited it.
+7. Treat each campus and parent organisation explicitly; one referral must not accidentally create duplicate schools or merge separate institutions.
+
+Dashboard acceptance tests:
+- Each agent can view/update only explicitly assigned permitted prospects within their brand/territory scope; guessable IDs, exports and direct APIs cannot bypass this.
+- An agent cannot activate a learner/school, change verified funding/payment status or grant roles.
+- Student leads and school-organisation leads have distinct validation and pipeline types.
+- Referral links capture attribution without granting access to applications or private documents.
+- Duplicate submissions do not create duplicate learners, school tenants or referral rewards.
+- Agent suspension/reassignment removes access immediately while retaining audit and referral history.
+- School recruitment never grants access to pupil/guardian records.
+- Funding-aware student pipeline labels preserve the distinction between sponsor receivables and personal learner debt.
+- Any optional commission calculation uses an explicit approved agreement and reconciled qualifying events, with no invented defaults.
 
 ## 3. Admissions and provisional family record
 
