@@ -1,3 +1,4 @@
+import WorkspaceActions from '@/components/WorkspaceActions';
 import {useState} from 'react';
 import {Link} from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -13,7 +14,7 @@ function Workspace(){
  const groups=user?workspaceCatalog[user.role]||[]:[];
  const shown=groups.map(g=>({...g,items:g.items.filter(i=>`${g.title} ${i.label} ${i.description}`.toLowerCase().includes(search.toLowerCase()))})).filter(g=>g.items.length);
  return <DashboardLayout title="My workspace" subtitle={user?ROLE_LABELS[user.role]:'Sign in'}><div className="space-y-5">
- <p>Find your next task. Each area shows the records and actions available to your account.</p>
+ <WorkspaceActions/><p>Find your next task. Each area shows the records and actions available to your account.</p>
  {user&&<Link className="inline-block underline" to={ROLE_HOME[user.role]}>Back to my dashboard</Link>}
  {!!groups.length&&<label className="block max-w-xl">Find a service<Input placeholder="Courses, recordings, fees, labs…" value={search} onChange={e=>setSearch(e.target.value)}/></label>}
  {!groups.length&&<p>Use your dashboard and role menu to open your assigned specialist work.</p>}

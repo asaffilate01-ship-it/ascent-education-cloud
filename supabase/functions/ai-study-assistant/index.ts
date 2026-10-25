@@ -1,3 +1,4 @@
+import { omniqoraCompletion, OmniqoraError } from '../_shared/omniqora.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders, rateLimit, rateLimitResponse, getClientIp } from '../_shared/cors.ts'
 import { authenticateRequest } from '../_shared/auth.ts'
@@ -20,7 +21,7 @@ Deno.serve(async (req) => {
       })
     }
 
-    const systemPrompt = `You are a knowledgeable, supportive AI study assistant for UK higher education students studying OTHM, QUALIFI, and IAB accredited programmes. 
+    const systemPrompt = `You are a knowledgeable, supportive AI study assistant for UK higher education students studying OTHM, QUALIFI, and IAB accredited programmes.
 
 Your role:
 - Help students understand concepts, not give them answers to copy
@@ -31,7 +32,7 @@ Your role:
 - Be encouraging and patient
 - Use British English spelling and terminology
 - Keep responses concise but thorough (150-300 words)
-${moduleName ? `\nThe student is studying: ${moduleName}` : ''}`
+${moduleName ? `\nThe student is studying: ${String(moduleName).slice(0, 200)}` : ''}`
 
     const messages: Array<{ role: string; content: string }> = [
       { role: 'system', content: systemPrompt },
@@ -39,7 +40,7 @@ ${moduleName ? `\nThe student is studying: ${moduleName}` : ''}`
 
     if (conversationHistory && Array.isArray(conversationHistory)) {
       for (const msg of conversationHistory.slice(-10)) {
-        if (msg.role && msg.content) {
+        if (['user', 'assistant'].includes(msg.role) && typeof msg.content === 'string') {
           messages.push({ role: msg.role, content: String(msg.content).slice(0, 2000) })
         }
       }
@@ -47,14 +48,13 @@ ${moduleName ? `\nThe student is studying: ${moduleName}` : ''}`
 
     messages.push({ role: 'user', content: question })
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await omniqoraCompletion(req, 'ai-study-assistant', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+
         messages,
         temperature: 0.7,
         max_tokens: 1024,
@@ -70,7 +70,7 @@ ${moduleName ? `\nThe student is studying: ${moduleName}` : ''}`
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'Unknown error'
     return new Response(JSON.stringify({ error: msg }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      status: error instanceof OmniqoraError ? error.status : 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
   }
 })

@@ -1,114 +1,61 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth, ROLE_LABELS } from '@/contexts/AuthContext';
-import { NAV_CONFIG } from '@/components/layout/DashboardSidebar';
-import { Search, ArrowRight } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/AuthContext';
+import { searchNavigation } from '@/lib/searchNavigation';
+import { db } from '@/lib/db';
+import { CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
+import { DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
-interface CommandPaletteProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
-
-export default function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
+export default function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const [query, setQuery] = useState('');
-  const navigate = useNavigate();
-  const { user } = useAuth();
-
-  // Keyboard shortcut
+  const [term, setTerm] = useState('');
+  const navigate = useNavigate(); const { user } = useAuth();
+  const pages = useMemo(() => searchNavigation(user?.role), [user?.role]);
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        onOpenChange(!open);
-      }
-      if (e.key === 'Escape') onOpenChange(false);
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); onOpenChange(!open); }
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [open, onOpenChange]);
-
-  // Build searchable items from all nav configs
-  const items = useMemo(() => {
-    const result: { label: string; path: string; section: string; role: string }[] = [];
-    for (const [role, sections] of Object.entries(NAV_CONFIG)) {
-      for (const section of sections) {
-        for (const item of section.items) {
-          result.push({
-            label: item.label,
-            path: item.path,
-            section: section.title || ROLE_LABELS[role as keyof typeof ROLE_LABELS] || role,
-            role: ROLE_LABELS[role as keyof typeof ROLE_LABELS] || role,
-          });
-        }
-      }
-    }
-    return result;
-  }, []);
-
-  const filtered = useMemo(() => {
-    if (!query.trim()) {
-      // Show current role items first
-      if (!user) return items.slice(0, 10);
-      const roleItems = items.filter(i => i.role === ROLE_LABELS[user.role]);
-      return roleItems.length > 0 ? roleItems : items.slice(0, 10);
-    }
-    const q = query.toLowerCase();
-    return items.filter(
-      (i) => i.label.toLowerCase().includes(q) || i.section.toLowerCase().includes(q) || i.role.toLowerCase().includes(q)
-    ).slice(0, 12);
-  }, [query, items, user]);
-
-  const go = (path: string) => {
-    navigate(path);
-    onOpenChange(false);
-    setQuery('');
-  };
-
-  if (!open) return null;
-
-  return (
-    <>
-      <div className="fixed inset-0 bg-foreground/40 backdrop-blur-sm z-[60]" onClick={() => onOpenChange(false)} />
-      <div className="fixed top-[15%] left-1/2 -translate-x-1/2 w-full max-w-lg z-[61]">
-        <div className="surface-elevated overflow-hidden mx-4">
-          {/* Search input */}
-          <div className="flex items-center gap-3 px-4 h-12 border-b border-border">
-            <Search className="w-4 h-4 text-muted-foreground shrink-0" />
-            <input
-              autoFocus
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search pages, modules, roles..."
-              className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && filtered.length > 0) go(filtered[0].path);
-              }}
-            />
-            <kbd className="text-[10px] text-muted-foreground bg-secondary px-1.5 py-0.5 rounded font-mono">ESC</kbd>
-          </div>
-
-          {/* Results */}
-          <div className="max-h-72 overflow-y-auto py-2">
-            {filtered.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-6">No results found</p>
-            ) : (
-              filtered.map((item) => (
-                <button
-                  key={item.path + item.role}
-                  onClick={() => go(item.path)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-secondary/80 transition-default text-left"
-                >
-                  <ArrowRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{item.label}</p>
-                    <p className="text-[10px] text-muted-foreground">{item.role} · {item.section}</p>
-                  </div>
-                </button>
-              ))
-            )}
-          </div>
-        </div>
-      </div>
-    </>
-  );
+  useEffect(() => { const timer = setTimeout(() => setTerm(query.trim()), 250); return () => clearTimeout(timer); }, [query]);
+  useEffect(() => { if (!open) { setQuery(''); setTerm(''); } }, [open, user?.id, user?.role]);
+  const canSearchCourses = user?.role === 'student' || user?.role === 'lecturer';
+  const records = useQuery({
+    queryKey: ['workspace-search', user?.id, user?.tenantId, user?.role, term],
+    enabled: open && canSearchCourses && !!user?.tenantId && term.length >= 2,
+    queryFn: async () => {
+      // Literal matching avoids wildcard queries; database RLS enforces course assignment.
+      const escaped = term.replace(/[\\%_]/g, '\\$&');
+      let q = db.from('modules').select('id,title,code').eq('tenant_id', user!.tenantId)
+        .ilike('title', `%${escaped}%`).order('title').limit(12);
+      if (user!.role === 'lecturer') q = q.eq('lecturer_id', user!.id);
+      const { data, error } = await q;
+      if (error) throw error;
+      return data as { id: string; title: string; code: string }[];
+    },
+  });
+  const go = (path: string) => { onOpenChange(false); navigate(path); };
+  return <CommandDialog open={open} onOpenChange={onOpenChange}>
+    <DialogTitle className="sr-only">Search your workspace</DialogTitle>
+    <DialogDescription className="sr-only">Search pages available to your current role. Use arrow keys to choose a result and Enter to open it.</DialogDescription>
+    <CommandInput value={query} onValueChange={setQuery} aria-label="Search your workspace" placeholder={canSearchCourses ? 'Search your pages and courses…' : 'Search your workspace pages…'} />
+    <CommandList>
+      <CommandEmpty>No matching pages or courses. Try a different title.</CommandEmpty>
+      {canSearchCourses && term.length >= 2 && <div className="px-3 py-2 text-sm" role={records.isError ? 'alert' : 'status'}>
+        {records.isFetching ? 'Searching your courses…' : records.isError ? 'Course search failed. Please try again.' : `${records.data?.length || 0} matching courses`}
+        {records.isError && <button className="ml-2 underline" onClick={() => records.refetch()}>Retry</button>}
+      </div>}
+      {canSearchCourses && records.data && term === query.trim() && <CommandGroup heading="Your courses">
+        {records.data.map(m => <CommandItem key={m.id} value={`${m.title} ${m.code}`} onSelect={() => go(`/${user!.role}/module?module=${encodeURIComponent(m.id)}`)}>
+          <span>{m.title}<span className="ml-2 text-muted-foreground">{m.code}</span></span>
+        </CommandItem>)}
+      </CommandGroup>}
+      <CommandGroup heading="Your pages">{pages.map(item => <CommandItem key={item.path} value={`${item.label} ${item.section}`} onSelect={() => go(item.path)}>
+        <item.icon className="mr-3 h-4 w-4 shrink-0" aria-hidden="true" /><span>{item.label}<span className="block text-xs text-muted-foreground">{item.section}</span></span>
+      </CommandItem>)}</CommandGroup>
+    </CommandList>
+    <p className="border-t px-4 py-3 text-xs text-muted-foreground">↑ ↓ Choose · Enter Open · Esc Close</p>
+  </CommandDialog>;
 }
