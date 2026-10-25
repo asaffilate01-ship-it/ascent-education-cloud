@@ -25,3 +25,9 @@ Prompt set: consistent photorealistic editorial photography, landscape 3:2, natu
 - `academy-english-v1.webp`: adult Pakistani female tutor and learner practising speaking/listening; long-sleeve shalwar kameez and dupattas, covered legs outside frame, no men.
 - `academy-german-v1.webp`: people-free workbook, vocabulary flashcards, headphones and German flag bookmark; no landmarks.
 - `academy-beauty-v1.webp`: adult Pakistani female instructor and learner practising makeup on a mannequin; modest long-sleeve clothing and dupattas, no men or medical procedures.
+
+## Classroom replacements (v2) — 25 October 2026
+
+The current five academy heroes use `academy-{technology,accountancy,english,german,beauty}-v2.webp` and their `-640.webp` variants. Generated with the built-in image-generation tool; illustrative scenes, not photographs of actual UniPathway classes or premises. V1 files remain unused by the page component. The approved homepage hero is unchanged.
+
+Prompt direction: wide documentary classroom views in Pakistan, multiple learners, teacher-led activities, modest dress, separate single-gender classes, visibly different instructors and casts, realistic desks, whiteboards and subject equipment. Technology: male computer lab with electronics. Accountancy: women at desks with calculators and a spreadsheet lesson. English: male classroom speaking exercise and listening station. German: female vocabulary class with flashcards. Beauty: women practising on mannequins at multiple practical stations. No foreign landmarks, home-study pair portraits or medical procedures.
