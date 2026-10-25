@@ -197,14 +197,10 @@ export default function DestinationApply() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <Field label="Full name"><Input value={form.full_name} onChange={(e) => set('full_name', e.target.value)} /></Field>
                 <Field label="Email"><Input type="email" value={form.email} onChange={(e) => set('email', e.target.value)} /></Field>
-                <Field label="Phone (with country code)"><Input value={form.phone} onChange={(e) => set('phone', e.target.value)} placeholder="+92 ..." /></Field>
+                <Field label="Phone / WhatsApp (Pakistan)"><Input type="tel" autoComplete="tel" value={form.phone} onChange={(e) => set('phone', e.target.value)} placeholder="+92 ..." /></Field>
                 <Field label="Country of residence">
-                  <Select value={form.country} onValueChange={(v) => set('country', v)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {['Pakistan','India','Bangladesh','Sri Lanka','Nepal','United Arab Emirates','Saudi Arabia','Other'].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <Input value="Pakistan" readOnly aria-label="Country of residence" />
+                  <p className="mt-1 text-xs text-muted-foreground">UniPathway enrols students based in Pakistan.</p>
                 </Field>
               </div>
             </>
