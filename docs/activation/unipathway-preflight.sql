@@ -19,6 +19,9 @@ WITH expected(signature) AS (VALUES
  ('public.submit_unipathway_learning_attempt(uuid,uuid,text,boolean)'),
  ('public.review_unipathway_learning_attempt(uuid,text,text)'),
  ('public.send_unipathway_guardian_message_once(uuid,text,uuid)'),
+ ('public.request_attendance_correction(uuid,uuid,public.attendance_status,text)'),
+ ('public.review_attendance_correction(uuid,text,text)'),
+ ('public.list_attendance_corrections(uuid)'),
  ('public.get_unipathway_daily_register(uuid,date)'),
  ('public.save_unipathway_daily_mark(uuid,uuid,date,public.attendance_status)'),
  ('public.get_unipathway_guardian_learning()'))
