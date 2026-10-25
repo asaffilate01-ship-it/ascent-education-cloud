@@ -8,7 +8,7 @@ afterEach(cleanup);beforeEach(()=>{mock.rpc.mockReset();});
 it('changes only the selected consent and does not pretend a failed save succeeded',async()=>{
  mock.rpc.mockResolvedValueOnce({data:[{id:'link',parent_name:'Guardian',verified:true,scopes:['schedule']}]}).mockResolvedValueOnce({error:{message:'denied'}});
  render(<GuardianScopeSharing/>);fireEvent.click(await screen.findByText('Share attendance'));
- await waitFor(()=>expect(screen.getByRole('alert')).toHaveTextContent('not saved'));expect(mock.rpc).toHaveBeenCalledWith('set_unipathway_guardian_scope',{p_link:'link',p_scope:'attendance',p_share:true});expect(screen.getByText('Stop sharing schedule')).toBeInTheDocument();
+ await waitFor(()=>expect(screen.getByRole('alert')).toHaveTextContent('could not be confirmed'));expect(mock.rpc).toHaveBeenCalledWith('set_unipathway_guardian_scope',{p_link:'link',p_scope:'attendance',p_share:true});expect(screen.getByText('Stop sharing schedule')).toBeInTheDocument();
 });
 it('clears previously shared activity after revocation on refresh',async()=>{
  mock.rpc.mockResolvedValueOnce({data:[{id:'l',student_name:'Learner',attendance_shared:true,schedule_shared:false,communication_shared:false,attendance:[{date:'2026-10-24',status:'present',module:'Maths'}],schedule:[]}]}).mockResolvedValueOnce({data:[{id:'l',student_name:null,attendance_shared:false,schedule_shared:false,communication_shared:false,attendance:[],schedule:[]}]});

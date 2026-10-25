@@ -1,137 +1,46 @@
+import {useEffect,useState} from 'react';
+import {Link} from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import StatCard from '@/components/ui/StatCard';
-import StatusBadge from '@/components/ui/StatusBadge';
-import { Calendar, Users, AlertTriangle, CheckCircle } from 'lucide-react';
-import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
-import { DashboardSkeleton } from '@/components/ui/Skeletons';
-import { useMemo } from 'react';
-
-export default function AttendanceDashboard() {
-  const { data: records, loading } = useSupabaseQuery('attendance_records', {
-    orderBy: { column: 'date', ascending: false },
-  });
-  const { data: profiles } = useSupabaseQuery('profiles');
-  const { data: modules } = useSupabaseQuery('modules');
-
-  const profileMap = useMemo(() => {
-    const map: Record<string, string> = {};
-    profiles.forEach((p) => { map[p.user_id] = p.full_name; });
-    return map;
-  }, [profiles]);
-
-  const moduleMap = useMemo(() => {
-    const map: Record<string, string> = {};
-    modules.forEach((m) => { map[m.id] = m.title; });
-    return map;
-  }, [modules]);
-
-  // Aggregate per-student overall attendance
-  const studentAgg = useMemo(() => {
-    const map: Record<string, { total: number; present: number }> = {};
-    records.forEach((r) => {
-      if (!map[r.student_id]) map[r.student_id] = { total: 0, present: 0 };
-      map[r.student_id].total++;
-      if (r.status === 'present' || r.status === 'excused') map[r.student_id].present++;
-    });
-    return map;
-  }, [records]);
-
-  if (loading) return <DashboardSkeleton />;
-
-  const today = new Date().toISOString().split('T')[0];
-  const todayRecords = records.filter((r) => r.date === today);
-  const presentToday = todayRecords.filter((r) => r.status === 'present' || r.status === 'excused').length;
-  const absentToday = todayRecords.filter((r) => r.status === 'absent').length;
-  const lateToday = todayRecords.filter((r) => r.status === 'late').length;
-  const totalToday = todayRecords.length;
-  const rate = totalToday > 0 ? Math.round((presentToday / totalToday) * 100) : 0;
-
-  const atRiskStudents = Object.entries(studentAgg)
-    .filter(([, s]) => s.total > 0 && (s.present / s.total) < 0.7)
-    .map(([id, s]) => ({
-      id,
-      name: profileMap[id] || id.slice(0, 8),
-      rate: Math.round((s.present / s.total) * 100),
-      absences: s.total - s.present,
-    }))
-    .sort((a, b) => a.rate - b.rate);
-
-  return (
-    <DashboardLayout title="Attendance" subtitle="Digital registers, absence tracking, and alerts">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard label="Today's Records" value={totalToday || '—'} icon={Calendar} />
-        <StatCard label="Present" value={presentToday} change={totalToday > 0 ? `${rate}% rate` : '—'} changeType={rate >= 80 ? 'positive' : 'negative'} icon={CheckCircle} />
-        <StatCard label="Absent" value={absentToday} change={absentToday > 3 ? `${absentToday} flagged` : '—'} changeType="negative" icon={AlertTriangle} />
-        <StatCard label="Late Arrivals" value={lateToday} icon={Users} />
-      </div>
-
-      {/* Today's Register */}
-      <div className="surface-card p-5 mb-6">
-        <h3 className="text-sm font-semibold mb-4">Today's Register</h3>
-        {todayRecords.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="surface-data">
-                  <th className="text-label text-left px-4 py-3">Student</th>
-                  <th className="text-label text-left px-4 py-3">Module</th>
-                  <th className="text-label text-left px-4 py-3">Method</th>
-                  <th className="text-label text-left px-4 py-3">Status</th>
-                  <th className="text-label text-left px-4 py-3">Overall %</th>
-                </tr>
-              </thead>
-              <tbody>
-                {todayRecords.map((r) => {
-                  const overall = studentAgg[r.student_id];
-                  const overallRate = overall && overall.total > 0 ? Math.round((overall.present / overall.total) * 100) : 0;
-                  return (
-                    <tr key={r.id} className="border-t border-border/50">
-                      <td className="px-4 py-3 text-sm font-medium">{profileMap[r.student_id] || r.student_id.slice(0, 8)}</td>
-                      <td className="px-4 py-3 text-sm">{r.module_id ? moduleMap[r.module_id] || '—' : '—'}</td>
-                      <td className="px-4 py-3 text-sm">{r.method || 'manual'}</td>
-                      <td className="px-4 py-3">
-                        <StatusBadge
-                          status={r.status}
-                          variant={r.status === 'present' ? 'success' : r.status === 'late' ? 'warning' : 'danger'}
-                        />
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`text-sm font-medium ${overallRate >= 80 ? 'text-success' : overallRate >= 70 ? 'text-warning' : 'text-destructive'}`}>
-                          {overallRate}%
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground text-center py-8">No attendance records for today</p>
-        )}
-      </div>
-
-      {/* At-Risk Students */}
-      <div className="surface-card p-5">
-        <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-destructive" /> At-Risk Students (Below 70% Attendance)
-        </h3>
-        {atRiskStudents.length > 0 ? (
-          <div className="space-y-2">
-            {atRiskStudents.map((s) => (
-              <div key={s.id} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
-                <div>
-                  <p className="text-sm font-medium">{s.name}</p>
-                  <p className="text-xs text-muted-foreground">{s.absences} absences</p>
-                </div>
-                <span className="text-sm font-bold text-destructive">{s.rate}%</span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground text-center py-4">No at-risk students</p>
-        )}
-      </div>
-    </DashboardLayout>
-  );
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {useAuth} from '@/contexts/AuthContext';
+import {db} from '@/lib/db';
+import {pagedRows,rowsByIds} from '@/lib/pagedRows';
+type Mark={id:string;module_id:string|null;date:string;status:string;method:string|null};
+type Module={id:string;title:string};
+export default function AttendanceDashboard(){
+ const {user}=useAuth();
+ return <StudentAttendance key={`${user?.id}:${user?.tenantId}:${user?.roles?.join(',')}`} student={user?.id} tenant={user?.tenantId}/>;
+}
+function StudentAttendance({student,tenant}:{student?:string;tenant?:string|null}){
+ const [marks,setMarks]=useState<Mark[]>([]),[modules,setModules]=useState<Module[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[revision,setRevision]=useState(0);
+ const [module,setModule]=useState(''),[status,setStatus]=useState(''),[from,setFrom]=useState(''),[to,setTo]=useState(''),[page,setPage]=useState(0);
+ useEffect(()=>{let active=true;setLoading(true);setError('');setMarks([]);setModules([]);setPage(0);
+  void(async()=>{try{
+   if(!student||!tenant)throw Error('Sign in');
+   const records=await pagedRows<Mark>(()=>db.from('attendance_records').select('id,module_id,date,status,method').eq('student_id',student).eq('tenant_id',tenant),()=>active);
+   if(records.some(r=>!r||typeof r.id!=='string'||typeof r.date!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(r.date)||typeof r.status!=='string'||(r.module_id!==null&&typeof r.module_id!=='string')||(r.method!==null&&typeof r.method!=='string')))throw Error('Unverified marks');
+   const titles=await rowsByIds<Module>(records.flatMap(r=>r.module_id?[r.module_id]:[]),ids=>()=>db.from('modules').select('id,title').eq('tenant_id',tenant).in('id',ids),()=>active);
+   if(titles.some(m=>!m||typeof m.id!=='string'||typeof m.title!=='string'))throw Error('Unverified modules');
+   if(active){setMarks(records.sort((a,b)=>b.date.localeCompare(a.date)||a.id.localeCompare(b.id)));setModules(titles.sort((a,b)=>a.title.localeCompare(b.title)));}
+  }catch{if(active)setError('Attendance could not be verified. Refresh to retry; unavailable records are not counted as absences.');}
+  finally{if(active)setLoading(false);}})();return()=>{active=false;};
+ },[student,tenant,revision]);
+ const invalid=!!(from&&to&&from>to);
+ const filtered=marks.filter(r=>(!module||r.module_id===module)&&(!status||r.status===status)&&(!from||r.date>=from)&&(!to||r.date<=to));
+ const count=(s:string)=>filtered.filter(r=>r.status===s).length;
+ const present=count('present'),late=count('late'),absent=count('absent'),excused=count('excused'),denominator=present+late+absent;
+ const names=new Map(modules.map(m=>[m.id,m.title]));
+ return <DashboardLayout title="My attendance" subtitle="Your saved attendance history"><div className="space-y-5">
+ <p>Marks are recorded entries, not a count of every scheduled class. Missing entries do not mean absence. Ask your lecturer to request a correction if a saved mark is wrong.</p>
+ <div className="flex flex-wrap gap-4"><Button variant="outline" disabled={loading} onClick={()=>setRevision(v=>v+1)}>Refresh attendance</Button><Link className="underline" to="/student/classroom">View class invitations</Link><Link className="underline" to="/student/grades">Manage guardian sharing in results</Link></div>
+ {loading?<p role="status">Checking attendance…</p>:error?<p role="alert">{error}</p>:<>
+ <div className="flex flex-wrap gap-3"><label>Module<select className="block rounded border bg-background p-2" value={module} onChange={e=>{setModule(e.target.value);setPage(0);}}><option value="">All modules</option>{modules.map(m=><option key={m.id} value={m.id}>{m.title}</option>)}</select></label><label>Mark<select className="block rounded border bg-background p-2" value={status} onChange={e=>{setStatus(e.target.value);setPage(0);}}><option value="">All marks</option>{['present','late','absent','excused'].map(s=><option key={s}>{s}</option>)}</select></label><label>From date<Input type="date" value={from} onChange={e=>{setFrom(e.target.value);setPage(0);}}/></label><label>To date<Input type="date" value={to} onChange={e=>{setTo(e.target.value);setPage(0);}}/></label><Button variant="outline" onClick={()=>{setModule('');setStatus('');setFrom('');setTo('');setPage(0);}}>Clear filters</Button></div>
+ {invalid?<p role="alert">The end date must be on or after the start date.</p>:<>
+ <section className="rounded-xl border p-5" aria-label="Recorded attendance summary"><h2 className="font-semibold">Recorded attendance rate: {denominator?`${Math.round(100*(present+late)/denominator)}%`:'Not available'}</h2><p className="my-2">Present {present} · Late {late} · Absent {absent} · Excused {excused}</p><p className="text-sm text-muted-foreground">For the current filters: (present + late) ÷ (present + late + absent). Excused and unrecognised marks are excluded. This is not a programme progression decision.</p></section>
+ {!filtered.length?<p>No recorded attendance matches this view.</p>:<div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr><th className="p-3">Date</th><th>Module</th><th>Mark</th><th>Recorded by method</th></tr></thead><tbody>{filtered.slice(page*20,page*20+20).map(r=><tr key={r.id} className="border-t"><td className="p-3">{r.date}</td><td>{r.module_id&&names.has(r.module_id)?<Link className="underline" to={`/student/module?module=${encodeURIComponent(r.module_id)}`}>{names.get(r.module_id)}</Link>:'Module unavailable'}</td><td>{r.status}</td><td>{r.method==='daily_register'?'Daily register':r.method==='manual'?'Manual':r.method?'Other recorded method':'Historical record'}</td></tr>)}</tbody></table></div>}
+ {filtered.length>20&&<nav aria-label="Attendance pages" className="flex gap-3 items-center"><Button disabled={!page} onClick={()=>setPage(p=>p-1)}>Previous records</Button><span>Page {page+1} of {Math.ceil(filtered.length/20)}</span><Button disabled={(page+1)*20>=filtered.length} onClick={()=>setPage(p=>p+1)}>Next records</Button></nav>}
+ </>}
+ </>}
+ </div></DashboardLayout>;
 }
