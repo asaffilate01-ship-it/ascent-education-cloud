@@ -20,7 +20,7 @@ export const SOCIAL_LINKS = {
   twitter: socialUrl(import.meta.env.VITE_PUBLIC_X_URL, ['x.com', 'twitter.com']),
   linkedin: socialUrl(import.meta.env.VITE_PUBLIC_LINKEDIN_URL, ['linkedin.com']),
   youtube: socialUrl(import.meta.env.VITE_PUBLIC_YOUTUBE_URL, ['youtube.com', 'youtu.be']),
-  tiktok: socialUrl(import.meta.env.VITE_PUBLIC_TIKTOK_URL, ['tiktok.com']) || 'https://www.tiktok.com/@unipathway.pk',
+  tiktok: '', // Icon only until a destination is requested.
   google: socialUrl(import.meta.env.VITE_PUBLIC_GOOGLE_URL, ['google.com', 'maps.google.com', 'maps.app.goo.gl', 'g.page']),
   whatsapp: whatsappUrl(import.meta.env.VITE_PUBLIC_WHATSAPP_NUMBER),
 };
