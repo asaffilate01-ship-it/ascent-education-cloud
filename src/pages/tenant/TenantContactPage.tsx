@@ -48,7 +48,7 @@ export default function TenantContactPage() {
           <div className="mb-10"><PublicHero topic="guidance">
             <p className="text-label text-success">Talk to UniPathway</p>
             <h1 className="mt-3 text-3xl font-bold sm:text-5xl">Let’s find your next step.</h1>
-            <p className="mt-4 text-muted-foreground">Ask about subjects, entry requirements, class times or fees. Tell us what you want to study and whether you prefer online or in-centre learning.</p>
+            <p className="mt-4 text-muted-foreground">For students based in Pakistan. Ask about subjects, entry requirements, class times or fees, with online learning across Pakistan and in-class learning in Jhelum.</p>
             <a href="#contact-form" className="mt-6 inline-flex min-h-11 items-center rounded-lg bg-primary px-5 py-3 font-semibold text-primary-foreground">Send an enquiry</a>
             <p className="mt-4 text-sm text-muted-foreground">Use the form below for general questions. Please do not include identity documents or bank details.</p>
           </PublicHero></div>
@@ -90,7 +90,7 @@ export default function TenantContactPage() {
                   <input id="contact-email" name="email" required autoComplete="email" type="email" value={formData.email} onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))} className="w-full bg-secondary text-base sm:text-sm px-3 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-primary/20" placeholder="you@example.com" />
                 </div>
                 <div>
-                  <label htmlFor="contact-phone" className="text-label mb-1.5 block">Phone / WhatsApp</label>
+                  <label htmlFor="contact-phone" className="text-label mb-1.5 block">Phone / WhatsApp (Pakistan)</label>
                   <input id="contact-phone" name="phone" type="tel" autoComplete="tel" value={formData.phone} onChange={(e) => setFormData(p => ({ ...p, phone: e.target.value }))} className="w-full bg-secondary text-base sm:text-sm px-3 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-primary/20" placeholder="+92" />
                 </div>
                 <div>
