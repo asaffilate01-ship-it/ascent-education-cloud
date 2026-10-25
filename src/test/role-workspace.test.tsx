@@ -1,0 +1,14 @@
+import {cleanup,fireEvent,render,screen} from '@testing-library/react';
+import {MemoryRouter} from 'react-router-dom';
+import {afterEach,beforeEach,expect,it,vi} from 'vitest';
+import {readFileSync} from 'node:fs';
+import RoleWorkspace from '@/pages/RoleWorkspace';
+import {workspaceCatalog} from '@/lib/workspaceCatalog';
+const mock=vi.hoisted(()=>({role:'student'}));
+vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'user',tenantId:'centre',role:mock.role}}),ROLE_HOME:{student:'/student',lecturer:'/lecturer',parent_guardian:'/parent',centre_director:'/director',superadmin:'/landlord'},ROLE_LABELS:{student:'Student',lecturer:'Lecturer',parent_guardian:'Parent'}}));
+vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:{children:React.ReactNode})=><main>{children}</main>}));
+afterEach(cleanup);beforeEach(()=>{mock.role='student';});
+it('connects the full student service directory to real routes',()=>{render(<MemoryRouter><RoleWorkspace/></MemoryRouter>);expect(screen.getByRole('link',{name:/Fees, paid and outstanding/})).toHaveAttribute('href','/student/finance');expect(screen.getByRole('link',{name:/Identity and certificates/})).toHaveAttribute('href','/onboarding');expect(screen.queryByRole('link',{name:/Platform accounts/})).toBeNull();fireEvent.change(screen.getByLabelText('Find a service'),{target:{value:'residential'}});expect(screen.getByRole('link',{name:/Residential periods/})).toHaveAttribute('href','/residential');expect(screen.queryByRole('link',{name:/Fees, paid/})).toBeNull();});
+it('resets role-specific services and search when switching roles',()=>{const view=render(<MemoryRouter><RoleWorkspace/></MemoryRouter>);fireEvent.change(screen.getByLabelText('Find a service'),{target:{value:'fees'}});mock.role='lecturer';view.rerender(<MemoryRouter><RoleWorkspace/></MemoryRouter>);expect(screen.queryByRole('link',{name:/Fees, paid/})).toBeNull();expect(screen.getByRole('link',{name:/Coursework briefs/})).toHaveAttribute('href','/lecturer/assessments');});
+it('keeps parent navigation limited to separately shared areas',()=>{mock.role='parent_guardian';render(<MemoryRouter><RoleWorkspace/></MemoryRouter>);expect(screen.getByRole('link',{name:/Results and progress/})).toHaveAttribute('href','/parent/progress');expect(screen.queryByRole('link',{name:/Identity and certificates/})).toBeNull();expect(screen.queryByRole('link',{name:/Fees, paid/})).toBeNull();});
+it('has no dead application routes in any role directory',()=>{const app=readFileSync('src/App.tsx','utf8');for(const g of Object.values(workspaceCatalog).flat())for(const item of g.items)expect(app,`${item.label}: ${item.to}`).toContain(`path="${item.to}"`);});

@@ -69,6 +69,7 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
           </div>
           <div className="flex items-center gap-1.5 lg:gap-2">
             {actions}
+            <Link className="rounded-lg border px-2 py-1.5 text-xs hover:bg-accent" to="/workspace">Workspace</Link>
             <button
               onClick={() => setCmdOpen(true)}
               className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/50 bg-background text-muted-foreground text-xs hover:bg-accent transition-default"

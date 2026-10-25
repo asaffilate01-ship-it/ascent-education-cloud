@@ -82,6 +82,7 @@ function StudentDashboardContent() {
 
   return (
     <DashboardLayout title="Today" subtitle={`Welcome back, ${user?.name || 'Student'}`}>
+      <section className="mb-5 rounded-xl border bg-card p-4"><h2 className="font-semibold">Your student workspace</h2><p className="my-2 text-sm text-muted-foreground">Courses, timetable, recordings, labs, residential visits, documents, careers, fees and support.</p><Link className="font-semibold underline" to="/workspace">Open all student services</Link></section>
       <StudentLearningAgenda tenant={user.tenantId} student={user.id} moduleIds={moduleIds} />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {stats.map((stat, i) => (

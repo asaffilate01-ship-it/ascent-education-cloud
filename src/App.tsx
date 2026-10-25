@@ -69,6 +69,7 @@ const ProductionReadiness = lazy(() => import("./pages/superadmin/ProductionRead
 const SupportDesk = lazy(() => import("./pages/progression/SupportDesk"));
 const GlobalEducationPartners = lazy(() => import("./pages/progression/GlobalEducationPartners"));
 const EducationPartnershipReadiness = lazy(() => import("./pages/progression/EducationPartnershipReadiness"));
+const RoleWorkspace = lazy(() => import("./pages/RoleWorkspace"));
 const AttendanceCorrections = lazy(() => import("./pages/attendance/AttendanceCorrections"));
 const AttendanceDashboard = lazy(() => import("./pages/attendance/AttendanceDashboard"));
 const AnalyticsDashboard = lazy(() => import("./pages/analytics/AnalyticsDashboard"));
@@ -548,6 +549,7 @@ function AppRoutes() {
         <Route path="/parent/messages" element={<ParentR><ParentDashboard /></ParentR>} />
 
         {/* ========== SHARED / FEATURE ========== */}
+        <Route path="/workspace" element={<P><RoleWorkspace /></P>} />
         <Route path="/onboarding" element={<P><StudentOnboarding /></P>} />
         <Route path="/onboarding/lecturer" element={<LecturerR><LecturerOnboarding /></LecturerR>} />
         <Route path="/residential" element={<P><ResidentialWeeks /></P>} />
