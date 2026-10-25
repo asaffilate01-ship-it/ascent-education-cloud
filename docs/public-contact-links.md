@@ -1,6 +1,6 @@
 # Public WhatsApp and social links
 
-Set these public Vite build variables in the publishing environment, then rebuild/publish. Empty values are deliberately hidden. Do not use example phone numbers or guessed handles.
+Set these public Vite build variables in the publishing environment, then rebuild/publish. All brand icons are visible. Unconfigured channels have no outbound link until the real URL is supplied. Do not use example phone numbers or guessed handles.
 
 - `VITE_PUBLIC_WHATSAPP_NUMBER`: real business WhatsApp number including country code (leading + and spaces allowed).
 - `VITE_PUBLIC_FACEBOOK_URL`
@@ -9,7 +9,8 @@ Set these public Vite build variables in the publishing environment, then rebuil
 - `VITE_PUBLIC_LINKEDIN_URL`
 - `VITE_PUBLIC_YOUTUBE_URL`
 - `VITE_PUBLIC_TIKTOK_URL`
+- `VITE_PUBLIC_GOOGLE_URL`: Google Business Profile / Maps link.
 
 Use complete HTTPS profile URLs on the matching platform. These are public contact details, not API credentials. WhatsApp opens a draft enquiry in the visitor's WhatsApp app/web; the visitor chooses whether to send. No message is sent automatically and no WhatsApp Business API or inbox integration is implied.
 
-The shared footer, mobile menu and contact page show configured channels. Old placeholder WhatsApp destinations have been removed. TikTok uses the confirmed profile https://www.tiktok.com/@unipathway.pk by default. Other channels remain hidden until configured. A valid VITE_PUBLIC_TIKTOK_URL can override the default.
+The shared footer, mobile menu and contact page show all channel icons. Old placeholder WhatsApp destinations have been removed. TikTok uses the confirmed profile https://www.tiktok.com/@unipathway.pk by default. Other channel icons remain visible without links until configured. A valid VITE_PUBLIC_TIKTOK_URL can override the default.

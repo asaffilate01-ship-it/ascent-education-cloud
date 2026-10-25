@@ -1,4 +1,4 @@
-/** Public contact settings. Empty values stay hidden; never invent profile URLs. */
+/** Public contact settings. Empty values have no outbound link; never invent profile URLs. */
 export function socialUrl(value: unknown, hosts: string[]): string {
   if (typeof value !== 'string' || !value.trim()) return '';
   try {
@@ -21,5 +21,6 @@ export const SOCIAL_LINKS = {
   linkedin: socialUrl(import.meta.env.VITE_PUBLIC_LINKEDIN_URL, ['linkedin.com']),
   youtube: socialUrl(import.meta.env.VITE_PUBLIC_YOUTUBE_URL, ['youtube.com', 'youtu.be']),
   tiktok: socialUrl(import.meta.env.VITE_PUBLIC_TIKTOK_URL, ['tiktok.com']) || 'https://www.tiktok.com/@unipathway.pk',
+  google: socialUrl(import.meta.env.VITE_PUBLIC_GOOGLE_URL, ['google.com', 'maps.google.com', 'maps.app.goo.gl', 'g.page']),
   whatsapp: whatsappUrl(import.meta.env.VITE_PUBLIC_WHATSAPP_NUMBER),
 };
