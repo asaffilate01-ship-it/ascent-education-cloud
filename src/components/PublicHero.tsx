@@ -1,25 +1,23 @@
 import type { ReactNode } from 'react';
 import english from '@/assets/blog/english-exams.jpg';
 import german from '@/assets/blog/german-exams.jpg';
-import guidance from '@/assets/blog/diploma-guidance.jpg';
-import students from '@/assets/tenant-hero.jpg';
 
 const images = {
-  study: { src: students, alt: 'Students with books on a campus' },
-  guidance: { src: guidance, alt: 'Learners reviewing study options together' },
+  study: { src: '/images/heroes/tuition.jpg', alt: 'Independent study with notes and learning materials' },
+  guidance: { src: '/images/heroes/finance.jpg', alt: 'An individual reviewing documents at a desk' },
   english: { src: english, alt: 'Learner practising listening skills with headphones' },
   german: { src: german, alt: 'German language study materials' },
-  technology: { src: '/images/heroes/technology.jpg', alt: 'Collaborative work using a laptop' },
+  technology: { src: english, alt: 'An individual learning at a computer' },
   finance: { src: '/images/heroes/finance.jpg', alt: 'Reviewing financial documents at a desk' },
   beauty: { src: '/images/heroes/beauty.jpg', alt: 'Make-up tools and beauty products' },
-  campus: { src: students, alt: 'Students in modest clothing holding books on a campus' },
+  campus: { src: '/images/heroes/tuition.jpg', alt: 'Independent study with notes and learning materials' },
   germany: { src: '/images/heroes/germany.jpg', alt: 'Brandenburg Gate in Berlin' },
   uk: { src: '/images/heroes/uk.jpg', alt: 'London skyline beside the River Thames' },
   usa: { src: '/images/heroes/usa.jpg', alt: 'Statue of Liberty in New York' },
   canada: { src: '/images/heroes/canada.jpg', alt: 'Toronto skyline' },
   australia: { src: '/images/heroes/australia.jpg', alt: 'Sydney harbour' },
   tuition: { src: '/images/heroes/tuition.jpg', alt: 'Study notes and learning materials on a desk' },
-  careers: { src: '/images/heroes/careers.jpg', alt: 'Colleagues collaborating in a workplace' },
+  careers: { src: '/images/heroes/finance.jpg', alt: 'An individual preparing documents at a desk' },
 };
 export type HeroTopic = keyof typeof images;
 
