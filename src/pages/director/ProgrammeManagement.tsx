@@ -1,3 +1,6 @@
+import ModuleLecturerAssignment from '@/components/ModuleLecturerAssignment';
+import {useAuth} from '@/contexts/AuthContext';
+import {Link} from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { BookOpen, Plus, Users, Award, Clock, Edit, Trash2 } from 'lucide-react';
@@ -8,14 +11,18 @@ import { DashboardSkeleton } from '@/components/ui/Skeletons';
 import type { Tables } from '@/integrations/supabase/types';
 
 export default function ProgrammeManagement() {
+  const {user}=useAuth();
+  const filters=user?.tenantId?[{column:'tenant_id',operator:'eq' as const,value:user.tenantId}]:[];
   const [selectedProgramme, setSelectedProgramme] = useState<string | null>(null);
-  const { data: programmes, loading } = useSupabaseQuery('programmes', {
-    orderBy: { column: 'title', ascending: true },
+  const { data: programmes, loading, error: programmeError, refetch: refreshProgrammes } = useSupabaseQuery('programmes', {
+    enabled:!!user?.tenantId, filters, orderBy: { column: 'title', ascending: true },
   });
-  const { data: modules } = useSupabaseQuery('modules', {
-    orderBy: { column: 'title', ascending: true },
+  const { data: modules, error: moduleError, refetch: refreshModules } = useSupabaseQuery('modules', {
+    enabled:!!user?.tenantId, filters, orderBy: { column: 'title', ascending: true },
   });
 
+  if (!user?.tenantId) return <DashboardLayout title="Programme Management"><p role="alert">A centre assignment is required.</p></DashboardLayout>;
+  if (programmeError || moduleError) return <DashboardLayout title="Programme Management"><p role="alert">Courses or modules could not be loaded.</p><Button onClick={()=>{void refreshProgrammes();void refreshModules();}}>Retry</Button></DashboardLayout>;
   if (loading) return <DashboardSkeleton />;
 
   const selected = programmes.find((p) => p.id === selectedProgramme);
@@ -25,7 +32,7 @@ export default function ProgrammeManagement() {
     <DashboardLayout
       title="Programme Management"
       subtitle="Manage courses, modules, and curriculum"
-      actions={<Button size="sm"><Plus className="w-3.5 h-3.5 mr-1.5" />Add Programme</Button>}
+      actions={<Button size="sm" asChild><Link to={user.role==='programme_leader'?'/programme/modules':'/director/admissions'}>{user.role==='programme_leader'?'Manage teaching':'Manage admissions & enrolments'}</Link></Button>}
     >
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="surface-card p-4 text-center">
@@ -46,11 +53,13 @@ export default function ProgrammeManagement() {
         </div>
       </div>
 
-      <div className="flex gap-4">
-        <div className={`space-y-2 ${selectedProgramme ? 'w-1/2' : 'w-full'}`}>
+      <div className="flex flex-col lg:flex-row gap-4">
+        <div className={`space-y-2 ${selectedProgramme ? 'w-full lg:w-1/2' : 'w-full'}`}>
           {programmes.map((prog) => (
             <div
               key={prog.id}
+              role="button" tabIndex={0} aria-pressed={selectedProgramme === prog.id}
+              onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setSelectedProgramme(prog.id);}}}
               onClick={() => setSelectedProgramme(prog.id)}
               className={`surface-card p-4 cursor-pointer transition-default hover:shadow-lg ${selectedProgramme === prog.id ? 'ring-2 ring-primary' : ''}`}
             >
@@ -82,7 +91,7 @@ export default function ProgrammeManagement() {
         </div>
 
         {selected && (
-          <div className="w-1/2 surface-card p-6 sticky top-20 self-start">
+          <div className="w-full lg:w-1/2 surface-card p-6 lg:sticky lg:top-20 self-start">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
@@ -91,10 +100,7 @@ export default function ProgrammeManagement() {
                 </div>
                 <h2 className="text-lg font-bold">{selected.title}</h2>
               </div>
-              <div className="flex gap-1">
-                <Button variant="outline" size="sm" className="h-8 w-8 p-0"><Edit className="w-3.5 h-3.5" /></Button>
-                <Button variant="outline" size="sm" className="h-8 w-8 p-0"><Trash2 className="w-3.5 h-3.5" /></Button>
-              </div>
+
             </div>
 
             <div className="grid grid-cols-3 gap-3 mb-4">
@@ -115,7 +121,7 @@ export default function ProgrammeManagement() {
             <h3 className="text-sm font-semibold mb-2">Modules</h3>
             <div className="space-y-1.5">
               {selectedModules.map((mod) => (
-                <div key={mod.id} className="flex items-center justify-between p-2.5 surface-data rounded-lg">
+                <div key={mod.id} className="flex flex-wrap items-center justify-between p-2.5 surface-data rounded-lg">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-medium">{mod.title}</span>
                     <span className="text-[9px] text-muted-foreground">({mod.credits || 0} credits)</span>
@@ -124,15 +130,14 @@ export default function ProgrammeManagement() {
                     <span className="text-[10px] text-muted-foreground">{mod.code || ''}</span>
                     <StatusBadge status={mod.status} variant={mod.status === 'active' ? 'success' : 'warning'} />
                   </div>
+                  <ModuleLecturerAssignment moduleId={mod.id} tenantId={mod.tenant_id} lecturerId={mod.lecturer_id} onSaved={()=>void refreshModules()}/>
                 </div>
               ))}
               {selectedModules.length === 0 && (
                 <p className="text-xs text-muted-foreground text-center py-4">No modules assigned</p>
               )}
             </div>
-            <Button variant="outline" size="sm" className="w-full mt-3 text-xs">
-              <Plus className="w-3 h-3 mr-1" /> Add Module
-            </Button>
+            <p className="mt-4 text-xs text-muted-foreground">Students gain module access through an active enrolment in this programme. Live-class invitations are managed separately by teaching staff.</p>
           </div>
         )}
       </div>

@@ -12,7 +12,7 @@ Deno.serve(async req=>{
   if(!['live','playback'].includes(body.mode)||typeof body.cameraId!=='string')return json({error:'Choose a camera and viewing mode'},400);
   const scoped=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_ANON_KEY')!,{global:{headers:{Authorization:req.headers.get('Authorization')!}}});
   const [{data:camera,error},{data:roles,error:roleError}]=await Promise.all([
-   scoped.from('cctv_cameras').select('*').eq('id',body.cameraId).single(),
+   scoped.from('unipathway_cctv_cameras').select('*').eq('id',body.cameraId).single(),
    scoped.from('user_roles').select('role').eq('user_id',auth.userId),
   ]);
   if(error||roleError||!camera||!camera.enabled)return json({error:'Camera unavailable to this account'},403);

@@ -82,21 +82,13 @@ function StudentDashboardContent() {
 
   return (
     <DashboardLayout title="Today" subtitle={`Welcome back, ${user?.name || 'Student'}`}>
-      <section className="mb-5 rounded-xl border bg-card p-4"><h2 className="font-semibold">Your student workspace</h2><p className="my-2 text-sm text-muted-foreground">Courses, timetable, recordings, labs, residential visits, documents, careers, fees and support.</p><Link className="font-semibold underline" to="/workspace">Open all student services</Link></section>
       <StudentLearningAgenda tenant={user.tenantId} student={user.id} moduleIds={moduleIds} />
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {stats.map((stat, i) => (
-          <motion.div key={stat.label} custom={i} initial="hidden" animate="visible" variants={fadeUp}>
-            <StatCard {...stat} />
-          </motion.div>
-        ))}
-      </div>
-
+      <section className="mb-5 rounded-xl border bg-card p-4"><h2 className="font-semibold">Your student workspace</h2><p className="my-2 text-sm text-muted-foreground">Courses, timetable, recordings, labs, residential visits, documents, careers, fees and support.</p><Link className="font-semibold underline" to="/workspace">Open all student services</Link></section>
       <div className="grid lg:grid-cols-3 gap-4 mb-6">
         {/* Module List */}
         <div className="lg:col-span-2 surface-card p-5">
           <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-primary" /> My Modules
+            <BookOpen className="w-4 h-4 text-primary" /> Continue learning
           </h3>
           <div className="space-y-2">
             {!modules.length&&<p>No modules are available for your active enrolments.</p>}
@@ -121,6 +113,14 @@ function StudentDashboardContent() {
 
       </div>
 
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {stats.map((stat, i) => (
+          <motion.div key={stat.label} custom={i} initial="hidden" animate="visible" variants={fadeUp}>
+            <StatCard {...stat} />
+          </motion.div>
+        ))}
+      </div>
 
       <STEMCoachLearningAccess enrolled={enrolmentsQuery.data.length > 0} />
 

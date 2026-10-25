@@ -1,3 +1,4 @@
+import CourseAtAGlance from '@/components/CourseAtAGlance';
 import PublicHero from '@/components/PublicHero';
 import PageContents from '@/components/PageContents';
 import { useMemo, useState } from 'react';
@@ -33,7 +34,7 @@ export default function BeautyAcademy() {
           <div className="mt-6 flex flex-wrap gap-3"><Button asChild size="lg"><Link to="/contact">Register your interest <ArrowRight className="ml-1 size-4"/></Link></Button><Button asChild variant="outline" size="lg"><a href="#qualifications">View programme options</a></Button></div>
         </div>
         </PublicHero>
-<PageContents/>
+<CourseAtAGlance course="Beauty and aesthetics" delivery="Theory may be online; practical training and assessment require supervised in-person attendance."/><PageContents/>
 <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {[{icon:Users,title:'Women-focused',detail:'Planned dedicated cohorts'},{icon:GraduationCap,title:'Practical skills',detail:'Supervised in-centre learning'},{icon:BookOpenCheck,title:'Theory + LMS',detail:'Lessons, resources and assessment'},{icon:HeartHandshake,title:'Career development',detail:'Portfolio and salon opportunities'}].map(({icon:Icon,title,detail})=><div key={title} className="rounded-xl border bg-white/90 p-4 dark:bg-card"><Icon className="size-6 text-success"/><h2 className="mt-3 text-sm font-bold">{title}</h2><p className="mt-1 text-xs text-muted-foreground">{detail}</p></div>)}
         </div>

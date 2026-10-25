@@ -1,3 +1,4 @@
+import CourseAtAGlance from '@/components/CourseAtAGlance';
 import PublicHero from '@/components/PublicHero';
 import PageContents from '@/components/PageContents';
 import {db} from '@/lib/db';
@@ -55,8 +56,8 @@ export default function QualificationsCatalogue() {
         {filtered.map(q=>{const offer=offers.find(o=>o.course_key===courseOfferKey(q.body,q.name)&&currentCourseOffer(o,now));return <article key={q.body+q.name} className="flex flex-col rounded-xl border bg-card p-5">
           <span className="text-xs font-bold text-success">{q.body} · Level {q.level}</span>
           <h2 className="mt-2 text-lg font-bold">{q.name}</h2><p className="mt-2 text-sm text-muted-foreground">{q.category}</p>
-          {offer?<dl className="mt-4 space-y-2 text-sm"><div><dt className="font-semibold">Availability</dt><dd>{offer.availability==='open'?'Open for applications':offer.availability==='upcoming'?'Upcoming intake':'Applications closed'}</dd></div><div><dt className="font-semibold">Fees</dt><dd className="whitespace-pre-wrap">{offer.fees}</dd></div><div><dt className="font-semibold">Entry requirements</dt><dd className="whitespace-pre-wrap">{offer.entry_requirements}</dd></div><div><dt className="font-semibold">Intake date</dt><dd>{offer.intake_date}</dd></div><p className="text-xs text-muted-foreground">Reviewed {offer.verified_at.slice(0,10)} · Confirmation valid until {offer.valid_until.slice(0,10)}</p></dl>:<p className="mt-4 text-sm text-muted-foreground">Availability, fees, entry requirements and intake date await confirmation from admissions.</p>}
-          <div className="mt-auto flex flex-wrap gap-3 pt-5 text-sm"><Link to="/contact" className="inline-flex items-center gap-1 font-semibold text-success hover:underline">Ask admissions</Link></div>
+          <div className="mt-4"><CourseAtAGlance compact course={`${q.body} ${q.name}`} entry={offer?.entry_requirements} fees={offer?.fees} intake={offer?.intake_date} delivery="Planned online study with in-centre academic visits, subject to programme approval."/></div>
+          {offer&&<p className="mt-3 text-xs text-muted-foreground">{offer.availability==='open'?'Open for applications':offer.availability==='upcoming'?'Upcoming intake':'Applications closed'} · Reviewed {offer.verified_at.slice(0,10)} · Valid until {offer.valid_until.slice(0,10)}</p>}
         </article>})}
         {filtered.length===0&&<p>No matching qualifications. Try a different subject or search.</p>}
       </section>

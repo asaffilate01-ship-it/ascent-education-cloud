@@ -75,10 +75,11 @@ export default function CentreDirectorDashboard() {
         </div>
       }
     >
-      <section aria-label="Next actions" className="mb-6 grid gap-3 sm:grid-cols-3">
-        <Link to="/director/admissions" className="rounded-xl border bg-card p-5 hover:bg-accent"><h2 className="font-semibold">Review admissions</h2><p className="mt-2 text-sm text-muted-foreground">{deposits} application(s) at deposit-paid stage. Check the remaining enrolment requirements.</p></Link>
-        <Link to="/director/finance" className="rounded-xl border bg-card p-5 hover:bg-accent"><h2 className="font-semibold">Follow up payments</h2><p className="mt-2 text-sm text-muted-foreground">{overdueCount} invoice(s) marked overdue. Review balances before contacting learners.</p></Link>
+      <section aria-label="Next actions" className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Link to="/director/admissions" className="rounded-xl border bg-card p-5 hover:bg-accent"><h2 className="font-semibold">Review admissions</h2><p className="mt-2 text-sm text-muted-foreground">{applications.filter(a=>['lead','applied','documents_submitted'].includes(a.stage)).length} application(s) awaiting initial review. {deposits} at deposit-paid stage need enrolment checks.</p></Link>
+        <Link to="/director/finance" className="rounded-xl border bg-card p-5 hover:bg-accent"><h2 className="font-semibold">Follow up payments</h2><p className="mt-2 text-sm text-muted-foreground">{overdueCount} invoice(s) marked overdue. Check the payer and any government or employer funding before contacting learners.</p></Link>
         <Link to="/director/schedule" className="rounded-xl border bg-card p-5 hover:bg-accent"><h2 className="font-semibold">Check teaching cover</h2><p className="mt-2 text-sm text-muted-foreground">Review the timetable and assigned teaching staff.</p></Link>
+        <Link to="/director/assessment-management" className="rounded-xl border bg-card p-5 hover:bg-accent"><h2 className="font-semibold">Review marking allocations</h2><p className="mt-2 text-sm text-muted-foreground">Check submitted work, marker assignments and independent quality approval.</p></Link>
       </section>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Total Students" value={String(totalStudents)} icon={GraduationCap} />
