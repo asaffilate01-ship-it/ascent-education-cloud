@@ -1,3 +1,4 @@
+import WhatsAppWidget from '@/components/WhatsAppWidget';
 import SocialIcons from '@/components/SocialIcons';
 import WhatsAppLink from '@/components/WhatsAppLink';
 import { useEffect, useRef, useState } from 'react';
@@ -69,7 +70,7 @@ export default function PublicNav() {
     document.addEventListener('pointerdown', outside);
     return () => { document.removeEventListener('keydown', close); document.removeEventListener('pointerdown', outside); };
   }, []);
-  return <><PublicBottomNav /><header ref={headerRef} className={cn('sticky top-0 z-50 border-b bg-background/85 backdrop-blur-xl transition-shadow', scrolled ? 'border-border shadow-surface-lg' : 'border-transparent')}>
+  return <><WhatsAppWidget /><PublicBottomNav /><header ref={headerRef} className={cn('sticky top-0 z-50 border-b bg-background/85 backdrop-blur-xl transition-shadow', scrolled ? 'border-border shadow-surface-lg' : 'border-transparent')}>
     <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-5 px-4 sm:h-20 sm:px-8 lg:h-24">
       <Link to="/" aria-label="UniPathway home" className="shrink-0"><BrandLogo className="h-11 lg:h-14" /></Link>
       <nav aria-label="Main navigation" className="hidden items-center gap-1 lg:flex">
