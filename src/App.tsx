@@ -69,6 +69,7 @@ const ProductionReadiness = lazy(() => import("./pages/superadmin/ProductionRead
 const SupportDesk = lazy(() => import("./pages/progression/SupportDesk"));
 const GlobalEducationPartners = lazy(() => import("./pages/progression/GlobalEducationPartners"));
 const EducationPartnershipReadiness = lazy(() => import("./pages/progression/EducationPartnershipReadiness"));
+const AttendanceCorrections = lazy(() => import("./pages/attendance/AttendanceCorrections"));
 const AttendanceDashboard = lazy(() => import("./pages/attendance/AttendanceDashboard"));
 const AnalyticsDashboard = lazy(() => import("./pages/analytics/AnalyticsDashboard"));
 const MarketingDashboard = lazy(() => import("./pages/marketing/MarketingDashboard"));
@@ -351,6 +352,9 @@ function AppRoutes() {
         <Route path="/landlord/infrastructure" element={<Landlord><SuperadminPlatform /></Landlord>} />
         <Route path="/landlord/settings" element={<Landlord><SettingsPage /></Landlord>} />
 
+        <Route path="/lecturer/attendance-corrections" element={<LecturerR><AttendanceCorrections /></LecturerR>} />
+        <Route path="/director/attendance-corrections" element={<Director><AttendanceCorrections /></Director>} />
+        <Route path="/landlord/attendance-corrections" element={<Landlord><AttendanceCorrections /></Landlord>} />
         {/* ========== CENTRE DIRECTOR ========== */}
         <Route path="/director/microsoft-education" element={<Director><MicrosoftEducationAdmin /></Director>} />
         <Route path="/director/managed-labs" element={<Director><LMSVirtualLabs /></Director>} />

@@ -50,6 +50,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Compliance', icon: Shield, path: '/compliance' },
       { label: 'Onboarding', icon: UserPlus, path: '/landlord/onboarding' },
       { label: 'Audit Logs', icon: FileText, path: '/audit' },
+      { label: 'Attendance corrections', icon: Calendar, path: '/landlord/attendance-corrections' },
       { label: 'Infrastructure', icon: Globe, path: '/landlord/infrastructure' },
       { label: 'Messages', icon: MessageSquare, path: '/messaging' },
       { label: 'Settings', icon: Settings, path: '/landlord/settings' },
@@ -73,6 +74,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
     ]},
     { title: 'Operations', items: [
       { label: 'Quality', icon: FileCheck, path: '/director/quality' },
+      { label: 'Attendance corrections', icon: Calendar, path: '/director/attendance-corrections' },
       { label: 'Compliance', icon: Shield, path: '/compliance' },
       { label: 'Finance', icon: CreditCard, path: '/director/finance' },
       { label: 'Calendar', icon: CalendarDays, path: '/calendar' },
@@ -148,6 +150,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
 
       { label: 'Report Cards', icon: FileText, path: '/lecturer/report-cards' },
       { label: 'Attendance', icon: Calendar, path: '/lecturer/attendance' },
+      { label: 'Attendance corrections', icon: Calendar, path: '/lecturer/attendance-corrections' },
       { label: 'Calendar', icon: CalendarDays, path: '/calendar' },
       { label: 'Leave', icon: Clock, path: '/leave' },
       { label: 'Timeline', icon: Clock, path: '/lecturer/timeline' },
