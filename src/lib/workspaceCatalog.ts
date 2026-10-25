@@ -25,6 +25,7 @@ export const workspaceCatalog:Record<string,WorkspaceGroup[]>={
   group('Documents and career',[
    ['Identity and certificates','/onboarding','Upload CNIC/passport and qualification evidence for centre review. This is not live NADRA verification.'],
    ['CV and career preparation','/student/career','Create a downloadable CV text draft and explore progression guidance.'],
+   ['My placements','/student/placements','Scheduled workplace learning, supervised hours and completion decisions.'],
    ['Jobs and internships','/student/opportunities','Published opportunities and your applications; a placement requires separate confirmation.'],
    ['Certificate verification','/verify','Check a certificate reference; this does not issue a certificate.'],
   ]),
@@ -44,6 +45,7 @@ export const workspaceCatalog:Record<string,WorkspaceGroup[]>={
   ['Recordings','/lecturer/lesson-archive','Review lesson recordings and release access.'],
   ['Coursework briefs','/lecturer/assessments','Prepare assignments; independent assessment remains separate.'],
   ['Learning plans','/lecturer/learning-plans','Review practice and support progress.'],
+  ['Placement supervision','/lecturer/placements','Review assigned student activity and completion.'],
   ['Lab planning','/lecturer/labs','Prepare lab tasks and scheduled runs.'],
   ['Report cards','/lecturer/report-cards','Review the report-card workflow and source records.'],
   ['Guardian support','/lecturer/guardian-support','Communicate only through authorised learner links.'],
@@ -60,6 +62,7 @@ export const workspaceCatalog:Record<string,WorkspaceGroup[]>={
   ['Attendance reviews','/director/attendance-corrections','Independently review requested corrections.'],
   ['Fees and finance','/director/finance','Review invoices and financial records.'],
   ['Residential planning','/director/residential-planner','Plan visits, rooms, teaching and support arrangements.'],
+  ['Supervised placements','/director/placements','Allocate students, supervisors and placement requirements.'],
   ['Employers and opportunities','/director/employers','Review employer relationships and published opportunities.'],
   ['Guardian support','/director/guardian-support','Manage authorised guardian communication.'],
   ['Teams setup','/director/microsoft-education','Configure classroom organiser readiness.'],
@@ -67,6 +70,7 @@ export const workspaceCatalog:Record<string,WorkspaceGroup[]>={
  ])],
  superadmin:[group('Platform operations',[
   ['Centres and setup','/landlord/centres','Review centre records and onboarding.'],
+  ['Centre placements','/landlord/placements','Manage placements only in your authorised centre context.'],
   ['Platform accounts','/landlord/users','Manage authorised accounts and roles.'],
   ['Finance','/landlord/finance','Review permitted financial records.'],
   ['Subscriptions','/landlord/subscriptions','Inspect platform subscription operations.'],

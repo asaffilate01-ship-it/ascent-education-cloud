@@ -22,6 +22,8 @@ WITH expected(signature) AS (VALUES
  ('public.request_attendance_correction(uuid,uuid,public.attendance_status,text)'),
  ('public.review_attendance_correction(uuid,text,text)'),
  ('public.list_attendance_corrections(uuid)'),
+ ('public.change_unipathway_placement(uuid,text,jsonb)'),
+ ('public.get_unipathway_placement_options()'),
  ('public.get_unipathway_daily_register(uuid,date)'),
  ('public.save_unipathway_daily_mark(uuid,uuid,date,public.attendance_status)'),
  ('public.get_unipathway_guardian_learning()'))
