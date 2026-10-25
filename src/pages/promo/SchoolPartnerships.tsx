@@ -1,3 +1,5 @@
+import PublicHero from '@/components/PublicHero';
+import PageContents from '@/components/PageContents';
 import { Link } from 'react-router-dom';
 import { ArrowRight, BookOpen, Building2, CheckCircle2, GraduationCap, HeartHandshake, LockKeyhole, School, ShieldCheck } from 'lucide-react';
 import PublicNav from '@/components/PublicNav';
@@ -10,7 +12,9 @@ export default function SchoolPartnerships(){
   <Seo canonical="/school-partners" title="School Partnerships — UniPathway" description="Explore tuition support, consented student referrals and optional school software through UniPathway school partnerships."/>
   <PublicNav/>
   <main className="mx-auto max-w-7xl space-y-12 px-5 py-12 sm:px-8">
-   <header className="rounded-2xl border bg-[#F3F6FA] p-6 dark:bg-slate-950 sm:p-10"><p className="text-label text-success">UniPathway school partnerships</p><h1 className="mt-3 max-w-4xl text-3xl font-extrabold text-[#0B2D5B] dark:text-white sm:text-5xl">More learning opportunities for your school.</h1><p className="mt-5 max-w-4xl leading-relaxed text-slate-700 dark:text-slate-300">Support your learners with subject tuition, education guidance and consented referrals to UniPathway. Schools can partner with us while keeping their existing school-management software. Ilmvero is a separate, optional product; using it is not a condition of a tuition partnership.</p><div className="mt-6 flex flex-wrap gap-3"><Button asChild><Link to="/contact">Enquire about school partnership <ArrowRight className="ml-2 size-4"/></Link></Button><Button variant="outline" asChild><Link to="/tuition">Online and in-centre tuition</Link></Button></div></header>
+   <PublicHero topic="study"><p className="text-label text-success">UniPathway school partnerships</p><h1 className="mt-3 max-w-4xl text-3xl font-extrabold text-[#0B2D5B] dark:text-white sm:text-5xl">More learning opportunities for your school.</h1><p className="mt-5 max-w-4xl leading-relaxed text-slate-700 dark:text-slate-300">Give your students access to extra subject tuition and education guidance. Keep your existing school software: Ilmvero is optional. Contact us to discuss a partnership and how parent-approved referrals work.</p><div className="mt-6 flex flex-wrap gap-3"><Button asChild><Link to="/contact">Enquire about school partnership <ArrowRight className="ml-2 size-4"/></Link></Button><Button variant="outline" asChild><Link to="/tuition">Online and in-centre tuition</Link></Button></div></PublicHero>
+<PageContents/>
+
    <section className="grid gap-4 md:grid-cols-3">{[
     {icon:School,title:'Optional Ilmvero software',copy:'School and campus operations, attendance, timetables, fees, parents, teachers, exams and available learning tools, subject to the agreed licence.'},
     {icon:GraduationCap,title:'UniPathway — extended education',copy:'Online and planned in-school Years 8–12 tuition in Maths, English, Biology, Chemistry, Physics and Technology, plus international progression information.'},

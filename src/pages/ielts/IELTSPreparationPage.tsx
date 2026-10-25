@@ -1,3 +1,5 @@
+import { HeroImage } from '@/components/PublicHero';
+import PageContents from '@/components/PageContents';
 import { Link } from 'react-router-dom';
 import { ArrowRight, BookOpen, CheckCircle2, GraduationCap, Headphones, Mic, PencilLine, ShieldCheck } from 'lucide-react';
 import PublicNav from '@/components/PublicNav';
@@ -21,12 +23,13 @@ export default function IELTSPreparationPage() {
             <div className="flex flex-wrap gap-3 mt-8"><Button size="lg" asChild><Link to="/register">Explore enrolment <ArrowRight className="ml-2 w-4 h-4"/></Link></Button><Button size="lg" variant="outline" asChild><a href="#ielts-enquiry">Ask about IELTS classes</a></Button></div>
             <p className="text-xs text-muted-foreground mt-5">Students studying UniPathway qualification programmes and external students can use the same UniPathway IELTS academy. Course access and any fees are confirmed at enrolment.</p>
           </div>
-          <div className="surface-card p-7 rounded-2xl space-y-4">
+          <div className="space-y-5"><HeroImage topic="english" /><div className="surface-card p-7 rounded-2xl space-y-4">
             <div className="flex items-center gap-3"><GraduationCap className="text-primary w-8 h-8"/><h2 className="text-xl font-bold">Your independent preparation journey</h2></div>
             {['Choose Academic or General Training','Set your personal target band','Complete an eight-week guided programme','Practise with teacher-led feedback','Prepare for an official booking with an authorised provider'].map((step,i)=><div key={step} className="flex items-start gap-3 border-b border-border/50 pb-3 last:border-0"><span className="text-xs font-bold rounded-full w-7 h-7 bg-primary/10 text-primary flex items-center justify-center shrink-0">{i+1}</span><p className="text-sm">{step}</p></div>)}
-          </div>
+          </div></div>
         </div>
       </section>
+      <div className="mx-auto max-w-7xl px-5 py-6 sm:px-8"><PageContents/></div>
       <section className="max-w-7xl mx-auto px-5 sm:px-8 py-16">
         <p className="text-label text-primary">THE FOUR CORE SKILLS</p>
         <h2 className="text-3xl font-bold mt-3">Structured preparation, practical feedback</h2>

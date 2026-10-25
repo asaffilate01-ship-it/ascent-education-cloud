@@ -1,3 +1,4 @@
+import PublicHero from '@/components/PublicHero';
 import { Link, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -76,19 +77,19 @@ export default function TenantCoursesPage() {
   };
 
   return (
-    <div className="min-h-dvh bg-background">
+    <div className="public-site min-h-dvh bg-background">
       <Seo title="Programmes & Diplomas — OTHM, QUALIFI & IAB | UniPathway" description="Explore recorded qualifications in business, computing and accounting. OTHM and Qualifi plans include two 14-day centre visits annually, with remaining learning online." canonical="/courses" jsonLd={jsonLd} />
       <TenantNav brandName={brandName} primaryColor={primaryColor} activePage="courses" />
 
       {/* Hero */}
       <section className="border-b border-border bg-secondary/40 py-12 sm:py-20">
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
-          <p className="text-label text-success">Qualifications in Pakistan</p>
+<PublicHero topic="guidance">          <p className="text-label text-success">Qualifications in Pakistan</p>
           <h1 className="mt-4 max-w-2xl text-3xl sm:text-5xl font-bold">Find the qualification for your next step.</h1>
           <p className="text-muted-foreground mt-5 max-w-xl text-sm sm:text-base">
             Browse Level 3–5 diplomas in business, computing and accounting, with progression options to explore.
           </p>
-          <div className="mt-7 flex flex-wrap gap-3 text-sm"><CourseLink to="/tuition" className="font-bold text-success hover:underline">Looking for school tuition? →</CourseLink><CourseLink to="/employer-learning" className="font-bold text-success hover:underline">Learning for your team? →</CourseLink></div>
+          <div className="mt-7 flex flex-wrap gap-3 text-sm"><CourseLink to="/tuition" className="font-bold text-success hover:underline">Looking for school tuition? →</CourseLink><CourseLink to="/employer-learning" className="font-bold text-success hover:underline">Learning for your team? →</CourseLink></div></PublicHero>
         </div>
       </section>
 

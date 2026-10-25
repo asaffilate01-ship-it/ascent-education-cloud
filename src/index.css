@@ -379,3 +379,20 @@
 .decision-card { @apply rounded-xl border border-border/60 bg-card p-4; }
 
 }
+
+/* Public reading layout; deliberately scoped away from signed-in workspaces. */
+.public-site main h2 { scroll-margin-top: 7rem; }
+.public-site main p { line-height: 1.75; }
+.public-site main h1 { text-wrap: balance; }
+.public-site main :is(article, section, header) { min-width: 0; }
+.public-hero h1 { font-size: clamp(1.875rem, 3.3vw, 3.25rem); line-height: 1.15; }
+.public-hero p { max-width: 65ch; }
+.public-hero :is(a, button) { white-space: normal; height: auto; min-height: 44px; }
+.public-site main :is(a.inline-flex, button.inline-flex) { white-space: normal; height: auto; min-height: 44px; }
+@media (max-width: 639px) {
+  .public-site main :is(input, select, textarea) { font-size: 16px; }
+  .public-site main :is(a.inline-flex, button.inline-flex) { max-width: 100%; text-align: center; padding-top: .65rem; padding-bottom: .65rem; }
+  .public-hero img { aspect-ratio: 16 / 10; }
+  .page-contents ul { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .page-contents a { width: 100%; }
+}

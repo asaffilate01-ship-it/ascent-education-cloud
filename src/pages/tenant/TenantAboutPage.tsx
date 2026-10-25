@@ -1,3 +1,5 @@
+import { HeroImage } from '@/components/PublicHero';
+import PageContents from '@/components/PageContents';
 import { Link } from 'react-router-dom';
 import { ArrowRight, BookOpen, BriefcaseBusiness, CheckCircle2, Globe2, GraduationCap, HeartHandshake, MonitorSmartphone, ShieldCheck, Users } from 'lucide-react';
 import PublicNav from '@/components/PublicNav';
@@ -32,12 +34,10 @@ export default function TenantAboutPage(){
       <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-600 dark:text-slate-300">Our role extends beyond submitting university applications. We help students study, build evidence of their skills, prepare for assessments, compare academic pathways, and plan practical next steps. Awarding-body permissions, university relationships and availability are verified individually; admission, funding, employment and visa results are never guaranteed.</p>
       <div className="mt-7 flex flex-wrap gap-3"><Button asChild size="lg"><Link to="/study">Explore learning <ArrowRight className="ml-1 size-4"/></Link></Button><Button variant="outline" asChild size="lg"><Link to="/contact">Contact admissions</Link></Button></div>
      </div>
-     <div className="rounded-2xl border border-[#0B2D5B]/10 bg-white p-6 text-[#0B2D5B] shadow-sm dark:bg-card dark:text-foreground">
-      <GraduationCap className="size-9 text-[#16A34A]"/><h2 className="mt-4 text-xl font-bold">Learn locally. Develop practical skills. Progress with confidence.</h2><p className="mt-3 text-sm leading-relaxed text-slate-700 dark:text-muted-foreground">The centre model brings scheduled in-person sessions together with online teaching and an LMS. After subject tuition and training, learners can research Pakistani, European and global universities, language requirements, scholarships and careers with informed guidance.</p>
-      <div className="mt-5 flex flex-wrap gap-2">{['Pakistan','United Kingdom','Germany','United States','Canada','Australia'].map(c=><span key={c} className="rounded-full border px-3 py-1 text-xs font-semibold">{c}</span>)}</div>
-     </div>
+     <HeroImage topic="study" />
     </div>
    </section>
+   <div className="mx-auto max-w-7xl px-5 pt-8 sm:px-8"><PageContents/></div>
    <section className="mx-auto max-w-7xl space-y-6 px-5 py-16 sm:px-8">
     <div className="max-w-3xl"><p className="text-label text-success">Our education services</p><h2 className="mt-2 text-3xl font-bold">Different learning routes, one connected platform</h2><p className="mt-3 text-muted-foreground">Learning options are identified separately from confirmed course availability, admissions and accreditation status.</p></div>
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">{offers.map(({icon:Icon,title,description,to})=><article key={title} className="flex flex-col rounded-xl border bg-card p-6"><Icon className="size-7 text-success"/><h3 className="mt-4 text-lg font-bold">{title}</h3><p className="mt-2 text-sm leading-relaxed text-muted-foreground">{description}</p><Link to={to} className="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-semibold text-primary hover:underline">Explore this service <ArrowRight className="size-4"/></Link></article>)}</div>

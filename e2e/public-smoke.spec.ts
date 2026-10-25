@@ -188,7 +188,7 @@ test('UniPathway scholarship decisions are never public dashboard pages', async 
 
 test('European explorer filters all EU and wider European countries and stays on-site', async ({ page }) => {
   await page.goto('/europe');
-  await expect(page.getByRole('heading',{name:/Learn in Pakistan.*Explore your future in Europe/i})).toBeVisible();
+  await expect(page.getByRole('heading',{name:/Find your study route to Europe/i})).toBeVisible();
   const status=page.getByRole('status').filter({hasText:'destinations match your selection'}).first();
   await expect(status).toContainText('34 destinations');
   await page.getByLabel('Country grouping').selectOption('European Union');

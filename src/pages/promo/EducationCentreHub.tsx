@@ -1,3 +1,5 @@
+import PublicHero from '@/components/PublicHero';
+import PageContents from '@/components/PageContents';
 import { useMemo,useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, BookOpen, ClipboardCheck, GraduationCap, ShieldCheck, Search, School, Languages, BriefcaseBusiness } from 'lucide-react';
@@ -27,15 +29,17 @@ export default function EducationCentreHub(){
   <Seo title="UniPathway Centre — School Exams, Language, Professional & Diploma Preparation" description="Explore Pakistan Matric, FSc, FA/ICS/ICom, Cambridge O/A Levels, language exams, technology, finance, healthcare, beauty and UK diploma preparation in UniPathway's online and in-centre learning model." canonical="/education-centre"/>
   <PublicNav/>
   <main className="mx-auto max-w-7xl px-5 pb-16 pt-10 sm:px-8">
-   <header className="max-w-4xl">
+   <PublicHero topic="study">
     <p className="text-label font-semibold text-success">UniPathway Centre · Online & in-centre</p>
     <h1 className="mt-3 text-3xl font-bold md:text-5xl">One learning centre. Every next step.</h1>
-    <p className="mt-4 max-w-3xl text-muted-foreground">School and board examination coaching, international languages, certified-exam preparation, technology, finance, beauty and healthcare training, vocational skills and UK diploma pathways. Find your route and check availability with admissions.</p>
+    <p className="mt-4 max-w-3xl text-muted-foreground">Find support for school exams, learn a language or build skills for work. Browse our learning areas below, then ask admissions about entry requirements, fees and the next available class.</p>
     <div className="mt-6 flex flex-wrap gap-3">
      <Button asChild><Link to="/study">Explore all study options <ArrowRight className="ml-1 size-4"/></Link></Button>
      <Button variant="outline" asChild><Link to="/contact">Ask admissions about an intake</Link></Button>
     </div>
-   </header>
+   </PublicHero>
+<PageContents/>
+
    <div className="mt-8 grid gap-3 md:grid-cols-3">
     <div className="rounded-xl border bg-card p-4"><BookOpen className="size-5 text-success"/><h2 className="mt-2 font-semibold">Curriculum & examination readiness</h2><p className="mt-1 text-sm text-muted-foreground">Board-specific subject planning, practice papers and guided revision where offered</p></div>
     <div className="rounded-xl border bg-card p-4"><ClipboardCheck className="size-5 text-success"/><h2 className="mt-2 font-semibold">Independent assessment</h2><p className="mt-1 text-sm text-muted-foreground">Published rubrics, separate marking, advisory AI feedback and human verification before results</p></div>

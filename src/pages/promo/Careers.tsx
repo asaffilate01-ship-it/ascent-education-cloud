@@ -1,3 +1,5 @@
+import PublicHero from '@/components/PublicHero';
+import PageContents from '@/components/PageContents';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, BriefcaseBusiness, Building2, CheckCircle2, GraduationCap, Handshake, HeartHandshake, Search, ShieldCheck, Users } from 'lucide-react';
@@ -27,11 +29,13 @@ export default function Careers(){
   <Seo canonical="/careers" title="Pakistan Jobs, Internships & Employer Training | UniPathway" description="Explore Pakistan banking, technology, law, health, automotive, accounting, retail and hospitality career and internship training pathways."/>
   <PublicNav/>
   <main className="mx-auto max-w-7xl space-y-12 px-5 py-12 sm:px-8">
-   <header className="rounded-2xl border bg-[#F3F6FA] p-6 dark:bg-slate-950 sm:p-9">
+   <PublicHero topic="careers">
     <p className="text-label text-success">Pakistan Careers & Internships</p><h1 className="mt-4 max-w-4xl text-3xl font-extrabold text-[#0B2D5B] dark:text-white sm:text-5xl">Skills, verified experience and real career planning</h1>
     <p className="mt-4 max-w-4xl text-slate-700 dark:text-slate-300">We are developing an employer network across Pakistan to provide supervised training, internships, career counselling and verified job introductions. The sectors and example roles below are proposed career pathways, not current vacancies or promises of placement.</p>
     <div className="mt-6 flex flex-wrap gap-3"><Button asChild><Link to="/contact">Ask for career guidance <ArrowRight className="ml-1 size-4"/></Link></Button><Button asChild variant="outline"><Link to="/student/career">Student career dashboard</Link></Button></div>
-   </header>
+   </PublicHero>
+<PageContents/>
+
    <section className="grid gap-4 md:grid-cols-3">{[
     {icon:GraduationCap,title:'Employer-supported training',description:'Supervised tasks, planned learning objectives, competency checks and progress feedback at an approved training site.'},
     {icon:Handshake,title:'Internships and experience',description:'Application screening, written placement terms, a named mentor, attendance recording and regular student/employer review.'},

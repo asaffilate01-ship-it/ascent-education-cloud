@@ -1,3 +1,5 @@
+import PublicHero from '@/components/PublicHero';
+import PageContents from '@/components/PageContents';
 import {db} from '@/lib/db';
 import {courseOfferKey,currentCourseOffer,type CourseOffer} from '@/lib/courseOffers';
 import { useEffect, useMemo, useState } from 'react';
@@ -31,11 +33,13 @@ export default function QualificationsCatalogue() {
     <Seo canonical="/qualifications" title="OTHM and Qualifi Qualification Options | UniPathway" description="Review planned OTHM and Qualifi qualifications in business, IT, AI, accounting, law, hospitality and more."/>
     <PublicNav/>
     <main className="mx-auto max-w-7xl space-y-8 px-5 py-12 sm:px-8">
-      <header className="max-w-4xl">
+      <PublicHero topic="guidance">
         <p className="text-label text-success">UK & international qualifications</p>
         <h1 className="mt-3 text-3xl font-extrabold sm:text-5xl">Choose a pathway that moves you forward</h1>
         <p className="mt-4 text-muted-foreground">Explore proposed OTHM and Qualifi qualifications in business, technology, finance, health and other fields. Options without current confirmed details are for planning only. Admissions must verify centre authorisation, entry eligibility and a place on the chosen intake before enrolment.</p>
-      </header>
+      </PublicHero>
+<PageContents/>
+
       <section className="rounded-xl border bg-card p-5" aria-label="Filter qualification options">
         <div className="flex flex-wrap gap-2" role="group" aria-label="Awarding body">
           {bodies.map(b=><Button key={b} size="sm" type="button" aria-pressed={body===b} variant={body===b?'default':'outline'} onClick={()=>setParams(b==='All'?{}:{body:b})}>{b==='All'?'All awarding bodies':b}</Button>)}

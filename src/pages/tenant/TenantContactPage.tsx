@@ -1,3 +1,4 @@
+import PublicHero from '@/components/PublicHero';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { MapPin, Phone, Mail, Clock, Send, Globe, MessageSquare, MessageCircle } from 'lucide-react';
@@ -35,16 +36,19 @@ export default function TenantContactPage() {
   };
 
   return (
-    <div className="min-h-dvh bg-background">
+    <div className="public-site min-h-dvh bg-background">
       <Seo title="Contact UniPathway — Talk to an Admissions Adviser" description="Speak to a UniPathway adviser about UK and Germany study pathways, diplomas, language courses and visa guidance. We reply within 24 hours." canonical="/contact" />
       <TenantNav brandName={brandName} primaryColor={primaryColor} activePage="contact" />
 
       <section className="py-12 sm:py-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-center mb-3">Contact Us</h1>
-          <p className="text-center text-muted-foreground mb-8 sm:mb-12 max-w-lg mx-auto text-sm sm:text-base">
-            Have questions about our programmes, admissions, or fees? Get in touch — we're here to help.
-          </p>
+          <div className="mb-10"><PublicHero topic="guidance">
+            <p className="text-label text-success">Talk to UniPathway</p>
+            <h1 className="mt-3 text-3xl font-bold sm:text-5xl">Let’s find your next step.</h1>
+            <p className="mt-4 text-muted-foreground">Ask about subjects, entry requirements, class times or fees. Tell us what you want to study and whether you prefer online or in-centre learning.</p>
+            <a href="#contact-form" className="mt-6 inline-flex min-h-11 items-center rounded-lg bg-primary px-5 py-3 font-semibold text-primary-foreground">Send an enquiry</a>
+            <p className="mt-4 text-sm text-muted-foreground">Use the form below for general questions. Please do not include identity documents or bank details.</p>
+          </PublicHero></div>
 
           <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Contact Info */}
@@ -83,7 +87,7 @@ export default function TenantContactPage() {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="lg:col-span-2 surface-card p-4 sm:p-6">
+            <form id="contact-form" onSubmit={handleSubmit} className="lg:col-span-2 surface-card p-4 sm:p-6">
               <h3 className="text-lg font-bold mb-4">Send us a message</h3>
               <div className="grid sm:grid-cols-2 gap-4 mb-4">
                 <div>

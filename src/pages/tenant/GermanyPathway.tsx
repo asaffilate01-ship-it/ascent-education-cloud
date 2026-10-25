@@ -9,7 +9,7 @@ import { studyDestinations } from '@/lib/studyDestinations';
 
 export default function GermanyPathway() {
   return (
-    <div className="min-h-dvh bg-background text-foreground">
+    <div className="public-site min-h-dvh bg-background text-foreground">
       <Seo title="Study in Germany from Pakistan — Pathways & Costs | UniPathway" description="Low-tuition public universities, English-taught master’s, Studienkolleg routes and German A1–C1 language preparation for Pakistani students." canonical="/germany" />
       <TenantNav brandName="UniPathway" activePage="home" />
 

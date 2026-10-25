@@ -1,3 +1,5 @@
+import PublicHero from '@/components/PublicHero';
+import PageContents from '@/components/PageContents';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, BookOpenCheck, HeartHandshake, ShieldCheck, Sparkles, GraduationCap, ClipboardCheck, Search, Users } from 'lucide-react';
@@ -23,17 +25,19 @@ export default function BeautyAcademy() {
       description="Explore planned women's beauty therapy, make-up, nails and aesthetics training, the CIBTAC centre accreditation pathway and CPD UK course accreditation." />
     <PublicNav/>
     <main className="mx-auto max-w-7xl space-y-12 px-5 py-12 sm:px-8">
-      <header className="grid gap-8 rounded-2xl bg-gradient-to-br from-emerald-50 via-white to-slate-100 p-6 lg:grid-cols-[1.3fr_0.7fr] lg:p-10 dark:from-emerald-950 dark:via-background dark:to-slate-900">
+      <PublicHero topic="beauty">
         <div>
           <span className="text-xs font-extrabold uppercase tracking-wider text-success">Women's Beauty & Aesthetics Academy</span>
           <h1 className="mt-3 max-w-3xl text-3xl font-extrabold leading-tight sm:text-5xl">Professional beauty skills. Supportive learning. Real career pathways.</h1>
           <p className="mt-4 max-w-3xl text-base leading-relaxed text-muted-foreground">UniPathway plans women-focused classes in Pakistan covering salon skills, make-up, nails, skincare and selected advanced aesthetic subjects. Online theory is paired with supervised in-centre practical learning where the qualification allows it.</p>
           <div className="mt-6 flex flex-wrap gap-3"><Button asChild size="lg"><Link to="/contact">Register your interest <ArrowRight className="ml-1 size-4"/></Link></Button><Button asChild variant="outline" size="lg"><a href="#qualifications">View programme options</a></Button></div>
         </div>
-        <div className="grid grid-cols-2 gap-3 self-center">
+        </PublicHero>
+<PageContents/>
+<div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {[{icon:Users,title:'Women-focused',detail:'Planned dedicated cohorts'},{icon:GraduationCap,title:'Practical skills',detail:'Supervised in-centre learning'},{icon:BookOpenCheck,title:'Theory + LMS',detail:'Lessons, resources and assessment'},{icon:HeartHandshake,title:'Career development',detail:'Portfolio and salon opportunities'}].map(({icon:Icon,title,detail})=><div key={title} className="rounded-xl border bg-white/90 p-4 dark:bg-card"><Icon className="size-6 text-success"/><h2 className="mt-3 text-sm font-bold">{title}</h2><p className="mt-1 text-xs text-muted-foreground">{detail}</p></div>)}
         </div>
-      </header>
+
 
       <section className="space-y-4" aria-labelledby="academy-approval-heading">
         <div><p className="text-label text-success">International awarding bodies</p><h2 id="academy-approval-heading" className="mt-2 text-2xl font-bold">Our centre-accreditation plans</h2><p className="mt-2 max-w-3xl text-sm text-muted-foreground">UniPathway is pursuing these independent approval routes. Centre status, CPD provider membership and individual course certification are not currently presented as awarded.</p></div>

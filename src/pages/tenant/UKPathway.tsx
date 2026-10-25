@@ -9,7 +9,7 @@ import { studyDestinations } from '@/lib/studyDestinations';
 
 export default function UKPathway() {
   return (
-    <div className="min-h-dvh bg-background text-foreground">
+    <div className="public-site min-h-dvh bg-background text-foreground">
       <Seo title="Study in the UK from Pakistan — Degrees & Top-Ups | UniPathway" description="UK university pathways for Pakistani students: accredited diplomas, top-up degrees, IELTS preparation and student visa guidance." canonical="/uk" />
       <TenantNav brandName="UniPathway" activePage="home" />
 
