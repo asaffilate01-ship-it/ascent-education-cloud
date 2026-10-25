@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import Seo from '@/components/Seo';
 import PublicNav from '@/components/PublicNav';
 import PublicFooter from '@/components/PublicFooter';
-import heroImage from '@/assets/blog/english-exams.jpg';
+import heroImage from '@/assets/promo-hero.jpg';
 import desktopImage from '@/assets/promo-shot-desktop.jpg';
 import mobileImage from '@/assets/promo-shot-mobile.jpg';
 import { euMemberCountries, europePreparationStages } from '@/lib/europeanDestinations';
@@ -41,7 +41,7 @@ export default function PromoHome() {
             <div className="mt-8 flex flex-col gap-3 sm:flex-row"><Button size="lg" className="h-12 rounded-full px-7 shadow-surface-lg" asChild><Link to="/study">Find a course <ArrowRight /></Link></Button><Button size="lg" variant="outline" className="h-12 rounded-full bg-card px-7" asChild><Link to="/contact">Talk to an adviser</Link></Button></div>
             <dl className="mt-10 grid max-w-lg grid-cols-3 divide-x divide-border rounded-2xl border border-border bg-card/80 py-4 shadow-surface-lg">{[['8+', 'Learning areas'], ['27', 'EU countries to explore'], ['L3–7', 'Qualifications']].map(([v, l]) => <div key={l} className="px-4 text-center"><dt className="sr-only">{l}</dt><dd className="stat-value text-xl sm:text-2xl">{v}</dd><p className="mt-0.5 text-[11px] font-semibold text-muted-foreground sm:text-xs">{l}</p></div>)}</dl>
           </div>
-          <div className="relative pb-8"><img src={heroImage} alt="An individual studying online with headphones" className="aspect-[5/4] w-full rounded-3xl object-cover shadow-surface-xl" /><div className="absolute -bottom-0 left-4 flex items-center gap-3 rounded-2xl bg-primary px-5 py-4 text-primary-foreground shadow-surface-xl sm:left-auto sm:right-6"><Globe2 className="size-7 text-gold" /><span className="text-sm font-bold leading-snug">Local learning.<br />Global ambition.</span></div></div>
+          <div className="relative pb-8"><img src={heroImage} alt="Pakistani students in separate groups of girls and boys with space between them" className="aspect-[5/4] w-full rounded-3xl object-cover shadow-surface-xl" /><div className="absolute -bottom-0 left-4 flex items-center gap-3 rounded-2xl bg-primary px-5 py-4 text-primary-foreground shadow-surface-xl sm:left-auto sm:right-6"><Globe2 className="size-7 text-gold" /><span className="text-sm font-bold leading-snug">Local learning.<br />Global ambition.</span></div></div>
         </div>
       </section>
       <section className="border-b bg-[#F3F6FA] py-12 dark:bg-slate-950"><div className="mx-auto max-w-7xl px-5 sm:px-8">
