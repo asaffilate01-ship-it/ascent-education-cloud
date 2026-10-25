@@ -74,6 +74,8 @@ export async function verifyPlacements(db){
  await db.query('insert into auth.users(id,email) values($1,$2)',[id(31),'other-placement@example.invalid']);await db.query('delete from public.user_roles where user_id=$1',[id(31)]);
  await db.query("insert into public.user_roles(user_id,tenant_id,role) values($1,$2,'superadmin')",[id(31),id(30)]);
  await login(id(31));ok((await db.query('select * from public.unipathway_placements')).rows.length===0,'Cross-centre admin excluded');await denied(()=>change(21,'complete',decision));await denied(()=>change(32,'create',data));
+ await db.exec('RESET ROLE');await db.query('update public.unipathway_placements set tenant_id=$1 where id=$2',[id(30),id(10)]);
+ await login(peer);await denied(()=>change(10,'create',data));
  await db.exec('RESET ROLE;SET LOCAL ROLE anon');await denied(()=>db.query('select * from public.unipathway_placements'));await denied(()=>change(33,'create',data));
  await db.exec('RESET ROLE;ROLLBACK');console.log(JSON.stringify({placementChecks:checks,status:'passed'}));
 }

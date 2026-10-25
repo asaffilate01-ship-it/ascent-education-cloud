@@ -69,7 +69,7 @@ BEGIN
  PERFORM pg_advisory_xact_lock(hashtextextended(p_request::text,74));
  SELECT * INTO receipt FROM public.unipathway_placement_actions WHERE id=p_request;
  IF FOUND THEN
-  IF receipt.actor_id=auth.uid() AND receipt.action=p_action AND receipt.payload=p_data AND receipt.placement_id=target THEN RETURN p_request;END IF;
+  IF receipt.actor_id=auth.uid() AND receipt.action=p_action AND receipt.payload=p_data AND receipt.placement_id=target AND public.unipathway_placement_access(target) THEN RETURN p_request;END IF;
   RAISE EXCEPTION 'Request identity already used';
  END IF;
  IF p_action='create' THEN
