@@ -73,9 +73,9 @@ describe('UniPathway LMS cloud/coding labs',()=>{
  });
  it('keeps code evaluation outside the authenticated LMS execution context',()=>{
   expect(coding).toContain('sandbox="allow-scripts"');
-  expect(coding).toContain("connect-src 'none'");
+  expect(get('src/lib/coding/isolatedRunner.ts')).toContain("default-src 'none'");
   expect(coding).toContain("e.source!==runnerRef.current?.contentWindow");
   expect(coding).toContain("e.origin!=='null'");
-  expect(coding).toContain("Python is a limited text simulation");
+  expect(coding).toContain('isolatedRunner(');
  });
 });

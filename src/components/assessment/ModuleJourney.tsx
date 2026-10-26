@@ -1,7 +1,7 @@
 import {NavLink} from 'react-router-dom';
 type Destination=readonly [label:string,path:string,kind?:string];
 const flow:readonly Destination[]=[['My course','/student/module'],['Next lesson','/student/lessons'],['Submit work','/student/assignments'],['Read feedback','/student/grades']];
-const resources:readonly Destination[]=[['Classes','/student/classroom'],['Resources','/student/library'],['Recordings','/student/library','recording'],['Learning plan','/student/learning-plan']];
+const resources:readonly Destination[]=[['Classes','/student/classroom'],['Resources','/student/library'],['Practical labs','/student/labs'],['Recordings','/student/library','recording'],['Learning plan','/student/learning-plan']];
 const teaching:readonly Destination[]=[['Module','/lecturer/module'],['Lessons','/lecturer/lessons'],['Classes','/lecturer/classroom'],['Assignments','/lecturer/assessments']];
 const teachingTools:readonly Destination[]=[['Learning plans','/lecturer/learning-plans'],['Materials','/lecturer/materials'],['Recordings','/lecturer/lesson-archive']];
 export function moduleJourneyUrl(path:string,moduleId:string,kind?:string){const query=new URLSearchParams({module:moduleId});if(kind)query.set('kind',kind);return `${path}?${query}`;}

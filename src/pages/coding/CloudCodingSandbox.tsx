@@ -1,3 +1,4 @@
+import { isolatedRunner } from '@/lib/coding/isolatedRunner';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
@@ -39,10 +40,10 @@ const TEMPLATES: Record<string, { name: string; language: string; code: string }
 </html>`,
   },
   python: {
-    name: 'Python (Simulated)',
+    name: 'Python',
     language: 'python',
-    code: `# Python Simulator — runs basic Python-like code
-# Supported: print(), variables, arithmetic, loops, functions
+    code: `# Python — executes in your browser using Pyodide
+# Functions, loops and the Python standard library are supported
 
 def fibonacci(n):
     a, b = 0, 1
@@ -99,101 +100,55 @@ export default function CloudCodingSandbox() {
   const [code, setCode] = useState(TEMPLATES.html.code);
   const [output, setOutput] = useState('');
   const [running, setRunning] = useState(false);
+  const [input, setInput] = useState('');
+  const [preview, setPreview] = useState(TEMPLATES.html.code);
+  const drafts = useRef<Record<string,string>>({});
   const [copied, setCopied] = useState(false);
   const [isolatedScript,setIsolatedScript] = useState('');
   const runnerRef=useRef<HTMLIFrameElement>(null);
   const tokenRef=useRef<string|null>(null);
 
+  const stop = useCallback(() => {
+    tokenRef.current = null;
+    setIsolatedScript('');
+    setRunning(false);
+  }, []);
   const handleTemplateChange = (key: string) => {
+    drafts.current[template] = code;
+    stop();
     setTemplate(key);
-    setCode(TEMPLATES[key].code);
+    setCode(drafts.current[key] ?? TEMPLATES[key].code);
     setOutput('');
   };
-
   const runCode = useCallback(() => {
+    if (running) return;
+    if (template === 'html') {
+      setPreview(code);
+      return;
+    }
+    const token = crypto.randomUUID();
+    tokenRef.current = token;
     setRunning(true);
-    setOutput('');
-
-    setTimeout(() => {
-      try {
-        if (template === 'html') {
-          // HTML runs in iframe — handled by preview
-          setOutput('✅ HTML rendered in preview panel below');
-        } else if (template === 'javascript') {
-          // Never execute learner code in the authenticated UniPathway window.
-          // A sandboxed opaque-origin iframe runs with no fetch, cookies or LMS API access.
-          const token=crypto.randomUUID();
-          tokenRef.current=token;
-          const source=JSON.stringify(code).replace(/</g,'\\u003c');
-          const safeToken=JSON.stringify(token);
-          const doc=`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; style-src 'none'; frame-src 'none'; object-src 'none'; form-action 'none'; base-uri 'none'"></head><body><script>
-          const results=[];
-          const safeConsole={ log:(...x)=>results.push(x.map(v=>String(v)).join(' ')),
-           error:(...x)=>results.push('Error: '+x.join(' ')),
-           warn:(...x)=>results.push('Warning: '+x.join(' ')) };
-          try{const runner=new Function('console',${source}); runner(safeConsole);}
-          catch(e){results.push('Error: '+String(e));}
-          parent.postMessage({kind:'unipathway-isolated-js',token:${safeToken},output:results.join('\\n')||'(no output)'},'*');
-          </script></body></html>`;
-          setIsolatedScript(doc);
-          // Completion is acknowledged only from the matching isolated frame.
-          return;
-        } else if (template === 'python') {
-          // Simple Python simulator
-          const logs: string[] = [];
-          const lines = code.split('\n');
-          const vars: Record<string, any> = {};
-
-          for (const line of lines) {
-            const trimmed = line.trim();
-            if (!trimmed || trimmed.startsWith('#') || trimmed.startsWith('def ') || trimmed.startsWith('for ') || trimmed.startsWith('if ')) continue;
-            const printMatch = trimmed.match(/^print\((.+)\)$/);
-            if (printMatch) {
-              try {
-                const content = printMatch[1].trim();
-                // Handle string literals safely without eval
-                if ((content.startsWith('"') && content.endsWith('"')) || (content.startsWith("'") && content.endsWith("'"))) {
-                  logs.push(content.slice(1, -1));
-                } else if (content.startsWith('f"') && content.endsWith('"')) {
-                  // Basic f-string: replace {var} with stored var values
-                  let fstr = content.slice(2, -1);
-                  fstr = fstr.replace(/\{([^}]+)\}/g, (_, varName) => {
-                    return vars[varName.trim()] !== undefined ? String(vars[varName.trim()]) : `{${varName}}`;
-                  });
-                  logs.push(fstr);
-                } else if (vars[content] !== undefined) {
-                  logs.push(String(vars[content]));
-                } else {
-                  logs.push(content);
-                }
-              } catch {
-                logs.push(trimmed);
-              }
-            }
-          }
-          setOutput(logs.join('\n') || '# Python simulation complete (basic support only)');
-        }
-      } catch (e: any) {
-        setOutput(`❌ Error: ${e.message}`);
-      }
-      setRunning(false);
-    }, 500);
-  }, [code, template]);
+    setOutput(template === 'python' ? 'Loading Python… First use requires an internet download.' : 'Starting JavaScript…');
+    setIsolatedScript(isolatedRunner(template as 'python' | 'javascript', code, input, token));
+  }, [code, template, input, running]);
 
   useEffect(()=>{
     const receive=(e:MessageEvent)=>{
       if(e.source!==runnerRef.current?.contentWindow||e.origin!=='null')return;
-      const data=e.data as {kind?:string;token?:string;output?:string}|null;
-      if(!data||data.kind!=='unipathway-isolated-js'||data.token!==tokenRef.current)return;
-      setOutput(String(data.output||'').slice(0,20000));
-      setRunning(false);
-      tokenRef.current=null;
+      const data=e.data as {kind?:string;token?:string;output?:string;phase?:string}|null;
+      if(!data||data.kind!=='unipathway-code'||data.token!==tokenRef.current)return;
+      if (data.phase === 'running') { setOutput('Running…'); return; }
+      if (data.phase !== 'done') return;
+      setOutput(String(data.output||'').slice(0,20500));
+      stop();
     };
     window.addEventListener('message',receive);
     return()=>window.removeEventListener('message',receive);
-  },[]);
-    const handleCopy = () => {
-    navigator.clipboard.writeText(code);
+  },[stop]);
+    const handleCopy = async () => {
+    try { await navigator.clipboard.writeText(code); }
+    catch { toast.error('Copy unavailable. Select the code or use Download.'); return; }
     setCopied(true);
     toast.success('Code copied to clipboard');
     setTimeout(() => setCopied(false), 2000);
@@ -215,7 +170,7 @@ export default function CloudCodingSandbox() {
       title="Code Sandbox"
       subtitle="Write, run, and experiment with code"
       actions={
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={handleCopy}>
             {copied ? <CheckCircle className="w-3.5 h-3.5 mr-1" /> : <Copy className="w-3.5 h-3.5 mr-1" />}
             {copied ? 'Copied' : 'Copy'}
@@ -223,6 +178,7 @@ export default function CloudCodingSandbox() {
           <Button variant="outline" size="sm" onClick={handleDownload}>
             <Download className="w-3.5 h-3.5 mr-1" /> Download
           </Button>
+          {running && <Button variant="outline" size="sm" onClick={() => { stop(); setOutput('Stopped. Your code is still in the editor.'); }}>Stop</Button>}
           <Button size="sm" onClick={runCode} disabled={running}>
             <Play className="w-3.5 h-3.5 mr-1" /> {running ? 'Running...' : 'Run'}
           </Button>
@@ -230,17 +186,18 @@ export default function CloudCodingSandbox() {
       }
     >
       <div className="mb-4 rounded-xl border bg-secondary/40 p-3 text-sm text-muted-foreground">
-        HTML and JavaScript run only in an isolated browser demonstration sandbox. Python is a limited text simulation, not a Python interpreter. For real Python, AWS, Linux, databases and project work, use the approved practical labs from your LMS course.
+        Practise HTML, JavaScript and real Python in your browser. Python downloads its runtime on first use; no cloud account is needed. Runs start fresh and stop after 10 seconds. Download your code before leaving. For Linux desktops, databases and assessed project work, use your assigned course labs.
       </div>
       {isolatedScript&&<iframe ref={runnerRef} srcDoc={isolatedScript}
-         title="Isolated JavaScript execution sandbox" sandbox="allow-scripts"
+         title="Isolated code execution sandbox" sandbox="allow-scripts"
          className="hidden" aria-hidden="true" />}
       {/* Template selector */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex flex-wrap gap-2 mb-4">
         {Object.entries(TEMPLATES).map(([key, t]) => (
           <button
             key={key}
             onClick={() => handleTemplateChange(key)}
+            aria-pressed={template === key}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-default ${
               template === key
                 ? 'bg-primary text-primary-foreground'
@@ -253,17 +210,23 @@ export default function CloudCodingSandbox() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-[calc(100vh-260px)]">
+      {template === 'python' && <label className="mb-4 block text-sm font-medium">
+        Program input <span className="font-normal text-muted-foreground">— one line per input() call</span>
+        <textarea aria-label="Program input" value={input} onChange={e => setInput(e.target.value)} rows={2}
+          className="mt-2 w-full rounded-lg border bg-background p-3 font-mono text-sm" />
+      </label>}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Editor */}
-        <div className="surface-card flex flex-col overflow-hidden">
+        <div className="surface-card min-w-0 min-h-[360px] lg:min-h-[520px] flex flex-col overflow-hidden">
           <div className="flex items-center gap-2 px-4 py-2 border-b border-border bg-secondary/30">
             <Code2 className="w-4 h-4 text-primary" />
             <span className="text-xs font-semibold">Editor</span>
-            <button onClick={() => { setCode(TEMPLATES[template].code); setOutput(''); }} className="ml-auto text-muted-foreground hover:text-foreground">
+            <button aria-label="Reset code to example" onClick={() => { stop(); setCode(TEMPLATES[template].code); setOutput(''); }} className="ml-auto text-muted-foreground hover:text-foreground">
               <RotateCcw className="w-3.5 h-3.5" />
             </button>
           </div>
           <textarea
+            aria-label="Code editor"
             value={code}
             onChange={(e) => setCode(e.target.value)}
             spellCheck={false}
@@ -272,20 +235,20 @@ export default function CloudCodingSandbox() {
         </div>
 
         {/* Output */}
-        <div className="surface-card flex flex-col overflow-hidden">
+        <div className="surface-card min-w-0 min-h-[360px] lg:min-h-[520px] flex flex-col overflow-hidden">
           <div className="flex items-center gap-2 px-4 py-2 border-b border-border bg-secondary/30">
             <Terminal className="w-4 h-4 text-primary" />
             <span className="text-xs font-semibold">Output</span>
           </div>
           {template === 'html' ? (
             <iframe
-              srcDoc={code}
+              srcDoc={preview}
               className="flex-1 w-full bg-white"
               sandbox="allow-scripts"
               title="HTML Preview"
             />
           ) : (
-            <pre className="flex-1 w-full bg-background text-foreground text-xs font-mono p-4 overflow-auto whitespace-pre-wrap">
+            <pre role="status" aria-live="polite" className="flex-1 w-full bg-background text-foreground text-xs font-mono p-4 overflow-auto whitespace-pre-wrap">
               {output || 'Click "Run" to see output...'}
             </pre>
           )}
