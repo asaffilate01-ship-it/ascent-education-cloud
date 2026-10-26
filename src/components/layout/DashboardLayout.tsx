@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLocation, Link } from 'react-router-dom';
 import { useTheme } from '@/hooks/useTheme';
 import AdvancedSearch from '@/components/AdvancedSearch';
+import CommsBadge from '@/components/CommsBadge';
 import NotificationBell from '@/components/NotificationBell';
 import { useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
@@ -92,6 +93,7 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
                 <Moon className="w-4 h-4 text-muted-foreground" />
               )}
             </button>
+            <CommsBadge />
             <NotificationBell />
             <div className="hidden xl:flex w-8 h-8 rounded-full gradient-primary flex items-center justify-center text-primary-foreground text-xs font-bold ring-2 ring-primary/20 shadow-md hover:ring-primary/40 transition-default cursor-pointer">
               {user?.name?.charAt(0) || 'U'}
