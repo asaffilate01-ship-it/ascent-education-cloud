@@ -1,3 +1,4 @@
+import EmployerLogoBanner from '@/components/career/EmployerLogoBanner';
 import PublicHero from '@/components/PublicHero';
 import PageContents from '@/components/PageContents';
 import { useMemo, useState } from 'react';
@@ -35,6 +36,7 @@ export default function Careers(){
     <div className="mt-6 flex flex-wrap gap-3"><Button asChild><Link to="/contact">Ask for career guidance <ArrowRight className="ml-1 size-4"/></Link></Button><Button asChild variant="outline"><Link to="/student/career">Student career dashboard</Link></Button></div>
    </PublicHero>
 <PageContents/>
+   <EmployerLogoBanner />
 
    <section className="grid gap-4 md:grid-cols-3">{[
     {icon:GraduationCap,title:'Employer-supported training',description:'Supervised tasks, planned learning objectives, competency checks and progress feedback at an approved training site.'},
