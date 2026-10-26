@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
     // Read the invoice through the caller's own session so RLS decides visibility.
     const { data: invoice, error: invErr } = await supabaseClient
       .from("invoices")
-      .select("id, tenant_id, amount, paid, type, student_id, status")
+      .select("id, tenant_id, amount, paid, sponsor_amount, type, student_id, status")
       .eq("id", invoiceId!)
       .maybeSingle();
 

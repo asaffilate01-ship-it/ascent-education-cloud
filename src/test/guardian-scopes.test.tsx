@@ -1,5 +1,6 @@
+import {MemoryRouter} from 'react-router-dom';
 import {afterEach,beforeEach,expect,it,vi} from 'vitest';
-import {cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
+import {cleanup,fireEvent,render as rtlRender,screen,waitFor} from '@testing-library/react';
 import {GuardianActivity,GuardianScopeSharing} from '@/components/guardian/GuardianAccess';
 const mock=vi.hoisted(()=>({rpc:vi.fn()}));
 vi.mock('@/lib/db',()=>({db:{rpc:mock.rpc}}));
@@ -15,3 +16,5 @@ it('clears previously shared activity after revocation on refresh',async()=>{
  render(<GuardianActivity/>);await screen.findByText(/2026-10-24 · Maths/);fireEvent.click(screen.getByText('Refresh shared activity'));await screen.findByText('Attendance permission has not been granted.');expect(screen.queryByText(/2026-10-24 · Maths/)).toBeNull();
 });
 it('reports activity failure rather than showing empty attendance as absence',async()=>{mock.rpc.mockRejectedValue(new Error('offline'));render(<GuardianActivity/>);expect(await screen.findByRole('alert')).toHaveTextContent('unavailable');});
+
+function render(ui:React.ReactElement){return rtlRender(ui,{wrapper:MemoryRouter});}

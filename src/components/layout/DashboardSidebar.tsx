@@ -74,6 +74,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'CIBTAC / CPD Accreditation', icon: Award, path: '/director/beauty-accreditation' },
       { label: 'IELTS Academy', icon: GraduationCap, path: '/director/ielts' },
       { label: 'CCTV live & playback', icon: Shield, path: '/security' },
+      { label: 'Sponsor funding', icon: Handshake, path: '/director/funding' },
       { label: 'Staff', icon: Users, path: '/director/staff' },
       { label: 'Students', icon: GraduationCap, path: '/director/students' },
       { label: 'Employer Partnerships', icon: Briefcase, path: '/director/employers' },
@@ -241,6 +242,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
     { items: [
       { label: 'Dashboard', icon: LayoutDashboard, path: '/finance' },
       { label: 'Invoices', icon: FileText, path: '/finance/invoices' },
+      { label: 'Sponsor funding', icon: Handshake, path: '/finance/funding' },
       { label: 'Payments', icon: CreditCard, path: '/finance/payments' },
       { label: 'Instalments', icon: Clock, path: '/finance/instalments' },
       { label: 'Commissions', icon: Handshake, path: '/finance/commissions' },

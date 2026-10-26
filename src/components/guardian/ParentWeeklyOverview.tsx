@@ -1,0 +1,30 @@
+import {useQuery} from '@tanstack/react-query';
+import {Link,useSearchParams} from 'react-router-dom';
+import {useAuth} from '@/contexts/AuthContext';
+import {db} from '@/lib/db';
+import {Button} from '@/components/ui/button';
+import {validActivity,type Activity} from './GuardianAccess';
+import {validResults,type Student} from '@/lib/guardianResults';
+import {guardianWeek,inGuardianWeek,guardianPath} from '@/lib/guardianWeek';
+export default function ParentWeeklyOverview(){
+ const {user}=useAuth();const [params,setParams]=useSearchParams(),week=guardianWeek();
+ const activity=useQuery({queryKey:['guardian-week-activity',user?.id,user?.tenantId],queryFn:async()=>{const r=await db.rpc('get_unipathway_guardian_activity');if(r.error||!validActivity(r.data))throw Error('Unverified activity');return r.data as Activity[];}});
+ const results=useQuery({queryKey:['guardian-week-results',user?.id,user?.tenantId],queryFn:async()=>{const r=await db.rpc('get_unipathway_guardian_results');if(r.error||!validResults(r.data))throw Error('Unverified results');return r.data as Student[];}});
+ const children=new Map<string,string|null>();for(const a of (activity.isError?[]:activity.data)||[])children.set(a.id,a.student_name);for(const r of (results.isError?[]:results.data)||[])if(!children.get(r.id))children.set(r.id,r.student_name);
+ const selected=children.has(params.get('learner')||'')?params.get('learner')!:children.keys().next().value||'';
+ const current=(activity.isError?undefined:activity.data)?.find(a=>a.id===selected),marks=current?.attendance_shared?current.attendance.filter(a=>inGuardianWeek(a.date,week)):[];
+ const schedule=current?.schedule_shared?current.schedule.filter(a=>inGuardianWeek(a.starts_at,week)):[];
+ const shared=(results.isError?undefined:results.data)?.find(s=>s.id===selected),feedback=shared?.sharing?shared.results.filter(r=>inGuardianWeek(r.released_at,week)):[];
+ const refresh=()=>{void activity.refetch();void results.refetch();};
+ return <section className="space-y-5"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-semibold">This week for your child</h2><p className="text-sm text-muted-foreground">Week beginning {week.from} · Pakistan time</p></div><Button variant="outline" onClick={refresh}>Refresh week</Button></div>
+ {(activity.isLoading||results.isLoading)&&<p role="status">Checking shared updates…</p>}
+ {activity.isError&&<p role="alert">Attendance and class updates could not be verified. Refresh to retry.</p>}{results.isError&&<p role="alert">Released feedback could not be verified. Refresh to retry.</p>}
+ {!activity.isLoading&&!results.isLoading&&!activity.isError&&!results.isError&&!children.size&&<p>No linked learners yet. Ask admissions to verify the family link, then choose the information to share.</p>}
+ {!!children.size&&<><label className="block max-w-md">Child<select className="mt-1 min-h-11 w-full rounded-lg border bg-background px-3" value={selected} onChange={e=>setParams({learner:e.target.value})}>{[...children].map(([id,name],i)=><option key={id} value={id}>{name||`Linked learner ${i+1}`}</option>)}</select></label>
+ <p className="text-sm text-muted-foreground">Each section follows its own verified link and sharing permission. An unavailable or unshared record is not a zero result or an absence.</p>
+ <div className="grid gap-6 lg:grid-cols-3"><section className="border-t pt-4"><h3 className="font-semibold">Classes this week</h3>{!current?.schedule_shared?<p className="mt-2 text-sm">{activity.isError?'Class information is unavailable.':'Class schedule sharing is not enabled.'}</p>:!schedule.length?<p className="mt-2 text-sm">No shared classes in this week’s window.</p>:<ul className="divide-y">{schedule.map((s,i)=><li key={i} className="py-3"><p className="font-medium">{s.title}</p><p className="text-sm">{new Date(s.starts_at).toLocaleString('en-PK',{timeZone:'Asia/Karachi'})} PKT · {s.status}</p></li>)}</ul>}<Link className="mt-3 inline-flex min-h-11 items-center text-sm underline" to={guardianPath('/parent/schedule',selected)}>Full shared schedule</Link></section>
+ <section className="border-t pt-4"><h3 className="font-semibold">Attendance</h3>{!current?.attendance_shared?<p className="mt-2 text-sm">{activity.isError?'Attendance information is unavailable.':'Attendance sharing is not enabled.'}</p>:<><p className="mt-2 text-sm">{marks.length} recorded marks this week · {marks.filter(m=>m.status==='absent').length} absent</p>{marks.some(m=>m.status==='absent')&&<p className="mt-2 text-sm">Review the shared register and contact the centre about any unexplained absence.</p>}</>}<Link className="mt-3 inline-flex min-h-11 items-center text-sm underline" to={guardianPath('/parent/attendance',selected)}>Review attendance</Link></section>
+ <section className="border-t pt-4"><h3 className="font-semibold">Released feedback</h3>{!shared?.sharing?<p className="mt-2 text-sm">{results.isError?'Feedback is unavailable.':'Results sharing is not enabled.'}</p>:!feedback.length?<p className="mt-2 text-sm">No newly released feedback this week.</p>:<ul className="divide-y">{feedback.slice(0,5).map(r=><li className="py-3" key={r.attempt_id}><p className="font-medium">{r.title}</p><p className="text-sm">{r.final_score}/100 · Read the approved feedback together.</p></li>)}</ul>}<Link className="mt-3 inline-flex min-h-11 items-center text-sm underline" to={guardianPath('/parent/progress',selected)}>Read shared feedback</Link></section></div>
+ <div className="border-t pt-4"><h3 className="font-semibold">Next steps together</h3><p className="my-3 text-sm">Check the shared learning plan for tutor-reviewed practice, prepare for the next class and discuss any released feedback.</p><Button asChild><Link to={guardianPath('/parent/learning',selected)}>Open learning plan</Link></Button>{current?.communication_shared&&<Link className="ml-4 inline-flex min-h-11 items-center text-sm underline" to={guardianPath('/parent/messages',selected)}>Contact the centre</Link>}</div></>}
+ </section>;
+}

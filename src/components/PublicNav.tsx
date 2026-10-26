@@ -43,7 +43,7 @@ export const destinationLinks = [
 
 const primaryStudyLinks = studyLinks.filter(link => ['/study', '/qualifications', '/tuition', '/ielts-preparation', '/german-preparation', '/tech-academy', '/finance-academy', '/beauty-aesthetics'].includes(link.to));
 
-const linkCls = (active: boolean) => cn('relative rounded-full px-4 py-2 text-sm font-semibold transition-colors', active ? 'bg-primary/5 text-primary' : 'text-foreground/80 hover:bg-accent hover:text-foreground');
+const linkCls = (active: boolean) => cn('relative inline-flex min-h-11 items-center rounded-full px-4 py-2 text-sm font-semibold transition-colors', active ? 'bg-primary/5 text-primary' : 'text-foreground/80 hover:bg-accent hover:text-foreground');
 
 export default function PublicNav() {
   const headerRef = useRef<HTMLElement>(null);
@@ -81,8 +81,8 @@ export default function PublicNav() {
     document.addEventListener('keydown', containFocus);
     return () => document.removeEventListener('keydown', containFocus);
   }, [open]);
-  return <>{!open && <WhatsAppWidget />}<PublicBottomNav /><header ref={headerRef} className={cn('sticky top-0 z-50 border-b bg-background/85 backdrop-blur-xl transition-shadow', scrolled ? 'border-border shadow-surface-lg' : 'border-transparent')}>
-    <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-5 px-4 sm:h-20 sm:px-8 lg:h-24">
+  return <>{!open && <WhatsAppWidget />}{!open && <PublicBottomNav />}<header ref={headerRef} className={cn('sticky top-0 z-50 border-b bg-background/85 backdrop-blur-xl transition-shadow', scrolled ? 'border-border shadow-surface-lg' : 'border-transparent')}>
+    <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-5 px-4 sm:h-20 sm:px-8 lg:h-20">
       <Link to="/" aria-label="UniPathway home" className="shrink-0"><BrandLogo className="h-11 lg:h-14" /></Link>
       <nav aria-label="Main navigation" className="hidden items-center gap-1 lg:flex">
         <Link to="/" className={linkCls(pathname === '/')}>Home</Link>
