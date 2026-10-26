@@ -1,5 +1,6 @@
+import {workspacePath} from '@/lib/workspaceContext';
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { searchNavigation } from '@/lib/searchNavigation';
@@ -10,7 +11,7 @@ import { DialogTitle, DialogDescription } from '@/components/ui/dialog';
 export default function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const [query, setQuery] = useState('');
   const [term, setTerm] = useState('');
-  const navigate = useNavigate(); const { user } = useAuth();
+  const navigate = useNavigate(); const location=useLocation(); const { user } = useAuth();
   const pages = useMemo(() => searchNavigation(user?.role), [user?.role]);
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -36,7 +37,7 @@ export default function CommandPalette({ open, onOpenChange }: { open: boolean; 
       return data as { id: string; title: string; code: string }[];
     },
   });
-  const go = (path: string) => { onOpenChange(false); navigate(path); };
+  const go = (path: string) => { onOpenChange(false); navigate(workspacePath(path,location.search)); };
   return <CommandDialog open={open} onOpenChange={onOpenChange}>
     <DialogTitle className="sr-only">Search your workspace</DialogTitle>
     <DialogDescription className="sr-only">Search pages available to your current role. Use arrow keys to choose a result and Enter to open it.</DialogDescription>

@@ -36,7 +36,7 @@ export default function LessonWorkspace() {
    <nav aria-label="Lesson sequence" className="space-y-2">{lessons.map((l,i)=><button key={l.id} aria-current={l.id===selected.id?'step':undefined} onClick={()=>setParams({module,lesson:l.id})} className={`block w-full rounded-lg border p-3 text-left ${l.id===selected.id?'border-primary bg-primary/5':''}`}>
     <span className="text-sm">{i+1}. {l.title}</span><span className="block text-xs text-muted-foreground">{progress.some(p=>p.lesson_id===l.id&&p.revision===l.revision&&p.completed)?'Completed':'To study'}</span>
    </button>)}</nav>
-   <article className="min-w-0 space-y-5"><h1 className="text-2xl font-bold">{selected.title}</h1>
+   <article className="min-w-0 space-y-5"><h2 className="text-2xl font-bold">{selected.title}</h2>
     {selected.video_url&&<video key={`${selected.id}:${selected.revision}`} controls preload="metadata" playsInline className="w-full rounded-xl bg-black" src={selected.video_url} aria-label={selected.title}
       onLoadedMetadata={e=>{if(saved?.position_seconds)e.currentTarget.currentTime=Math.min(saved.position_seconds,e.currentTarget.duration||0);}}
       onTimeUpdate={e=>{if(Date.now()-last.current>15000){last.current=Date.now();void save(e.currentTarget.currentTime);}}}

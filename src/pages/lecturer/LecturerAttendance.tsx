@@ -1,6 +1,8 @@
+import ClassJourney from '@/components/classroom/ClassJourney';
+import ModuleJourney from '@/components/assessment/ModuleJourney';
 import DailyRegister from '@/components/attendance/DailyRegister';
 import {useEffect,useState} from 'react';
-import {Link} from 'react-router-dom';
+import {Link,useSearchParams} from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
@@ -13,13 +15,13 @@ type Profile={user_id:string;full_name:string};
 type Summary={id:string;name:string;present:number;late:number;absent:number;excused:number;other:number};
 const rate=(s:Summary)=>{const total=s.present+s.late+s.absent;return total?Math.round(100*(s.present+s.late)/total):null;};
 export default function LecturerAttendance(){
- const {user}=useAuth();
- return <AttendanceWorkspace key={`${user?.id}:${user?.tenantId}:${user?.roles.join(',')}`} lecturer={user?.id} tenant={user?.tenantId}/>;
+ const {user}=useAuth();const [params]=useSearchParams();
+ return <AttendanceWorkspace key={`${user?.id}:${user?.tenantId}:${user?.roles.join(',')}:${params.toString()}`} selectedModule={params.get('module')||''} selectedDate={params.get('date')||''} session={params.get('session')||''} lecturer={user?.id} tenant={user?.tenantId}/>;
 }
-function AttendanceWorkspace({lecturer,tenant}:{lecturer?:string;tenant?:string|null}){
+function AttendanceWorkspace({lecturer,tenant,selectedModule,selectedDate,session}:{lecturer?:string;tenant?:string|null;selectedModule:string;selectedDate:string;session:string}){
  const [modules,setModules]=useState<Module[]>([]),[marks,setMarks]=useState<Mark[]>([]),[profiles,setProfiles]=useState<Profile[]>([]);
  const [loading,setLoading]=useState(true),[error,setError]=useState(''),[refresh,setRefresh]=useState(0);
- const [moduleId,setModuleId]=useState(''),[search,setSearch]=useState(''),[page,setPage]=useState(0);
+ const [moduleId,setModuleId]=useState(selectedModule),[search,setSearch]=useState(''),[page,setPage]=useState(0);
  useEffect(()=>{let active=true;setLoading(true);setError('');setModules([]);setMarks([]);setProfiles([]);setPage(0);
   void(async()=>{try{
    if(!tenant||!lecturer)throw Error('Missing centre');
@@ -44,13 +46,14 @@ function AttendanceWorkspace({lecturer,tenant}:{lecturer?:string;tenant?:string|
  const overall=rate({...totals,id:'total',name:'Total'});
  const retry=()=>{setMarks([]);setProfiles([]);setModules([]);setLoading(true);setPage(0);setModuleId('');setRefresh(x=>x+1);};
  return <DashboardLayout title="Attendance" subtitle="Recorded attendance for your assigned modules">
+  {session?<ClassJourney sessionId={session}/>:<ModuleJourney teacher moduleId={moduleId}/>}
   <div className="mb-4 flex flex-wrap gap-3"><Button variant="outline" disabled={loading} onClick={retry}>Refresh attendance</Button><Button asChild variant="outline"><Link to="/lecturer/classroom">View class invitations</Link></Button></div>
   <p className="mb-4 text-sm text-muted-foreground">Rate = present plus late, divided by present, late and absent marks. Excused and other marks are shown separately and excluded. This report covers recorded marks only; it does not infer attendance for unmarked classes.</p>
   {loading?<p role="status">Checking attendance and assigned modules…</p>:error?<p role="alert">{error}</p>:<>
-   <DailyRegister modules={modules}/>
+   <DailyRegister modules={modules} initialModule={modules.some(m=>m.id===selectedModule)?selectedModule:''} initialDate={selectedDate}/>
    <div className="mb-4 flex flex-wrap gap-3"><label className="text-sm">Module<select className="block rounded border bg-background p-2" value={moduleId} onChange={e=>{setModuleId(e.target.value);setPage(0);}}><option value="">All assigned modules</option>{modules.map(m=><option key={m.id} value={m.id}>{m.title}</option>)}</select></label><label className="text-sm">Search learners<Input value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}}/></label></div>
    <div className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-4">{[['Recorded attendance rate',overall===null?'Not available':`${overall}%`],['Learners with marks',summaries.length],['Excused marks',totals.excused],['Other marks',totals.other]].map(([label,value])=><div key={label} className="surface-card p-4"><p className="text-sm text-muted-foreground">{label}</p><p className="text-xl font-semibold">{value}</p></div>)}</div>
-   {!filtered.length?<p>{search?'No learners match your search.':modules.length?'No attendance marks are available for these modules.':'No modules are assigned to you yet.'}</p>:<div className="overflow-x-auto rounded-xl border"><table className="w-full text-left text-sm"><caption className="p-3 text-left">Learner attendance summaries</caption><thead><tr>{['Learner','Present','Late','Absent','Excused','Other','Rate'].map(h=><th key={h} className="p-3" scope="col">{h}</th>)}</tr></thead><tbody>{filtered.slice(page*20,page*20+20).map(s=><tr key={s.id} className="border-t"><th scope="row" className="p-3 font-medium">{s.name}</th>{[s.present,s.late,s.absent,s.excused,s.other,rate(s)===null?'Not available':`${rate(s)}%`].map((v,i)=><td key={i} className="p-3">{v}</td>)}</tr>)}</tbody></table></div>}
+   {!filtered.length?<p>{search?'No learners match your search.':modules.length?'No attendance marks are available for these modules.':'No modules are assigned to you yet.'}</p>:<><ul className="divide-y md:hidden" aria-label="Learner attendance summaries">{filtered.slice(page*20,page*20+20).map(s=><li key={s.id} className="py-4"><h3 className="font-semibold">{s.name}</h3><p className="mt-1 text-sm">Present {s.present} · Late {s.late} · Absent {s.absent}</p><p className="text-sm text-muted-foreground">Excused {s.excused} · Other {s.other} · Rate {rate(s)===null?'Not available':`${rate(s)}%`}</p></li>)}</ul><div className="hidden overflow-x-auto rounded-xl border md:block"><table className="w-full text-left text-sm"><caption className="p-3 text-left">Learner attendance summaries</caption><thead><tr>{['Learner','Present','Late','Absent','Excused','Other','Rate'].map(h=><th key={h} className="p-3" scope="col">{h}</th>)}</tr></thead><tbody>{filtered.slice(page*20,page*20+20).map(s=><tr key={s.id} className="border-t"><th scope="row" className="p-3 font-medium">{s.name}</th>{[s.present,s.late,s.absent,s.excused,s.other,rate(s)===null?'Not available':`${rate(s)}%`].map((v,i)=><td key={i} className="p-3">{v}</td>)}</tr>)}</tbody></table></div></>}
    {filtered.length>20&&<nav aria-label="Attendance pages" className="mt-4 flex items-center gap-3"><Button variant="outline" disabled={!page} onClick={()=>setPage(p=>p-1)}>Previous learners</Button><span>Page {page+1} of {Math.ceil(filtered.length/20)}</span><Button variant="outline" disabled={(page+1)*20>=filtered.length} onClick={()=>setPage(p=>p+1)}>Next learners</Button></nav>}
   </>}
  </DashboardLayout>;

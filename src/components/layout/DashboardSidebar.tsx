@@ -1,5 +1,6 @@
+import {workspacePath} from '@/lib/workspaceContext';
 import { toast } from 'sonner';
-import { useAuth, ROLE_LABELS } from '@/contexts/AuthContext';
+import { useAuth, ROLE_LABELS, ROLE_HOME } from '@/contexts/AuthContext';
 import { UserRole } from '@/types/platform';
 import { NavLink } from 'react-router-dom';
 import {
@@ -350,10 +351,10 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
 };
 
 const dailyPaths: Partial<Record<UserRole, string[]>> = {
-  student: ['/student', '/student/courses', '/student/learning-plan', '/student/classroom', '/student/assignments', '/student/grades', '/messaging'],
-  lecturer: ['/lecturer', '/lecturer/learning-plans', '/lecturer/class-scheduler', '/lecturer/classroom', '/lecturer/attendance', '/lecturer/assessments', '/messaging'],
-  centre_director: ['/director', '/director/admissions', '/director/students', '/director/staff', '/director/schedule', '/director/finance', '/messaging'],
-  superadmin: ['/landlord', '/landlord/centres', '/landlord/users', '/landlord/readiness', '/landlord/finance', '/landlord/infrastructure', '/messaging'],
+  student: ['/student', '/student/courses', '/student/classroom', '/student/assignments', '/student/grades'],
+  lecturer: ['/lecturer', '/lecturer/teaching', '/lecturer/classroom', '/lecturer/attendance', '/lecturer/assessments'],
+  centre_director: ['/director', '/director/admissions', '/director/students', '/director/schedule', '/director/finance'],
+  superadmin: ['/landlord', '/landlord/centres', '/landlord/users', '/landlord/readiness', '/landlord/finance'],
 };
 const conciseLabels: Record<string, string> = {
   'Dashboard': 'Overview', 'My Coursework & Resubmissions': 'Assignments', 'Approved Results Only': 'Results',
@@ -365,10 +366,10 @@ export function getNavigationSections(role: UserRole, search = ''): NavSection[]
   const original = NAV_CONFIG[role] || [];
   const items = original.flatMap(s => s.items).map(item => ({ ...item, label: conciseLabels[item.label] || item.label }));
   if (search.trim()) return [{ title: 'Search results', items: items.filter(i => `${i.label} ${i.path}`.toLowerCase().includes(search.trim().toLowerCase())) }];
-  const paths = dailyPaths[role];
-  if (!paths) return original.map(s => ({ ...s, items: s.items.map(i => ({ ...i, label: conciseLabels[i.label] || i.label })) }));
-  return [{ title: 'Your workspace', items: paths.flatMap(path => items.filter(i => i.path === path)) },
-    { title: 'More tools', items: items.filter(i => !paths.includes(i.path)) }];
+  const paths = dailyPaths[role] || [ROLE_HOME[role], ...items.filter(i=>i.path!==ROLE_HOME[role]).slice(0,4).map(i=>i.path)];
+  const everyday=paths.flatMap(path=>items.filter(i=>i.path===path)).map(item=>({...item,label:role==='student'&&item.path==='/student'?'Today':item.label}));
+  return [{title:'Everyday',items:[...everyday,{label:'My workspace',icon:FolderOpen,path:'/workspace'}]},
+    ...original.map(section=>({title:section.title||'Specialist tools',items:section.items.filter(i=>!paths.includes(i.path)).map(i=>({...i,label:conciseLabels[i.label]||i.label}))})).filter(s=>s.items.length)];
 }
 
 export { NAV_CONFIG };
@@ -442,7 +443,7 @@ export default function DashboardSidebar() {
         {!collapsed && (
           <div className="overflow-hidden flex-1">
             <p className="text-sm font-extrabold tracking-tight truncate">UniPathway</p>
-            <p className="text-[10px] text-sidebar-foreground/40 uppercase tracking-[0.1em] font-semibold">
+            <p className="text-xs text-sidebar-foreground/70 font-medium">
               {isLandlord ? 'Platform Owner' : ROLE_LABELS[user.role]}
             </p>
           </div>
@@ -461,11 +462,11 @@ export default function DashboardSidebar() {
       <nav aria-label="Workspace navigation" className="flex-1 overflow-y-auto py-3 px-2.5">
         {!collapsed && <input aria-label="Find a page" placeholder="Find a page…" value={navSearch} onChange={e => setNavSearch(e.target.value)} className="mb-3 w-full rounded-lg border border-sidebar-border bg-sidebar-accent px-3 py-2 text-sm text-sidebar-foreground" />}
         {navSearch && !sections.some(s => s.items.length) && <p className="px-3 text-sm">No matching pages. Try another name.</p>}
-        {sections.map((section, si) => (
+        {sections.map((section, si) => collapsed && si > 0 ? null : (
           <details key={`${user.role}-${si}-${navSearch}`} open={collapsed || si === 0 || !!navSearch || section.items.some(i => i.path === location.pathname)} className={si > 0 ? 'mt-5' : ''}>
             {(
 
-              <summary className="text-[10px] font-bold uppercase tracking-[0.12em] text-sidebar-foreground/30 px-3 mb-1.5">
+              <summary className="text-xs font-semibold text-sidebar-foreground/70 px-3 mb-1.5">
                 {section.title || 'Navigation'}
               </summary>
             )}
@@ -473,7 +474,7 @@ export default function DashboardSidebar() {
               {section.items.map((item) => (
                 <NavLink
                   key={item.path}
-                  to={item.path}
+                  to={workspacePath(item.path,location.search)}
                   end
                   title={item.label}
                   aria-label={item.label}
