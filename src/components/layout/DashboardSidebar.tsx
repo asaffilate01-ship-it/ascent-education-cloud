@@ -288,6 +288,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
     { label: 'Module Materials', icon: BookOpen, path: '/student/materials' },
       { label: 'Microsoft 365', icon: Mail, path: '/student/microsoft' },
       { label: 'My Labs & Self Study', icon: Cloud, path: '/student/labs' },
+      { label: 'Family sharing', icon: Users, path: '/student/family-sharing' },
       { label: 'My Learning Plan', icon: ClipboardList, path: '/student/learning-plan' },
       { label: 'My Coursework & Resubmissions', icon: ClipboardList, path: '/student/assignments' },
       { label: 'Approved Results Only', icon: BarChart3, path: '/student/grades' },
