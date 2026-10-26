@@ -1,3 +1,4 @@
+import MicrosoftAccountQueue from '@/components/classroom/MicrosoftAccountQueue';
 import {useEffect,useState} from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {useAuth} from '@/contexts/AuthContext';
@@ -23,6 +24,7 @@ function MicrosoftSetup({tenantId}:{tenantId?:string|null}){
    .catch(e=>{if(active){setError(e.message);setBrand([]);setTemplates([]);setAccounts([]);}}).finally(()=>{if(active)setLoading(false);});return()=>{active=false;};
  },[tenantId,refresh]);
  return <div className="space-y-5">
+  <MicrosoftAccountQueue tenantId={tenantId}/>
   <section className="rounded-xl border bg-primary/5 p-5"><h2 className="font-semibold">UniPathway experience, Microsoft Teams delivery</h2><p className="mt-2 text-sm">UniPathway owns the learner portal, lesson entry, resources and private archive. Native Teams provides live audio, video, breakout rooms, screen sharing and Microsoft Whiteboard. Teams Premium meeting themes can apply approved logos, colours and images; Microsoft’s client and identity remain visible.</p></section>
   {loading&&<p role="status">Loading saved centre configuration…</p>}{error&&<p role="alert">{error}</p>}
   <Button variant="outline" onClick={()=>setRefresh(n=>n+1)}>Refresh setup records</Button>
