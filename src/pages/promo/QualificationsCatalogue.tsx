@@ -1,3 +1,4 @@
+import AwardingBodyGuidance from '@/components/AwardingBodyGuidance';
 import CourseAtAGlance from '@/components/CourseAtAGlance';
 import PublicHero from '@/components/PublicHero';
 import PageContents from '@/components/PageContents';
@@ -31,19 +32,20 @@ export default function QualificationsCatalogue() {
     `${q.name} ${q.body} ${q.category}`.toLowerCase().includes(query.trim().toLowerCase())
   );
   return <div className="public-site min-h-dvh bg-background">
-    <Seo canonical="/qualifications" title="OTHM and Qualifi Qualification Options | UniPathway" description="Review planned OTHM and Qualifi qualifications in business, IT, AI, accounting, law, hospitality and more."/>
+    <Seo canonical="/qualifications" title="UK Qualification Pathways in Pakistan | UniPathway" description="Explore OTHM, Qualifi, ATHE, Pearson BTEC and VTCT Skills pathways with programme approval and admissions guidance for Pakistan."/>
     <PublicNav/>
     <main className="mx-auto max-w-7xl space-y-8 px-5 py-12 sm:px-8">
       <PublicHero topic="guidance">
         <p className="text-label text-success">UK & international qualifications</p>
         <h1 className="mt-3 text-3xl font-extrabold sm:text-5xl">Choose a pathway that moves you forward</h1>
-        <p className="mt-4 text-muted-foreground">Explore proposed OTHM and Qualifi qualifications in business, technology, finance, health and other fields. Options without current confirmed details are for planning only. Admissions must verify centre authorisation, entry eligibility and a place on the chosen intake before enrolment.</p>
+        <p className="mt-4 text-muted-foreground">Explore OTHM and Qualifi catalogue options alongside ATHE, Pearson BTEC and VTCT Skills pathway guidance for learners in Pakistan. Options without current confirmed details are for planning only. Admissions must verify centre authorisation, entry eligibility and a place on the chosen intake before enrolment.</p>
       </PublicHero>
 <PageContents/>
+      <AwardingBodyGuidance/>
 
       <section className="rounded-xl border bg-card p-5" aria-label="Filter qualification options">
         <div className="flex flex-wrap gap-2" role="group" aria-label="Awarding body">
-          {bodies.map(b=><Button key={b} size="sm" type="button" aria-pressed={body===b} variant={body===b?'default':'outline'} onClick={()=>setParams(b==='All'?{}:{body:b})}>{b==='All'?'All awarding bodies':b}</Button>)}
+          {bodies.map(b=><Button key={b} size="sm" type="button" aria-pressed={body===b} variant={body===b?'default':'outline'} onClick={()=>setParams(b==='All'?{}:{body:b})}>{b==='All'?'All catalogue options':b}</Button>)}
         </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_230px]">
           <label className="block text-sm font-medium" htmlFor="qualification-search"><Search className="mr-1 inline size-4"/>Search programmes<Input id="qualification-search" className="mt-1" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Try cyber security, accounting or law"/></label>

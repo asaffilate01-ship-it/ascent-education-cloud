@@ -1,3 +1,4 @@
+import AwardingBodyGuidance from '@/components/AwardingBodyGuidance';
 import CourseAtAGlance from '@/components/CourseAtAGlance';
 import PublicHero from '@/components/PublicHero';
 import PageContents from '@/components/PageContents';
@@ -44,6 +45,8 @@ export default function BeautyAcademy() {
         <div><p className="text-label text-success">International awarding bodies</p><h2 id="academy-approval-heading" className="mt-2 text-2xl font-bold">Our centre-accreditation plans</h2><p className="mt-2 max-w-3xl text-sm text-muted-foreground">UniPathway is pursuing these independent approval routes. Centre status, CPD provider membership and individual course certification are not currently presented as awarded.</p></div>
         <div className="grid gap-4 md:grid-cols-2">{academyAccreditationSchemes.slice(0,2).map(s=><article key={s.id} className="rounded-xl border bg-card p-6"><ShieldCheck className="size-6 text-success"/><h3 className="mt-3 text-xl font-bold">{s.name}</h3><p className="mt-2 text-sm text-muted-foreground">{s.description}</p><p className="mt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Application preparation — approval pending</p></article>)}</div>
       </section>
+
+      <AwardingBodyGuidance beautyOnly/>
 
       <section id="qualifications" className="scroll-mt-28 space-y-5" aria-labelledby="beauty-qualifications-heading">
         <div><p className="text-label text-success">CIBTAC regulated qualification selection</p><h2 id="beauty-qualifications-heading" className="mt-2 text-2xl font-bold">Planned certificates, awards and diplomas</h2><p className="mt-2 max-w-4xl text-sm text-muted-foreground">Titles, codes and qualification numbers come from CIBTAC's official published lists. The awarding body must approve both the centre and its specific qualification offerings before CIBTAC enrolment or assessments are opened.</p></div>
