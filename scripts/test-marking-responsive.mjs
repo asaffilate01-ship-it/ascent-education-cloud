@@ -1,0 +1,31 @@
+import {chromium} from '@playwright/test';
+import assert from 'node:assert/strict';
+const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH,headless:true,args:['--no-sandbox']});
+try{
+ const context=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'}),page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const user={id:'00000000-0000-4000-8000-000000000001',aud:'authenticated',role:'authenticated',email:'synthetic@unipathway.pk',app_metadata:{provider:'email'},user_metadata:{},created_at:'2026-01-01T00:00:00Z'};
+ const tenant='00000000-0000-4000-8000-000000000002';
+ await context.addInitScript(({user})=>{const token=btoa(JSON.stringify({alg:'HS256',typ:'JWT'}))+'.'+btoa(JSON.stringify({sub:user.id,role:'authenticated',exp:Math.floor(Date.now()/1000)+3600}))+'.synthetic';localStorage.setItem('sb-unipathway-browser-ci-auth-token',JSON.stringify({access_token:token,refresh_token:'synthetic',token_type:'bearer',expires_at:Math.floor(Date.now()/1000)+3600,expires_in:3600,user}));},{user});
+ const tables={unipathway_assessment_allocations:[{attempt_id:'attempt',marker_id:user.id}],unipathway_assessment_attempts:[{id:'attempt',brief_id:'brief',student_id:'student',attempt_no:1,evidence_text:'The writer makes a clear argument using examples.\nThe conclusion connects the examples to the main idea.\n'+('LongWord'.repeat(40)),status:'submitted',submitted_at:'2026-10-26T09:00:00Z'}],unipathway_assessment_briefs:[{id:'brief',title:'Academic writing: explanation and evidence',max_attempts:1,learning_outcomes:'Build an argument with evidence.'}],unipathway_assessment_criteria:['A','B'].map(code=>({id:code,brief_id:'brief',criterion_code:code,criterion_description:'Use evidence to explain your answer',learning_outcome:'Develop written reasoning',scoring_guidance:'Assess the clarity and relevance of each example.',max_points:50}))};
+ let receipt;
+ await context.route('https://unipathway-browser-ci.invalid/**',async route=>{const r=route.request(),url=new URL(r.url()),name=url.pathname.split('/').at(-1);let data=tables[name]||[];
+ if(name==='profiles')data={full_name:'Synthetic assessor',tenant_id:tenant};else if(name==='user_roles')data=[{role:'assessor'}];else if(url.pathname.endsWith('/auth/v1/user'))data=user;else if(name==='record_unipathway_human_mark'){receipt=r.postDataJSON();data=null;}else if(url.pathname.includes('/rpc/'))data=null;
+ await route.fulfill({status:200,headers:{'access-control-allow-origin':'*','access-control-allow-headers':'*','content-type':'application/json'},body:JSON.stringify(data)});});
+ await page.goto('http://127.0.0.1:8080/assessor/queue?attempt=attempt');
+ await page.getByRole('heading',{name:'Academic writing: explanation and evidence',exact:true}).waitFor({timeout:20000});
+ if(await page.getByRole('button',{name:'Reject all',exact:true}).count())await page.getByRole('button',{name:'Reject all',exact:true}).click();
+ await page.waitForFunction(()=>document.querySelector('aside[aria-label="Dashboard navigation"]')?.getBoundingClientRect().right<=1);
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+ await page.getByLabel('To line').fill('2');await page.getByRole('button',{name:'Use selected lines as evidence'}).click();
+ assert.match(await page.getByLabel('Evidence location or quoted excerpt').first().inputValue(),/lines 1–2/);
+ await page.screenshot({path:'/tmp/marking-mobile.png',fullPage:true});
+ await page.setViewportSize({width:1440,height:1000});await page.waitForFunction(()=>document.querySelector('aside[aria-label="Dashboard navigation"]')?.getBoundingClientRect().left===0);
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);await page.screenshot({path:'/tmp/marking-desktop.png',fullPage:true});
+ for(const field of await page.getByLabel('Evidence location or quoted excerpt').all())if(!(await field.inputValue()))await field.fill('Submitted text line 2');
+ for(const field of await page.getByLabel('Reason for your mark').all())await field.fill('The explanation connects each example with the argument and meets this criterion.');
+ for(const field of await page.getByLabel('What is missing, or what evidence is fully met?').all())await field.fill('All required evidence is present.');
+ await page.getByLabel('Individual written feedback').fill('Your examples support the main argument. Develop the comparison further by explaining why alternatives are less appropriate.');
+ page.on('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'Send independent human mark to IQA'}).click();await page.waitForFunction(()=>!location.search.includes('attempt='));
+ assert.equal(receipt.p_attempt,'attempt');assert.match(receipt.p_criteria[0].evidence,/lines 1–2/);assert.equal(errors.length,0,errors.join('\n'));
+ console.log('390px/1440px: no overflow; citation preserved; complete marking submitted to IQA RPC with synthetic backend; no page errors.');
+}finally{await browser.close();}
