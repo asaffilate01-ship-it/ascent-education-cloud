@@ -1247,6 +1247,12 @@ export type Database = {
       }
       invoices: {
         Row: {
+          sponsor_amount: number
+          sponsor_paid: number
+          sponsor_name: string
+          sponsor_reference: string
+          sponsor_due_on: string | null
+          funding_note: string
           amount: number
           created_at: string
           due_date: string | null
@@ -1262,6 +1268,12 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          sponsor_amount?: number
+          sponsor_paid?: number
+          sponsor_name?: string
+          sponsor_reference?: string
+          sponsor_due_on?: string | null
+          funding_note?: string
           amount?: number
           created_at?: string
           due_date?: string | null
@@ -1277,6 +1289,12 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          sponsor_amount?: number
+          sponsor_paid?: number
+          sponsor_name?: string
+          sponsor_reference?: string
+          sponsor_due_on?: string | null
+          funding_note?: string
           amount?: number
           created_at?: string
           due_date?: string | null

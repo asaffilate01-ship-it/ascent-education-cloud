@@ -1,3 +1,4 @@
+const FamilySharing = lazy(() => import('./pages/student/FamilySharing'));
 import SecurityWorkspace from '@/pages/security/SecurityWorkspace';
 import NativeBridge from '@/components/native/NativeBridge';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -522,6 +523,7 @@ function AppRoutes() {
         <Route path="/student/microsoft" element={<StudentR><MicrosoftAccountCentre /></StudentR>} />
         <Route path="/student/lesson-archive" element={<StudentR><LessonArchive /></StudentR>} />
         <Route path="/student/materials" element={<StudentR><ModuleMaterials /></StudentR>} />
+        <Route path="/student/family-sharing" element={<StudentR><FamilySharing /></StudentR>} />
         <Route path="/student/learning-plan" element={<StudentR><LearningPlans /></StudentR>} />
         <Route path="/student/assignments" element={<StudentR><StudentCoursework /></StudentR>} />
         <Route path="/student/grades" element={<StudentR><StudentReleasedResults /></StudentR>} />
