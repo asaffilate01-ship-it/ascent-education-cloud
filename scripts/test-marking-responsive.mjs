@@ -7,17 +7,24 @@ try{
  const tenant='00000000-0000-4000-8000-000000000002';
  await context.addInitScript(({user})=>{const token=btoa(JSON.stringify({alg:'HS256',typ:'JWT'}))+'.'+btoa(JSON.stringify({sub:user.id,role:'authenticated',exp:Math.floor(Date.now()/1000)+3600}))+'.synthetic';localStorage.setItem('sb-unipathway-browser-ci-auth-token',JSON.stringify({access_token:token,refresh_token:'synthetic',token_type:'bearer',expires_at:Math.floor(Date.now()/1000)+3600,expires_in:3600,user}));},{user});
  const tables={unipathway_assessment_allocations:[{attempt_id:'attempt',marker_id:user.id}],unipathway_assessment_attempts:[{id:'attempt',brief_id:'brief',student_id:'student',attempt_no:1,evidence_text:'The writer makes a clear argument using examples.\nThe conclusion connects the examples to the main idea.\n'+('LongWord'.repeat(40)),status:'submitted',submitted_at:'2026-10-26T09:00:00Z'}],unipathway_assessment_briefs:[{id:'brief',title:'Academic writing: explanation and evidence',max_attempts:1,learning_outcomes:'Build an argument with evidence.'}],unipathway_assessment_criteria:['A','B'].map(code=>({id:code,brief_id:'brief',criterion_code:code,criterion_description:'Use evidence to explain your answer',learning_outcome:'Develop written reasoning',scoring_guidance:'Assess the clarity and relevance of each example.',max_points:50}))};
- let receipt;
+ let receipt,draft;let snippets=[];
  await context.route('https://unipathway-browser-ci.invalid/**',async route=>{const r=route.request(),url=new URL(r.url()),name=url.pathname.split('/').at(-1);let data=tables[name]||[];
- if(name==='profiles')data={full_name:'Synthetic assessor',tenant_id:tenant};else if(name==='user_roles')data=[{role:'assessor'}];else if(url.pathname.endsWith('/auth/v1/user'))data=user;else if(name==='record_unipathway_human_mark'){receipt=r.postDataJSON();data=null;}else if(url.pathname.includes('/rpc/'))data=null;
+ if(name==='uni_marking_drafts')data=draft?[draft]:[];else if(name==='save_uni_marking_draft'){const input=r.postDataJSON();draft={criteria:input.p_criteria,feedback:input.p_feedback,guidance:input.p_guidance,revision:(draft?.revision||0)+1,updated_at:new Date().toISOString()};data=draft;}else if(name==='uni_feedback_snippets'){if(r.method()==='POST')snippets.push({...r.postDataJSON(),id:'phrase'});data=snippets;}else if(name==='profiles')data={full_name:'Synthetic assessor',tenant_id:tenant};else if(name==='user_roles')data=[{role:'assessor'}];else if(url.pathname.endsWith('/auth/v1/user'))data=user;else if(name==='record_unipathway_human_mark'){receipt=r.postDataJSON();data=null;}else if(url.pathname.includes('/rpc/'))data=null;
  await route.fulfill({status:200,headers:{'access-control-allow-origin':'*','access-control-allow-headers':'*','content-type':'application/json'},body:JSON.stringify(data)});});
  await page.goto('http://127.0.0.1:8080/assessor/queue?attempt=attempt');
  await page.getByRole('heading',{name:'Academic writing: explanation and evidence',exact:true}).waitFor({timeout:20000});
  if(await page.getByRole('button',{name:'Reject all',exact:true}).count())await page.getByRole('button',{name:'Reject all',exact:true}).click();
  await page.waitForFunction(()=>document.querySelector('aside[aria-label="Dashboard navigation"]')?.getBoundingClientRect().right<=1);
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+ await page.getByLabel('Individual written feedback').waitFor();
  await page.getByLabel('To line').fill('2');await page.getByRole('button',{name:'Use selected lines as evidence'}).click();
  assert.match(await page.getByLabel('Evidence location or quoted excerpt').first().inputValue(),/lines 1–2/);
+ await page.getByLabel('Individual written feedback').fill('Private draft to resume after reloading.');
+ await page.getByRole('button',{name:'Save private draft',exact:true}).click();await page.getByText(/Draft revision 1 saved/).waitFor();
+ await page.reload();await page.getByLabel('Individual written feedback').waitFor();assert.equal(await page.getByLabel('Individual written feedback').inputValue(),'Private draft to resume after reloading.');assert.match(await page.getByLabel('Evidence location or quoted excerpt').first().inputValue(),/lines 1–2/);
+ await page.getByText('My reusable feedback',{exact:true}).click();await page.getByLabel('Phrase title',{exact:true}).fill('Comparison');await page.getByLabel('Reusable wording').fill('Compare the alternatives and justify your chosen approach.');await page.getByRole('button',{name:'Save phrase',exact:true}).click();await page.getByRole('button',{name:'Insert phrase',exact:true}).click();assert.match(await page.getByLabel('Individual written feedback').inputValue(),/Compare the alternatives/);
+ await page.getByRole('button',{name:'Save private draft',exact:true}).click();await page.getByText(/Draft revision 2 saved/).waitFor();
+ await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
  await page.screenshot({path:'/tmp/marking-mobile.png',fullPage:true});
  await page.setViewportSize({width:1440,height:1000});await page.waitForFunction(()=>document.querySelector('aside[aria-label="Dashboard navigation"]')?.getBoundingClientRect().left===0);
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);await page.screenshot({path:'/tmp/marking-desktop.png',fullPage:true});
@@ -27,5 +34,5 @@ try{
  await page.getByLabel('Individual written feedback').fill('Your examples support the main argument. Develop the comparison further by explaining why alternatives are less appropriate.');
  page.on('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'Send independent human mark to IQA'}).click();await page.waitForFunction(()=>!location.search.includes('attempt='));
  assert.equal(receipt.p_attempt,'attempt');assert.match(receipt.p_criteria[0].evidence,/lines 1–2/);assert.equal(errors.length,0,errors.join('\n'));
- console.log('390px/1440px: no overflow; citation preserved; complete marking submitted to IQA RPC with synthetic backend; no page errors.');
+ console.log('390px/1440px: no overflow; saved draft restored after reload; personal phrase inserted; citation preserved; complete marking submitted to IQA RPC with synthetic backend; no page errors.');
 }finally{await browser.close();}

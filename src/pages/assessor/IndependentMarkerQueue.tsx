@@ -1,3 +1,4 @@
+import FeedbackLibrary from '@/components/assessment/FeedbackLibrary';
 import EvidenceReview from '@/components/assessment/EvidenceReview';
 import {criterionComplete,feedbackPrompts,appendFeedback} from '@/lib/assessment/marking';
 import {useSearchParams} from 'react-router-dom';
@@ -33,6 +34,7 @@ function MarkerWorkspace(){
  const [criteria,setCriteria]=useState<Criterion[]>([]);const [drafts,setDrafts]=useState<AIDraft[]>([]);
  const [selected,setSelected]=useState(params.get('attempt')||'');const [scores,setScores]=useState<Record<string,MarkCriterion>>({});
  const [feedback,setFeedback]=useState('');const [guidance,setGuidance]=useState('');
+ const [draftRevision,setDraftRevision]=useState(0),[draftReady,setDraftReady]=useState(''),[draftError,setDraftError]=useState(''),[draftReload,setDraftReload]=useState(0),[savedAt,setSavedAt]=useState('');
  const [query,setQuery]=useState(''),[filter,setFilter]=useState('action'),[dirty,setDirty]=useState(false);
  useEffect(()=>{if(!dirty)return;const warn=(e:BeforeUnloadEvent)=>{e.preventDefault();e.returnValue='';};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn);},[dirty]);
  const [loading,setLoading]=useState(true);const [busy,setBusy]=useState('');const [error,setError]=useState('');
@@ -71,6 +73,23 @@ function MarkerWorkspace(){
  useEffect(()=>{void load();},[load]);
  const current=attempts.find(a=>a.id===selected);
  const brief=briefs.find(b=>b.id===current?.brief_id);
+ useEffect(()=>{let active=true;setDraftReady('');setDraftError('');setSavedAt('');setDraftRevision(0);
+  if(!current?.id)return;
+  setScores({});setFeedback('');setGuidance('');setDirty(false);
+  void Promise.resolve(db.from('uni_marking_drafts').select('criteria,feedback,guidance,revision,updated_at').eq('attempt_id',current.id).eq('marker_id',uid).eq('tenant_id',tenant).limit(1)).then(r=>{
+   if(!active)return;if(r.error)throw r.error;const draft=r.data?.[0];
+   if(draft){setScores(draft.criteria||{});setFeedback(draft.feedback||'');setGuidance(draft.guidance||'');setDraftRevision(draft.revision);setSavedAt(draft.updated_at);}
+   setDraftReady(current.id);
+  }).catch(()=>{if(active)setDraftError('Saved draft could not be checked. Retry before editing to avoid overwriting existing work.');});
+  return()=>{active=false;};
+ },[current?.id,uid,tenant,draftReload]);
+ async function saveDraft(){if(!current||draftReady!==current.id||busy)return;setBusy('draft');setDraftError('');
+  try{const r=await db.rpc('save_uni_marking_draft',{p_attempt:current.id,p_revision:draftRevision,p_criteria:scores,p_feedback:feedback,p_guidance:guidance});
+   if(r.error)throw r.error;const row=Array.isArray(r.data)?r.data[0]:r.data;if(!row?.revision)throw Error('Save receipt unavailable. Reload the saved draft to check its status.');
+   setDraftRevision(row.revision);setSavedAt(row.updated_at);setDirty(false);toast.success('Private draft saved. No mark submitted.');
+  }catch(e){setDraftError((e as {message?:string})?.message||'Draft save was not confirmed. Your edits remain here.');}finally{setBusy('');}
+ }
+
  const rubric=useMemo(()=>criteria.filter(c=>c.brief_id===current?.brief_id),[criteria,current?.brief_id]);
  const ai=drafts.find(d=>d.attempt_id===selected);
  const eligible=current&&['submitted','qa_rejected'].includes(current.status);
@@ -157,7 +176,7 @@ function MarkerWorkspace(){
        ['Expected coursework',brief.student_expectations],
        ['Required student evidence',brief.required_evidence]
       ] as const).map(([name,text])=><details key={name} className="mt-3 rounded-lg border p-3"><summary className="cursor-pointer text-sm font-semibold">{name}</summary><p className="mt-2 whitespace-pre-wrap text-sm">{text}</p></details>)}
-      <EvidenceReview key={current.id} text={current.evidence_text} criteria={rubric} onCite={eligible&&!busy?(code,citation)=>{if(scores[code]?.evidence&&!window.confirm('Replace the existing evidence citation for this criterion?'))return;change(code,'evidence',citation);}:undefined}/>
+      <EvidenceReview key={current.id} text={current.evidence_text} criteria={rubric} onCite={eligible&&!busy&&draftReady===current.id?(code,citation)=>{if(scores[code]?.evidence&&!window.confirm('Replace the existing evidence citation for this criterion?'))return;change(code,'evidence',citation);}:undefined}/>
       <CourseworkFiles attemptId={current.id}/>
 
      </div>
@@ -167,10 +186,14 @@ function MarkerWorkspace(){
      </div>
      {ai?<><p className="mt-2 text-sm text-muted-foreground">Model suggestion: {ai.suggested_raw_score}/100 internal rubric points — NOT approved.</p>
       <p className="mt-2 whitespace-pre-wrap text-sm"><strong>Gaps:</strong> {ai.missing_work}</p>
-      {eligible&&<Button className="mt-3" size="sm" variant="outline" disabled={!!busy} onClick={populate}>Copy draft into editable fields for human verification</Button>}</>:<p className="mt-2 text-sm text-muted-foreground">No authorised AI draft. You may mark entirely without AI or return to this later.</p>}
+      {eligible&&draftReady===current.id&&<Button className="mt-3" size="sm" variant="outline" disabled={!!busy} onClick={populate}>Copy draft into editable fields for human verification</Button>}</>:<p className="mt-2 text-sm text-muted-foreground">No authorised AI draft. You may mark entirely without AI or return to this later.</p>}
      </div>
-     {eligible&&<section className="rounded-xl border bg-card p-5"><h2 className="font-semibold"><ClipboardCheck className="mr-1 inline size-4"/>Independent criterion-by-criterion human assessment</h2>
-      <p role="status" className="mt-2 text-sm text-muted-foreground">{completed} of {rubric.length} criteria complete · {dirty?'Unsent edits — stay on this page until submitted':'No unsent edits'}</p><div className="mt-3 space-y-4">{rubric.map(c=>{const v=scores[c.criterion_code];
+     {eligible&&<div className="rounded-xl border bg-card p-4"><p role="status" className="text-sm">{draftReady!==current.id?'Checking your saved draft…':savedAt?`Draft revision ${draftRevision} saved ${new Date(savedAt).toLocaleString()}`:'No saved draft yet.'}</p>
+      {draftError&&<p role="alert" className="my-2 text-sm text-destructive">{draftError}</p>}
+      <div className="mt-2 flex flex-wrap gap-2"><Button variant="outline" disabled={!!busy||draftReady!==current.id||!dirty} onClick={()=>void saveDraft()}>{busy==='draft'?'Saving…':'Save private draft'}</Button>
+      <Button variant="ghost" disabled={!!busy} onClick={()=>{if(!dirty||window.confirm('Discard unsaved edits and reload your latest saved draft?'))setDraftReload(x=>x+1);}}>Reload saved draft</Button></div><p className="mt-2 text-xs text-muted-foreground">Save before leaving this page. Drafts do not submit a mark or notify the learner.</p></div>}
+     {eligible&&draftReady===current.id&&<section className="rounded-xl border bg-card p-5"><h2 className="font-semibold"><ClipboardCheck className="mr-1 inline size-4"/>Independent criterion-by-criterion human assessment</h2>
+      <p role="status" className="mt-2 text-sm text-muted-foreground">{completed} of {rubric.length} criteria complete · {dirty?'Unsaved edits — save your draft before leaving':'No unsaved edits'}</p><div className="mt-3 space-y-4">{rubric.map(c=>{const v=scores[c.criterion_code];
        return <fieldset disabled={!!busy} key={c.id} className="rounded-lg border p-4">
         <legend className="px-2 text-sm font-semibold">{c.criterion_code} — maximum {c.max_points} points</legend>
         <p className="text-sm">{c.learning_outcome}</p>
@@ -184,10 +207,11 @@ function MarkerWorkspace(){
       })}</div>
       <p className="mt-3 text-sm font-semibold">Raw rubric total: {rubric.reduce((sum,c)=>sum+Number(scores[c.criterion_code]?.points||0),0)}/100 before any policy-defined resubmission penalty.</p>
       <label className="mt-3 block text-sm font-semibold">Individual written feedback<Textarea className="mt-1" disabled={!!busy} maxLength={6000} rows={4} value={feedback} onChange={e=>{setDirty(true);setFeedback(e.target.value);}} placeholder="Summarise strengths, missed criteria, improvements and how to prepare for the next assessment"/></label>
+      <FeedbackLibrary disabled={!!busy} onInsert={text=>{const next=appendFeedback(feedback,text);if(next===null){toast.error('Feedback is limited to 6,000 characters.');return;}setFeedback(next);setDirty(true);}}/>
       <details className="mt-3 border-t pt-3"><summary className="cursor-pointer text-sm font-semibold">Feedback prompts</summary><p className="my-2 text-sm text-muted-foreground">Insert a starting point, then replace every bracketed instruction with feedback specific to this submission. Prompts never set scores.</p><div className="flex flex-wrap gap-2">{feedbackPrompts.map(p=><Button key={p.id} size="sm" variant="outline" disabled={!!busy} onClick={()=>{const next=appendFeedback(feedback,p.text);if(next===null){toast.error('Feedback is limited to 6,000 characters. Shorten it before adding a prompt.');return;}setFeedback(next);setDirty(true);}}>{p.label}</Button>)}</div></details>
       <Button className="mt-3 w-full sm:w-auto" disabled={!!busy||!rubric.length||completed!==rubric.length||feedback.trim().length<40} onClick={()=>void mark()}>Send independent human mark to IQA</Button>
      </section>}
-     {current.status==='submitted'&&current.attempt_no<brief.max_attempts&&Date.now()<=new Date(brief.submission_cutoff).getTime()&&
+     {draftReady===current.id&&current.status==='submitted'&&current.attempt_no<brief.max_attempts&&Date.now()<=new Date(brief.submission_cutoff).getTime()&&
       <section className="rounded-xl border bg-card p-5"><h2 className="flex gap-2 font-semibold"><RotateCcw className="size-5"/>Return for resubmission instead</h2>
        <p className="mt-2 text-xs text-muted-foreground">Allowed by {brief.policy_reference}. Provide precise reasons and improvement instructions. Remaining time: until {new Date(brief.submission_cutoff).toLocaleString()}.</p>
        <Textarea disabled={!!busy} aria-label="Resubmission guidance" rows={4} className="mt-3" maxLength={6000} value={guidance} onChange={e=>{setDirty(true);setGuidance(e.target.value);}} placeholder="Explain which learning outcomes are not evidenced, what work needs adding, and how to correct it."/>
