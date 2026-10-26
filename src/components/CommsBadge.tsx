@@ -1,0 +1,5 @@
+import {useEffect,useState} from 'react';import {Link} from 'react-router-dom';import {Mail} from 'lucide-react';import {db} from '@/lib/db';import {useAuth} from '@/contexts/AuthContext';
+export default function CommsBadge(){const {user}=useAuth();const [count,setCount]=useState(0);
+ useEffect(()=>{let alive=true;setCount(0);const refresh=async()=>{if(!user?.id)return;try{const r=await db.from('uni_mail_alerts').select('id',{count:'exact',head:true}).eq('user_id',user.id).is('read_at',null);if(alive)setCount(r.error?0:r.count||0);}catch{if(alive)setCount(0);}};void refresh();const timer=setInterval(()=>void refresh(),60000);return()=>{alive=false;clearInterval(timer);};},[user?.id]);
+ return <Link to="/communications" aria-label={`Communications${count?`, ${count} unread alerts`:''}`} className="relative flex min-h-11 min-w-11 items-center justify-center rounded-lg border hover:bg-accent"><Mail className="size-4"/>{count>0&&<span className="absolute -right-1 -top-1 rounded-full bg-primary px-1.5 text-[10px] text-primary-foreground">{count>99?'99+':count}</span>}</Link>;
+}

@@ -6,6 +6,7 @@ export class OmniqoraError extends Error {
   constructor(message: string, public status = 503) { super(message); }
 }
 const roles: Record<string, string[]> = {
+  'omniqora-comms-assistant': ['student','lecturer','centre_director','superadmin','admissions_admin','agent','programme_leader','finance_officer','exams_officer','iqa_officer','assessor','marketing_officer','welfare_officer','parent_guardian','employer_partner','university_partner','awarding_body_eqa','security_officer'],
   'ai-course-builder': ['lecturer', 'programme_leader', 'centre_director', 'superadmin'],
   'ai-study-assistant': ['student', 'lecturer', 'programme_leader', 'centre_director', 'superadmin'],
   'ai-grading-assistant': ['assessor', 'iqa_officer'],

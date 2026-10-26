@@ -123,6 +123,7 @@ const CentreSyllabusPlanner = lazy(() => import("./pages/programme/CentreSyllabu
 const AwardingBodyDashboard = lazy(() => import("./pages/eqa/AwardingBodyDashboard"));
 
 // External + shared
+const CommunicationsWorkspace = lazy(() => import("./pages/messaging/CommunicationsWorkspace"));
 const MessagingInbox = lazy(() => import("./pages/messaging/MessagingInbox"));
 const NotificationCentre = lazy(() => import("./pages/notifications/NotificationCentre"));
 const SettingsPage = lazy(() => import("./pages/settings/SettingsPage"));
@@ -587,6 +588,7 @@ function AppRoutes() {
         <Route path="/predictive-analytics" element={<Director><PredictiveAnalytics /></Director>} />
         <Route path="/documents" element={<P><DocumentManagement /></P>} />
         <Route path="/email-campaigns" element={<Marketing><EmailCampaigns /></Marketing>} />
+        <Route path="/communications" element={<P><CommunicationsWorkspace /></P>} />
         <Route path="/messaging" element={<P><MessagingInbox /></P>} />
         <Route path="/notifications" element={<P><NotificationCentre /></P>} />
         <Route path="/settings" element={<P><SettingsPage /></P>} />
