@@ -1,5 +1,6 @@
 import {useCallback,useEffect,useMemo,useState} from 'react';
-import {Link} from 'react-router-dom';
+import {Link,useSearchParams} from 'react-router-dom';
+import ModuleJourney from '@/components/assessment/ModuleJourney';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {useAuth} from '@/contexts/AuthContext';
 import {db} from '@/lib/db';
@@ -29,6 +30,8 @@ const providers:Record<string,string>={
 const blockedStates=new Set(['awaiting_provider','provisioning','ready','active','paused']);
 export default function LabLearningHub(){
  const {user}=useAuth();
+ const [params,setParams]=useSearchParams();
+ const selectedModule=params.get('module')||'';
  const [modules,setModules]=useState<Module[]>([]);
  const [templates,setTemplates]=useState<Template[]>([]);
  const [runs,setRuns]=useState<Run[]>([]);
@@ -130,7 +133,9 @@ export default function LabLearningHub(){
   if(e){toast.error('Help request not saved: '+e.message);return;}
   setHelpText(p=>({...p,[request.id]:''}));
   toast.success('Tutor help request saved to the practical lab queue');
+  await load();
  };
+ const visibleTemplates=selectedModule?templates.filter(t=>t.module_id===selectedModule):templates;
  const availableRuns=useMemo(()=>runs.filter(r=>invites.some(i=>i.class_run_id===r.id)),[runs,invites]);
  return <DashboardLayout title="My practical labs" subtitle="Cloud, programming, coding and data labs inside your UniPathway course">
   <div className="mb-5 rounded-xl border bg-primary/5 p-5">
@@ -139,13 +144,25 @@ export default function LabLearningHub(){
    <div className="mt-3 flex flex-wrap gap-3 text-sm">
     <Link className="inline-flex items-center gap-1 font-semibold underline" to="/student/materials"><BookOpen className="size-4"/>Course notes & slides</Link>
     <Link className="inline-flex items-center gap-1 font-semibold underline" to="/student/classroom"><GraduationCap className="size-4"/>Live classes</Link>
-    <Link className="inline-flex items-center gap-1 font-semibold underline" to="/coding"><Code2 className="size-4"/>Browser coding practice (demo)</Link>
+    <Link className="inline-flex items-center gap-1 font-semibold underline" to="/coding"><Code2 className="size-4"/>Browser coding practice</Link>
    </div>
   </div>
+  <div className="mb-4 flex flex-wrap items-end gap-3">
+   <label className="min-w-0 flex-1 text-sm font-medium">Course module
+    <select className="mt-1 block min-h-11 w-full rounded-lg border bg-background px-3" value={selectedModule}
+     onChange={e=>setParams(previous=>{const next=new URLSearchParams(previous);if(e.target.value)next.set('module',e.target.value);else next.delete('module');return next;})}>
+     <option value="">All my modules</option>
+     {selectedModule&&!modules.some(m=>m.id===selectedModule)&&<option value={selectedModule}>Selected module unavailable</option>}
+     {modules.map(m=><option key={m.id} value={m.id}>{m.title}</option>)}
+    </select>
+   </label>
+   <Button variant="outline" disabled={loading||!!busy} onClick={()=>void load()}>Refresh labs and replies</Button>
+  </div>
+  {modules.some(m=>m.id===selectedModule)&&<ModuleJourney moduleId={selectedModule}/>}
   {loading&&<p role="status">Checking your enrolled modules and lab permissions…</p>}
-  {error&&<p role="alert" className="rounded-xl border border-destructive p-5">{error}. Lab schema, tenant assignment and RLS must be reconciled before live use.</p>}
-  {!loading&&!error&&templates.length===0&&<p className="rounded-xl border bg-card p-6">No published practical labs are assigned to your enrolled modules yet. Course reading materials and the basic coding practice remain separately available.</p>}
-  {!loading&&!error&&<div className="space-y-6">{templates.map(t=>{
+  {error&&<div role="alert" className="rounded-xl border border-destructive p-5"><p>We could not load your labs. Retry, or contact your course team if this continues.</p><Button className="mt-3" variant="outline" onClick={()=>void load()}>Retry</Button></div>}
+  {!loading&&!error&&visibleTemplates.length===0&&<p className="rounded-xl border bg-card p-6">No published practical labs are assigned to your enrolled modules yet. Course reading materials and the basic coding practice remain separately available.</p>}
+  {!loading&&!error&&<div className="space-y-6">{visibleTemplates.map(t=>{
    const module=modules.find(m=>m.id===t.module_id);
    const current=requests.find(r=>r.template_id===t.id&&blockedStates.has(r.status));
    const classRuns=availableRuns.filter(r=>r.template_id===t.id&&['scheduled','active'].includes(r.status));
@@ -185,7 +202,7 @@ export default function LabLearningHub(){
       </article>;
      })}</div>}
     {current&&<div className="mt-4 border-t pt-4"><h3 className="flex items-center gap-2 font-semibold"><HelpCircle className="size-4"/>Ask your lab tutor</h3>
-     <div className="mt-3 flex flex-wrap items-end gap-2"><Textarea className="min-w-52 flex-1" rows={2} maxLength={1600}
+     <div className="mt-3 flex flex-wrap items-end gap-2"><Textarea aria-label="Question for your lab tutor" className="min-w-0 w-full sm:flex-1" rows={2} maxLength={1600}
       placeholder="Describe the task, error or problem you're facing…" value={helpText[current.id]||''}
       onChange={e=>setHelpText(p=>({...p,[current.id]:e.target.value}))}/>
       <Button variant="outline" disabled={!!busy||(helpText[current.id]||'').trim().length<4} onClick={()=>requestHelp(current)}>Request help</Button></div>

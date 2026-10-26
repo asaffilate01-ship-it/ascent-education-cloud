@@ -40,7 +40,7 @@ Still required for a full interactive language lab: managed live pair/group spea
 
 ## Is the virtual tech lab complete?
 
-No. Built elements include assigned lab offerings, online/in-centre/self-study modes, tasks, help requests, launch queues, capacity/budget checks and an AWS AppStream launch adapter. Those require modern lab-schema activation and hosted provider acceptance. Browser JavaScript exercises are isolated playgrounds; the legacy Python demo is a simulation, not a real Python runtime. Real Python/Linux/Windows/cyber labs need provisioned isolated environments, images, persistence, controlled networking and enforced shutdown. Do not point these at production business infrastructure.
+No. Built elements include assigned lab offerings, online/in-centre/self-study modes, tasks, help requests, launch queues, capacity/budget checks and an AWS AppStream launch adapter. Those require modern lab-schema activation and hosted provider acceptance. Browser JavaScript and Python now execute in disposable workers inside an opaque-origin frame. Python uses pinned Pyodide 0.27.7, downloads its runtime on first use and supports standard-library exercises and supplied input; this is not a persistent cloud desktop or a complete offline lab. Linux/Windows/cyber labs and persistent Python projects still need provisioned isolated environments, images, persistence, controlled networking and enforced shutdown. Do not point these at production business infrastructure.
 
 ## UI/UX coverage
 
