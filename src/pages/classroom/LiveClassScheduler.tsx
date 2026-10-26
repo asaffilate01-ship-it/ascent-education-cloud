@@ -1,145 +1,58 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import {useState,useEffect,useRef} from 'react';
+import {Link,useSearchParams} from 'react-router-dom';
+import {useQuery,useQueryClient} from '@tanstack/react-query';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import {isTeamsMeetingUrl as validTeamsUrl} from '@/lib/teamsTeaching';
-import { db } from '@/lib/db';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
-import { CalendarDays, ShieldCheck, Users, Video } from 'lucide-react';
-
-type Module={id:string;title:string;programme_id:string;tenant_id:string;lecturer_id:string|null};
-type Enrolment={student_id:string;programme_id:string;tenant_id:string;status:string};
-type Student={user_id:string;full_name:string|null;email:string|null;tenant_id:string|null};
-type Session={id:string;title:string;module_id:string|null;starts_at:string;ends_at:string;status:string;capacity:number};
-export default function LiveClassScheduler(){
- const {user}=useAuth();
- const [tenantId,setTenantId]=useState<string|null>(user?.tenantId||null);
- const [modules,setModules]=useState<Module[]>([]);
- const [sessions,setSessions]=useState<Session[]>([]);
- const [students,setStudents]=useState<Student[]>([]);
- const [enrolments,setEnrolments]=useState<Enrolment[]>([]);
- const [invites,setInvites]=useState<{session_id:string;user_id:string}[]>([]);
- const [error,setError]=useState('');
- const [loading,setLoading]=useState(true);
- const [saving,setSaving]=useState(false);
- const [title,setTitle]=useState('');const [moduleId,setModuleId]=useState('');
- const [start,setStart]=useState('');const [end,setEnd]=useState('');
- const [joinUrl,setJoinUrl]=useState('');
- const [organiserId,setOrganiserId]=useState('');
- const [organisers,setOrganisers]=useState<{user_id:string;display_name:string}[]>([]);
- const [organiserError,setOrganiserError]=useState('');
- const [capacity,setCapacity]=useState(20);
- const [recipient,setRecipient]=useState<Record<string,string>>({});
- const manager=!!user?.roles.some(x=>['programme_leader','centre_director','superadmin'].includes(x));
- useEffect(()=>{if(!user?.id)return;let active=true;(async()=>{
-  let t=user.tenantId||null;
-  if(!t&&user.roles.includes('superadmin')){const {data}=await db.from('tenants').select('id').eq('slug','unipathway').maybeSingle();t=data?.id||null;}
-  if(active)setTenantId(t);
- })();return()=>{active=false};},[user?.id,user?.tenantId,user?.roles.join('|')]);
- useEffect(()=>{if(!user?.id)return;if(!tenantId){setLoading(false);setError('No approved centre tenant is attached to this account.');return;}
-  let active=true;setLoading(true);setError('');
-  void Promise.all([
-   db.from('modules').select('id,title,programme_id,tenant_id,lecturer_id').eq('tenant_id',tenantId),
-   db.from('live_class_sessions').select('id,title,module_id,starts_at,ends_at,status,capacity').eq('tenant_id',tenantId).order('starts_at',{ascending:true}),
-   db.from('student_enrolments').select('student_id,programme_id,tenant_id,status').eq('tenant_id',tenantId).eq('status','active'),
-   db.from('profiles').select('user_id,full_name,email,tenant_id').eq('tenant_id',tenantId),
-   db.from('live_class_invitations').select('session_id,user_id').eq('tenant_id',tenantId),
-  ]).then(([m,s,e,p,i])=>{
-   if(!active)return;
-   const bad=[m,s,e,p,i].find(x=>x.error);
-   if(bad){setError(bad.error.message);setLoading(false);return;}
-   const eligible=manager?(m.data||[]):(m.data||[]).filter((row:Module)=>row.lecturer_id===user.id);
-   setModules(eligible as Module[]);setSessions((s.data||[]) as Session[]);
-   setEnrolments((e.data||[]) as Enrolment[]);setStudents((p.data||[]) as Student[]);
-   setInvites((i.data||[]) as {session_id:string;user_id:string}[]);
-   setLoading(false);
-  }).catch(()=>{if(active){setError('Cannot load secure classroom scheduling.');setLoading(false);}});
-  return()=>{active=false};
- },[tenantId,user?.id,manager]);
- useEffect(()=>{let active=true;setOrganiserId('');setOrganisers([]);setOrganiserError('');
-  if(!moduleId)return;
-  void Promise.resolve(db.rpc('unipathway_module_organisers',{p_module:moduleId})).then(r=>{if(!active)return;if(r.error)setOrganiserError('Connected organiser list unavailable. Check Teams setup.');else setOrganisers(r.data||[]);}).catch(()=>{if(active)setOrganiserError('Connected organiser list unavailable.');});
-  return()=>{active=false;};
- },[moduleId,user?.id]);
- const available=useMemo(()=>sessions.filter(s=>modules.some(m=>m.id===s.module_id)),[sessions,modules]);
- const create=async()=>{
-  if(!tenantId||!user?.id||!moduleId||!title.trim()||!start||!end||!validTeamsUrl(joinUrl)){
-   toast.error('Choose a module, dates and a valid Microsoft Teams meeting link.');return;
-  }
-  if(new Date(end).getTime()<=new Date(start).getTime()){toast.error('Class must end after it starts.');return;}
-  setSaving(true);
-  const {data,error:e}=await db.from('live_class_sessions').insert({
-   tenant_id:tenantId,module_id:moduleId,organiser_user_id:organiserId||user.id,title:title.trim(),
-   starts_at:new Date(start).toISOString(),ends_at:new Date(end).toISOString(),
-   join_url:joinUrl.trim(),provider:'microsoft_teams',status:'scheduled',capacity,
-   recording_enabled:true,transcript_enabled:true,whiteboard_enabled:true
-  }).select('id,title,module_id,starts_at,ends_at,status,capacity').single();
-  setSaving(false);
-  if(e){toast.error('Class was not scheduled: '+e.message);return;}
-  setSessions(prev=>[...prev,data as Session].sort((a,b)=>a.starts_at.localeCompare(b.starts_at)));
-  setTitle('');setStart('');setEnd('');setJoinUrl('');toast.success('Class saved. Now invite enrolled students.');
- };
- const invite=async(session:Session)=>{
-  const id=recipient[session.id],module=modules.find(m=>m.id===session.module_id);
-  if(!id||!user?.id||!tenantId||!module)return;
-  setSaving(true);
-  const {error:e}=await db.from('live_class_invitations').insert({tenant_id:tenantId,session_id:session.id,user_id:id,invited_by:user.id,status:'invited'});
-  setSaving(false);
-  if(e){toast.error('Invitation rejected: '+e.message);return;}
-  setInvites(prev=>[...prev,{session_id:session.id,user_id:id}]);
-  setRecipient(prev=>({...prev,[session.id]:''}));
-  toast.success('Invitation saved. Student access is now scoped to this class. Notification delivery requires separate configuration.');
- };
- const inviteWholeClass=async(session:Session)=>{
-  if(!window.confirm('Invite every actively enrolled student to this lecture, up to the planned class capacity? This records access invitations only; external email delivery is separate.'))return;
-  setSaving(true);
-  const {data,error:e}=await db.rpc('invite_enrolled_unipathway_lecture',{p_session:session.id});
-  if(e){setSaving(false);toast.error('Bulk invitation rejected: '+e.message);return;}
-  const {data:all,error:refreshError}=await db.from('live_class_invitations').select('session_id,user_id')
-    .eq('session_id',session.id).eq('status','invited');
-  setSaving(false);
-  if(refreshError){toast.error('Invitations saved; refresh list unavailable.');return;}
-  setInvites(previous=>[...previous.filter(i=>i.session_id!==session.id),...((all||[]) as {session_id:string;user_id:string}[])]);
-  toast.success(String(data||0)+' new students invited to the class.');
- };
- return <DashboardLayout title="Class schedules and invitations" subtitle="Enterprise Teams scheduling with UniPathway course and learner permissions">
-  <section className="mb-5 rounded-xl border border-primary/25 bg-primary/5 p-4"><h2 className="flex items-center gap-2 font-bold"><ShieldCheck className="size-5"/>Invitations are stored under the approved centre</h2>
-   <p className="mt-2 text-sm text-muted-foreground">Only an active programme enrolment with an explicit class invitation grants student access. Create a Microsoft Teams calendar meeting as an authorised organiser first, then enter its link here. Automatic Graph scheduling and recording ingestion require Microsoft tenant setup, admin consent, meeting policies and end-to-end validation.</p>
-   <Link to="/lecturer/classroom" className="mt-2 inline-block text-sm font-semibold underline">View classroom</Link>
-  </section>
-  {loading&&<p role="status">Checking centre modules and invitations…</p>}
-  {error&&<p role="alert" className="rounded-lg border border-destructive p-4">{error} — confirm deployed schema, tenant mapping and RLS first.</p>}
-  {!loading&&!error&&<div className="space-y-6">
-   <section className="rounded-xl border bg-card p-5"><h2 className="mb-3 flex gap-2 font-bold"><CalendarDays className="size-5"/>Schedule Teams lesson</h2>
-    <div className="grid gap-3 md:grid-cols-2">
-      <label className="text-sm font-medium">Assigned module<select className="mt-1 w-full rounded-md border bg-background p-2" value={moduleId} onChange={e=>setModuleId(e.target.value)}><option value="">Select a module</option>{modules.map(m=><option key={m.id} value={m.id}>{m.title}</option>)}</select></label>
-      <label className="text-sm font-medium">Class name<Input className="mt-1" value={title} onChange={e=>setTitle(e.target.value)} maxLength={120}/></label>
-      <label className="text-sm font-medium">Start time<Input className="mt-1" type="datetime-local" value={start} onChange={e=>setStart(e.target.value)}/></label>
-      <label className="text-sm font-medium">End time<Input className="mt-1" type="datetime-local" value={end} onChange={e=>setEnd(e.target.value)}/></label>
-    </div><label className="mt-3 block text-sm font-medium">Microsoft meeting organiser<select className="mt-1 w-full rounded-md border bg-background p-2" value={organiserId} onChange={e=>setOrganiserId(e.target.value)}><option value="">My own Microsoft account</option>{organisers.filter(o=>o.user_id!==user?.id).map(o=><option key={o.user_id} value={o.user_id}>{o.display_name}</option>)}</select></label>
-    {organiserError&&<p role="alert" className="text-sm">{organiserError}</p>}
-    <p className="mt-2 text-xs text-muted-foreground">Choose the actual owner of the Teams calendar meeting. A connected coordinator can organise several classes while assigned lecturers teach as co-organisers or presenters. Assign those roles in Teams; this selection does not change Microsoft roles or licences.</p>
-    <label className="mt-3 block text-sm font-medium">Microsoft Teams calendar meeting URL<Input className="mt-1" type="url" value={joinUrl} placeholder="https://teams.microsoft.com/l/meetup-join/..." onChange={e=>setJoinUrl(e.target.value)}/></label>
-    <label className="mt-3 block text-sm font-medium">Planned lecture capacity<select aria-label="Planned lecture capacity" className="mt-1 w-full rounded-md border bg-background p-2" value={capacity} onChange={e=>setCapacity(Number(e.target.value))}>{[20,30,50,100,150,200,250,300,350,500,1000].map(n=><option value={n} key={n}>{n} learners</option>)}</select></label>
-    <p className="mt-2 text-xs text-muted-foreground">Validate the chosen native Teams meeting limits and your Realtime plan. Capacity is a planning ceiling, not proof of admission or licensing. Recording is requested, not guaranteed. Configure Teams recording/transcription and ensure learners receive the required notices and consent information.</p>
-    <Button className="mt-3" disabled={saving||!tenantId} onClick={create}><Video className="mr-2 size-4"/>Schedule class</Button>
-   </section>
-   <section className="space-y-3"><h2 className="flex items-center gap-2 text-xl font-bold"><Users className="size-5"/>Invite eligible students</h2>
-    {available.length===0&&<p className="rounded-lg border p-4 text-sm text-muted-foreground">No classes assigned or scheduled yet.</p>}
-    {available.map(s=>{const module=modules.find(m=>m.id===s.module_id);
-     const allowed=enrolments.filter(e=>e.programme_id===module?.programme_id && e.status==='active')
-       .map(e=>students.find(p=>p.user_id===e.student_id)).filter((x):x is Student=>!!x)
-       .filter(p=>!invites.some(i=>i.session_id===s.id&&i.user_id===p.user_id));
-     const count=invites.filter(i=>i.session_id===s.id).length;
-     const eligibleCount=new Set(enrolments.filter(e=>e.programme_id===module?.programme_id).map(e=>e.student_id)).size;
-     return <article key={s.id} className="rounded-xl border bg-card p-4">
-      <h3 className="font-semibold">{s.title}</h3><p className="mt-1 text-xs text-muted-foreground">{module?.title} · {new Date(s.starts_at).toLocaleString()} · {eligibleCount} enrolled · {count} recorded invitation(s) · planned capacity {s.capacity}</p>
-      <div className="mt-3 flex flex-wrap items-end gap-2"><label className="min-w-52 flex-1 text-sm font-medium">Enrolled learner<select className="mt-1 w-full rounded-md border bg-background p-2" value={recipient[s.id]||''} onChange={e=>setRecipient(p=>({...p,[s.id]:e.target.value}))}><option value="">Choose a student</option>{allowed.map(p=><option key={p.user_id} value={p.user_id}>{p.full_name||p.email||p.user_id}</option>)}</select></label><Button disabled={saving||!recipient[s.id]} onClick={()=>invite(s)}>Invite one</Button><Button variant="outline" disabled={saving||eligibleCount===0} onClick={()=>void inviteWholeClass(s)}>Invite entire class ({eligibleCount})</Button></div>
-     </article>;
-    })}
-   </section>
-  </div>}
- </DashboardLayout>;
+import {db} from '@/lib/db';
+import {useAuth} from '@/contexts/AuthContext';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {pakistanClassTime} from '@/lib/classroomExperience';
+type Class={id:string;module_id:string;organiser_user_id:string;title:string;starts_at:string;ends_at:string;status:string;teams_sync_status:string;join_url:string|null};
+type Job={session_id:string;status:string;revision:number;error_code:string|null};
+const localTime=(value:string)=>{const d=new Date(value);return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);};
+export default function LiveClassScheduler(){const {user}=useAuth();return <Scheduler key={`${user?.id}:${user?.tenantId}`}/>;}
+function Scheduler(){
+ const {user}=useAuth(),cache=useQueryClient();const [params,setParams]=useSearchParams();const module=params.get('module')||'';
+ const pendingEdit=useRef<Class|null>(null);const [editRevision,setEditRevision]=useState(0);
+ const [editing,setEditing]=useState<Class|null>(null),[id,setId]=useState<string>(crypto.randomUUID()),[title,setTitle]=useState(''),[organiser,setOrganiser]=useState(''),[start,setStart]=useState(''),[end,setEnd]=useState(''),[students,setStudents]=useState<string[]>([]),[message,setMessage]=useState(''),[busy,setBusy]=useState(false);
+ const key=['calendar-scheduler',user?.id,user?.tenantId];
+ const state=useQuery({queryKey:key,enabled:!!user?.tenantId,refetchInterval:30000,queryFn:async()=>{
+  const [m,s,j,i]=await Promise.all([
+   db.from('modules').select('id,title').eq('tenant_id',user!.tenantId),
+   db.from('live_class_sessions').select('id,module_id,organiser_user_id,title,starts_at,ends_at,status,teams_sync_status,join_url').eq('tenant_id',user!.tenantId).order('starts_at',{ascending:false}).limit(200),
+   db.from('uni_calendar_jobs').select('session_id,status,revision,error_code').eq('tenant_id',user!.tenantId),
+   db.from('live_class_invitations').select('session_id,user_id,status').eq('tenant_id',user!.tenantId).in('status',['invited','accepted'])]);
+  if([m,s,j,i].some(r=>r.error))throw Error('Scheduling could not be loaded. Check the classroom database deployment and your module assignment.');
+  return {modules:m.data as {id:string;title:string}[],classes:s.data as Class[],jobs:j.data as Job[],invites:i.data as {session_id:string;user_id:string}[]};
+ }});
+ const candidates=useQuery({queryKey:[...key,'candidates',module],enabled:!!module,queryFn:async()=>{const r=await db.rpc('uni_calendar_candidates',{p_module:module});if(r.error)throw Error('Assigned module and enabled Microsoft organiser required.');return r.data as {students:{id:string;name:string}[];organisers:{id:string;name:string}[]};}});
+ function reset(){setEditing(null);setId(crypto.randomUUID());setTitle('');setOrganiser('');setStart('');setEnd('');setStudents([]);}
+ useEffect(()=>{if(pendingEdit.current?.module_id===module){const c=pendingEdit.current;pendingEdit.current=null;loadEdit(c);}else reset();},[module]);
+ function loadEdit(c:Class){setEditing(c);setEditRevision(state.data!.jobs.find(j=>j.session_id===c.id)?.revision||0);setId(c.id);setTitle(c.title);setOrganiser(c.organiser_user_id);setStart(localTime(c.starts_at));setEnd(localTime(c.ends_at));setStudents(state.data!.invites.filter(i=>i.session_id===c.id).map(i=>i.user_id));}
+ function edit(c:Class){if(c.module_id!==module){pendingEdit.current=c;setParams({module:c.module_id});}else loadEdit(c);}
+ async function save(cancel=false){if(busy)return;setBusy(true);setMessage('');try{
+  if(!module||!organiser||!title.trim()||!start||!end)throw Error('Complete the module, organiser, title and dates.');
+  const r=await db.rpc('save_uni_calendar_class',{p_id:id,p_module:module,p_organiser:organiser,p_title:title,p_start:new Date(start).toISOString(),p_end:new Date(end).toISOString(),p_students:students,p_revision:editing?editRevision:0,p_cancel:cancel});
+  if(r.error)throw Error(r.error.message);reset();setMessage(cancel?'Cancellation queued. Microsoft confirmation will appear below.':'Class saved and Microsoft invitation delivery queued.');await cache.invalidateQueries({queryKey:key});
+ }catch(e){setMessage(e instanceof Error?e.message:'Class could not be saved.');}finally{setBusy(false);}}
+ async function cancelClass(session:string){if(!window.confirm('Cancel this class now and queue Microsoft cancellation notices?'))return;setBusy(true);try{const r=await db.rpc('cancel_uni_calendar_class',{p_session:session});if(r.error)throw r.error;reset();setMessage('Class cancelled in UniPathway. Microsoft cancellation is pending confirmation.');await state.refetch();}catch{setMessage('Cancellation could not be saved. Refresh and retry.');}finally{setBusy(false);}}
+ async function review(session:string){setBusy(true);try{const r=await db.rpc('review_uni_calendar_delivery',{p_session:session});if(r.error)throw r.error;setMessage('Provider verification queued. An uncertain creation will not be sent again automatically.');await state.refetch();}catch{setMessage('Verification could not be queued. Refresh and retry.');}finally{setBusy(false);}}
+ return <DashboardLayout title="Schedule a live class" subtitle="Choose the class and learners; track Microsoft invitation delivery here">
+ <Link className="underline" to={`/lecturer/classroom${module?`?module=${module}`:''}`}>View classroom</Link>
+ {state.isLoading?<p role="status">Loading your teaching modules…</p>:state.isError?<p role="alert">{state.error.message} <Button variant="outline" onClick={()=>state.refetch()}>Retry</Button></p>:<div className="mt-5 space-y-6">
+ <section className="rounded-xl border bg-card p-5 space-y-4"><h2 className="text-xl font-bold">{editing?'Update class':'New class'}</h2>
+ <label className="block">Module<select className="mt-1 min-h-11 w-full rounded border bg-background p-2" value={module} disabled={busy} onChange={e=>setParams({module:e.target.value})}><option value="">Choose a module</option>{state.data?.modules.map(m=><option key={m.id} value={m.id}>{m.title}</option>)}</select></label>
+ {module&&<><p className="text-sm text-muted-foreground">Invitations use verified @unipathway.pk Microsoft accounts. The calendar worker, Graph consent and Teams licences must be connected before delivery.</p>
+ {candidates.isError&&<p role="alert">{candidates.error.message}</p>}
+ {!candidates.isLoading&&candidates.data?.organisers.length===0&&<p role="alert">No enabled Microsoft organiser is connected. Complete account activation in Teams setup.</p>}
+ <fieldset disabled={busy} className="space-y-4"><legend className="sr-only">Class details</legend>
+ <label className="block">Class title<Input value={title} maxLength={120} onChange={e=>setTitle(e.target.value)}/></label>
+ <label className="block">Meeting organiser<select disabled={!!editing} value={organiser} onChange={e=>setOrganiser(e.target.value)} className="mt-1 min-h-11 w-full rounded border bg-background p-2"><option value="">Choose connected organiser</option>{candidates.data?.organisers.map(o=><option key={o.id} value={o.id}>{o.name}</option>)}</select></label>
+ <div className="grid gap-4 sm:grid-cols-2"><label>Starts<Input type="datetime-local" value={start} onChange={e=>setStart(e.target.value)}/></label><label>Ends<Input type="datetime-local" value={end} onChange={e=>setEnd(e.target.value)}/></label></div><p className="text-sm text-muted-foreground">Enter times in your device timezone ({Intl.DateTimeFormat().resolvedOptions().timeZone}). Classroom listings show Pakistan time.</p>
+ <fieldset className="rounded-lg border p-3"><legend>Invited learners ({students.length})</legend><Button type="button" variant="ghost" onClick={()=>setStudents(candidates.data!.students.map(s=>s.id))}>Select all enrolled learners</Button><div className="max-h-64 overflow-auto">{candidates.data?.students.map(s=><label key={s.id} className="flex min-h-11 items-center gap-3"><input type="checkbox" checked={students.includes(s.id)} onChange={e=>setStudents(v=>e.target.checked?[...v,s.id]:v.filter(x=>x!==s.id))}/>{s.name}</label>)}</div>{!candidates.data?.students.length&&<p>No active learners are enrolled in this programme.</p>}</fieldset>
+ <div className="flex flex-wrap gap-3"><Button disabled={!organiser||!title||!start||!end||!candidates.data?.organisers.some(o=>o.id===organiser)} onClick={()=>void save()}>{busy?'Saving…':editing?'Queue calendar update':'Schedule and invite'}</Button>{editing&&<><Button variant="outline" onClick={reset}>New class</Button><Button variant="outline" onClick={()=>void cancelClass(id)}>Cancel class</Button></>}</div></fieldset></>}
+ </section>
+ <p role="status">{message}</p>
+ <section className="space-y-3"><h2 className="text-xl font-bold">Classes and delivery status</h2>{state.data?.classes.filter(c=>!module||c.module_id===module).map(c=>{const j=state.data.jobs.find(j=>j.session_id===c.id);return <article key={c.id} className="rounded-xl border bg-card p-4"><h3 className="font-semibold">{c.title}</h3><p className="my-2 text-sm">{pakistanClassTime(c.starts_at)} · {c.status} · {j?.status?.replace(/_/g,' ')||'Existing manual meeting'}</p>{j?.error_code&&<p className="text-sm" role="alert">Delivery needs attention: {j.error_code.replace(/_/g,' ')}. No delivery success has been assumed.</p>}<div className="mt-3 flex gap-3">{j&&<Button variant="outline" disabled={busy||['processing','needs_review'].includes(j.status)||c.status==='cancelled'} onClick={()=>edit(c)}>Edit class / invitees</Button>}{j&&c.status!=='cancelled'&&<Button variant="outline" disabled={busy} onClick={()=>void cancelClass(c.id)}>Cancel class</Button>}{j?.status==='needs_review'&&<Button variant="outline" disabled={busy} onClick={()=>void review(c.id)}>Verify provider status</Button>}</div></article>;})}{state.data?.classes.length===0&&<p>No live classes have been scheduled.</p>}</section>
+ </div>}</DashboardLayout>;
 }
