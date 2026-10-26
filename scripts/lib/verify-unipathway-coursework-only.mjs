@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-export async function verifyCourseworkOnly(db){
+export async function verifyCourseworkOnly(db,{verifyIqaRevision=false}={}){
  const id=n=>`81000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
  const [tenant,student,peer,lecturer,manager,marker,qa,root,programme,module,brief,draft]=Array.from({length:12},(_,i)=>id(i+1));
  let checks=0;const ok=(v,m)=>{assert.ok(v,m);checks++;};
@@ -42,5 +42,18 @@ export async function verifyCourseworkOnly(db){
  await login(manager);await db.query('select public.allocate_unipathway_independent_marker($1,$2,$3)',[attempt,marker,qa]);
  for(const reviewer of [marker,qa]){await login(reviewer);ok((await db.query("select * from storage.objects where bucket_id='unipathway-coursework'")).rows.length===1,'Allocated reviewer can download evidence');}
  await login(lecturer);ok((await db.query('select * from public.unipathway_coursework_uploads')).rows.length===0,'Teaching lecturer has no marking evidence access');
+ if(verifyIqaRevision){
+  const marks=JSON.stringify(['LO1','LO2'].map(code=>({code,points:40,reason:'Evidence explains each observation and supports a reasoned conclusion.',evidence:'Original coursework evidence',missing:'No required evidence missing'})));
+  const review=(revision,action)=>db.query('select public.review_uni_mark_revision($1,$2,$3,$4)',[attempt,revision,action,'I checked the submitted evidence against the published rubric.']);
+  await login(marker);await db.query('select public.record_unipathway_human_mark($1,$2,$3)',[attempt,marks,'Your evidence supports a clear conclusion. Next time compare the alternative approaches in more detail.']);
+  await denied(()=>review(1,'approve'));
+  await login(qa);await denied(()=>review(0,'approve'));await denied(()=>review(1,'release'));await denied(()=>review(1,'unknown'));
+  await review(1,'return');checks++;
+  await login(marker);await db.query('select public.record_unipathway_human_mark($1,$2,$3)',[attempt,marks,'Revised feedback explains the strengths in your evidence and the improvements needed for your next assessment.']);
+  await login(qa);await denied(()=>review(1,'approve'));await review(2,'approve');checks++;
+  await denied(()=>review(1,'release'));await review(2,'release');checks++;await denied(()=>review(2,'release'));
+  await login(student);ok((await db.query('select * from unipathway_assessment_released_results where attempt_id=$1',[attempt])).rows.length===1,'Only the checked approved revision is released');
+  await login(peer);ok((await db.query('select * from unipathway_assessment_released_results where attempt_id=$1',[attempt])).rows.length===0,'Peers cannot read released results');
+ }
  await db.exec('ROLLBACK');console.log(JSON.stringify({courseworkOnlyChecks:checks,status:'passed'}));
 }

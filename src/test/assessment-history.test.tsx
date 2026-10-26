@@ -22,7 +22,7 @@ const mount=(view:React.ReactNode)=>render(<MemoryRouter>{view}</MemoryRouter>);
 it('searches the complete result history and keeps approved amendments on older records',async()=>{
  mount(<StudentReleasedResults/>);await screen.findByText('Page 1 of 16 · 301 results');
  fireEvent.change(screen.getByLabelText('Search released results'),{target:{value:'Assessment 300'}});
- await screen.findByText('Independently corrected feedback');expect(screen.getAllByText(/78\/100/)[0]).toBeInTheDocument();expect(screen.queryByText('Original released feedback')).toBeNull();
+ await screen.findByText('Independently corrected feedback');expect(screen.getByRole('link',{name:'Continue learning'})).toHaveAttribute('href','/student/lessons?module=m');expect(screen.getByRole('link',{name:'Review my coursework'})).toHaveAttribute('href','/student/assignments?module=m');expect(screen.getAllByText(/78\/100/)[0]).toBeInTheDocument();expect(screen.queryByText('Original released feedback')).toBeNull();
  expect(mock.calls.some(c=>c.table==='unipathway_assessment_released_results'&&c.from===250&&c.key==='attempt_id')).toBe(true);
 });
 it('fails closed when a later result page or amendment query fails, and recovers on refresh',async()=>{
