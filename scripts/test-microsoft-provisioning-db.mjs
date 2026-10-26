@@ -1,0 +1,36 @@
+import {PGlite} from '@electric-sql/pglite';import {readFileSync} from 'node:fs';import assert from 'node:assert/strict';
+const db=new PGlite(),id=n=>`12000000-0000-4000-8000-${String(n).padStart(12,'0')}`;let checks=0;
+try{
+ await db.exec(`CREATE ROLE anon;CREATE ROLE authenticated;CREATE ROLE service_role;CREATE SCHEMA auth;
+ CREATE TABLE profiles(user_id uuid PRIMARY KEY,tenant_id uuid,full_name text);CREATE TABLE user_roles(user_id uuid,tenant_id uuid,role text);
+ CREATE TABLE student_enrolments(student_id uuid,tenant_id uuid,status text);
+ CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+ CREATE FUNCTION get_user_tenant_id(u uuid) RETURNS uuid LANGUAGE sql SECURITY DEFINER AS $$SELECT tenant_id FROM profiles WHERE user_id=u$$;
+ GRANT USAGE ON SCHEMA public,auth TO authenticated,anon,service_role;
+ INSERT INTO profiles VALUES('${id(1)}','${id(10)}','Director'),('${id(2)}','${id(10)}','Student'),('${id(3)}','${id(11)}','Other student'),('${id(4)}','${id(10)}','Lecturer');
+ INSERT INTO user_roles VALUES('${id(1)}','${id(10)}','centre_director'),('${id(2)}','${id(10)}','student'),('${id(3)}','${id(11)}','student'),('${id(4)}','${id(10)}','lecturer');
+ INSERT INTO student_enrolments VALUES('${id(2)}','${id(10)}','active'),('${id(3)}','${id(11)}','active');`);
+ await db.exec(readFileSync('supabase/migrations/20261026083550_microsoft_account_provisioning_queue.sql','utf8'));
+ const as=async(user,sql)=>{await db.exec(`SET ROLE authenticated;SELECT set_config('request.jwt.claim.sub','${user}',false);`);try{return await db.query(sql);}finally{await db.exec('RESET ROLE');}};
+ const denied=async(user,sql)=>{await assert.rejects(as(user,sql));checks++;};
+ await denied(id(2),`SELECT request_unipathway_microsoft_account('${id(2)}')`);
+ await denied(id(4),`SELECT request_unipathway_microsoft_account('${id(2)}')`);
+ await denied(id(1),`SELECT request_unipathway_microsoft_account('${id(3)}')`);
+ const first=(await as(id(1),`SELECT request_unipathway_microsoft_account('${id(2)}') id`)).rows[0].id;
+ assert.equal((await as(id(1),`SELECT request_unipathway_microsoft_account('${id(2)}') id`)).rows[0].id,first);checks++;
+ assert.equal((await as(id(2),'SELECT id FROM unipathway_microsoft_jobs')).rows.length,0);checks++;
+ await denied(id(1),'SELECT lease_token FROM unipathway_microsoft_jobs');
+ await denied(id(1),`UPDATE unipathway_microsoft_jobs SET status='completed'`);
+ await denied(id(1),`SELECT claim_unipathway_microsoft_job('${id(10)}')`);
+ const claim=(await db.query(`SELECT claim_unipathway_microsoft_job('${id(10)}') x`)).rows[0].x;
+ assert.equal((await db.query(`SELECT claim_unipathway_microsoft_job('${id(10)}') x`)).rows[0].x,null);checks++;
+ await assert.rejects(db.query(`SELECT finish_unipathway_microsoft_job('${first}','${id(99)}')`));checks++;
+ await db.query(`SELECT finish_unipathway_microsoft_job('${first}','${claim.job.lease_token}','${id(5)}','u123@students.example.com','${id(6)}')`);
+ const account=(await db.query('SELECT * FROM microsoft_education_accounts')).rows[0];assert.equal(account.provisioning_status,'provisioned_disabled');assert.ok(account.disabled_at);checks++;
+ await denied(id(1),`SELECT request_unipathway_microsoft_account('${id(2)}')`);
+ await as(id(1),`SELECT request_unipathway_microsoft_account('${id(4)}')`);
+ await db.exec(`DELETE FROM user_roles WHERE user_id='${id(4)}'`);
+ assert.equal((await db.query(`SELECT claim_unipathway_microsoft_job('${id(10)}') x`)).rows[0].x,null);checks++;
+ assert.equal((await db.query(`SELECT error_code FROM unipathway_microsoft_jobs WHERE user_id='${id(4)}'`)).rows[0].error_code,'eligibility_changed');checks++;
+ console.log(`${checks} Microsoft queue permission, idempotency, lease and disabled-account checks passed`);
+}finally{await db.close();}
