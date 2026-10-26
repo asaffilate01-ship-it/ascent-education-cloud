@@ -36,7 +36,7 @@ const stageVariant = (s: string): 'success' | 'warning' | 'danger' | 'info' | 'n
 
 export default function AdmissionsCRM() {
   const [addLeadOpen, setAddLeadOpen] = useState(false);
-  const [view, setView] = useState<'kanban' | 'table'>('kanban');
+  const [view, setView] = useState<'kanban' | 'table'>('table');
   const [search, setSearch] = useState('');
   const [stageFilter, setStageFilter] = useState<string>('all');
   const [destFilter, setDestFilter] = useState<string>('all');
@@ -70,11 +70,6 @@ export default function AdmissionsCRM() {
     return true;
   });
 
-  const stageCounts = PIPELINE_STAGES.map((stage) => ({
-    ...stage,
-    count: applications.filter((a) => a.stage === stage.key).length,
-  }));
-
   const totalLeads = applications.length;
   const applied = applications.filter((a) => !['lead', 'contacted', 'qualified', 'lost'].includes(a.stage)).length;
   const offers = applications.filter((a) => ['conditional_offer', 'unconditional_offer'].includes(a.stage)).length;
@@ -83,19 +78,19 @@ export default function AdmissionsCRM() {
   return (
     <DashboardLayout
       title="Admissions Pipeline"
-      subtitle="Lead-to-Enrolment CRM — All application stages"
+      subtitle="Review offers, enrol learners and follow up on applications"
       actions={
         <div className="flex items-center gap-2">
-          <div className="flex items-center rounded-md border border-border overflow-hidden">
+          <div className="hidden md:flex items-center rounded-md border border-border overflow-hidden">
             <button
               aria-label="Kanban view" onClick={() => setView('kanban')}
-              className={`p-1.5 transition-colors ${view === 'kanban' ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:text-foreground'}`}
+              className={`p-3 transition-colors ${view === 'kanban' ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:text-foreground'}`}
             >
               <LayoutGrid className="w-3.5 h-3.5" />
             </button>
             <button
               aria-label="Table view" onClick={() => setView('table')}
-              className={`p-1.5 transition-colors ${view === 'table' ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:text-foreground'}`}
+              className={`p-3 transition-colors ${view === 'table' ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:text-foreground'}`}
             >
               <List className="w-3.5 h-3.5" />
             </button>
@@ -106,46 +101,23 @@ export default function AdmissionsCRM() {
         </div>
       }
     >
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <AdmissionHandover applications={applications} onRefetch={()=>void refetch()}/>
+      <details className="surface-card p-5 mb-6"><summary className="cursor-pointer font-semibold">IELTS and consultancy service activation</summary><div className="mt-4"><ServiceActivationQueue /></div></details>
+      <details className="mb-6"><summary className="cursor-pointer text-sm font-medium">Pipeline totals · {totalLeads} applications</summary><div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
         <StatCard label="Total Leads" value={String(totalLeads)} icon={UserPlus} />
-        <StatCard label="Applications" value={String(applied)} change={totalLeads ? `${Math.round((applied / totalLeads) * 100)}% conversion` : '—'} changeType="positive" icon={FileText} />
+        <StatCard label="Applications" value={String(applied)} icon={FileText} />
         <StatCard label="Offers Issued" value={String(offers)} icon={Award} />
         <StatCard label="Enrolled" value={String(enrolled)} icon={TrendingUp} />
-      </div>
-
-      <AdmissionHandover applications={applications} onRefetch={()=>void refetch()}/>
-      <ServiceActivationQueue />
-
-      {/* Pipeline Funnel */}
-      <div className="surface-card p-5 mb-6">
-        <h3 className="text-sm font-semibold mb-4">Admissions Funnel</h3>
-        <div className="flex gap-1 items-end h-24">
-          {stageCounts.map((stage, i) => {
-            const maxCount = Math.max(...stageCounts.map((s) => s.count), 1);
-            const height = (stage.count / maxCount) * 100;
-            const isLost = stage.key === 'lost';
-            return (
-              <div key={stage.key} className="flex-1 flex flex-col items-center gap-1">
-                <span className="text-xs font-bold text-foreground">{stage.count}</span>
-                <div
-                  className={`w-full rounded-t-sm transition-default cursor-pointer hover:opacity-80 ${isLost ? 'bg-destructive/60' : 'bg-primary'}`}
-                  style={{ height: `${Math.max(height, 2)}%`, opacity: isLost ? 0.6 : 1 - i * 0.06 }}
-                />
-                <span className="text-[9px] text-muted-foreground text-center leading-tight mt-1 hidden sm:block">{stage.label}</span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      </div></details>
 
       {/* Search & Filters */}
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-          <Input placeholder="Search by name, email, programme..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-8 text-sm" />
+          <Input aria-label="Search applications" placeholder="Search by name, email, programme..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-11 text-sm" />
         </div>
         <Select value={stageFilter} onValueChange={setStageFilter}>
-          <SelectTrigger className="w-[150px] h-8 text-xs">
+          <SelectTrigger className="w-[150px] h-11 text-sm">
             <SelectValue placeholder="Stage" />
           </SelectTrigger>
           <SelectContent>
@@ -156,7 +128,7 @@ export default function AdmissionsCRM() {
           </SelectContent>
         </Select>
         <Select value={sourceFilter} onValueChange={setSourceFilter}>
-          <SelectTrigger className="w-[160px] h-8 text-xs"><SelectValue placeholder="Lead source" /></SelectTrigger>
+          <SelectTrigger className="w-[160px] h-11 text-sm"><SelectValue placeholder="Lead source" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All lead sources</SelectItem>
             <SelectItem value="ielts">IELTS enquiries</SelectItem>
@@ -164,7 +136,7 @@ export default function AdmissionsCRM() {
           </SelectContent>
         </Select>
         <Select value={destFilter} onValueChange={setDestFilter}>
-          <SelectTrigger className="w-[150px] h-8 text-xs">
+          <SelectTrigger className="w-[150px] h-11 text-sm">
             <SelectValue placeholder="Destination" />
           </SelectTrigger>
           <SelectContent>
@@ -179,6 +151,18 @@ export default function AdmissionsCRM() {
         </Select>
       </div>
 
+      <section className="md:hidden space-y-3 mb-5" aria-label="Application task cards">
+        <h2 className="font-semibold">Applications ({filtered.length})</h2>
+        {filtered.length===0&&<p className="text-muted-foreground">No applications match your filters.</p>}
+        {filtered.map(app=><article key={app.id} className="surface-card p-4 space-y-2 min-w-0 break-words">
+          <h3 className="font-semibold">{app.student_name}</h3><p className="text-sm text-muted-foreground">{app.email}</p>
+          <p>{app.programme_name||'Programme not yet assigned'}</p>
+          <StatusBadge status={app.stage.replace(/_/g,' ')} variant={stageVariant(app.stage)}/>
+          <p className="text-sm">{['unconditional_offer','deposit_paid'].includes(app.stage)?'Next: use Academic enrolment review above to verify the account and programme.':app.stage==='enrolled'?'Next: verify class allocation, timetable and learning materials.':app.stage==='lost'?'Application closed.':app.stage==='conditional_offer'?'Next: verify outstanding offer conditions and supporting documents.':'Next: review the application and record the follow-up with your admissions team.'}</p>
+          <p className="text-sm text-muted-foreground">Counsellor: {app.counsellor||'Unassigned'}</p>
+        </article>)}
+      </section>
+      <div className="hidden md:block">
       {/* View Toggle */}
       {view === 'kanban' ? (
         <KanbanBoard applications={filtered} onRefetch={refetch} />
@@ -202,7 +186,7 @@ export default function AdmissionsCRM() {
                 </thead>
                 <tbody>
                   {filtered.map((app) => (
-                    <tr key={app.id} className="border-t border-border/50 hover:bg-secondary/50 cursor-pointer transition-default">
+                    <tr key={app.id} className="border-t border-border/50 hover:bg-secondary/50 transition-default">
                       <td className="px-4 py-3">
                         <p className="text-sm font-medium">{app.student_name}</p>
                         <p className="text-xs text-muted-foreground">{app.email}</p>
@@ -228,6 +212,7 @@ export default function AdmissionsCRM() {
         </>
       )}
 
+      </div>
       <AddLeadModal open={addLeadOpen} onOpenChange={setAddLeadOpen} onCreated={refetch} />
     </DashboardLayout>
   );

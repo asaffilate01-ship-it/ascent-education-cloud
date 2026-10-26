@@ -8,12 +8,12 @@ import {supabase} from '@/integrations/supabase/client';
 import {useAuth} from '@/contexts/AuthContext';
 import type {EducationTables} from '@/integrations/supabase/education-types';
 import {workflowRows} from '@/lib/workflowRows';
-import {evidenceCurrent,readinessGaps,type ReadinessCheck} from '@/lib/readiness';
+import {evidenceCurrent,integrationCurrent,readinessGaps,type ReadinessCheck} from '@/lib/readiness';
 import {localDateTime,supportDueValue} from '@/lib/supportDesk';
 const db:SupabaseClient=supabase;
 export default function ProductionReadiness(){
  const {user}=useAuth();const allowed=user?.roles.some(r=>['superadmin','centre_director'].includes(r));
- return <DashboardLayout title="Production Readiness" subtitle="Launch decisions require recorded operational evidence">{allowed&&user?.tenantId?<><ConnectionCoverage/>{user.roles.includes('superadmin')&&<CourseOfferEditor/>}<Workspace key={`${user.tenantId}-${user.id}`} tenant={user.tenantId}/></>:<p>Centre leadership access required.</p>}</DashboardLayout>;
+ return <DashboardLayout title="Production Readiness" subtitle="Launch decisions require recorded operational evidence">{allowed&&user?.tenantId?<>{user.roles.includes('superadmin')&&<CourseOfferEditor/>}<Workspace key={`${user.tenantId}-${user.id}`} tenant={user.tenantId}/><ConnectionCoverage/></>:<p>Centre leadership access required.</p>}</DashboardLayout>;
 }
 function Workspace({tenant}:{tenant:string}){
  const [integrations,setIntegrations]=useState<EducationTables['production_integrations']['Row'][]>([]),[checks,setChecks]=useState<ReadinessCheck[]>([]);
@@ -29,8 +29,8 @@ function Workspace({tenant}:{tenant:string}){
  if(loading)return <p>Loading evidence…</p>;
  if(error)return <div role="alert">{error}<Button onClick={load}>Retry</Button></div>;
  const gaps=readinessGaps(checks,integrations,now);
- return <div className="space-y-5"><section className="surface-card p-5"><h2 className="font-semibold">{gaps.checks||gaps.integrations?`${gaps.checks} checks outstanding · ${gaps.integrations} required integrations unverified`:'Recorded gates complete — review evidence before launch'}</h2><p className="text-sm text-muted-foreground">Recorded reviews do not establish live provider health. Integration verification is managed separately.</p>{gaps.missing.length>0&&<p role="alert">Missing baseline checks: {gaps.missing.join(', ')}. Apply the launch-gate migration.</p>}<Button variant="outline" onClick={load}>Refresh evidence</Button></section>
- <section className="surface-card p-5 space-y-3"><h2 className="font-semibold">External integrations</h2>{integrations.map(i=><div key={i.id}><p>{i.integration_key.replace(/_/g,' ')} · {i.status}</p><p className="text-sm text-muted-foreground">{i.required_for_launch?'Required':'Optional'} · {i.last_health_at?`Last verified ${new Date(i.last_health_at).toLocaleString()}`:'No live verification recorded'}</p></div>)}</section>
+ return <div className="space-y-5"><section className="surface-card p-5"><h2 className="font-semibold">{gaps.checks||gaps.integrations?`${gaps.checks} checks outstanding · ${gaps.integrations} required integrations unverified`:'Recorded gates complete — review evidence before launch'}</h2><p className="text-sm text-muted-foreground">Recorded reviews do not establish live provider health. Integration verification is managed separately. Healthy connections require a successful check within the last 24 hours.</p>{gaps.missing.length>0&&<p role="alert">Missing baseline checks: {gaps.missing.join(', ')}. Apply the launch-gate migration.</p>}<Button variant="outline" onClick={load}>Refresh evidence</Button></section>
+ <section className="surface-card p-5 space-y-3"><h2 className="font-semibold">External integrations</h2>{integrations.map(i=><div key={i.id}><p>{i.integration_key.replace(/_/g,' ')} · {integrationCurrent(i,now)?'Verified within 24 hours':i.status==='healthy'?'Verification expired / invalid':i.status}</p><p className="text-sm text-muted-foreground">{i.required_for_launch?'Required':'Optional'} · {i.last_health_at?`Last verified ${new Date(i.last_health_at).toLocaleString()}`:'No live verification recorded'}</p></div>)}</section>
  <section className="space-y-4"><h2 className="font-semibold">Launch checks</h2>{checks.map(c=><article key={c.id} className="surface-card p-5 space-y-2"><h3 className="font-semibold">{c.check_key.replace(/_/g,' ')}</h3><p>{c.status} · {evidenceCurrent(c,now)?'Evidence current':'Outstanding / evidence review required'}</p><p className="text-sm">{c.evidence_reference||'No evidence recorded'}</p>{c.notes&&<p>{c.notes}</p>}{c.valid_until&&<p>Review deadline: {new Date(c.valid_until).toLocaleString()}</p>}{c.checked_at&&<p className="text-xs text-muted-foreground">Reviewed {new Date(c.checked_at).toLocaleString()} by {c.checked_by} · Revision {c.revision}</p>}<Review check={c} reload={load}/></article>)}</section></div>;
 }
 function Review({check,reload}:{check:ReadinessCheck;reload:()=>Promise<void>}){
