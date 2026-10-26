@@ -64,22 +64,6 @@ export default function LoginPage() {
     } catch { toast.error('Sign-in could not be completed. Check your connection and secure device storage.'); } finally { setLoading(false); }
   };
 
-  const handleGoogleSignIn = async () => {
-    setGoogleLoading(true);
-    if (isNativeApp()) {
-      try { await nativeGoogleSignIn(); } catch { toast.error('Google sign-in unavailable. Check your connection and try again.'); }
-      finally { setGoogleLoading(false); }
-      return;
-    }
-    const { error } = await lovable.auth.signInWithOAuth('google', {
-      redirect_uri: window.location.origin,
-    });
-    setGoogleLoading(false);
-    if (error) {
-      toast.error('Google sign-in failed. Please try again.');
-    }
-  };
-
   return (
     <div className="min-h-dvh bg-background flex">
       {/* Left: Branding */}
