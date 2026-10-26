@@ -1,0 +1,43 @@
+import {verifyMaterials} from './lib/verify-module-materials.mjs';
+import {PGlite} from '@electric-sql/pglite';
+import {readFileSync,readdirSync} from 'node:fs';
+import assert from 'node:assert/strict';
+import {verifyGuardianResults} from './lib/verify-unipathway-guardian-results.mjs';
+import {verifyCourseworkOnly} from './lib/verify-unipathway-coursework-only.mjs';
+const db=new PGlite();let checks=0;
+const id=n=>`91000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
+const migration=name=>readFileSync('supabase/migrations/'+readdirSync('supabase/migrations').find(f=>f.endsWith(name)),'utf8');
+try{
+await db.exec(`CREATE ROLE anon;CREATE ROLE authenticated;CREATE SCHEMA auth;CREATE SCHEMA unipathway_acl;CREATE DOMAIN app_role AS text;
+CREATE TABLE auth.users(id uuid primary key,email text,email_confirmed_at timestamptz);
+CREATE TABLE tenants(id uuid primary key,name text,slug text);
+CREATE TABLE profiles(user_id uuid primary key,tenant_id uuid,full_name text);
+CREATE TABLE user_roles(user_id uuid,tenant_id uuid,role app_role);
+CREATE FUNCTION fixture_profile() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN INSERT INTO profiles VALUES(NEW.user_id,NEW.tenant_id,'Fixture learner') ON CONFLICT(user_id) DO UPDATE SET tenant_id=EXCLUDED.tenant_id;RETURN NEW;END $$;
+CREATE TRIGGER fixture_profile AFTER INSERT ON user_roles FOR EACH ROW EXECUTE FUNCTION fixture_profile();
+CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+CREATE FUNCTION get_user_tenant_id(u uuid) RETURNS uuid LANGUAGE sql STABLE SECURITY DEFINER AS $$SELECT tenant_id FROM public.profiles WHERE user_id=u$$;
+CREATE FUNCTION has_role(u uuid,r text) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER AS $$SELECT EXISTS(SELECT 1 FROM public.user_roles WHERE user_id=u AND role=r)$$;
+CREATE TABLE programmes(id uuid primary key,tenant_id uuid,title text,level text,awarding_body text);
+CREATE TABLE modules(id uuid primary key,tenant_id uuid,programme_id uuid,lecturer_id uuid,title text);
+CREATE TABLE student_enrolments(id uuid primary key default gen_random_uuid(),student_id uuid,programme_id uuid,tenant_id uuid,status text DEFAULT 'active');
+CREATE TABLE parent_student_links(id uuid primary key DEFAULT gen_random_uuid(),parent_id uuid,student_id uuid,tenant_id uuid,verified boolean DEFAULT false,relationship text);
+ALTER TABLE parent_student_links ENABLE ROW LEVEL SECURITY;
+CREATE POLICY parent_read ON parent_student_links FOR SELECT TO authenticated USING(parent_id=auth.uid());
+CREATE TABLE attendance_records(id uuid primary key default gen_random_uuid(),tenant_id uuid,student_id uuid,module_id uuid,date date,status text);
+CREATE TABLE scheduled_lectures(id uuid primary key default gen_random_uuid(),tenant_id uuid,module_id uuid,day_of_week int,start_time time,end_time time,is_active boolean default true,recurrence text default 'weekly',effective_from date,effective_until date,cohort_reference text);
+GRANT USAGE ON SCHEMA public,auth,unipathway_acl TO authenticated,anon;
+CREATE FUNCTION unipathway_acl.module_access(m_id uuid,t uuid,w boolean DEFAULT false) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path='' AS $$
+ SELECT auth.uid() IS NOT NULL AND EXISTS(SELECT 1 FROM public.modules m WHERE m.id=m_id AND m.tenant_id=t AND t=public.get_user_tenant_id(auth.uid()) AND ((m.lecturer_id=auth.uid() AND public.has_role(auth.uid(),'lecturer')) OR (NOT w AND public.has_role(auth.uid(),'student') AND EXISTS(SELECT 1 FROM public.student_enrolments e WHERE e.student_id=auth.uid() AND e.tenant_id=t AND e.programme_id=m.programme_id AND e.status='active')))) $$;`);
+await db.exec(migration('guardian_live_workflows.sql'));await db.exec(migration('tuition_live_workflows.sql'));
+await db.exec(`ALTER TABLE parent_student_links ADD COLUMN created_at timestamptz DEFAULT now();
+GRANT SELECT ON public.modules TO authenticated;
+CREATE TABLE submissions(id uuid primary key,tenant_id uuid,student_id uuid);CREATE TABLE gradebook_entries(id uuid primary key);
+CREATE SCHEMA storage;CREATE TABLE storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
+CREATE TABLE storage.objects(id uuid primary key default gen_random_uuid(),bucket_id text,name text,owner uuid,metadata jsonb);
+ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;GRANT USAGE ON SCHEMA storage TO authenticated,anon;GRANT SELECT,INSERT,UPDATE,DELETE ON storage.objects TO authenticated;`);
+await db.exec(migration('assessment_live_activation.sql'));
+await db.exec(migration('protected_module_materials_activation.sql'));await verifyMaterials(db);
+await verifyGuardianResults(db);await verifyCourseworkOnly(db);
+console.log('Legacy assessment activation and actual object policies verified');
+}finally{await db.close();}
