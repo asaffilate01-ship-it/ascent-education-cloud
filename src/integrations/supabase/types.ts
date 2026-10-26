@@ -1247,19 +1247,19 @@ export type Database = {
       }
       invoices: {
         Row: {
-          sponsor_amount: number
-          sponsor_paid: number
-          sponsor_name: string
-          sponsor_reference: string
-          sponsor_due_on: string | null
-          funding_note: string
           amount: number
           created_at: string
           due_date: string | null
+          funding_note: string
           id: string
           instalments: number | null
           issued_date: string
           paid: number
+          sponsor_amount: number
+          sponsor_due_on: string | null
+          sponsor_name: string
+          sponsor_paid: number
+          sponsor_reference: string
           status: Database["public"]["Enums"]["invoice_status"]
           student_id: string | null
           student_name: string
@@ -1268,19 +1268,19 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          sponsor_amount?: number
-          sponsor_paid?: number
-          sponsor_name?: string
-          sponsor_reference?: string
-          sponsor_due_on?: string | null
-          funding_note?: string
           amount?: number
           created_at?: string
           due_date?: string | null
+          funding_note?: string
           id?: string
           instalments?: number | null
           issued_date?: string
           paid?: number
+          sponsor_amount?: number
+          sponsor_due_on?: string | null
+          sponsor_name?: string
+          sponsor_paid?: number
+          sponsor_reference?: string
           status?: Database["public"]["Enums"]["invoice_status"]
           student_id?: string | null
           student_name: string
@@ -1289,19 +1289,19 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          sponsor_amount?: number
-          sponsor_paid?: number
-          sponsor_name?: string
-          sponsor_reference?: string
-          sponsor_due_on?: string | null
-          funding_note?: string
           amount?: number
           created_at?: string
           due_date?: string | null
+          funding_note?: string
           id?: string
           instalments?: number | null
           issued_date?: string
           paid?: number
+          sponsor_amount?: number
+          sponsor_due_on?: string | null
+          sponsor_name?: string
+          sponsor_paid?: number
+          sponsor_reference?: string
           status?: Database["public"]["Enums"]["invoice_status"]
           student_id?: string | null
           student_name?: string
@@ -1838,6 +1838,139 @@ export type Database = {
           },
         ]
       }
+      live_class_invitations: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          invited_by: string
+          session_id: string
+          status: string
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          invited_by: string
+          session_id: string
+          status?: string
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          invited_by?: string
+          session_id?: string
+          status?: string
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_class_invitations_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "live_class_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_class_sessions: {
+        Row: {
+          attendee_camera_default: boolean
+          attendee_mic_default: boolean
+          capacity: number
+          class_mode: string
+          cohort_reference: string | null
+          created_at: string
+          ends_at: string
+          id: string
+          join_url: string | null
+          moderator_user_ids: string[]
+          module_id: string | null
+          organiser_user_id: string
+          polls_enabled: boolean
+          provider: string
+          provider_event_id: string | null
+          provider_meeting_id: string | null
+          qna_enabled: boolean
+          recording_enabled: boolean
+          starts_at: string
+          status: string
+          teams_sync_status: string
+          tenant_id: string
+          title: string
+          transcript_enabled: boolean
+          whiteboard_enabled: boolean
+        }
+        Insert: {
+          attendee_camera_default?: boolean
+          attendee_mic_default?: boolean
+          capacity?: number
+          class_mode?: string
+          cohort_reference?: string | null
+          created_at?: string
+          ends_at: string
+          id?: string
+          join_url?: string | null
+          moderator_user_ids?: string[]
+          module_id?: string | null
+          organiser_user_id: string
+          polls_enabled?: boolean
+          provider?: string
+          provider_event_id?: string | null
+          provider_meeting_id?: string | null
+          qna_enabled?: boolean
+          recording_enabled?: boolean
+          starts_at: string
+          status?: string
+          teams_sync_status?: string
+          tenant_id: string
+          title: string
+          transcript_enabled?: boolean
+          whiteboard_enabled?: boolean
+        }
+        Update: {
+          attendee_camera_default?: boolean
+          attendee_mic_default?: boolean
+          capacity?: number
+          class_mode?: string
+          cohort_reference?: string | null
+          created_at?: string
+          ends_at?: string
+          id?: string
+          join_url?: string | null
+          moderator_user_ids?: string[]
+          module_id?: string | null
+          organiser_user_id?: string
+          polls_enabled?: boolean
+          provider?: string
+          provider_event_id?: string | null
+          provider_meeting_id?: string | null
+          qna_enabled?: boolean
+          recording_enabled?: boolean
+          starts_at?: string
+          status?: string
+          teams_sync_status?: string
+          tenant_id?: string
+          title?: string
+          transcript_enabled?: boolean
+          whiteboard_enabled?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_class_sessions_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
@@ -1875,6 +2008,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      microsoft_education_accounts: {
+        Row: {
+          disabled_at: string | null
+          entra_object_id: string | null
+          id: string
+          institutional_email: string | null
+          license_sku: string | null
+          provisioned_at: string | null
+          provisioning_status: string
+          role_type: string
+          tenant_id: string
+          user_id: string
+          user_principal_name: string | null
+        }
+        Insert: {
+          disabled_at?: string | null
+          entra_object_id?: string | null
+          id?: string
+          institutional_email?: string | null
+          license_sku?: string | null
+          provisioned_at?: string | null
+          provisioning_status?: string
+          role_type: string
+          tenant_id: string
+          user_id: string
+          user_principal_name?: string | null
+        }
+        Update: {
+          disabled_at?: string | null
+          entra_object_id?: string | null
+          id?: string
+          institutional_email?: string | null
+          license_sku?: string | null
+          provisioned_at?: string | null
+          provisioning_status?: string
+          role_type?: string
+          tenant_id?: string
+          user_id?: string
+          user_principal_name?: string | null
+        }
+        Relationships: []
       }
       modules: {
         Row: {
@@ -2074,7 +2249,10 @@ export type Database = {
           relationship: string
           student_id: string
           tenant_id: string | null
+          verification_reference: string | null
           verified: boolean
+          verified_at: string | null
+          verified_by: string | null
         }
         Insert: {
           created_at?: string
@@ -2083,7 +2261,10 @@ export type Database = {
           relationship?: string
           student_id: string
           tenant_id?: string | null
+          verification_reference?: string | null
           verified?: boolean
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Update: {
           created_at?: string
@@ -2092,7 +2273,10 @@ export type Database = {
           relationship?: string
           student_id?: string
           tenant_id?: string | null
+          verification_reference?: string | null
           verified?: boolean
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Relationships: [
           {
@@ -2977,6 +3161,8 @@ export type Database = {
       scheduled_lectures: {
         Row: {
           academic_year: string
+          change_reason: string
+          cohort_reference: string | null
           color: string | null
           created_at: string
           day_of_week: number
@@ -2997,6 +3183,8 @@ export type Database = {
         }
         Insert: {
           academic_year?: string
+          change_reason?: string
+          cohort_reference?: string | null
           color?: string | null
           created_at?: string
           day_of_week: number
@@ -3017,6 +3205,8 @@ export type Database = {
         }
         Update: {
           academic_year?: string
+          change_reason?: string
+          cohort_reference?: string | null
           color?: string | null
           created_at?: string
           day_of_week?: number
@@ -3126,6 +3316,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      study_tutor_usage: {
+        Row: {
+          daily_count: number
+          minute_bucket: string
+          minute_count: number
+          usage_day: string
+          user_id: string
+        }
+        Insert: {
+          daily_count?: number
+          minute_bucket: string
+          minute_count?: number
+          usage_day: string
+          user_id: string
+        }
+        Update: {
+          daily_count?: number
+          minute_bucket?: string
+          minute_count?: number
+          usage_day?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       submissions: {
         Row: {
@@ -3536,6 +3750,2123 @@ export type Database = {
           },
         ]
       }
+      uni_calendar_audit: {
+        Row: {
+          action: string
+          actor: string | null
+          created_at: string
+          details: Json
+          id: string
+          session_id: string
+          tenant_id: string
+        }
+        Insert: {
+          action: string
+          actor?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          session_id: string
+          tenant_id: string
+        }
+        Update: {
+          action?: string
+          actor?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          session_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uni_calendar_audit_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "live_class_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uni_calendar_jobs: {
+        Row: {
+          error_code: string | null
+          lease: string | null
+          refresh_requested: boolean
+          requested_by: string
+          revision: number
+          session_id: string
+          started_at: string | null
+          status: string
+          tenant_id: string
+          updated_at: string
+          verify_only: boolean
+        }
+        Insert: {
+          error_code?: string | null
+          lease?: string | null
+          refresh_requested?: boolean
+          requested_by: string
+          revision?: number
+          session_id: string
+          started_at?: string | null
+          status?: string
+          tenant_id: string
+          updated_at?: string
+          verify_only?: boolean
+        }
+        Update: {
+          error_code?: string | null
+          lease?: string | null
+          refresh_requested?: boolean
+          requested_by?: string
+          revision?: number
+          session_id?: string
+          started_at?: string | null
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+          verify_only?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uni_calendar_jobs_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: true
+            referencedRelation: "live_class_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uni_feedback_snippets: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          owner_id: string
+          tenant_id: string
+          title: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          owner_id?: string
+          tenant_id?: string
+          title: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          owner_id?: string
+          tenant_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uni_feedback_snippets_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "uni_feedback_snippets_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uni_mail_alerts: {
+        Row: {
+          created_at: string
+          id: string
+          read_at: string | null
+          thread_id: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          thread_id: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          thread_id?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uni_mail_alerts_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "uni_mail_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uni_mail_cursors: {
+        Row: {
+          cursor_url: string | null
+          folder: string
+          last_synced_at: string | null
+          mailbox_id: string
+        }
+        Insert: {
+          cursor_url?: string | null
+          folder: string
+          last_synced_at?: string | null
+          mailbox_id: string
+        }
+        Update: {
+          cursor_url?: string | null
+          folder?: string
+          last_synced_at?: string | null
+          mailbox_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uni_mail_cursors_mailbox_id_fkey"
+            columns: ["mailbox_id"]
+            isOneToOne: false
+            referencedRelation: "uni_mailboxes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uni_mail_documents: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          object_path: string
+          thread_id: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          object_path: string
+          thread_id: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          object_path?: string
+          thread_id?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uni_mail_documents_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "uni_mail_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uni_mail_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          details: Json
+          event_type: string
+          id: number
+          thread_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          event_type: string
+          id?: never
+          thread_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          event_type?: string
+          id?: never
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uni_mail_events_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "uni_mail_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uni_mail_members: {
+        Row: {
+          can_send: boolean
+          mailbox_id: string
+          user_id: string
+        }
+        Insert: {
+          can_send?: boolean
+          mailbox_id: string
+          user_id: string
+        }
+        Update: {
+          can_send?: boolean
+          mailbox_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uni_mail_members_mailbox_id_fkey"
+            columns: ["mailbox_id"]
+            isOneToOne: false
+            referencedRelation: "uni_mailboxes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uni_mail_messages: {
+        Row: {
+          body_text: string
+          cc_addresses: string[]
+          created_at: string
+          created_by: string | null
+          direction: string
+          from_address: string
+          has_attachments: boolean
+          id: string
+          provider_at: string | null
+          provider_id: string | null
+          state: string
+          thread_id: string
+          to_addresses: string[]
+        }
+        Insert: {
+          body_text: string
+          cc_addresses?: string[]
+          created_at?: string
+          created_by?: string | null
+          direction: string
+          from_address: string
+          has_attachments?: boolean
+          id?: string
+          provider_at?: string | null
+          provider_id?: string | null
+          state: string
+          thread_id: string
+          to_addresses: string[]
+        }
+        Update: {
+          body_text?: string
+          cc_addresses?: string[]
+          created_at?: string
+          created_by?: string | null
+          direction?: string
+          from_address?: string
+          has_attachments?: boolean
+          id?: string
+          provider_at?: string | null
+          provider_id?: string | null
+          state?: string
+          thread_id?: string
+          to_addresses?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uni_mail_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "uni_mail_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uni_mail_tasks: {
+        Row: {
+          assigned_to: string
+          created_at: string
+          due_at: string | null
+          id: string
+          status: string
+          thread_id: string
+          title: string
+        }
+        Insert: {
+          assigned_to: string
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          status?: string
+          thread_id: string
+          title: string
+        }
+        Update: {
+          assigned_to?: string
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          status?: string
+          thread_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uni_mail_tasks_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "uni_mail_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uni_mail_threads: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          due_at: string | null
+          id: string
+          mailbox_id: string
+          priority: string
+          provider_conversation: string | null
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          mailbox_id: string
+          priority?: string
+          provider_conversation?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          mailbox_id?: string
+          priority?: string
+          provider_conversation?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uni_mail_threads_mailbox_id_fkey"
+            columns: ["mailbox_id"]
+            isOneToOne: false
+            referencedRelation: "uni_mailboxes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uni_mailbox_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          details: Json
+          event_type: string
+          id: number
+          mailbox_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          details: Json
+          event_type: string
+          id?: never
+          mailbox_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          event_type?: string
+          id?: never
+          mailbox_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uni_mailbox_events_mailbox_id_fkey"
+            columns: ["mailbox_id"]
+            isOneToOne: false
+            referencedRelation: "uni_mailboxes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uni_mailboxes: {
+        Row: {
+          address: string
+          created_at: string
+          enabled: boolean
+          graph_user_id: string | null
+          id: string
+          provider: string
+          tenant_id: string
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          enabled?: boolean
+          graph_user_id?: string | null
+          id?: string
+          provider?: string
+          tenant_id: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          enabled?: boolean
+          graph_user_id?: string | null
+          id?: string
+          provider?: string
+          tenant_id?: string
+        }
+        Relationships: []
+      }
+      uni_marking_draft_events: {
+        Row: {
+          attempt_id: string
+          created_at: string
+          id: string
+          marker_id: string
+          revision: number
+          tenant_id: string
+        }
+        Insert: {
+          attempt_id: string
+          created_at?: string
+          id?: string
+          marker_id: string
+          revision: number
+          tenant_id: string
+        }
+        Update: {
+          attempt_id?: string
+          created_at?: string
+          id?: string
+          marker_id?: string
+          revision?: number
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uni_marking_draft_events_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "unipathway_assessment_attempts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "uni_marking_draft_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "uni_marking_draft_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uni_marking_drafts: {
+        Row: {
+          attempt_id: string
+          criteria: Json
+          feedback: string
+          guidance: string
+          marker_id: string
+          revision: number
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          attempt_id: string
+          criteria?: Json
+          feedback?: string
+          guidance?: string
+          marker_id: string
+          revision?: number
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          attempt_id?: string
+          criteria?: Json
+          feedback?: string
+          guidance?: string
+          marker_id?: string
+          revision?: number
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uni_marking_drafts_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "unipathway_assessment_attempts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "uni_marking_drafts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "uni_marking_drafts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_admission_handovers: {
+        Row: {
+          application_id: string
+          approved_at: string
+          approved_by: string
+          decision_note: string
+          enrolment_id: string
+          programme_id: string
+          student_id: string
+          tenant_id: string
+        }
+        Insert: {
+          application_id: string
+          approved_at?: string
+          approved_by: string
+          decision_note: string
+          enrolment_id: string
+          programme_id: string
+          student_id: string
+          tenant_id: string
+        }
+        Update: {
+          application_id?: string
+          approved_at?: string
+          approved_by?: string
+          decision_note?: string
+          enrolment_id?: string
+          programme_id?: string
+          student_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_admission_handovers_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: true
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_admission_handovers_enrolment_id_fkey"
+            columns: ["enrolment_id"]
+            isOneToOne: true
+            referencedRelation: "student_enrolments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_assessment_ai_drafts: {
+        Row: {
+          attempt_id: string
+          created_at: string
+          criteria_results: Json
+          feedback: string
+          id: string
+          missing_work: string
+          model_name: string
+          prompt_version: string
+          requested_by: string
+          rubric_version: string
+          strengths: string
+          suggested_raw_score: number | null
+          tenant_id: string
+        }
+        Insert: {
+          attempt_id: string
+          created_at?: string
+          criteria_results: Json
+          feedback?: string
+          id?: string
+          missing_work?: string
+          model_name: string
+          prompt_version: string
+          requested_by: string
+          rubric_version: string
+          strengths?: string
+          suggested_raw_score?: number | null
+          tenant_id: string
+        }
+        Update: {
+          attempt_id?: string
+          created_at?: string
+          criteria_results?: Json
+          feedback?: string
+          id?: string
+          missing_work?: string
+          model_name?: string
+          prompt_version?: string
+          requested_by?: string
+          rubric_version?: string
+          strengths?: string
+          suggested_raw_score?: number | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_assessment_ai_drafts_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "unipathway_assessment_attempts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_assessment_allocations: {
+        Row: {
+          assigned_at: string
+          assigned_by: string
+          attempt_id: string
+          marker_id: string
+          qa_reviewer_id: string
+          tenant_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by: string
+          attempt_id: string
+          marker_id: string
+          qa_reviewer_id: string
+          tenant_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string
+          attempt_id?: string
+          marker_id?: string
+          qa_reviewer_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_assessment_allocations_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: true
+            referencedRelation: "unipathway_assessment_attempts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_assessment_appeal_outcomes: {
+        Row: {
+          appeal_id: string
+          approved: boolean
+          approved_by: string
+          decided_at: string
+          final_outcome: string
+          final_reasoning: string
+          tenant_id: string
+        }
+        Insert: {
+          appeal_id: string
+          approved: boolean
+          approved_by: string
+          decided_at?: string
+          final_outcome: string
+          final_reasoning: string
+          tenant_id: string
+        }
+        Update: {
+          appeal_id?: string
+          approved?: boolean
+          approved_by?: string
+          decided_at?: string
+          final_outcome?: string
+          final_reasoning?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_assessment_appeal_outcomes_appeal_id_fkey"
+            columns: ["appeal_id"]
+            isOneToOne: true
+            referencedRelation: "unipathway_assessment_appeals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_assessment_appeal_policies: {
+        Row: {
+          approved_at: string
+          approved_by: string
+          brief_id: string
+          policy_reference: string
+          tenant_id: string
+          window_days: number
+        }
+        Insert: {
+          approved_at?: string
+          approved_by: string
+          brief_id: string
+          policy_reference: string
+          tenant_id: string
+          window_days: number
+        }
+        Update: {
+          approved_at?: string
+          approved_by?: string
+          brief_id?: string
+          policy_reference?: string
+          tenant_id?: string
+          window_days?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_assessment_appeal_policies_brief_id_fkey"
+            columns: ["brief_id"]
+            isOneToOne: true
+            referencedRelation: "unipathway_assessment_briefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_assessment_appeal_reviews: {
+        Row: {
+          appeal_id: string
+          proposed_feedback: string | null
+          proposed_raw_score: number | null
+          reasoning: string
+          recommendation: string
+          reviewed_at: string
+          reviewer_id: string
+          tenant_id: string
+        }
+        Insert: {
+          appeal_id: string
+          proposed_feedback?: string | null
+          proposed_raw_score?: number | null
+          reasoning: string
+          recommendation: string
+          reviewed_at?: string
+          reviewer_id: string
+          tenant_id: string
+        }
+        Update: {
+          appeal_id?: string
+          proposed_feedback?: string | null
+          proposed_raw_score?: number | null
+          reasoning?: string
+          recommendation?: string
+          reviewed_at?: string
+          reviewer_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_assessment_appeal_reviews_appeal_id_fkey"
+            columns: ["appeal_id"]
+            isOneToOne: true
+            referencedRelation: "unipathway_assessment_appeals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_assessment_appeals: {
+        Row: {
+          assigned_at: string | null
+          assigned_by: string | null
+          attempt_id: string
+          brief_id: string
+          details: string
+          grounds: string
+          id: string
+          requested_at: string
+          reviewer_id: string | null
+          status: string
+          student_id: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          attempt_id: string
+          brief_id: string
+          details: string
+          grounds: string
+          id?: string
+          requested_at?: string
+          reviewer_id?: string | null
+          status?: string
+          student_id: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          attempt_id?: string
+          brief_id?: string
+          details?: string
+          grounds?: string
+          id?: string
+          requested_at?: string
+          reviewer_id?: string | null
+          status?: string
+          student_id?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_assessment_appeals_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: true
+            referencedRelation: "unipathway_assessment_released_results"
+            referencedColumns: ["attempt_id"]
+          },
+          {
+            foreignKeyName: "unipathway_assessment_appeals_brief_id_fkey"
+            columns: ["brief_id"]
+            isOneToOne: false
+            referencedRelation: "unipathway_assessment_briefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_assessment_attempts: {
+        Row: {
+          attempt_no: number
+          brief_id: string
+          evidence_text: string
+          guidance_at: string | null
+          id: string
+          resubmission_guidance: string | null
+          status: string
+          student_id: string
+          submission_request_id: string | null
+          submitted_at: string
+          tenant_id: string
+        }
+        Insert: {
+          attempt_no: number
+          brief_id: string
+          evidence_text: string
+          guidance_at?: string | null
+          id?: string
+          resubmission_guidance?: string | null
+          status?: string
+          student_id: string
+          submission_request_id?: string | null
+          submitted_at?: string
+          tenant_id: string
+        }
+        Update: {
+          attempt_no?: number
+          brief_id?: string
+          evidence_text?: string
+          guidance_at?: string | null
+          id?: string
+          resubmission_guidance?: string | null
+          status?: string
+          student_id?: string
+          submission_request_id?: string | null
+          submitted_at?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_assessment_attempts_brief_id_fkey"
+            columns: ["brief_id"]
+            isOneToOne: false
+            referencedRelation: "unipathway_assessment_briefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_assessment_briefs: {
+        Row: {
+          assessment_type: string
+          created_at: string
+          due_at: string
+          id: string
+          learning_outcomes: string
+          lecturer_id: string
+          max_attempts: number
+          module_id: string
+          penalty_points_per_resubmission: number
+          policy_reference: string
+          published_at: string | null
+          published_by: string | null
+          required_evidence: string
+          rubric_version: string
+          status: string
+          student_expectations: string
+          submission_cutoff: string
+          teaching_date: string | null
+          teaching_summary: string
+          tenant_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assessment_type: string
+          created_at?: string
+          due_at: string
+          id?: string
+          learning_outcomes: string
+          lecturer_id: string
+          max_attempts?: number
+          module_id: string
+          penalty_points_per_resubmission?: number
+          policy_reference: string
+          published_at?: string | null
+          published_by?: string | null
+          required_evidence: string
+          rubric_version?: string
+          status?: string
+          student_expectations: string
+          submission_cutoff: string
+          teaching_date?: string | null
+          teaching_summary: string
+          tenant_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assessment_type?: string
+          created_at?: string
+          due_at?: string
+          id?: string
+          learning_outcomes?: string
+          lecturer_id?: string
+          max_attempts?: number
+          module_id?: string
+          penalty_points_per_resubmission?: number
+          policy_reference?: string
+          published_at?: string | null
+          published_by?: string | null
+          required_evidence?: string
+          rubric_version?: string
+          status?: string
+          student_expectations?: string
+          submission_cutoff?: string
+          teaching_date?: string | null
+          teaching_summary?: string
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_assessment_briefs_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_assessment_criteria: {
+        Row: {
+          brief_id: string
+          criterion_code: string
+          criterion_description: string
+          display_order: number
+          id: string
+          learning_outcome: string
+          max_points: number
+          scoring_guidance: string
+          tenant_id: string
+        }
+        Insert: {
+          brief_id: string
+          criterion_code: string
+          criterion_description: string
+          display_order: number
+          id?: string
+          learning_outcome: string
+          max_points: number
+          scoring_guidance: string
+          tenant_id: string
+        }
+        Update: {
+          brief_id?: string
+          criterion_code?: string
+          criterion_description?: string
+          display_order?: number
+          id?: string
+          learning_outcome?: string
+          max_points?: number
+          scoring_guidance?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_assessment_criteria_brief_id_fkey"
+            columns: ["brief_id"]
+            isOneToOne: false
+            referencedRelation: "unipathway_assessment_briefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_assessment_events: {
+        Row: {
+          actor_id: string
+          attempt_id: string | null
+          brief_id: string
+          created_at: string
+          detail: string | null
+          event_type: string
+          id: string
+          tenant_id: string
+        }
+        Insert: {
+          actor_id: string
+          attempt_id?: string | null
+          brief_id: string
+          created_at?: string
+          detail?: string | null
+          event_type: string
+          id?: string
+          tenant_id: string
+        }
+        Update: {
+          actor_id?: string
+          attempt_id?: string | null
+          brief_id?: string
+          created_at?: string
+          detail?: string | null
+          event_type?: string
+          id?: string
+          tenant_id?: string
+        }
+        Relationships: []
+      }
+      unipathway_assessment_grade_amendments: {
+        Row: {
+          appeal_id: string
+          approved_by: string
+          attempt_id: string
+          brief_id: string
+          corrected_feedback: string
+          corrected_final_score: number
+          corrected_raw_score: number
+          original_final_score: number
+          original_raw_score: number
+          recorded_at: string
+          retained_penalty_points: number
+          reviewer_id: string
+          student_id: string
+          tenant_id: string
+        }
+        Insert: {
+          appeal_id: string
+          approved_by: string
+          attempt_id: string
+          brief_id: string
+          corrected_feedback: string
+          corrected_final_score: number
+          corrected_raw_score: number
+          original_final_score: number
+          original_raw_score: number
+          recorded_at?: string
+          retained_penalty_points: number
+          reviewer_id: string
+          student_id: string
+          tenant_id: string
+        }
+        Update: {
+          appeal_id?: string
+          approved_by?: string
+          attempt_id?: string
+          brief_id?: string
+          corrected_feedback?: string
+          corrected_final_score?: number
+          corrected_raw_score?: number
+          original_final_score?: number
+          original_raw_score?: number
+          recorded_at?: string
+          retained_penalty_points?: number
+          reviewer_id?: string
+          student_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_assessment_grade_amendments_appeal_id_fkey"
+            columns: ["appeal_id"]
+            isOneToOne: true
+            referencedRelation: "unipathway_assessment_appeals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_assessment_grade_amendments_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: true
+            referencedRelation: "unipathway_assessment_released_results"
+            referencedColumns: ["attempt_id"]
+          },
+        ]
+      }
+      unipathway_assessment_human_marks: {
+        Row: {
+          adjusted_score: number
+          attempt_id: string
+          criteria_scores: Json
+          feedback: string
+          marked_at: string
+          marker_id: string
+          penalty_points: number
+          raw_score: number
+          revision: number
+          tenant_id: string
+        }
+        Insert: {
+          adjusted_score: number
+          attempt_id: string
+          criteria_scores: Json
+          feedback: string
+          marked_at?: string
+          marker_id: string
+          penalty_points: number
+          raw_score: number
+          revision?: number
+          tenant_id: string
+        }
+        Update: {
+          adjusted_score?: number
+          attempt_id?: string
+          criteria_scores?: Json
+          feedback?: string
+          marked_at?: string
+          marker_id?: string
+          penalty_points?: number
+          raw_score?: number
+          revision?: number
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_assessment_human_marks_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: true
+            referencedRelation: "unipathway_assessment_attempts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_assessment_mark_history: {
+        Row: {
+          adjusted_score: number
+          attempt_id: string
+          id: string
+          marker_id: string
+          penalty_points: number
+          raw_score: number
+          recorded_at: string
+          revision: number
+          tenant_id: string
+        }
+        Insert: {
+          adjusted_score: number
+          attempt_id: string
+          id?: string
+          marker_id: string
+          penalty_points: number
+          raw_score: number
+          recorded_at?: string
+          revision: number
+          tenant_id: string
+        }
+        Update: {
+          adjusted_score?: number
+          attempt_id?: string
+          id?: string
+          marker_id?: string
+          penalty_points?: number
+          raw_score?: number
+          recorded_at?: string
+          revision?: number
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_assessment_mark_history_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "unipathway_assessment_attempts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_assessment_quality_decisions: {
+        Row: {
+          attempt_id: string
+          decided_at: string
+          decision: string
+          id: string
+          mark_revision: number
+          rationale: string
+          reviewer_id: string
+          tenant_id: string
+        }
+        Insert: {
+          attempt_id: string
+          decided_at?: string
+          decision: string
+          id?: string
+          mark_revision: number
+          rationale: string
+          reviewer_id: string
+          tenant_id: string
+        }
+        Update: {
+          attempt_id?: string
+          decided_at?: string
+          decision?: string
+          id?: string
+          mark_revision?: number
+          rationale?: string
+          reviewer_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_assessment_quality_decisions_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "unipathway_assessment_attempts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_assessment_released_results: {
+        Row: {
+          approved_mark_revision: number
+          attempt_id: string
+          brief_id: string
+          final_score: number
+          penalty_points: number
+          published_feedback: string
+          raw_score: number
+          released_at: string
+          released_by: string
+          student_id: string
+          tenant_id: string
+        }
+        Insert: {
+          approved_mark_revision: number
+          attempt_id: string
+          brief_id: string
+          final_score: number
+          penalty_points: number
+          published_feedback: string
+          raw_score: number
+          released_at?: string
+          released_by: string
+          student_id: string
+          tenant_id: string
+        }
+        Update: {
+          approved_mark_revision?: number
+          attempt_id?: string
+          brief_id?: string
+          final_score?: number
+          penalty_points?: number
+          published_feedback?: string
+          raw_score?: number
+          released_at?: string
+          released_by?: string
+          student_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_assessment_released_results_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: true
+            referencedRelation: "unipathway_assessment_attempts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_assessment_released_results_brief_id_fkey"
+            columns: ["brief_id"]
+            isOneToOne: false
+            referencedRelation: "unipathway_assessment_briefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_coursework_uploads: {
+        Row: {
+          attempt_id: string | null
+          brief_id: string
+          byte_size: number
+          created_at: string
+          file_name: string
+          id: string
+          mime_type: string
+          storage_path: string
+          student_id: string
+          tenant_id: string
+        }
+        Insert: {
+          attempt_id?: string | null
+          brief_id: string
+          byte_size: number
+          created_at?: string
+          file_name: string
+          id?: string
+          mime_type: string
+          storage_path: string
+          student_id: string
+          tenant_id: string
+        }
+        Update: {
+          attempt_id?: string | null
+          brief_id?: string
+          byte_size?: number
+          created_at?: string
+          file_name?: string
+          id?: string
+          mime_type?: string
+          storage_path?: string
+          student_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_coursework_uploads_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "unipathway_assessment_attempts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_coursework_uploads_brief_id_fkey"
+            columns: ["brief_id"]
+            isOneToOne: false
+            referencedRelation: "unipathway_assessment_briefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_coursework_uploads_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_coursework_uploads_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_funding_events: {
+        Row: {
+          changed_by: string
+          created_at: string
+          current: Json
+          id: string
+          invoice_id: string
+          note: string
+          previous: Json | null
+          tenant_id: string
+        }
+        Insert: {
+          changed_by: string
+          created_at?: string
+          current: Json
+          id?: string
+          invoice_id: string
+          note: string
+          previous?: Json | null
+          tenant_id: string
+        }
+        Update: {
+          changed_by?: string
+          created_at?: string
+          current?: Json
+          id?: string
+          invoice_id?: string
+          note?: string
+          previous?: Json | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_funding_events_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_guardian_messages: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          id: string
+          link_id: string
+          request_id: string | null
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          id?: string
+          link_id: string
+          request_id?: string | null
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          link_id?: string
+          request_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_guardian_messages_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "parent_student_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_guardian_result_consents: {
+        Row: {
+          granted_at: string
+          link_id: string
+          student_id: string
+          tenant_id: string
+        }
+        Insert: {
+          granted_at?: string
+          link_id: string
+          student_id: string
+          tenant_id: string
+        }
+        Update: {
+          granted_at?: string
+          link_id?: string
+          student_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_guardian_result_consents_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: true
+            referencedRelation: "parent_student_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_guardian_scope_consents: {
+        Row: {
+          granted_at: string
+          link_id: string
+          scope: string
+        }
+        Insert: {
+          granted_at?: string
+          link_id: string
+          scope: string
+        }
+        Update: {
+          granted_at?: string
+          link_id?: string
+          scope?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_guardian_scope_consents_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "parent_student_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_learning_attempts: {
+        Row: {
+          feedback: string | null
+          help_requested: boolean
+          id: string
+          outcome: string | null
+          response: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          submitted_at: string
+          task_id: string
+        }
+        Insert: {
+          feedback?: string | null
+          help_requested?: boolean
+          id: string
+          outcome?: string | null
+          response: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          submitted_at?: string
+          task_id: string
+        }
+        Update: {
+          feedback?: string | null
+          help_requested?: boolean
+          id?: string
+          outcome?: string | null
+          response?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          submitted_at?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_learning_attempts_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "unipathway_learning_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_learning_plans: {
+        Row: {
+          created_at: string
+          created_by: string
+          goal: string
+          id: string
+          module_id: string
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          goal: string
+          id?: string
+          module_id: string
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          goal?: string
+          id?: string
+          module_id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_learning_plans_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_learning_shares: {
+        Row: {
+          link_id: string
+          plan_id: string
+        }
+        Insert: {
+          link_id: string
+          plan_id: string
+        }
+        Update: {
+          link_id?: string
+          plan_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_learning_shares_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "parent_student_links"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_learning_shares_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "unipathway_learning_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_learning_tasks: {
+        Row: {
+          baseline: string
+          created_at: string
+          created_by: string
+          diagnostic_evidence: string
+          id: string
+          instruction: string
+          plan_id: string
+          position: number
+          skill: string
+        }
+        Insert: {
+          baseline: string
+          created_at?: string
+          created_by: string
+          diagnostic_evidence: string
+          id: string
+          instruction: string
+          plan_id: string
+          position: number
+          skill: string
+        }
+        Update: {
+          baseline?: string
+          created_at?: string
+          created_by?: string
+          diagnostic_evidence?: string
+          id?: string
+          instruction?: string
+          plan_id?: string
+          position?: number
+          skill?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_learning_tasks_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "unipathway_learning_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_lesson_progress: {
+        Row: {
+          completed: boolean
+          lesson_id: string
+          position_seconds: number
+          revision: number
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          completed?: boolean
+          lesson_id: string
+          position_seconds?: number
+          revision: number
+          student_id?: string
+          updated_at?: string
+        }
+        Update: {
+          completed?: boolean
+          lesson_id?: string
+          position_seconds?: number
+          revision?: number
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_lesson_progress_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "unipathway_lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_lesson_progress_lesson_id_revision_fkey"
+            columns: ["lesson_id", "revision"]
+            isOneToOne: false
+            referencedRelation: "unipathway_lesson_revisions"
+            referencedColumns: ["lesson_id", "revision"]
+          },
+        ]
+      }
+      unipathway_lesson_revisions: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          lesson_id: string
+          module_id: string
+          revision: number
+          snapshot: Json
+          tenant_id: string
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          lesson_id: string
+          module_id: string
+          revision: number
+          snapshot: Json
+          tenant_id: string
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          lesson_id?: string
+          module_id?: string
+          revision?: number
+          snapshot?: Json
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_lesson_revisions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "unipathway_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_lessons: {
+        Row: {
+          body: string
+          id: string
+          module_id: string
+          position: number
+          resource_url: string | null
+          revision: number
+          status: string
+          tenant_id: string
+          title: string
+          transcript: string
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          body?: string
+          id?: string
+          module_id: string
+          position?: number
+          resource_url?: string | null
+          revision?: number
+          status?: string
+          tenant_id: string
+          title: string
+          transcript?: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          body?: string
+          id?: string
+          module_id?: string
+          position?: number
+          resource_url?: string | null
+          revision?: number
+          status?: string
+          tenant_id?: string
+          title?: string
+          transcript?: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_lessons_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_lessons_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_lessons_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_microsoft_jobs: {
+        Row: {
+          attempts: number
+          created_at: string
+          error_code: string | null
+          id: string
+          lease_token: string | null
+          lease_until: string | null
+          requested_by: string
+          role_type: string
+          status: string
+          tenant_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          error_code?: string | null
+          id?: string
+          lease_token?: string | null
+          lease_until?: string | null
+          requested_by: string
+          role_type: string
+          status?: string
+          tenant_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          error_code?: string | null
+          id?: string
+          lease_token?: string | null
+          lease_until?: string | null
+          requested_by?: string
+          role_type?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      unipathway_module_materials: {
+        Row: {
+          available_at: string | null
+          created_at: string
+          created_by: string
+          id: string
+          kind: string
+          module_id: string
+          object_path: string
+          publication_status: string
+          tenant_id: string
+          title: string
+        }
+        Insert: {
+          available_at?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          kind: string
+          module_id: string
+          object_path: string
+          publication_status?: string
+          tenant_id: string
+          title: string
+        }
+        Update: {
+          available_at?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          kind?: string
+          module_id?: string
+          object_path?: string
+          publication_status?: string
+          tenant_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_module_materials_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_schedule_changes: {
+        Row: {
+          action: string
+          changed_by: string
+          created_at: string
+          current: Json
+          id: string
+          module_id: string
+          previous: Json | null
+          reason: string
+          schedule_id: string
+          tenant_id: string
+        }
+        Insert: {
+          action: string
+          changed_by: string
+          created_at?: string
+          current: Json
+          id?: string
+          module_id: string
+          previous?: Json | null
+          reason: string
+          schedule_id: string
+          tenant_id: string
+        }
+        Update: {
+          action?: string
+          changed_by?: string
+          created_at?: string
+          current?: Json
+          id?: string
+          module_id?: string
+          previous?: Json | null
+          reason?: string
+          schedule_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_schedule_changes_schedule_id_fkey"
+            columns: ["schedule_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_lectures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_staff_tasks: {
+        Row: {
+          assigned_to: string
+          created_at: string
+          created_by: string
+          detail: string
+          due_on: string
+          id: string
+          outcome: string
+          priority: string
+          status: string
+          tenant_id: string
+          title: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          assigned_to: string
+          created_at?: string
+          created_by?: string
+          detail?: string
+          due_on: string
+          id?: string
+          outcome?: string
+          priority?: string
+          status?: string
+          tenant_id: string
+          title: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          assigned_to?: string
+          created_at?: string
+          created_by?: string
+          detail?: string
+          due_on?: string
+          id?: string
+          outcome?: string
+          priority?: string
+          status?: string
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_staff_tasks_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_staff_tasks_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_task_history: {
+        Row: {
+          changed_by: string
+          created_at: string
+          id: string
+          snapshot: Json
+          task_id: string
+          version: number
+        }
+        Insert: {
+          changed_by: string
+          created_at?: string
+          id?: string
+          snapshot: Json
+          task_id: string
+          version: number
+        }
+        Update: {
+          changed_by?: string
+          created_at?: string
+          id?: string
+          snapshot?: Json
+          task_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_task_history_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "unipathway_staff_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_presence: {
         Row: {
           last_seen: string
@@ -3762,6 +6093,34 @@ export type Database = {
       }
     }
     Functions: {
+      add_unipathway_learning_task: {
+        Args: {
+          p_baseline: string
+          p_diagnostic: string
+          p_id: string
+          p_instruction: string
+          p_plan: string
+          p_skill: string
+        }
+        Returns: string
+      }
+      allocate_unipathway_independent_marker: {
+        Args: {
+          p_attempt: string
+          p_marker: string
+          p_quality_reviewer: string
+        }
+        Returns: undefined
+      }
+      approve_unipathway_appeal_policy: {
+        Args: { p_brief: string; p_days: number; p_policy: string }
+        Returns: undefined
+      }
+      assign_unipathway_appeal_reviewer: {
+        Args: { p_appeal: string; p_reviewer: string }
+        Returns: undefined
+      }
+      audit_uni_mail_ai: { Args: { p_thread: string }; Returns: undefined }
       auto_schedule_module: {
         Args: {
           _academic_year?: string
@@ -3773,16 +6132,443 @@ export type Database = {
         }
         Returns: Json
       }
+      can_author_uni_assessment: {
+        Args: { p_module: string; p_tenant: string }
+        Returns: boolean
+      }
+      can_manage_uni_assessment: { Args: { p_brief: string }; Returns: boolean }
+      can_manage_unipathway_microsoft: {
+        Args: { p_tenant: string }
+        Returns: boolean
+      }
+      can_manage_unipathway_module: {
+        Args: { p_module: string }
+        Returns: boolean
+      }
+      can_mark_uni_attempt: { Args: { p_attempt: string }; Returns: boolean }
+      can_quality_uni_attempt: { Args: { p_attempt: string }; Returns: boolean }
+      can_read_uni_appeal_attempt: {
+        Args: { p_attempt: string }
+        Returns: boolean
+      }
+      can_read_uni_appeal_brief: { Args: { p_brief: string }; Returns: boolean }
+      can_read_unipathway_coursework_file: {
+        Args: { p_path: string }
+        Returns: boolean
+      }
+      can_read_unipathway_learning_plan: {
+        Args: { p_plan: string }
+        Returns: boolean
+      }
+      can_read_unipathway_learning_task: {
+        Args: { p_task: string }
+        Returns: boolean
+      }
+      can_read_unipathway_module_asset: {
+        Args: { p_path: string }
+        Returns: boolean
+      }
+      can_review_uni_assessment_brief: {
+        Args: { p_brief: string }
+        Returns: boolean
+      }
+      can_study_uni_assessment: { Args: { p_brief: string }; Returns: boolean }
+      can_upload_unipathway_module_asset: {
+        Args: { p_path: string }
+        Returns: boolean
+      }
+      can_view_unipathway_module: {
+        Args: { p_module: string }
+        Returns: boolean
+      }
+      can_write_unipathway_coursework_file: {
+        Args: { p_path: string }
+        Returns: boolean
+      }
+      cancel_uni_calendar_class: {
+        Args: { p_session: string }
+        Returns: undefined
+      }
+      cancel_uni_mail_draft: { Args: { p_message: string }; Returns: undefined }
+      claim_uni_calendar_job: { Args: { p_tenant: string }; Returns: Json }
+      claim_uni_mail_send: {
+        Args: { p_provider?: string; p_tenant: string }
+        Returns: Json
+      }
+      claim_unipathway_microsoft_job: {
+        Args: { p_tenant: string }
+        Returns: Json
+      }
+      complete_unipathway_admission: {
+        Args: {
+          p_application: string
+          p_expected_stage: string
+          p_note: string
+          p_programme: string
+          p_student: string
+        }
+        Returns: string
+      }
+      configure_uni_mailbox: {
+        Args: {
+          p_address: string
+          p_enabled?: boolean
+          p_graph: string
+          p_member: string
+          p_send?: boolean
+        }
+        Returns: string
+      }
+      consume_study_tutor_quota: { Args: { p_user: string }; Returns: Json }
+      create_unipathway_learning_plan: {
+        Args: { p_goal: string; p_module: string; p_student: string }
+        Returns: string
+      }
+      decide_unipathway_quality_mark: {
+        Args: { p_approve: boolean; p_attempt: string; p_rationale: string }
+        Returns: undefined
+      }
       delete_user_account: { Args: { _user_id: string }; Returns: undefined }
+      discard_unipathway_coursework_file: {
+        Args: { p_upload: string }
+        Returns: undefined
+      }
       ensure_my_account: { Args: never; Returns: undefined }
       export_user_data: { Args: { _user_id: string }; Returns: Json }
+      finalise_unipathway_grade_appeal: {
+        Args: { p_accept: boolean; p_appeal: string; p_reasoning: string }
+        Returns: undefined
+      }
+      finish_uni_calendar_job: {
+        Args: {
+          p_error?: string
+          p_event?: string
+          p_join?: string
+          p_lease: string
+          p_session: string
+        }
+        Returns: undefined
+      }
+      finish_uni_mail_send: {
+        Args: { p_accepted: boolean; p_message: string }
+        Returns: undefined
+      }
+      finish_unipathway_microsoft_job: {
+        Args: {
+          p_error?: string
+          p_job: string
+          p_lease: string
+          p_object?: string
+          p_sku?: string
+          p_upn?: string
+        }
+        Returns: undefined
+      }
+      get_unipathway_admission_options: {
+        Args: { p_application: string }
+        Returns: Json
+      }
+      get_unipathway_guardian_activity: { Args: never; Returns: Json }
+      get_unipathway_guardian_learning: { Args: never; Returns: Json }
+      get_unipathway_guardian_results: { Args: never; Returns: Json }
+      get_unipathway_guardian_scopes: { Args: never; Returns: Json }
+      get_unipathway_guardian_sharing: { Args: never; Returns: Json }
+      get_unipathway_guardian_staff_queue: { Args: never; Returns: Json }
+      get_unipathway_learning_share_options: {
+        Args: { p_plan: string }
+        Returns: Json
+      }
+      get_unipathway_my_fee_invoices: {
+        Args: never
+        Returns: {
+          amount: number
+          created_at: string
+          due_date: string
+          id: string
+          paid: number
+          sponsor_amount: number
+          sponsor_name: string
+          sponsor_paid: number
+          status: string
+          type: string
+        }[]
+      }
+      get_unipathway_tuition_roster: { Args: never; Returns: Json }
       get_user_tenant_id: { Args: { _user_id: string }; Returns: string }
+      guardian_learner_allowed: { Args: { p_link: string }; Returns: boolean }
+      guardian_scope_allowed: {
+        Args: { p_link: string; p_scope: string }
+        Returns: boolean
+      }
+      guardian_staff_allowed: { Args: { p_link: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      ingest_uni_mail: {
+        Args: {
+          p_at: string
+          p_body: string
+          p_box: string
+          p_cc: string[]
+          p_conversation: string
+          p_direction: string
+          p_from: string
+          p_has_documents?: boolean
+          p_provider: string
+          p_subject: string
+          p_to: string[]
+        }
+        Returns: string
+      }
+      publish_unipathway_assessment_brief: {
+        Args: { p_brief: string }
+        Returns: undefined
+      }
+      queue_uni_mail: { Args: { p_message: string }; Returns: undefined }
+      read_uni_mail_alert: { Args: { p_id: string }; Returns: undefined }
+      record_unipathway_appeal_review: {
+        Args: {
+          p_appeal: string
+          p_feedback?: string
+          p_raw_score: number
+          p_reasoning: string
+          p_recommendation: string
+        }
+        Returns: undefined
+      }
+      record_unipathway_human_mark: {
+        Args: { p_attempt: string; p_criteria: Json; p_feedback: string }
+        Returns: number
+      }
+      register_uni_mail_document: {
+        Args: { p_name: string; p_path: string; p_thread: string }
+        Returns: string
+      }
+      release_unipathway_assessment_mark: {
+        Args: { p_attempt: string }
+        Returns: undefined
+      }
+      remind_uni_mail_tasks: { Args: { p_tenant: string }; Returns: number }
+      remove_uni_mail_member: {
+        Args: { p_box: string; p_member: string }
+        Returns: undefined
+      }
+      request_unipathway_assessment_resubmission: {
+        Args: { p_attempt: string; p_guidance: string }
+        Returns: undefined
+      }
+      request_unipathway_grade_appeal: {
+        Args: { p_attempt: string; p_details: string; p_grounds: string }
+        Returns: string
+      }
+      request_unipathway_microsoft_account: {
+        Args: { p_user: string }
+        Returns: string
+      }
+      reserve_unipathway_coursework_file: {
+        Args: {
+          p_brief: string
+          p_mime: string
+          p_name: string
+          p_size: number
+        }
+        Returns: {
+          attempt_id: string | null
+          brief_id: string
+          byte_size: number
+          created_at: string
+          file_name: string
+          id: string
+          mime_type: string
+          storage_path: string
+          student_id: string
+          tenant_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "unipathway_coursework_uploads"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      review_uni_calendar_delivery: {
+        Args: { p_session: string }
+        Returns: undefined
+      }
+      review_uni_mark_revision: {
+        Args: {
+          p_action: string
+          p_attempt: string
+          p_rationale?: string
+          p_revision: number
+        }
+        Returns: undefined
+      }
+      review_unipathway_learning_attempt: {
+        Args: { p_attempt: string; p_feedback: string; p_outcome: string }
+        Returns: undefined
+      }
+      same_tenant: { Args: { t: string }; Returns: boolean }
+      save_uni_calendar_class: {
+        Args: {
+          p_cancel?: boolean
+          p_end: string
+          p_id: string
+          p_module: string
+          p_organiser: string
+          p_revision?: number
+          p_start: string
+          p_students: string[]
+          p_title: string
+        }
+        Returns: string
+      }
+      save_uni_mail_draft: {
+        Args: {
+          p_body: string
+          p_box: string
+          p_request?: string
+          p_subject: string
+          p_thread?: string
+          p_to: string[]
+        }
+        Returns: string
+      }
+      save_uni_mail_task: {
+        Args: {
+          p_assignee: string
+          p_due?: string
+          p_status?: string
+          p_task?: string
+          p_thread: string
+          p_title: string
+        }
+        Returns: string
+      }
+      save_uni_marking_draft: {
+        Args: {
+          p_attempt: string
+          p_criteria: Json
+          p_feedback: string
+          p_guidance: string
+          p_revision: number
+        }
+        Returns: {
+          attempt_id: string
+          criteria: Json
+          feedback: string
+          guidance: string
+          marker_id: string
+          revision: number
+          tenant_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "uni_marking_drafts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      send_unipathway_guardian_message: {
+        Args: { p_body: string; p_link: string }
+        Returns: undefined
+      }
+      send_unipathway_guardian_message_once: {
+        Args: { p_body: string; p_link: string; p_request: string }
+        Returns: string
+      }
+      set_unipathway_guardian_result_sharing: {
+        Args: { p_link: string; p_share: boolean }
+        Returns: undefined
+      }
+      set_unipathway_guardian_scope: {
+        Args: { p_link: string; p_scope: string; p_share: boolean }
+        Returns: undefined
+      }
+      set_unipathway_learning_share: {
+        Args: { p_link: string; p_plan: string; p_share: boolean }
+        Returns: undefined
+      }
+      submit_unipathway_assessment: {
+        Args: { p_brief: string; p_evidence: string }
+        Returns: string
+      }
+      submit_unipathway_coursework: {
+        Args: {
+          p_brief: string
+          p_evidence: string
+          p_request: string
+          p_uploads: string[]
+        }
+        Returns: string
+      }
+      submit_unipathway_learning_attempt: {
+        Args: {
+          p_help: boolean
+          p_id: string
+          p_response: string
+          p_task: string
+        }
+        Returns: string
+      }
+      uni_calendar_candidates: { Args: { p_module: string }; Returns: Json }
+      uni_calendar_manage: { Args: { p_session: string }; Returns: boolean }
+      uni_calendar_read: { Args: { p_session: string }; Returns: boolean }
+      uni_mail_access: {
+        Args: { p_box: string; p_send?: boolean }
+        Returns: boolean
+      }
+      uni_mail_member_directory: {
+        Args: never
+        Returns: {
+          can_send: boolean
+          full_name: string
+          mailbox_id: string
+          user_id: string
+        }[]
+      }
+      uni_mail_storage_access: {
+        Args: { p_name: string; p_write?: boolean }
+        Returns: boolean
+      }
+      uni_mail_thread_access: {
+        Args: { p_send?: boolean; p_thread: string }
+        Returns: boolean
+      }
+      unipathway_guardian_can_read_results: {
+        Args: { p_student: string; p_tenant: string }
+        Returns: boolean
+      }
+      unipathway_guardian_link_scope: {
+        Args: {
+          p_parent: string
+          p_staff: boolean
+          p_student: string
+          p_tenant: string
+        }
+        Returns: boolean
+      }
+      unipathway_task_assignees: {
+        Args: never
+        Returns: {
+          full_name: string
+          user_id: string
+        }[]
+      }
+      update_uni_mail_thread: {
+        Args: {
+          p_assignee: string
+          p_due?: string
+          p_priority: string
+          p_status: string
+          p_thread: string
+        }
+        Returns: undefined
       }
       verify_certificate: {
         Args: { _cert_number: string }
@@ -3808,6 +6594,14 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      verify_unipathway_guardian_link: {
+        Args: {
+          p_parent_email: string
+          p_reference: string
+          p_student_email: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role:
@@ -3828,7 +6622,6 @@ export type Database = {
         | "assessor"
         | "awarding_body_eqa"
         | "welfare_officer"
-        | "security_officer"
       application_stage:
         | "lead"
         | "contacted"
@@ -4044,7 +6837,6 @@ export const Constants = {
         "assessor",
         "awarding_body_eqa",
         "welfare_officer",
-        "security_officer",
       ],
       application_stage: [
         "lead",
