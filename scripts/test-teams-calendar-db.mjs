@@ -1,0 +1,61 @@
+import {PGlite} from '@electric-sql/pglite';import {readFileSync} from 'node:fs';import assert from 'node:assert/strict';
+const db=new PGlite();let checks=0;const id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
+try{
+await db.exec(`CREATE ROLE anon;CREATE ROLE authenticated;CREATE ROLE service_role BYPASSRLS;CREATE SCHEMA auth;CREATE SCHEMA unipathway_acl;
+CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+CREATE TABLE profiles(user_id uuid PRIMARY KEY,tenant_id uuid,full_name text);
+CREATE TABLE user_roles(user_id uuid,tenant_id uuid,role text);
+CREATE TABLE modules(id uuid PRIMARY KEY,tenant_id uuid,programme_id uuid,lecturer_id uuid);
+CREATE TABLE student_enrolments(student_id uuid,tenant_id uuid,programme_id uuid,status text);
+CREATE TABLE microsoft_education_accounts(user_id uuid,tenant_id uuid,entra_object_id text,institutional_email text,disabled_at timestamptz,provisioning_status text,role_type text);
+CREATE FUNCTION unipathway_acl.module_access(m uuid,t uuid,w boolean DEFAULT false) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path='' AS $$
+SELECT EXISTS(SELECT 1 FROM public.modules x JOIN public.profiles p ON p.user_id=auth.uid() AND p.tenant_id=x.tenant_id WHERE x.id=m AND x.tenant_id=t AND (x.lecturer_id=p.user_id OR (NOT w AND EXISTS(SELECT 1 FROM public.student_enrolments e WHERE e.student_id=p.user_id AND e.tenant_id=t AND e.programme_id=x.programme_id AND e.status='active'))))$$;
+GRANT USAGE ON SCHEMA public,auth,unipathway_acl TO authenticated,service_role;
+INSERT INTO profiles VALUES('${id(1)}','${id(10)}','Teacher'),('${id(2)}','${id(10)}','Student'),('${id(3)}','${id(11)}','Other teacher'),('${id(4)}','${id(10)}','Uninvited');
+INSERT INTO user_roles VALUES('${id(1)}','${id(10)}','lecturer'),('${id(3)}','${id(11)}','lecturer');
+INSERT INTO modules VALUES('${id(20)}','${id(10)}','${id(30)}','${id(1)}'),('${id(21)}','${id(11)}','${id(31)}','${id(3)}');
+INSERT INTO student_enrolments VALUES('${id(2)}','${id(10)}','${id(30)}','active'),('${id(4)}','${id(10)}','${id(30)}','active');
+INSERT INTO microsoft_education_accounts VALUES('${id(1)}','${id(10)}','${id(50)}','teacher@unipathway.pk',NULL,'active','lecturer'),('${id(2)}','${id(10)}','${id(51)}','student@unipathway.pk',NULL,'active','student');`);
+await db.exec(readFileSync('supabase/migrations/20261026134517_teams_calendar_connection.sql','utf8'));
+await db.exec(readFileSync('supabase/migrations/20261026140250_calendar_cancellation_without_active_mailbox.sql','utf8'));
+async function actor(n,sql){await db.query("select set_config('request.jwt.claim.sub',$1,false)",[id(n)]);await db.exec('SET ROLE authenticated');try{return await db.query(sql)}finally{await db.exec('RESET ROLE')}}
+async function denied(n,sql){await assert.rejects(()=>actor(n,sql));checks++;}
+const save=(n=40,revision=0,cancel=false)=>`SELECT save_uni_calendar_class('${id(n)}','${id(20)}','${id(1)}','Writing class',now()+interval '2 days',now()+interval '2 days 1 hour',ARRAY['${id(2)}']::uuid[],${revision},${cancel})`;
+await denied(2,save());await denied(3,save());await actor(1,save());checks++;
+assert.equal((await actor(2,'SELECT * FROM live_class_sessions')).rows.length,1);checks++;
+assert.equal((await actor(4,'SELECT * FROM live_class_sessions')).rows.length,0);checks++;
+assert.equal((await actor(3,'SELECT * FROM live_class_sessions')).rows.length,0);checks++;
+await denied(1,save(41));await denied(1,save(40,0));
+await denied(1,'UPDATE live_class_sessions SET join_url=\'https://attacker.invalid\'');
+await denied(1,'SELECT lease FROM uni_calendar_jobs');await denied(1,`SELECT claim_uni_calendar_job('${id(10)}')`);
+let claimed=(await db.query(`SELECT claim_uni_calendar_job('${id(10)}') x`)).rows[0].x;
+assert.equal(claimed.attendees.length,1);checks++;
+assert.equal((await db.query(`SELECT claim_uni_calendar_job('${id(10)}') x`)).rows[0].x,null);checks++;
+await denied(1,save(40,1,true));
+await assert.rejects(db.query(`SELECT finish_uni_calendar_job('${id(40)}','${id(90)}','event','https://teams.microsoft.com/l/meetup-join/test')`));checks++;
+await db.query(`SELECT finish_uni_calendar_job('${id(40)}','${claimed.job.lease}','event','https://teams.microsoft.com/l/meetup-join/test')`);
+assert.equal((await actor(2,'SELECT join_url FROM live_class_sessions')).rows[0].join_url,'https://teams.microsoft.com/l/meetup-join/test');checks++;
+await actor(1,save(40,1));claimed=(await db.query(`SELECT claim_uni_calendar_job('${id(10)}') x`)).rows[0].x;
+await db.query(`SELECT finish_uni_calendar_job('${id(40)}','${claimed.job.lease}',NULL,NULL,'provider_receipt_unknown')`);
+await denied(1,save(40,2));await actor(1,`SELECT review_uni_calendar_delivery('${id(40)}')`);
+claimed=(await db.query(`SELECT claim_uni_calendar_job('${id(10)}') x`)).rows[0].x;assert.equal(claimed.job.verify_only,true);checks++;
+await db.query(`SELECT finish_uni_calendar_job('${id(40)}','${claimed.job.lease}','event','https://teams.microsoft.com/l/meetup-join/test')`);
+await db.exec(`UPDATE student_enrolments SET status='withdrawn' WHERE student_id='${id(2)}'`);
+assert.equal((await actor(2,'SELECT * FROM live_class_sessions')).rows.length,0);checks++;
+await db.exec(`UPDATE microsoft_education_accounts SET disabled_at=now() WHERE user_id='${id(1)}'`);
+await actor(1,save(40,2,true));claimed=(await db.query(`SELECT claim_uni_calendar_job('${id(10)}') x`)).rows[0].x;assert.equal(claimed.session.status,'cancelled');checks++;
+assert.equal(claimed.attendees.length,0);checks++;assert.equal(claimed.job.verify_only,false);checks++;
+await db.query(`SELECT finish_uni_calendar_job('${id(40)}','${claimed.job.lease}','event',NULL)`);
+await db.exec(`UPDATE microsoft_education_accounts SET disabled_at=NULL WHERE user_id='${id(1)}'`);
+await db.exec(`UPDATE student_enrolments SET status='active' WHERE student_id='${id(2)}'`);
+await actor(1,save(42));claimed=(await db.query(`SELECT claim_uni_calendar_job('${id(10)}') x`)).rows[0].x;
+await actor(1,`SELECT cancel_uni_calendar_class('${id(42)}')`);
+assert.equal((await actor(2,'SELECT * FROM live_class_sessions')).rows.length,0);checks++;
+await db.query(`SELECT finish_uni_calendar_job('${id(42)}','${claimed.job.lease}','event2','https://teams.microsoft.com/l/meetup-join/test')`);
+const cancelled=(await db.query(`SELECT s.join_url,j.status FROM live_class_sessions s JOIN uni_calendar_jobs j ON j.session_id=s.id WHERE s.id='${id(42)}'`)).rows[0];
+assert.equal(cancelled.join_url,null);checks++;assert.equal(cancelled.status,'queued');checks++;
+assert.equal((await db.query(`SELECT claim_uni_calendar_job('${id(10)}') x`)).rows[0].x.session.status,'cancelled');checks++;
+await denied(1,'DELETE FROM uni_calendar_audit');
+await db.exec('SET ROLE anon');await assert.rejects(db.query('SELECT * FROM live_class_sessions'));checks++;await db.exec('RESET ROLE');
+console.log(`${checks} calendar permission, clash, revision, lease, withdrawal and uncertain-delivery checks passed`);
+}finally{await db.close()}

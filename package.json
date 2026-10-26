@@ -31,7 +31,8 @@
     "worker:microsoft-accounts": "node scripts/microsoft-account-worker.mjs",
     "test:microsoft-accounts": "node --test scripts/tests/microsoft-provisioning.test.mjs && node scripts/test-microsoft-provisioning-db.mjs",
     "worker:comms": "node scripts/comms-mail-worker.mjs",
-    "worker:comms-hosted": "node scripts/comms-imap-worker.mjs"
+    "worker:comms-hosted": "node scripts/comms-imap-worker.mjs",
+    "worker:teams-calendar": "node scripts/teams-calendar-worker.mjs"
   },
   "dependencies": {
     "@aparajita/capacitor-secure-storage": "8.0.1",
