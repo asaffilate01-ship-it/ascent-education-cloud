@@ -1,0 +1,5 @@
+export const TASK_ROLES=['superadmin','centre_director','admissions_admin','programme_leader','lecturer','assessor','iqa_officer','finance_officer','welfare_officer','security_officer','exams_officer','marketing_officer'];
+export type StaffTask={id:string;tenant_id:string;created_by:string;assigned_to:string;title:string;detail:string;due_on:string;priority:'normal'|'high';status:'open'|'in_progress'|'blocked'|'done'|'cancelled';outcome:string;version:number;updated_at:string};
+export const pakistanDay=(date=new Date())=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Karachi',year:'numeric',month:'2-digit',day:'2-digit'}).format(date);
+export function taskOverdue(task:Pick<StaffTask,'due_on'|'status'>,today=pakistanDay()){return !['done','cancelled'].includes(task.status)&&task.due_on<today;}
+export function sortTasks(tasks:StaffTask[],today=pakistanDay()) {return [...tasks].sort((a,b)=>Number(taskOverdue(b,today))-Number(taskOverdue(a,today))||Number(b.priority==='high')-Number(a.priority==='high')||a.due_on.localeCompare(b.due_on)||a.id.localeCompare(b.id));}

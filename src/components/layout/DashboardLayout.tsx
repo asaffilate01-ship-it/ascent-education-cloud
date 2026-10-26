@@ -1,3 +1,4 @@
+import {workspacePath} from '@/lib/workspaceContext';
 import WorkspaceShortcuts from './WorkspaceShortcuts';
 import { ReactNode } from 'react';
 import DashboardSidebar from './DashboardSidebar';
@@ -54,7 +55,7 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
         <header className="sticky top-0 z-40 min-h-14 flex flex-wrap items-center justify-between gap-y-2 py-2 px-4 lg:px-6 border-b border-border/40 bg-card/90 backdrop-blur-xl shadow-sm">
           <div className="ml-12 min-w-0 flex-1 lg:ml-0">
             {breadcrumbs.length > 1 && (
-              <div className="hidden md:flex items-center gap-1.5 text-[10px] text-muted-foreground mb-0.5">
+              <div className="hidden md:flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5">
                 {breadcrumbs.map((bc, i) => (
                   <span key={bc.path} className="flex items-center gap-1.5">
                     {i > 0 && <span className="text-border">/</span>}
@@ -108,7 +109,7 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
           transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
           className="p-3 sm:p-4 lg:p-6 pb-24 lg:pb-6"
         >
-          <div className="page-shell min-w-0">{actions && <div className="mb-4 flex flex-wrap gap-2">{actions}</div>}<WorkspaceShortcuts />{!!workspaceLinks.length && <nav aria-label="Learning workspace" className="mb-5 flex flex-wrap gap-2">{workspaceLinks.map(([label,to])=><Link key={to} to={to} aria-current={location.pathname===to?'page':undefined} className={`inline-flex min-h-11 items-center rounded-lg border px-3 py-2 text-sm font-medium ${location.pathname===to?'bg-primary text-primary-foreground':'bg-card hover:bg-accent'}`}>{label}</Link>)}</nav>}
+          <div className="page-shell min-w-0">{actions && <div className="mb-4 flex flex-wrap gap-2">{actions}</div>}<WorkspaceShortcuts />{!!workspaceLinks.length && <nav aria-label="Learning workspace" className="mb-5 flex flex-wrap gap-2">{workspaceLinks.map(([label,to])=><Link key={to} to={workspacePath(to,location.search)} aria-current={location.pathname===to?'page':undefined} className={`inline-flex min-h-11 items-center rounded-lg border px-3 py-2 text-sm font-medium ${location.pathname===to?'bg-primary text-primary-foreground':'bg-card hover:bg-accent'}`}>{label}</Link>)}</nav>}
             {children}</div>
         </motion.main>
       </div>

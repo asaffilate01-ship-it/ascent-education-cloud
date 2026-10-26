@@ -2,6 +2,8 @@
 
 Reviewed 25 October 2026 against source through PR94 (`63d705b`), the live database catalog, public-page browser checks, and vendors' official product/help material. Competitor claims describe their documented offerings, not a hands-on test of paid accounts. Features and availability vary by edition and configuration. “Not found” means not evidenced in the inspected implementation, not proof that no related code exists anywhere.
 
+Implementation updates: [Connected learning release](connected-learning-release.md) and [Scheduling, follow-up and navigation release](scheduling-followup-release.md). The evidence below is the original review snapshot; these release notes track subsequent delivery and remaining acceptance work.
+
 ## Main finding
 
 UniPathway has substantial breadth: admissions, role-specific workspaces, modules, materials, classroom invitations, recorded lessons, assessment/IQA, guardian consent, tuition practice, labs, placements and agent workflows. Its largest deficit is consistency and live operational completeness. Adding another collection of dashboards before connecting existing journeys would make navigation worse.

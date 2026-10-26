@@ -1,3 +1,4 @@
+import ClassJourney from '@/components/classroom/ClassJourney';
 import TeamsLink from '@/components/native/TeamsLink';
 import {useEffect,useState} from 'react';
 import {Link,useParams} from 'react-router-dom';
@@ -15,6 +16,7 @@ type Session={id:string;title:string;join_url:string|null;starts_at:string;ends_
 export default function TeamsTeachingDesk(){
  const {sessionId}=useParams();const {user}=useAuth();
  return <DashboardLayout title="Teams teaching desk" subtitle="Whole-class teaching, private tutor support and group work across all subjects">
+  {sessionId&&<ClassJourney sessionId={sessionId}/>}
   <Link className="underline" to={user?.roles.some(r=>['lecturer','programme_leader','centre_director','superadmin'].includes(r))?'/lecturer/classroom':'/student/classroom'}>Back to my classes</Link>
   {sessionId&&user?<TeachingDesk key={`${sessionId}:${user.id}:${user.tenantId}`} sessionId={sessionId}/>:<p role="alert">Select an invited class first.</p>}
  </DashboardLayout>;

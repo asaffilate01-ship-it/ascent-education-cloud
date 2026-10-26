@@ -21,6 +21,8 @@ export interface ScheduledLecture {
   effective_from: string;
   effective_until: string | null;
   notes: string | null;
+  change_reason?: string;
+  cohort_reference?: string|null;
   created_at: string;
   updated_at: string;
 }
@@ -136,9 +138,14 @@ export function useScheduledLectures() {
     }
   };
 
+  const updateLecture = async (id: string, updatedAt: string, changes: Partial<ScheduledLecture>) => {
+    const {data,error}=await supabase.from('scheduled_lectures').update(changes as any).eq('id',id).eq('updated_at',updatedAt).select('id').single();
+    if(error||!data){toast.error(error?.code==='23P01'?'This overlaps a lecturer, module, cohort or room booking.':'Save was not confirmed. Another person may have changed this class. Refresh and try again.');return false;}
+    toast.success(changes.is_active===false?'Class cancelled':'Timetable updated');await fetchLectures();return true;
+  };
   // Remove lecture
-  const removeLecture = async (id: string) => {
-    const { error } = await supabase.from('scheduled_lectures').update({ is_active: false } as any).eq('id', id);
+  const removeLecture = async (id: string, reason='Cancelled by the teaching team') => {
+    const { error } = await supabase.from('scheduled_lectures').update({ is_active: false, change_reason:reason } as any).eq('id', id);
     if (error) toast.error(error.message);
     else {
       toast.success('Lecture removed');
@@ -146,5 +153,5 @@ export function useScheduledLectures() {
     }
   };
 
-  return { lectures, myLectures, timetable, conflicts, loading, error, autoSchedule, addLecture, removeLecture, refetch: fetchLectures };
+  return { lectures, myLectures, timetable, conflicts, loading, error, autoSchedule, addLecture, updateLecture, removeLecture, refetch: fetchLectures };
 }

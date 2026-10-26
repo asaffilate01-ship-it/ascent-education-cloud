@@ -1,3 +1,4 @@
+import ClassJourney from '@/components/classroom/ClassJourney';
 import {Link,useParams} from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import LectureInteractions from '@/components/classroom/LectureInteractions';
@@ -9,6 +10,7 @@ export default function LectureDiscussion(){
  const {user}=useAuth();
  const teacher=!!user?.roles.some(x=>['lecturer','programme_leader','centre_director','superadmin'].includes(x));
  return <DashboardLayout title="UniPathway Lecture Discussion" subtitle="Raise hands, ask questions and receive lecturer guidance">
+  {sessionId&&<ClassJourney sessionId={sessionId}/>}
   <nav className="mb-5 flex flex-wrap gap-4 text-sm font-semibold">
    <Link to={teacher?'/lecturer/classroom':'/student/classroom'} className="flex items-center gap-2 underline"><ArrowLeft className="size-4"/>Back to my classes</Link>
    <Link to={teacher?'/lecturer/materials':'/student/materials'} className="flex items-center gap-2 underline"><BookOpen className="size-4"/>Course notes and slides</Link>

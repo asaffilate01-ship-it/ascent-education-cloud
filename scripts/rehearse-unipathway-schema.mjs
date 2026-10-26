@@ -17,12 +17,13 @@ import {verifyStripeLedger} from './lib/verify-unipathway-stripe-ledger.mjs';
 import {verifyAdmissionHandover} from './lib/verify-unipathway-admission-handover.mjs';
 import {verifyGuardianResults} from './lib/verify-unipathway-guardian-results.mjs';
 import {verifyFreshSchema} from './lib/verify-unipathway-fresh-schema.mjs';
+import {btree_gist} from '@electric-sql/pglite/contrib/btree_gist';
 import {pgcrypto} from '@electric-sql/pglite/contrib/pgcrypto';
 import {readFileSync,readdirSync} from 'node:fs';
 const fresh=process.argv.includes('--fresh-staging');
 const {overrides,replacements}=fresh?freshStagingPlan():{overrides:[],replacements:new Map()};
 console.log(JSON.stringify({mode:fresh?'fresh-staging':'original-history',reviewedOverrides:overrides.map(({file,reason})=>({file,reason}))}));
-const db=new PGlite({extensions:{pgcrypto}});
+const db=new PGlite({extensions:{pgcrypto,btree_gist}});
 try {
  await db.exec(`CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role BYPASSRLS;
  CREATE SCHEMA auth; CREATE SCHEMA storage; CREATE SCHEMA extensions;
