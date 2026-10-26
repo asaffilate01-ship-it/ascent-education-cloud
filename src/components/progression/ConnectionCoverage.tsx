@@ -1,14 +1,91 @@
 import {useState} from 'react';
-const connectionCoverage=[
- {name:'Lovable database migration parity',state:'Database reconciliation required',detail:'18 October live inspection: all 57 inspected public tables had RLS enabled, but only four earlier migrations were recorded. Newer international, IELTS and production readiness relations were absent. Source code alone does not establish live functionality.',next:'Backup Lovable Supabase, stage migration replay, validate dependencies and tenant RLS before applying production changes.'},
- {name:'Recruitment agent and referral security',state:'Security hotfix required',detail:'Legacy policy allowed a university_partner role to read private referral income across tenants; signup metadata could grant an agent role. This PR includes RLS and security-definer fixes, but the existing Supabase database needs separate migration confirmation.',next:'Apply reviewed RLS hotfix and run positive/negative cross-tenant tests before allowing recruitment accounts.'},
- {name:'Admissions and partner referrals',state:'Workflow wired',detail:'Application creation, learner consent, manual submission references and audit history use database workflows. Partner API submission is not implemented.',next:'Validate signed partner agreements and role-specific staging journeys.'},
- {name:'Knowledge and support',state:'Workflow wired',detail:'Reviewed text search, approval and support task workflows are connected to database operations. Vector search, OCR and model-generated answers are not included.',next:'Approve launch materials and validate private storage and learner access.'},
- {name:'Omniqora Factory',state:'Activation required',detail:'Manual event dispatch, retries and receipts are implemented. A receipt confirms acceptance only. No automatic scheduler or job-completion reconciliation is configured.',next:'Deploy the function and configure matching tenant bindings and server credentials; verify a real receipt.'},
- {name:'Microsoft Education',state:'Connector incomplete',detail:'The provisioning function returns preparation metadata. It does not create Graph users, assign licences or create Teams classrooms, and no frontend caller was found.',next:'Implement and test the approved Graph provisioning contract after institutional consent and licence setup.'},
- {name:'Institutional payments',state:'Connector incomplete',detail:'The education-payment endpoint provides manual instructions or a checkout-required response. Separate Stripe fee checkout has frontend callers; it does not complete institutional provider integration.',next:'Select institutional rails and implement checkout, signed webhooks and reconciliation.'},
- {name:'Virtual labs',state:'Connector incomplete',detail:'Generic lab provisioning returns connector-required. A separate AWS lab manager has UI callers and requires its own access and lifecycle validation.',next:'Validate provider contracts, tenant isolation, launch links, shutdown and cost limits.'},
- {name:'NADRA identity',state:'Contract verification required',detail:'Onboarding now calls an authenticated connection-status endpoint. Unverified live requests are blocked; no NADRA verification is claimed or identity data transmitted.',next:'Obtain institutional approval and API documentation, then implement and test the consent/OTP and verification contract.'},
- {name:'Intelligence calculation',state:'Staging verification required',detail:'Snapshot pages read stored records. Generators now require tenant-scoped staff roles, use recorded attendance and enrolled cohort membership, and stop on source errors. Completion and engagement remain unavailable.',next:'Deploy and verify authenticated calculation and snapshot reads in staging; frontend calculation controls are not connected.'},
+export const connectionCoverage=[
+  {
+    "name": "Publishing and permissions",
+    "state": "Verification required",
+    "detail": "Merged code and database tests do not confirm the public deployment or real-account permissions.",
+    "next": "Verify the published release, every role and cross-student/centre access, including class and material assignments."
+  },
+  {
+    "name": "Admissions",
+    "state": "Live journey required",
+    "detail": "The guarded admission handover creates enrolment without inventing payments. It has synthetic database coverage.",
+    "next": "Complete enquiry, assessment, documents, offer, funding, enrolment, class allocation and account activation with authorised test accounts."
+  },
+  {
+    "name": "Omniqora AI",
+    "state": "Credentials and deployment required",
+    "detail": "Tutor, communications and assessment advisory code use Omniqora. Successful live gateway operation is unverified; marking suggestions require human review.",
+    "next": "Configure compatible endpoint, tenant binding, credentials, approved model and budget; deploy and verify each AI purpose."
+  },
+  {
+    "name": "Teams and recordings",
+    "state": "Provider activation required",
+    "detail": "Account provisioning and calendar workers are implemented. Source code does not establish account activation, licences, meeting delivery or recording playback.",
+    "next": "Configure Microsoft consent and licences, host workers, reconcile active accounts, test invitations/cancellations and recording retrieval; finish weekly automation."
+  },
+  {
+    "name": "Language lab",
+    "state": "Implementation required",
+    "detail": "Guided language activities are not a complete live language room.",
+    "next": "Complete pair/group audio, teacher monitoring and intercom, reconnects and recording for classroom and remote learners."
+  },
+  {
+    "name": "Virtual tech labs",
+    "state": "Provider integration required",
+    "detail": "Browser Python and JavaScript workspaces are implemented. Managed cloud environments remain separate.",
+    "next": "Choose the cloud provider and complete provisioning, saved work, expiry, shutdown, capacity and cost limits."
+  },
+  {
+    "name": "Pakistan payments",
+    "state": "Merchant connection required",
+    "detail": "Funding records separate sponsor commitments from student liabilities. Live merchant checkout and settlement are unverified.",
+    "next": "Select the contracted gateway; implement and test Raast/JazzCash checkout, authenticated notifications, reconciliation and refunds."
+  },
+  {
+    "name": "Institutional email",
+    "state": "Hosted email activation required",
+    "detail": "Dashboard communications, tasks, audit history and an IMAP/SMTP worker are implemented. Hosted mailboxes and delivery are unverified.",
+    "next": "Configure unipathway.pk mailboxes and server credentials, host workers and test threading, attachments, delivery failures and history."
+  },
+  {
+    "name": "Assessment",
+    "state": "Further implementation required",
+    "detail": "Independent marking, IQA, revision checks, personal feedback phrases, saved drafts and text evidence citations are implemented.",
+    "next": "Complete PDF/DOCX annotation, shared approved feedback, fuller revision history and large-queue pagination."
+  },
+  {
+    "name": "Learning content",
+    "state": "Implementation required",
+    "detail": "Structured lessons and editor history exist. SCORM/LTI compatibility is not established.",
+    "next": "Implement and test content launch contracts, approved reusable units and controlled publication."
+  },
+  {
+    "name": "Offline learning",
+    "state": "Further implementation required",
+    "detail": "Opt-in saved text works in an already-open workspace; resumable coursework uploads are implemented.",
+    "next": "Complete offline startup, protected media downloads and broader synchronisation with permission expiry."
+  },
+  {
+    "name": "Parents and funding",
+    "state": "Live workflow verification required",
+    "detail": "Guardian views and sponsor funding workflows have database coverage. This is not real-account acceptance.",
+    "next": "Verify each child\u2019s permissions and results, commitments, funded places, claims, receipts and balances end to end."
+  },
+  {
+    "name": "NADRA and CCTV",
+    "state": "Approved provider details required",
+    "detail": "Unapproved identity calls remain blocked. A camera gateway contract does not establish NVR compatibility.",
+    "next": "Obtain authorised NADRA access and choose camera/NVR hardware; implement and verify consent, security-role viewing and playback."
+  },
+  {
+    "name": "Public information",
+    "state": "Institutional details required",
+    "detail": "ATHE, Pearson BTEC and VTCT guidance does not establish centre approval or an available intake.",
+    "next": "Supply approved course claims, fees/intakes, social URLs and WhatsApp number; leave TikTok unlinked until provided."
+  }
 ];
-export default function ConnectionCoverage(){const [filter,setFilter]=useState('all');const rows=connectionCoverage.filter(r=>filter==='all'||r.state===filter);return <section className="surface-card p-5 space-y-4"><h2 className="font-semibold">Implementation and connection coverage</h2><p className="text-sm text-muted-foreground">Source review updated 18 October 2026, including a read-only Lovable Supabase inspection. This describes inspected source evidence, not live health or current provider status. Recorded integration status and launch evidence are shown separately.</p><label>Filter implementation status<select className="block border rounded p-2 bg-background" value={filter} onChange={e=>setFilter(e.target.value)}><option value="all">All areas</option>{[...new Set(connectionCoverage.map(r=>r.state))].map(state=><option key={state}>{state}</option>)}</select></label>{rows.map(r=><article key={r.name} className="border rounded p-4 space-y-2"><h3 className="font-medium">{r.name} · {r.state}</h3><p>{r.detail}</p><p className="text-sm"><strong>Next step:</strong> {r.next}</p></article>)}</section>;}
+export default function ConnectionCoverage(){
+ const [filter,setFilter]=useState('all');const rows=connectionCoverage.filter(r=>filter==='all'||r.state===filter);
+ return <details className="surface-card p-5 space-y-4"><summary className="font-semibold cursor-pointer">Implementation and connection guide · 14 areas</summary><p className="text-sm text-muted-foreground">Source review: 26 October 2026. This guide describes implementation boundaries, not live health. Use the recorded checks above for evidence and decisions. Never put credentials in review notes.</p><label className="block">Filter implementation status<select className="block w-full sm:w-auto max-w-full border rounded p-2 bg-background" value={filter} onChange={e=>setFilter(e.target.value)}><option value="all">All areas</option>{[...new Set(connectionCoverage.map(r=>r.state))].map(state=><option key={state}>{state}</option>)}</select></label><div className="grid gap-3 md:grid-cols-2">{rows.map(r=><article key={r.name} className="border rounded p-4 space-y-2 min-w-0"><h3 className="font-medium">{r.name}</h3><p className="text-sm text-muted-foreground">{r.state}</p><p>{r.detail}</p><p className="text-sm"><strong>Next step:</strong> {r.next}</p></article>)}</div></details>;
+}
