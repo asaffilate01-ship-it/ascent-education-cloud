@@ -2480,6 +2480,134 @@ export type Database = {
           },
         ]
       }
+      production_integrations: {
+        Row: {
+          category: string
+          id: string
+          integration_key: string
+          last_error: string | null
+          last_health_at: string | null
+          metadata: Json
+          required_for_launch: boolean
+          status: string
+          tenant_id: string
+        }
+        Insert: {
+          category: string
+          id?: string
+          integration_key: string
+          last_error?: string | null
+          last_health_at?: string | null
+          metadata?: Json
+          required_for_launch?: boolean
+          status?: string
+          tenant_id: string
+        }
+        Update: {
+          category?: string
+          id?: string
+          integration_key?: string
+          last_error?: string | null
+          last_health_at?: string | null
+          metadata?: Json
+          required_for_launch?: boolean
+          status?: string
+          tenant_id?: string
+        }
+        Relationships: []
+      }
+      production_readiness_checks: {
+        Row: {
+          category: string
+          check_key: string
+          checked_at: string | null
+          checked_by: string | null
+          evidence_reference: string | null
+          id: string
+          notes: string | null
+          revision: number
+          status: string
+          tenant_id: string
+          valid_until: string | null
+        }
+        Insert: {
+          category: string
+          check_key: string
+          checked_at?: string | null
+          checked_by?: string | null
+          evidence_reference?: string | null
+          id?: string
+          notes?: string | null
+          revision?: number
+          status?: string
+          tenant_id: string
+          valid_until?: string | null
+        }
+        Update: {
+          category?: string
+          check_key?: string
+          checked_at?: string | null
+          checked_by?: string | null
+          evidence_reference?: string | null
+          id?: string
+          notes?: string | null
+          revision?: number
+          status?: string
+          tenant_id?: string
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
+      production_readiness_reviews: {
+        Row: {
+          check_id: string
+          created_at: string
+          evidence_reference: string | null
+          id: string
+          new_status: string
+          notes: string | null
+          old_status: string
+          reviewed_by: string
+          revision: number
+          tenant_id: string
+          valid_until: string | null
+        }
+        Insert: {
+          check_id: string
+          created_at?: string
+          evidence_reference?: string | null
+          id?: string
+          new_status: string
+          notes?: string | null
+          old_status: string
+          reviewed_by: string
+          revision: number
+          tenant_id: string
+          valid_until?: string | null
+        }
+        Update: {
+          check_id?: string
+          created_at?: string
+          evidence_reference?: string | null
+          id?: string
+          new_status?: string
+          notes?: string | null
+          old_status?: string
+          reviewed_by?: string
+          revision?: number
+          tenant_id?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "production_readiness_reviews_check_id_fkey"
+            columns: ["check_id"]
+            isOneToOne: false
+            referencedRelation: "production_readiness_checks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -6395,6 +6523,17 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      review_production_check: {
+        Args: {
+          p_check: string
+          p_evidence?: string
+          p_notes?: string
+          p_revision: number
+          p_status: string
+          p_valid_until?: string
+        }
+        Returns: number
+      }
       review_uni_calendar_delivery: {
         Args: { p_session: string }
         Returns: undefined
@@ -6473,6 +6612,14 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      seed_uni_remaining_launch_checks: {
+        Args: { p_tenant: string }
+        Returns: undefined
+      }
+      seed_unipathway_launch_gates: {
+        Args: { p_tenant: string }
+        Returns: undefined
       }
       send_unipathway_guardian_message: {
         Args: { p_body: string; p_link: string }
