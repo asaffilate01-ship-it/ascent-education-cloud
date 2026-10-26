@@ -1,9 +1,6 @@
-import { isNativeApp } from '@/lib/native';
-import { nativeGoogleSignIn } from '@/lib/nativeAuth';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { lovable } from '@/integrations/lovable/index';
 import { Button } from '@/components/ui/button';
 import { Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -17,7 +14,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
   const tapTimestamps = useRef<number[]>([]);
   const navigate = useNavigate();
