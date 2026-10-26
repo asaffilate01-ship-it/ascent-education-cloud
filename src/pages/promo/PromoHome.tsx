@@ -1,3 +1,4 @@
+import EmployerLogoBanner from '@/components/career/EmployerLogoBanner';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, BookOpen, BriefcaseBusiness, GraduationCap, Globe2, School, Video, Search, CheckCircle2 } from 'lucide-react';
@@ -55,6 +56,7 @@ export default function PromoHome() {
         {matches.length===0&&<div className="rounded-xl border p-8"><h3 className="font-bold">Let’s find the right option.</h3><p className="mt-2 text-muted-foreground">Try a broader subject or ask an adviser for guidance.</p><button onClick={()=>{setQuery('');setArea('All subjects');}} className="mt-4 min-h-11 font-semibold underline">Show all learning areas</button></div>}
         <div className="mt-6 flex flex-wrap gap-x-8 gap-y-2"><Link className="inline-flex min-h-11 items-center gap-2 font-semibold" to="/study">View the full course guide <ArrowRight className="size-4" /></Link><Link className="inline-flex min-h-11 items-center gap-2 font-semibold" to="/employer-learning">Learning for your team <ArrowRight className="size-4" /></Link></div>
       </div></section>
+      <div id="internships" className="mx-auto max-w-7xl px-5 py-6 sm:px-8"><EmployerLogoBanner /></div>
       <section id="how-it-works" className="scroll-mt-28 border-y bg-secondary/40 py-14 sm:py-20"><div className="mx-auto max-w-7xl px-5 sm:px-8"><p className="text-xs font-bold uppercase tracking-widest text-success">02 / Know what happens next</p><h2 className="mt-3 text-3xl font-bold sm:text-4xl">A clear path from interest to learning.</h2><div className="mt-10 grid gap-8 md:grid-cols-3">{[
         ['Choose your course','Explore the subjects, skills and qualifications that fit your goals.'],
         ['Confirm the details','We’ll help you check eligibility, availability, fees and whether your course is online, in class or a mix of both.'],
