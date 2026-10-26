@@ -3,6 +3,7 @@ import {act,render,screen,fireEvent,cleanup,waitFor} from '@testing-library/reac
 import CourseworkFiles from '@/components/assessment/CourseworkFiles';
 import {courseworkFileError} from '@/lib/courseworkEvidence';
 const mock=vi.hoisted(()=>({query:vi.fn(),rpc:vi.fn(),upload:vi.fn(),remove:vi.fn(),download:vi.fn()}));
+vi.mock('@/lib/learning/resumableCoursework',()=>({uploadCourseworkResumable:async(...args:any[])=>{const r=await mock.upload(...args);if(r?.error)throw Error('Upload could not be confirmed');},matchesCourseworkReservation:(file:File,row:any)=>file.size===row.byte_size&&file.type===row.mime_type}));
 vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'student',tenantId:'centre'}})}));
 vi.mock('@/components/native/NativeCapture',()=>({default:()=>null}));
 vi.mock('@/integrations/supabase/client',()=>({supabase:{storage:{from:()=>({upload:mock.upload,remove:mock.remove,download:mock.download})}}}));
@@ -58,4 +59,18 @@ it('rechecks the manifest after an uncertain removal and keeps submission blocke
  render(<CourseworkFiles briefId="brief" onBusy={busy}/>);await screen.findByText(/evidence.pdf ·/);busy.mockClear();fireEvent.click(screen.getByText('Remove'));
  await waitFor(()=>expect(mock.query).toHaveBeenCalledTimes(2));await screen.findByText('Attachments could not be loaded. Retry before submitting.');expect(busy).not.toHaveBeenCalledWith(false);expect(mock.rpc).not.toHaveBeenCalled();
  fireEvent.click(screen.getByText('Refresh attachments'));await screen.findByText('No attachments.');expect(busy).toHaveBeenLastCalledWith(false);
+});
+
+it('resumes the selected manifest row without creating a duplicate reservation',async()=>{
+ mock.query.mockResolvedValue({data:[evidence]});mock.upload.mockResolvedValue({error:null});
+ render(<CourseworkFiles briefId="brief"/>);fireEvent.click(await screen.findByText('Resume with original file'));
+ fireEvent.change(screen.getByLabelText('Choose assignment attachment'),{target:{files:[new File(['work'],'evidence.pdf',{type:'application/pdf'})]}});
+ fireEvent.click(screen.getByText('Resume upload'));await waitFor(()=>expect(mock.upload).toHaveBeenCalledTimes(1));
+ expect(mock.rpc).not.toHaveBeenCalled();expect(mock.upload.mock.calls[0][1]).toEqual(evidence);
+});
+it('rejects a different sized file before attempting resume',async()=>{
+ mock.query.mockResolvedValue({data:[evidence]});render(<CourseworkFiles briefId="brief"/>);
+ fireEvent.click(await screen.findByText('Resume with original file'));
+ fireEvent.change(screen.getByLabelText('Choose assignment attachment'),{target:{files:[new File(['different'],'evidence.pdf',{type:'application/pdf'})]}});
+ fireEvent.click(screen.getByText('Resume upload'));expect(await screen.findByRole('alert')).toHaveTextContent('original file');expect(mock.upload).not.toHaveBeenCalled();
 });

@@ -1,5 +1,6 @@
+import { clearCourseworkResumeHints, setLearningAccount } from '@/lib/learning/offlineLessons';
 import { disableNativePush } from '@/lib/nativePush';
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { UserRole } from '@/types/platform';
 import type { User, Session } from '@supabase/supabase-js';
@@ -101,10 +102,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const authGeneration = useRef(0);
+  const activeIdentity = useRef<string|null>(null);
 
   const loadUser = async (supaSession: Session | null) => {
+    const generation = ++authGeneration.current;
+    if (activeIdentity.current !== (supaSession?.user.id || null)) {
+      activeIdentity.current = supaSession?.user.id || null;
+      setUser(null);
+    }
     if (!supaSession?.user) {
       setUser(null);
+      try { clearCourseworkResumeHints(); } catch { /* Storage may be disabled. */ }
+      void setLearningAccount(null).catch(() => {});
       setSession(null);
       setLoading(false);
       return;
@@ -112,27 +122,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(supaSession);
     try {
       const authUser = await fetchAuthUser(supaSession.user);
+      if (generation !== authGeneration.current) return;
+      await setLearningAccount(authUser.tenantId ? { id: authUser.id, tenantId: authUser.tenantId } : null).catch(() => {});
+      if (generation !== authGeneration.current) return;
       setUser(authUser);
     } catch {
+      if (generation !== authGeneration.current) return;
       setUser(null);
     }
     setLoading(false);
   };
 
   useEffect(() => {
-    // Set up listener FIRST
+    let active = true;
+    // Defer database work until the auth callback releases its session lock.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, newSession) => {
-        loadUser(newSession);
+        setTimeout(() => { if (active) void loadUser(newSession); }, 0);
       }
     );
 
     // Then get initial session
     supabase.auth.getSession().then(({ data: { session: s } }) => {
-      void loadUser(s);
+      if (active) void loadUser(s);
     }).catch(()=>{setUser(null);setSession(null);setLoading(false);});
 
-    return () => subscription.unsubscribe();
+    return () => { active = false; authGeneration.current++; subscription.unsubscribe(); };
   }, []);
 
   const setRole = (role: UserRole) => {
@@ -140,6 +155,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
+    authGeneration.current++;
+    try { clearCourseworkResumeHints(); } catch { /* Storage may be disabled. */ }
+    await setLearningAccount(null).catch(() => {});
     await disableNativePush();
     const {error} = await supabase.auth.signOut();
     if (error) throw error;
@@ -148,8 +166,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const refreshProfile = async () => {
+    const generation = ++authGeneration.current;
     if (session?.user) {
       const authUser = await fetchAuthUser(session.user);
+      if (generation !== authGeneration.current) return;
+      await setLearningAccount(authUser.tenantId ? { id: authUser.id, tenantId: authUser.tenantId } : null).catch(() => {});
+      if (generation !== authGeneration.current) return;
       setUser(authUser);
     }
   };
