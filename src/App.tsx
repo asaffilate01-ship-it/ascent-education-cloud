@@ -1,4 +1,3 @@
-const FamilySharing = lazy(() => import('./pages/student/FamilySharing'));
 import SecurityWorkspace from '@/pages/security/SecurityWorkspace';
 import NativeBridge from '@/components/native/NativeBridge';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -17,6 +16,7 @@ import MobileBottomNav from "@/components/MobileBottomNav";
 import { studyDestinations } from "@/lib/studyDestinations";
 import RouteIndexing from '@/components/RouteIndexing';
 import ScrollToTop from "@/components/ScrollToTop";
+const FamilySharing = lazy(() => import('./pages/student/FamilySharing'));
 const AIChatWidgetLazy = lazy(() => import("@/components/AIChatWidget"));
 
 // Auth

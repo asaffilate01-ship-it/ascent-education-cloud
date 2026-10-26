@@ -46,3 +46,7 @@ No. Built elements include assigned lab offerings, online/in-centre/self-study m
 ## UI/UX coverage
 
 Shared public and dashboard layouts now have consistent branded headings, spacing, clearer contrast, larger controls, focus states and mobile navigation. Course discovery has subject filters; finance has mobile task cards; family views preserve the selected child. These shared changes affect student, lecturer, parent and staff portals using DashboardLayout. They do not establish that every legacy specialist dashboard has been redesigned or acceptance-tested. Remaining visual/flow work includes older wide tables, lab provisioning states, specialist forms, authenticated role journeys and full accessibility checks.
+
+## Learning continuity release
+
+See [offline learning and authoring](offline-learning-and-authoring.md): opt-in text packs, reconnect progress sync, lesson history/copying and private coursework upload recovery are implemented. Production testing with an enrolled learner is still required. Offline cold startup/media packs and SCORM/LTI remain open; these features must not be described as a complete offline LMS.
