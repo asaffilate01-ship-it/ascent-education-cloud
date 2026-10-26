@@ -27,7 +27,7 @@ export function HeroImage({ topic, className = '' }: { topic: HeroTopic; classNa
 
 /** Text remains separate from the photograph for readable contrast at every size. */
 export default function PublicHero({ topic, children, compact = false }: { topic: HeroTopic; children: ReactNode; compact?: boolean }) {
-  return <header className="public-hero grid items-center gap-7 rounded-2xl border border-border bg-secondary/40 p-5 sm:p-8 lg:grid-cols-[1.15fr_1fr] lg:gap-10">
+  return <header className="public-hero grid items-center gap-7 rounded-3xl border border-border/70 bg-card p-5 shadow-sm sm:p-8 lg:grid-cols-[1.15fr_1fr] lg:gap-12 lg:p-10">
     <div className="min-w-0">{children}</div>
     <HeroImage topic={topic} className={compact ? 'h-28 sm:h-auto' : ''} />
   </header>;

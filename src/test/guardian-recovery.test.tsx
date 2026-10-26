@@ -1,4 +1,5 @@
-import {act,cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
+import {MemoryRouter} from 'react-router-dom';
+import {act,cleanup,fireEvent,render as rtlRender,screen,waitFor} from '@testing-library/react';
 import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 import {GuardianActivity,GuardianScopeSharing} from '@/components/guardian/GuardianAccess';
 const mock=vi.hoisted(()=>({rpc:vi.fn(),user:{id:'learner',tenantId:'centre',roles:['student']}}));
@@ -15,3 +16,5 @@ it('rejects malformed permission lists and permits revocation on an unverified l
 it('treats malformed activity as unavailable rather than no shared records',async()=>{mock.rpc.mockResolvedValue({data:null,error:null});render(<GuardianActivity/>);await screen.findByRole('alert');expect(screen.queryByText(/No shared activity yet/)).toBeNull();});
 it('searches the returned activity window and paginates long lists',async()=>{mock.rpc.mockResolvedValue({data:[{...activity,attendance:Array.from({length:45},(_,n)=>({...activity.attendance[0],module:`Module ${n}`}))}],error:null});render(<GuardianActivity view="attendance"/>);await screen.findByText('Page 1 of 3');expect(screen.queryByText(/Module 44 ·/)).toBeNull();fireEvent.change(screen.getByLabelText('Search shared activity'),{target:{value:'Module 44'}});expect(screen.getByText(/Module 44 ·/)).toBeInTheDocument();});
 it('clears shared activity immediately when the account changes',async()=>{mock.rpc.mockResolvedValueOnce({data:[activity],error:null}).mockResolvedValueOnce({data:[],error:null});const view=render(<GuardianActivity view="attendance"/>);await screen.findByText(/Maths · late/);mock.user={id:'parent-two',tenantId:'other',roles:['parent_guardian']};view.rerender(<GuardianActivity view="attendance"/>);expect(screen.queryByText(/Maths · late/)).toBeNull();await waitFor(()=>expect(screen.getByText(/No shared activity yet/)).toBeInTheDocument());});
+
+function render(ui:React.ReactElement){return rtlRender(ui,{wrapper:MemoryRouter});}

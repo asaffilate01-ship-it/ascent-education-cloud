@@ -1,3 +1,4 @@
+import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
 import {MemoryRouter} from 'react-router-dom';
 import {cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
 import {afterEach,beforeEach,describe,expect,it,vi} from 'vitest';
@@ -16,10 +17,12 @@ describe('Guardian results',()=>{
  it('sends revocation to the backend and reloads the saved state',async()=>{mocks.results.mockResolvedValueOnce({data:[{id:'link',parent_name:'QA Guardian',verified:true,sharing:true}]}).mockResolvedValueOnce({error:null}).mockResolvedValueOnce({data:[{id:'link',parent_name:'QA Guardian',verified:true,sharing:false}]});render(<GuardianResultSharing/>);fireEvent.click(await screen.findByText('Stop sharing'));await screen.findByText('Results private');expect(mocks.rpc).toHaveBeenCalledWith('set_unipathway_guardian_result_sharing',{p_link:'link',p_share:false});});
  it('keeps an unsaved preference visible and reports failure',async()=>{mocks.results.mockResolvedValueOnce({data:[{id:'link',parent_name:'QA Guardian',verified:true,sharing:true}]}).mockResolvedValueOnce({error:{message:'denied'}});render(<GuardianResultSharing/>);fireEvent.click(await screen.findByText('Stop sharing'));await waitFor(()=>expect(screen.getByRole('alert')).toHaveTextContent('could not be confirmed'));expect(screen.getByText('Released results shared')).toBeInTheDocument();});
 });
-it('parent overview routes to focused tasks without fetching private results',()=>{
- render(<MemoryRouter initialEntries={['/parent']}><ParentDashboard/></MemoryRouter>);
+it('parent overview checks consent-filtered weekly services',async()=>{
+ mocks.results.mockResolvedValue({data:[],error:null});
+ render(<QueryClientProvider client={new QueryClient({defaultOptions:{queries:{retry:false}}})}><MemoryRouter initialEntries={['/parent']}><ParentDashboard/></MemoryRouter></QueryClientProvider>);
  expect(screen.getAllByRole('link',{name:/Attendance/})[0]).toHaveAttribute('href','/parent/attendance');
- expect(mocks.results).not.toHaveBeenCalled();
+ await screen.findByText(/No linked learners yet/);
+ expect(mocks.rpc).toHaveBeenCalledWith('get_unipathway_guardian_results');
 });
 it('attendance route does not render results or a message composer',async()=>{
  render(<MemoryRouter initialEntries={['/parent/attendance']}><ParentDashboard/></MemoryRouter>);

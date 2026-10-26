@@ -1,5 +1,6 @@
 // Shared validation only. Payment confirmation still requires provider verification.
-export function invoicePaymentMinorUnits(invoice:{student_id:string|null;status:string;amount:unknown;paid:unknown},userId:string,requested?:unknown):number {
+export function invoicePaymentMinorUnits(invoice:{student_id:string|null;status:string;amount:unknown;paid:unknown;sponsor_amount?:unknown},userId:string,requested?:unknown):number {
+ if(Number(invoice.sponsor_amount??0)!==0)throw Error('Contact finance to arrange the student share of a funded invoice');
  if(invoice.student_id!==userId)throw Error('Only your own student invoice can be paid here');
  if(!['pending','partial','overdue'].includes(invoice.status))throw Error('This invoice is not open for payment');
  const amount=Number(invoice.amount),paid=Number(invoice.paid??0);

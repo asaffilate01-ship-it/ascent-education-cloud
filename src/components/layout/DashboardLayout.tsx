@@ -37,7 +37,7 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
 
   const pathSegments = location.pathname.split('/').filter(Boolean);
   const breadcrumbs = pathSegments.map((seg, i) => ({
-    label: BREADCRUMB_LABELS[seg] || seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' '),
+    label: /^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(seg) ? 'Details' : BREADCRUMB_LABELS[seg] || seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' '),
     path: '/' + pathSegments.slice(0, i + 1).join('/'),
     isLast: i === pathSegments.length - 1,
   }));
@@ -47,7 +47,7 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
     : user?.role === 'lecturer' && ['/lecturer/classroom','/lecturer/class-scheduler','/lecturer/materials','/lecturer/lesson-archive','/lecturer/whiteboards','/lecturer/attendance'].includes(location.pathname)
     ? [['Classes','/lecturer/classroom'],['Schedule','/lecturer/class-scheduler'],['Attendance','/lecturer/attendance'],['Materials','/lecturer/materials'],['Recordings','/lecturer/lesson-archive'],['Whiteboards','/lecturer/whiteboards']] : [];
   return (
-    <div className="min-h-dvh bg-background">
+    <div className="min-h-dvh bg-secondary/40">
       <a href="#dashboard-content" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:rounded-lg focus:bg-card focus:p-3">Skip to dashboard content</a>
       <DashboardSidebar />
       <div className="lg:pl-60 pl-0">
@@ -68,8 +68,7 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
                 ))}
               </div>
             )}
-            <h1 className="break-words text-sm sm:text-base lg:text-lg font-bold text-foreground leading-tight tracking-tight">{title}</h1>
-            {subtitle && <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{subtitle}</p>}
+            <p className="truncate text-sm font-semibold text-foreground">UniPathway <span className="hidden sm:inline font-normal text-muted-foreground">/ Your workspace</span></p>
           </div>
           <div className="flex shrink-0 items-center gap-1 lg:gap-2">
             <Link className="hidden md:inline-flex min-h-11 items-center rounded-lg border px-3 text-xs hover:bg-accent" to="/workspace">Workspace</Link>
@@ -107,9 +106,9 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
           initial={reduceMotion ? false : { opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-          className="p-3 sm:p-4 lg:p-6 pb-24 lg:pb-6"
+          className="px-4 py-6 sm:px-6 sm:py-8 lg:px-8 pb-28 lg:pb-10"
         >
-          <div className="page-shell min-w-0">{actions && <div className="mb-4 flex flex-wrap gap-2">{actions}</div>}<WorkspaceShortcuts />{!!workspaceLinks.length && <nav aria-label="Learning workspace" className="mb-5 flex flex-wrap gap-2">{workspaceLinks.map(([label,to])=><Link key={to} to={workspacePath(to,location.search)} aria-current={location.pathname===to?'page':undefined} className={`inline-flex min-h-11 items-center rounded-lg border px-3 py-2 text-sm font-medium ${location.pathname===to?'bg-primary text-primary-foreground':'bg-card hover:bg-accent'}`}>{label}</Link>)}</nav>}
+          <div className="page-shell min-w-0"><div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-start"><div className="min-w-0"><h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">{title}</h1>{subtitle && <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">{subtitle}</p>}</div>{actions && <div className="flex shrink-0 flex-wrap gap-2">{actions}</div>}</div><WorkspaceShortcuts />{!!workspaceLinks.length && <nav aria-label="Learning workspace" className="mb-5 flex flex-wrap gap-2">{workspaceLinks.map(([label,to])=><Link key={to} to={workspacePath(to,location.search)} aria-current={location.pathname===to?'page':undefined} className={`inline-flex min-h-11 items-center rounded-lg border px-3 py-2 text-sm font-medium ${location.pathname===to?'bg-primary text-primary-foreground':'bg-card hover:bg-accent'}`}>{label}</Link>)}</nav>}
             {children}</div>
         </motion.main>
       </div>

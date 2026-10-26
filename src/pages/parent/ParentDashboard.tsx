@@ -1,6 +1,8 @@
+import ParentWeeklyOverview from '@/components/guardian/ParentWeeklyOverview';
+import {validResults,type Student} from '@/lib/guardianResults';
 import ParentNavigation from '@/components/guardian/ParentNavigation';
 import {parentPages} from '@/lib/parentNavigation';
-import {Link,useLocation} from 'react-router-dom';
+import {Link,useLocation,useSearchParams} from 'react-router-dom';
 import {GuardianActivity} from '@/components/guardian/GuardianAccess';
 import {useEffect,useState} from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -8,24 +10,22 @@ import {useAuth} from '@/contexts/AuthContext';
 import {db} from '@/lib/db';
 import {Button} from '@/components/ui/button';
 import {ShieldCheck,Users} from 'lucide-react';
-type Result={attempt_id:string;title:string;final_score:number;feedback:string;released_at:string;amended:boolean};
-type Student={id:string;verified:boolean;sharing:boolean;student_name:string|null;results:Result[]};
 export default function ParentDashboard(){
  const {user}=useAuth();const {pathname}=useLocation();const identity=`${user?.id}:${user?.tenantId}:${user?.roles?.join(',')||user?.role}`;
  if(pathname==='/parent/progress')return <ParentResults key={identity}/>;
  const view=pathname==='/parent/messages'?'communication':pathname==='/parent/attendance'?'attendance':pathname==='/parent/schedule'?'schedule':'all';
  return <DashboardLayout title={parentPages.find(p=>p[1]===pathname)?.[0]||'Parent portal'} subtitle="Your learner’s shared updates"><ParentNavigation/>
- {view==='all'?<section className="grid gap-4 sm:grid-cols-2">{parentPages.slice(1).map(([label,to])=><Link key={to} to={to} className="rounded-xl border bg-card p-6 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring"><h2 className="font-semibold">{label}</h2><p className="mt-2 text-sm text-muted-foreground">{label==='Learning plans'?'Follow separately shared tutor-reviewed practice.':label==='Progress'?'Read released results and feedback.':label==='Messages'?'Talk privately with authorised centre staff.':label==='Attendance'?'Check recorded attendance shared with you.':'See shared class dates and times.'}</p></Link>)}<p className="text-sm text-muted-foreground sm:col-span-2">Your centre verifies each learner link. Your learner chooses separately whether to share attendance, schedules, results and communication.</p></section>:<GuardianActivity key={`${identity}:${view}`} view={view}/>}
+ {view==='all'?<ParentWeeklyOverview key={identity}/>:<GuardianActivity key={`${identity}:${view}`} view={view}/>}
  </DashboardLayout>;
 }
 function ParentResults(){
- const {user}=useAuth();const [students,setStudents]=useState<Student[]>([]),[selected,setSelected]=useState('');
+ const {user}=useAuth();const [params,setParams]=useSearchParams();const [students,setStudents]=useState<Student[]>([]),[selected,setSelected]=useState('');
  const [search,setSearch]=useState(''),[page,setPage]=useState(0);
  const [loading,setLoading]=useState(true),[error,setError]=useState(''),[refresh,setRefresh]=useState(0);
  useEffect(()=>{let active=true;setLoading(true);setError('');setStudents([]);setSelected('');setPage(0);
   if(!user?.id){setLoading(false);setError('Sign in to view shared results.');return;}
   void (async()=>{try{const r=await db.rpc('get_unipathway_guardian_results');if(r.error||!validResults(r.data))throw Error('Unverified results');
-   if(active){const list:Student[]=r.data;setStudents(list);setSelected(list[0]?.id||'');}
+   if(active){const list:Student[]=r.data;setStudents(list);setSelected(list.some(s=>s.id===params.get('learner'))?params.get('learner')!:list[0]?.id||'');}
   }catch{if(active)setError('Shared results could not be verified. No results are shown until verification succeeds.');}finally{if(active)setLoading(false);}})();
   return()=>{active=false;};
  },[user?.id,refresh]);
@@ -42,7 +42,7 @@ function ParentResults(){
   {error&&<p role="alert" className="mt-5 rounded-xl border border-destructive p-4">{error}</p>}
   {!loading&&!error&&!students.length&&<div className="mt-5 rounded-xl border p-8 text-center"><Users className="mx-auto size-8 text-muted-foreground"/><h2 className="mt-3 font-semibold">No linked learners</h2><p className="mt-2 text-sm text-muted-foreground">Contact admissions to arrange a verified parent or guardian link.</p></div>}
   {!loading&&!error&&students.length>0&&<>
-   <div className="my-5 flex flex-wrap gap-2" aria-label="Linked learners">{students.map((s,i)=><Button key={s.id} variant={s.id===selected?'default':'outline'} aria-pressed={s.id===selected} onClick={()=>{setSelected(s.id);setSearch('');setPage(0);}}>{s.student_name||`Pending link ${i+1}`}</Button>)}</div>
+   <div className="my-5 flex flex-wrap gap-2" aria-label="Linked learners">{students.map((s,i)=><Button key={s.id} variant={s.id===selected?'default':'outline'} aria-pressed={s.id===selected} onClick={()=>{setSelected(s.id);setParams({learner:s.id});setSearch('');setPage(0);}}>{s.student_name||`Pending link ${i+1}`}</Button>)}</div>
    {current&&!current.sharing&&<section className="rounded-xl border p-6"><h2 className="font-semibold">{current.verified?'Awaiting learner permission':'Awaiting centre verification'}</h2><p className="mt-2 text-sm text-muted-foreground">Results remain private until centre verification and learner permission are both in place.</p></section>}
    {current?.sharing&&<section><h2 className="text-xl font-semibold">{current.student_name}</h2><p className="mt-1 text-sm text-muted-foreground">Showing {current.results.length} of up to 250 latest released results · each scored out of 100</p>
     {!current.results.length&&<p className="mt-4 rounded-xl border p-6">No released coursework results yet. Pending marking is not a zero score.</p>}
@@ -54,8 +54,4 @@ function ParentResults(){
    </section>}
   </>}
  </DashboardLayout>;
-}
-
-function validResults(value:unknown):value is Student[]{
- return Array.isArray(value)&&value.every(s=>s&&typeof s.id==='string'&&typeof s.verified==='boolean'&&typeof s.sharing==='boolean'&&(!s.sharing||s.verified)&&(typeof s.student_name==='string'||s.student_name===null)&&Array.isArray(s.results)&&s.results.every(r=>r&&typeof r.attempt_id==='string'&&typeof r.title==='string'&&typeof r.final_score==='number'&&Number.isFinite(r.final_score)&&r.final_score>=0&&r.final_score<=100&&typeof r.feedback==='string'&&typeof r.released_at==='string'&&Number.isFinite(Date.parse(r.released_at))&&typeof r.amended==='boolean'));
 }

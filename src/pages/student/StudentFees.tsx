@@ -1,4 +1,5 @@
-import {pagedRows} from '@/lib/pagedRows';
+import {db} from '@/lib/db';
+import {feeLiability} from '@/lib/feeLiability';
 import { useEffect, useRef, useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,6 +11,7 @@ import { toast } from 'sonner';
 import { useSearchParams } from 'react-router-dom';
 
 interface Invoice {
+  sponsor_amount?:number;sponsor_paid?:number;sponsor_name?:string;
   id: string;
   type: string | null;
   amount: number;
@@ -64,9 +66,9 @@ function FeesWorkspace(){
     if(!user?.id||!user?.tenantId){setLoading(false);setLoadError('Sign in to view your invoices.');return;}
     (async () => {
       try {
-        const records=await pagedRows<Invoice>(()=>supabase.from('invoices')
-          .select('id, type, amount, paid, status, due_date, created_at')
-          .eq('student_id',user.id).eq('tenant_id',user.tenantId),()=>active);
+        const records:Invoice[]=[];
+        for(let offset=0;;offset+=250){const r=await db.rpc('get_unipathway_my_fee_invoices').range(offset,offset+249);if(r.error||!Array.isArray(r.data))throw Error('Fee data unavailable');records.push(...r.data);if(r.data.length<250)break;}
+        records.forEach(feeLiability);
         if(records.some(i=>!i||typeof i.id!=='string'||!Number.isFinite(i.amount)||i.amount<0||(i.paid!=null&&(!Number.isFinite(i.paid)||i.paid<0))||!['paid','partial','pending','overdue','refunded'].includes(i.status)))throw Error('Unverified invoices');
         if(active)setInvoices(records.sort((a,b)=>(b.created_at||'').localeCompare(a.created_at||'')||a.id.localeCompare(b.id)));
       }catch{if(active)setLoadError('Your invoices could not be verified. Balances and payment actions are unavailable until the records load successfully.');}
@@ -78,9 +80,9 @@ function FeesWorkspace(){
   const visible=invoices.filter(i=>!status||i.status===status);
   const billable=invoices.filter(i=>i.status!=='refunded');
 
-  const totalBilled = billable.reduce((s, i) => s + Number(i.amount), 0);
+  const totalBilled = billable.reduce((s, i) => s + feeLiability(i).studentTotal, 0);
   const totalPaid = billable.reduce((s, i) => s + Number(i.paid ?? 0), 0);
-  const outstanding = billable.reduce((sum,i)=>sum+Math.max(0,Number(i.amount)-Number(i.paid??0)),0);
+  const outstanding = billable.reduce((sum,i)=>sum+feeLiability(i).studentDue,0);
 
   const payNow = async (invoice: Invoice) => {
     if(starting.current||loading||payingId||loadError||!['pending','partial','overdue'].includes(invoice.status))return;
@@ -110,7 +112,7 @@ function FeesWorkspace(){
 
   return (
     <DashboardLayout title="Fees & Payments" subtitle="Your invoices, balance and payment options">
-      <p className="mb-3 text-sm text-muted-foreground">These totals cover recorded, non-refunded invoices only. Your agreed course fee may include charges not yet invoiced; contact finance for the full fee agreement.</p>
+      <p className="mb-3 text-sm text-muted-foreground">These totals show your agreed share of recorded, non-refunded invoices. Approved sponsor funding is excluded from your debt even when the sponsor has not yet paid. Your agreed course fee may include charges not yet invoiced; contact finance for the full fee agreement.</p>
       <Button className="mb-4" variant="outline" disabled={loading||!!payingId} onClick={()=>setRefresh(v=>v+1)}>Refresh invoices</Button>
       {loading ? (
         <DashboardSkeleton />
@@ -118,9 +120,9 @@ function FeesWorkspace(){
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
-              { label: 'Total billed', value: fmt(totalBilled), icon: Receipt },
+              { label: 'Your agreed share', value: fmt(totalBilled), icon: Receipt },
               { label: 'Paid to date', value: fmt(totalPaid), icon: CheckCircle2 },
-              { label: 'Outstanding', value: fmt(outstanding), icon: AlertTriangle },
+              { label: 'Your outstanding balance', value: fmt(outstanding), icon: AlertTriangle },
             ].map((s) => (
               <div key={s.label} className="rounded-xl border border-border bg-card p-4 shadow-sm">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -148,7 +150,7 @@ function FeesWorkspace(){
             ) : (
               <ul className="divide-y divide-border">
                 {visible.slice(page*20,page*20+20).map((inv) => {
-                  const balance = Number(inv.amount) - Number(inv.paid ?? 0);
+                  const balance = feeLiability(inv).studentDue;
                   return (
                     <li key={inv.id} className="p-4 flex flex-wrap items-center justify-between gap-3">
                       <div className="min-w-0">
@@ -160,12 +162,13 @@ function FeesWorkspace(){
                           {balance > 0 && balance !== Number(inv.amount) && ` · ${fmt(balance)} outstanding`}
                           {inv.due_date && ` · due ${new Date(inv.due_date).toLocaleDateString('en-GB')}`}
                         </p>
+                        {!!Number(inv.sponsor_amount)&&<p className="mt-2 text-sm">{inv.sponsor_name}: {fmt(Number(inv.sponsor_amount))} agreed funding · {fmt(feeLiability(inv).sponsorDue)} awaiting sponsor payment. Your remaining share: {fmt(balance)}. Contact finance to arrange payment of your share.</p>}
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded ${STATUS_STYLES[inv.status] ?? 'bg-muted text-muted-foreground'}`}>
-                          {inv.status}
+                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded ${STATUS_STYLES[Number(inv.sponsor_amount)>0&&balance<=0?'paid':inv.status] ?? 'bg-muted text-muted-foreground'}`}>
+                          {Number(inv.sponsor_amount)>0&&balance<=0?'Your share settled':inv.status}
                         </span>
-                        {balance > 0 && ['pending','partial','overdue'].includes(inv.status) && (
+                        {balance > 0 && !Number(inv.sponsor_amount) && ['pending','partial','overdue'].includes(inv.status) && (
                           <Button size="sm" disabled={!!payingId} onClick={() => payNow(inv)}>
                             <CreditCard className="w-3.5 h-3.5 mr-1.5" />
                             {payingId === inv.id ? 'Starting…' : 'Pay now'}

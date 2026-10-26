@@ -1,3 +1,5 @@
+import {feeLiability} from '@/lib/feeLiability';
+import {Link} from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
@@ -68,7 +70,7 @@ export default function FinanceDashboard() {
     setSelectedInvoice({
       id: inv.id,
       student_name: inv.student_name,
-      amount: inv.amount,
+      amount: Number(inv.amount)-Number(inv.sponsor_amount||0),
       paid: inv.paid,
       tenant_id: inv.tenant_id,
     });
@@ -79,8 +81,8 @@ export default function FinanceDashboard() {
   if (error) return <DashboardLayout title="Finance"><p role="alert">Invoice data could not be loaded. Balances are unavailable.</p><Button onClick={() => void refetch()}>Retry invoices</Button></DashboardLayout>;
 
   const totalBilled = invoices.reduce((s, i) => s + Number(i.amount), 0);
-  const totalCollected = invoices.reduce((s, i) => s + Number(i.paid), 0);
-  const overdue = invoices.filter((i) => i.status === 'overdue').reduce((s, i) => s + (Number(i.amount) - Number(i.paid)), 0);
+  const totalCollected = invoices.reduce((s, i) => s + Number(i.paid)+Number((i as any).sponsor_paid||0), 0);
+  const overdue = invoices.filter((i) => i.status === 'overdue').reduce((s, i) => s + (Number(i.amount) - Number(i.paid)-Number((i as any).sponsor_paid||0)), 0);
   const commissionsDue = invoices.filter((i) => i.type === 'commission').reduce((s, i) => s + Number(i.amount), 0);
 
   const filtered = invoices.filter((inv) => {
@@ -152,7 +154,8 @@ export default function FinanceDashboard() {
             <h2 className="text-sm font-semibold">Invoices ({filtered.length})</h2>
           </div>
           <div className="surface-card overflow-hidden">
-            <div className="overflow-x-auto">
+            <ul className="divide-y md:hidden">{filtered.map(inv=>{const liability=feeLiability(inv);return <li key={inv.id} className="space-y-3 p-4"><div className="flex items-start justify-between gap-3"><div><h3 className="font-semibold">{inv.student_name}</h3><p className="text-sm capitalize text-muted-foreground">{inv.type} · {inv.id.slice(0,8)}</p></div><StatusBadge status={inv.status} variant={statusVariant(inv.status)}/></div><dl className="grid grid-cols-2 gap-3 text-sm"><div><dt className="text-muted-foreground">Student share due</dt><dd className="mt-1 font-semibold">Rs. {liability.studentDue.toLocaleString('en-PK')}</dd></div><div><dt className="text-muted-foreground">Sponsor owed</dt><dd className="mt-1 font-semibold">Rs. {liability.sponsorDue.toLocaleString('en-PK')}</dd></div></dl><p className="text-sm text-muted-foreground">Invoice due: {inv.due_date||'Not specified'}</p>{liability.studentDue>0&&inv.status!=='refunded'&&<Button variant="outline" className="w-full" onClick={()=>openPayment(inv)}>Record student payment</Button>}</li>})}</ul>
+            <div className="hidden overflow-x-auto md:block">
               <table className="w-full">
                 <thead>
                   <tr className="surface-data">
@@ -169,11 +172,11 @@ export default function FinanceDashboard() {
                 </thead>
                 <tbody>
                   {filtered.map((inv) => {
-                    const balance = Number(inv.amount) - Number(inv.paid);
+                    const balance = Math.max(0,Number(inv.amount) - Number(inv.paid) - Number((inv as any).sponsor_paid||0));
                     return (
                       <tr key={inv.id} className="border-t border-border/50 hover:bg-secondary/50 transition-default">
                         <td className="px-4 py-3 text-sm font-mono font-medium">{inv.id.slice(0, 8)}</td>
-                        <td className="px-4 py-3 text-sm">{inv.student_name}</td>
+                        <td className="px-4 py-3 text-sm">{inv.student_name}{Number(inv.sponsor_amount||0)>0&&<p className="mt-1 text-xs text-muted-foreground">Student due Rs. {feeLiability(inv).studentDue.toLocaleString()} · Sponsor due Rs. {feeLiability(inv).sponsorDue.toLocaleString()}</p>}</td>
                         <td className="px-4 py-3 hidden sm:table-cell">
                           <span className="text-xs capitalize bg-secondary px-2 py-0.5 rounded">{inv.type}</span>
                         </td>
@@ -191,9 +194,9 @@ export default function FinanceDashboard() {
                         </td>
                         <td className="px-4 py-3 text-xs text-muted-foreground hidden lg:table-cell">{inv.due_date || '—'}</td>
                         <td className="px-4 py-3">
-                          {balance > 0 && (
+                          {feeLiability(inv).studentDue > 0 && inv.status !== 'refunded' && (
                             <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => openPayment(inv)}>
-                              <Banknote className="w-3 h-3 mr-1" /> Pay
+                              <Banknote className="w-3 h-3 mr-1" /> Record payment
                             </Button>
                           )}
                         </td>
@@ -223,6 +226,7 @@ export default function FinanceDashboard() {
         </TabsContent>
       </Tabs>
 
+      <p className="mt-4 text-sm">Sponsor-funded fees and receipts are reviewed in <Link className="underline" to={user?.role==='centre_director'?'/director/funding':'/finance/funding'}>Sponsor funding</Link>. Student payments must cover only the agreed student share.</p>
       <CreateInvoiceModal open={invoiceOpen} onOpenChange={setInvoiceOpen} onCreated={refetch} />
       <RecordPaymentModal open={paymentOpen} onOpenChange={setPaymentOpen} invoice={selectedInvoice} onRecorded={refetch} />
     </DashboardLayout>

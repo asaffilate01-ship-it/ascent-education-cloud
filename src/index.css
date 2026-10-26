@@ -42,7 +42,7 @@
     --secondary-foreground: 222 47% 11%;
 
     --muted: 220 14% 95%;
-    --muted-foreground: 220 9% 46%;
+    --muted-foreground: 220 12% 40%;
 
     --accent: 220 14% 93%;
     --accent-foreground: 222 47% 11%;
@@ -359,7 +359,7 @@
 
   /* ═══ SAFE AREA (PWA) ═══ */
   .safe-area-pb { padding-bottom: env(safe-area-inset-bottom, 0px); }
-  .page-shell { @apply mx-auto w-full max-w-[1600px]; }
+  .page-shell { @apply mx-auto w-full max-w-[1440px]; }
   .section-heading { @apply text-base font-bold tracking-tight; }
   .section-copy { @apply text-xs sm:text-sm text-muted-foreground mt-1; }
   .empty-state { @apply surface-card p-8 sm:p-10 text-center text-muted-foreground; }
@@ -395,4 +395,13 @@
   .public-hero img { aspect-ratio: 16 / 10; }
   .page-contents ul { display: grid; grid-template-columns: minmax(0, 1fr); }
   .page-contents a { width: 100%; }
+}
+
+/* Consistent readable surfaces and keyboard focus across public and portal views. */
+:where(a, button, summary):focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 4px; }
+.public-site main h2 { letter-spacing: -.025em; text-wrap: balance; }
+.public-site main h3 { text-wrap: pretty; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+@media (max-width: 767px) {
+  #dashboard-content :is(input:not([type=checkbox]):not([type=radio]), textarea, select) { font-size: 16px; }
 }
