@@ -1,0 +1,9 @@
+import {beforeEach,expect,it,vi} from 'vitest';
+const m=vi.hoisted(()=>({rows:[] as any[],ranges:[] as number[],chunks:[] as number[],fail:false}));
+vi.mock('@/lib/db',()=>({db:{from:()=>{let checks:((r:any)=>boolean)[]=[];const q:any={select:()=>q,eq:(k:string,v:string)=>{checks.push(r=>r[k]===v);return q;},in:(k:string,v:string[])=>{m.chunks.push(v.length);checks.push(r=>v.includes(r[k]));return q;},order:()=>q,range:async(a:number,b:number)=>{m.ranges.push(a);return m.fail&&a>=250?{error:{message:'Unavailable'},data:null}:{data:m.rows.filter(r=>checks.every(f=>f(r))).slice(a,b+1),error:null};}};return q;}}}));
+import {allocatedAssessmentRows,assessmentRowsByIds} from '@/lib/assessment/queueRows';
+beforeEach(()=>{m.rows=Array.from({length:351},(_,i)=>({id:String(i),attempt_id:String(i),tenant_id:'centre',marker_id:'marker'}));m.ranges=[];m.chunks=[];m.fail=false;});
+it('loads beyond 300 allocations using complete bounded pages',async()=>{const r=await allocatedAssessmentRows('allocations','*','centre','marker_id','marker',()=>true);expect(r.data).toHaveLength(351);expect(m.ranges).toEqual([0,250]);});
+it('does not return a misleading partial queue after a later page fails',async()=>{m.fail=true;await expect(allocatedAssessmentRows('allocations','*','centre','marker_id','marker',()=>true)).rejects.toThrow('verified');});
+it('chunks identifiers and keeps tenant boundaries',async()=>{m.rows.push({id:'foreign',tenant_id:'other'});const r=await assessmentRowsByIds('attempts','*','centre','id',m.rows.map(r=>r.id),()=>true);expect(r.data).toHaveLength(351);expect(Math.max(...m.chunks)).toBe(50);expect(r.data.some(r=>r.id==='foreign')).toBe(false);});
+it('stops stale account requests',async()=>{await expect(allocatedAssessmentRows('allocations','*','centre','marker_id','marker',()=>false)).rejects.toThrow('superseded');});
