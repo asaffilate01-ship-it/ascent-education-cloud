@@ -1,0 +1,12 @@
+import {beforeEach,expect,it,vi} from 'vitest';
+import {recordingPosition,saveRecordingPosition,RECORDING_PROGRESS_KEY} from '@/lib/learning/recordingProgress';
+const state=vi.hoisted(()=>({owner:'centre:student'}));
+vi.mock('@/lib/learning/offlineLessons',()=>({accountKey:(a:any)=>`${a.tenantId}:${a.id}`,isLearningAccount:(a:any)=>state.owner===`${a.tenantId}:${a.id}`,PACK_TTL:86400000}));
+const account={id:'student',tenantId:'centre'};
+beforeEach(()=>{localStorage.clear();state.owner='centre:student';vi.useRealTimers();});
+it('restores positions without persisting media URLs or content',()=>{saveRecordingPosition(account,'artifact',42);expect(recordingPosition(account,'artifact')).toBe(42);expect(JSON.parse(localStorage.getItem(RECORDING_PROGRESS_KEY)!)).toEqual({owner:'centre:student',items:[{id:'artifact',seconds:42,savedAt:expect.any(Number)}]});});
+it('rejects a stale account write and isolates the same student in another centre',()=>{saveRecordingPosition(account,'artifact',42);state.owner='other:student';expect(recordingPosition(account,'artifact')).toBe(0);expect(()=>saveRecordingPosition(account,'artifact',9)).toThrow('account');expect(recordingPosition({...account,tenantId:'other'},'artifact')).toBe(0);});
+it('expires bookmarks after 24 hours and rejects future timestamps',()=>{vi.useFakeTimers();vi.setSystemTime(100000);saveRecordingPosition(account,'artifact',42);vi.setSystemTime(100001+86400000);expect(recordingPosition(account,'artifact')).toBe(0);vi.setSystemTime(99999);expect(recordingPosition(account,'artifact')).toBe(0);vi.useRealTimers();});
+it('bounds history and validates positions',()=>{for(let i=0;i<101;i++)saveRecordingPosition(account,String(i),i);expect(recordingPosition(account,'1')).toBe(1);expect(JSON.parse(localStorage.getItem(RECORDING_PROGRESS_KEY)!).items).toHaveLength(100);for(const x of [-1,Infinity,NaN,86401])expect(()=>saveRecordingPosition(account,'a',x)).toThrow();});
+it('recovers corrupt storage and supports start again',()=>{localStorage.setItem(RECORDING_PROGRESS_KEY,'broken');expect(recordingPosition(account,'a')).toBe(0);saveRecordingPosition(account,'a',42);saveRecordingPosition(account,'a',0);expect(recordingPosition(account,'a')).toBe(0);});
+it('reports unavailable storage instead of claiming a save',()=>{vi.spyOn(Storage.prototype,'setItem').mockImplementation(()=>{throw Error('quota');});expect(()=>saveRecordingPosition(account,'a',42)).toThrow('quota');vi.restoreAllMocks();});
