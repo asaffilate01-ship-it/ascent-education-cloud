@@ -176,7 +176,7 @@ function MarkerWorkspace(){
        ['Required student evidence',brief.required_evidence]
       ] as const).map(([name,text])=><details key={name} className="mt-3 rounded-lg border p-3"><summary className="cursor-pointer text-sm font-semibold">{name}</summary><p className="mt-2 whitespace-pre-wrap text-sm">{text}</p></details>)}
       <EvidenceReview key={current.id} text={current.evidence_text} criteria={rubric} onCite={eligible&&!busy&&draftReady===current.id?(code,citation)=>{if(scores[code]?.evidence&&!window.confirm('Replace the existing evidence citation for this criterion?'))return;change(code,'evidence',citation);}:undefined}/>
-      <CourseworkFiles attemptId={current.id}/><MarkHistory attemptId={current.id}/>
+      <CourseworkFiles attemptId={current.id} criteria={rubric} onCite={eligible&&!busy&&draftReady===current.id?(code,citation)=>{if(scores[code]?.evidence&&!window.confirm('Replace the existing evidence citation for this criterion?'))return false;change(code,'evidence',citation);return true;}:undefined}/><MarkHistory attemptId={current.id}/>
 
      </div>
      <div className="rounded-xl border bg-card p-5"><div className="flex flex-wrap items-center justify-between gap-2">
