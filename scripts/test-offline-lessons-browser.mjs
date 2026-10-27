@@ -40,6 +40,21 @@ try {
   try{await lib.saveLessonPack(a,'module-a',[lesson],[]);throw Error('limit accepted');}catch(e){check(!e.message.includes('accepted'),'pack limit enforced');}
   return checks;
  });
+ const materials=await page.evaluate(async()=>{
+  const packs=await import('/src/lib/learning/offlineLessons.ts'),files=await import('/src/lib/learning/offlineMaterials.ts');let checks=0;const check=(v,m)=>{if(!v)throw Error(m);checks++;};
+  const account={id:'file-learner',tenantId:'centre-a'},other={id:'other-learner',tenantId:'centre-a'};
+  await packs.setLearningAccount(account);const item={id:'file',module_id:'module',title:'Private notes',object_path:'centre-a/module/file.pdf'};
+  await files.saveOfflineMaterial(account,item,new Blob(['%PDF-fixture'],{type:'application/pdf'}));
+  let saved=(await files.listOfflineMaterials(account))[0];check(await saved.blob.text()==='%PDF-fixture','private blob persists');check(!JSON.stringify({...saved,blob:null}).includes('token='),'no credentials in metadata');
+  check((await packs.restoreOfflineReader()).id===account.id,'reader can restore explicit saved context');
+  await files.saveMaterialPosition(account,item.id,72);const resumed=(await files.listOfflineMaterials(account))[0];check(resumed.position_seconds===72&&resumed.expiresAt===saved.expiresAt,'playback position persists without extending expiry');
+  const now=Date.now;Date.now=()=>now()+packs.PACK_TTL+1;check(!files.materialCurrent(saved),'expired file unavailable');check(await packs.restoreOfflineReader()===null,'expired reader denied');Date.now=()=>now()-10000;check(!files.materialCurrent(saved),'clock rollback denied');Date.now=now;
+  try{await files.saveOfflineMaterial(account,item,new Blob(['<html>'],{type:'text/html'}));throw Error('accepted');}catch(e){check(e.message!=='accepted','HTML rejected');}
+  try{await files.saveOfflineMaterial(account,item,new Blob([new Uint8Array(files.MATERIAL_BYTES+1)],{type:'application/pdf'}));throw Error('accepted');}catch(e){check(e.message!=='accepted','oversized file rejected');}
+  await packs.setLearningAccount(other);check((await files.listOfflineMaterials(other)).length===0,'account switch clears files');check(await packs.restoreOfflineReader()===null,'old reader cannot reopen after switch');
+  await packs.setLearningAccount(account);await files.saveOfflineMaterial(account,item,new Blob(['%PDF-fixture'],{type:'application/pdf'}));await packs.setLearningAccount(null);await packs.setLearningAccount(account);check((await files.listOfflineMaterials(account)).length===0,'logout erases private files');check(await packs.restoreOfflineReader()===null,'logout erases reader access');return checks;
+ });
+ assert.equal(materials,13);console.log(`${materials} private offline file persistence, expiry, type/size, account and logout checks passed`);
  let offset=0,posts=0,patches=0,retried=false;const requests=[];
  await page.route('https://unipathway-browser-ci.invalid/storage/v1/upload/resumable**',async route=>{
   const request=route.request(),headers=request.headers(),method=request.method();

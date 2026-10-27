@@ -107,7 +107,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loadUser = async (supaSession: Session | null) => {
     const generation = ++authGeneration.current;
-    if (activeIdentity.current !== (supaSession?.user.id || null)) {
+    const identityChanged=activeIdentity.current !== (supaSession?.user.id || null);
+    if (identityChanged) {
       activeIdentity.current = supaSession?.user.id || null;
       setUser(null);
     }
@@ -120,6 +121,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     setSession(supaSession);
+    if(!navigator.onLine){
+      // Keep an already-loaded identity in memory, but never reconstruct roles from disk.
+      // Cold offline startup uses the separate saved-content reader.
+      if(identityChanged)await setLearningAccount(null).catch(()=>{});
+      if(generation===authGeneration.current)setLoading(false);
+      return;
+    }
     try {
       const authUser = await fetchAuthUser(supaSession.user);
       if (generation !== authGeneration.current) return;

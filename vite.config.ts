@@ -26,12 +26,12 @@ export default defineConfig(({ mode }) => ({
         navigateFallback: null,
         navigateFallbackDenylist: [/^\/~oauth/],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
-        globPatterns: ["**/*.{js,css,ico,png,svg,woff2,jpg,webp}"],
+        globPatterns: ["**/*.{js,css,ico,png,svg,woff2,jpg,webp}", "offline.html"],
         runtimeCaching: [
           {
             urlPattern: ({ request, url, sameOrigin }) => request.mode === 'navigate' && sameOrigin && !url.pathname.startsWith('/~oauth'),
             handler: "NetworkFirst",
-            options: { cacheName: "app-navigations", networkTimeoutSeconds: 10, expiration: { maxEntries: 20 } },
+            options: { cacheName: "app-navigations", networkTimeoutSeconds: 10, expiration: { maxEntries: 20 }, precacheFallback: { fallbackURL: "/offline.html" } },
           },
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -44,7 +44,7 @@ export default defineConfig(({ mode }) => ({
             options: { cacheName: "google-fonts-webfonts", expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 365 } },
           },
           {
-            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
+            urlPattern: ({url,sameOrigin}) => sameOrigin && !url.pathname.startsWith('/storage/') && /\.(?:png|jpg|jpeg|svg|gif|webp)$/i.test(url.pathname),
             handler: "CacheFirst",
             options: { cacheName: "images-cache", expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 30 } },
           },
@@ -69,6 +69,7 @@ export default defineConfig(({ mode }) => ({
       },
     }),
   ].filter(Boolean),
+  build: { rollupOptions: { input: { main: path.resolve(__dirname, "index.html"), offline: path.resolve(__dirname, "offline.html") } } },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

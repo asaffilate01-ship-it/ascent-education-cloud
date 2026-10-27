@@ -72,6 +72,7 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
             <p className="truncate text-sm font-semibold text-foreground">UniPathway <span className="hidden sm:inline font-normal text-muted-foreground">/ Your workspace</span></p>
           </div>
           <div className="flex shrink-0 items-center gap-1 lg:gap-2">
+            {user?.role==='student'&&<Link className="inline-flex min-h-11 items-center rounded-lg border px-3 text-xs hover:bg-accent" to="/student/downloads">Saved learning</Link>}
             <Link className="hidden md:inline-flex min-h-11 items-center rounded-lg border px-3 text-xs hover:bg-accent" to="/workspace">Workspace</Link>
             <button
               onClick={() => setCmdOpen(true)}

@@ -8,7 +8,7 @@ vi.mock('@/integrations/supabase/client',()=>({supabase:{rpc:async()=>({}),auth:
  const q:any={select:()=>q,eq:()=>q,single:()=>mock.profile(),then:(resolve:any)=>Promise.resolve({data:[{role:'student'}]}).then(resolve)};return q;
 }}}));
 function Probe(){const {user,loading}=useAuth();return <p>{loading?'Loading':user?.email||'Signed out'}</p>;}
-afterEach(()=>{cleanup();vi.clearAllMocks();});
+afterEach(()=>{cleanup();vi.clearAllMocks();vi.restoreAllMocks();});
 it('does not restore a delayed previous user after sign-out',async()=>{
  let resolve!:(v:any)=>void;mock.profile.mockReturnValue(new Promise(r=>resolve=r));
  render(<AuthProvider><Probe/></AuthProvider>);await screen.findByText('Signed out');
@@ -17,4 +17,13 @@ it('does not restore a delayed previous user after sign-out',async()=>{
  act(()=>mock.listener('SIGNED_OUT',null));await waitFor(()=>expect(mock.clear).toHaveBeenCalledTimes(2));
  await act(async()=>resolve({data:{full_name:'Previous',tenant_id:'centre'}}));
  expect(screen.getByText('Signed out')).toBeInTheDocument();expect(mock.account).not.toHaveBeenCalledWith({id:'previous',tenantId:'centre'});
+});
+
+it('does not erase saved learning when an existing session refreshes offline',async()=>{
+ mock.profile.mockResolvedValue({data:{full_name:'Learner',tenant_id:'centre'}});
+ render(<AuthProvider><Probe/></AuthProvider>);await screen.findByText('Signed out');
+ act(()=>mock.listener('SIGNED_IN',{user:{id:'learner',email:'learner@unipathway.pk'}}));await screen.findByText('learner@unipathway.pk');
+ mock.account.mockClear();mock.profile.mockClear();vi.spyOn(navigator,'onLine','get').mockReturnValue(false);
+ act(()=>mock.listener('TOKEN_REFRESHED',{user:{id:'learner',email:'learner@unipathway.pk'}}));await act(async()=>{await new Promise(r=>setTimeout(r,10));});
+ expect(mock.profile).not.toHaveBeenCalled();expect(mock.account).not.toHaveBeenCalled();expect(screen.getByText('learner@unipathway.pk')).toBeInTheDocument();
 });
