@@ -20,3 +20,10 @@ export function appendFeedback(current:string,prompt:string){
  const next=[current.trimEnd(),prompt].filter(Boolean).join('\n\n');
  return next.length<=6000?next:null;
 }
+
+export function attachmentCitation(filename:string,location:string,note:string,page?:number){
+ if(page!==undefined&&(!Number.isSafeInteger(page)||page<1||page>100000))return null;
+ if(!filename.trim()||!location.trim()||location.trim().length>160||note.trim().length<3)return null;
+ const value=`${filename.trim()}, ${location.trim()}: “${note.trim()}”`;
+ return value.length<=900?value:null;
+}
