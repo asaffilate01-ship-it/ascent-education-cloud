@@ -1,12 +1,12 @@
 import {render,screen,fireEvent,waitFor} from '@testing-library/react';import {MemoryRouter} from 'react-router-dom';import {describe,it,expect,vi} from 'vitest';
 import CommunicationsWorkspace from '@/pages/messaging/CommunicationsWorkspace';
 const mock=vi.hoisted(()=>({rpc:vi.fn()}));
-vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'student',roles:['student']}})}));
+vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'student',tenantId:'centre',roles:['student']}})}));
 vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:any)=><main>{children}</main>}));
 vi.mock('@/integrations/supabase/client',()=>({supabase:{functions:{invoke:vi.fn()},storage:{from:vi.fn()}}}));
 vi.mock('@/lib/db',()=>({db:{rpc:mock.rpc,from:(table:string)=>{
  const data=table==='uni_mailboxes'?[{id:'box',address:'student@unipathway.pk',enabled:false,provider:'imap'}]:[];
- const q:any={select:()=>q,eq:()=>q,is:()=>q,order:()=>q,limit:()=>q,single:async()=>({data:{thread_id:'thread'}}),maybeSingle:async()=>({data:null,error:null}),then:(resolve:any)=>Promise.resolve({data,error:null}).then(resolve)};return q;
+ const q:any={select:()=>q,eq:()=>q,in:()=>q,range:async()=>({data,error:null}),is:()=>q,order:()=>q,limit:()=>q,single:async()=>({data:{thread_id:'thread'}}),maybeSingle:async()=>({data:null,error:null}),then:(resolve:any)=>Promise.resolve({data,error:null}).then(resolve)};return q;
 }}}));
 describe('institutional communications',()=>{
  it('saves a draft through the authorised RPC, without sending from the browser',async()=>{

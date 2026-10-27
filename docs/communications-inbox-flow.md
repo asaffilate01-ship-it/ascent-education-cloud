@@ -1,0 +1,13 @@
+# Communications inbox and history
+
+The inbox now reads the complete RLS-authorized conversation snapshot through paginated requests, scoped to mailboxes in the active centre. Subjects and mailbox addresses are searchable beyond the former 200-conversation window. It displays 25 conversation cards per page and offers status, assigned-to-me, unassigned and overdue-conversation filters. These filters apply to conversation ownership/deadlines, not individual task ownership.
+
+Conversation messages, tasks, documents and audit events also load through complete 250-row pages, so requesting older history no longer relies on increasing a single database limit beyond the API's row cap. The UI initially displays the most recent 100 items per section and reveals 100 more on request. No partial history is shown when a page fails. This is a complete authorized snapshot, not a server-cursor search index; very large institutional inboxes still need performance acceptance and server-side search.
+
+Account, tenant, active role and assigned-role changes remount the workspace, clearing private text, AI output and compose state. Late inbox/detail reads, document links and Omniqora responses are ignored. Conversation content is only displayed once the current thread's detail snapshot has completed. Mailbox membership and send permissions remain enforced by existing RLS/RPCs; this phase changes no database grants or policies.
+
+In-app conversation selection and Back to inbox ask before discarding an unsaved email body or task title. Successful draft saving bypasses that discard prompt and opens the saved conversation. This is not autosave or guaranteed browser-back/tab-close protection. Recipients, subject-only edits and host/device shutdown still need explicit draft saving. Switching through browser navigation resets reply mode so an old reply is not silently attached to a newly selected conversation.
+
+Validation: UI tests cover 301 conversations, 1,001 messages, later-page failure, assignment/overdue filters, draft selection, account-switch clearing, late data and late Omniqora output. The existing communications database harness covers mailbox membership, delivery states, tasks, immutable audit records and private documents. Browser fixtures use synthetic data and do not send messages or contact an AI provider.
+
+Hosted-email credentials, mailbox/DNS configuration, worker deployment, real inbound/outbound delivery, attachment quarantine/scanning, outgoing attachments, delivery receipts and operational acceptance remain outstanding. The source-level inbox work does not establish that email is live.
