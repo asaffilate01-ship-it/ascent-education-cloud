@@ -1,0 +1,13 @@
+# Lesson archive and private playback
+
+The student/lecturer archive now reads authorized class history through 250-row pages, scopes the class query to the active tenant and selected module, and fetches artifacts/approved packs in batches of 50 session IDs. It no longer silently hides classes beyond 200 or artifacts beyond 300. All data remains subject to existing invited-class and private-storage RLS. A failed page produces an error, not a partial archive.
+
+The interface displays ten classes per page, class-title search, recordings/revision-pack availability filters and Pakistan-time class dates. Revision packs are expandable. Only published artifacts with a reached release date can be opened; draft, withdrawn and future artifacts are excluded. Records without transferred media cannot play.
+
+Watch recording opens one native video player in the dashboard. It uses the existing authenticated private Storage signing endpoint and accepts only HTTPS URLs from the configured Supabase origin and class-media bucket. Links last 120 seconds. If playback stalls because access expired, Refresh playback access requests a new authorization and restores the current position after metadata loads. Playback position is memory-only for that open player, not persisted across pages/devices. Closing, account/tenant/role changes or archive refresh removes the source and stops media playback. Failed renewal removes the old URL and shows a retry message.
+
+Open file remains available for supported transcripts/other artifacts and browsers that cannot play a recording's format. A blank tab is created during the user click, then navigated only if access succeeds and the account/archive generation is unchanged. It is closed on denied access or a stale response. No provider Graph URL is exposed, no media is made public, and no offline copy is created.
+
+Validation: 17 UI/recording tests; complete 200-migration offline PostgreSQL rehearsal including 31 recording-pipeline checks; TypeScript and production build. The browser fixture generates a three-second synthetic WebM with ffmpeg, plays it, refreshes access and checks retained position, verifies pack expansion, closes the player, and checks 390px/1440px layouts. It uses only synthetic Auth/Storage responses. Run scripts/test-lesson-archive-responsive.mjs against a production preview on port 8080; ffmpeg and a Chromium runtime are required.
+
+Still outstanding: live Microsoft recording retrieval/worker hosting and acceptance, cross-visit/server-saved recording positions, offline recording downloads, full transcript/caption synchronization, and format/device acceptance with real authorized recordings. This phase does not activate Microsoft accounts/licences/consent or certify live publication.
