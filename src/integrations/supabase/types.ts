@@ -5121,7 +5121,10 @@ export type Database = {
         Row: {
           adjusted_score: number
           attempt_id: string
+          criteria_scores: Json | null
+          feedback: string | null
           id: string
+          marked_at: string | null
           marker_id: string
           penalty_points: number
           raw_score: number
@@ -5132,7 +5135,10 @@ export type Database = {
         Insert: {
           adjusted_score: number
           attempt_id: string
+          criteria_scores?: Json | null
+          feedback?: string | null
           id?: string
+          marked_at?: string | null
           marker_id: string
           penalty_points: number
           raw_score: number
@@ -5143,7 +5149,10 @@ export type Database = {
         Update: {
           adjusted_score?: number
           attempt_id?: string
+          criteria_scores?: Json | null
+          feedback?: string | null
           id?: string
+          marked_at?: string | null
           marker_id?: string
           penalty_points?: number
           raw_score?: number
