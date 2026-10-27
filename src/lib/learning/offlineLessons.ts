@@ -62,7 +62,9 @@ export async function offlineTransaction<T>(owner: string | null, work: (store: 
  } finally { database.close(); }
 }
 export async function setLearningAccount(account: LearningAccount | null) {
- activeOwner = account ? accountKey(account) : null;
+ const nextOwner=account ? accountKey(account) : null;
+ if(!nextOwner||localStorage.getItem(OFFLINE_OWNER_KEY)!==nextOwner)localStorage.removeItem('unipathway-recording-progress');
+ activeOwner = nextOwner;
  if (typeof indexedDB === 'undefined') return;
  const owner = activeOwner;
  if(owner)localStorage.setItem(OFFLINE_OWNER_KEY,owner);else {localStorage.removeItem(OFFLINE_OWNER_KEY);localStorage.removeItem(READER_KEY);}
