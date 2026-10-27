@@ -51,8 +51,8 @@ export const connectionCoverage=[
   {
     "name": "Assessment",
     "state": "Further implementation required",
-    "detail": "Independent marking, IQA, revision checks, personal feedback phrases, saved drafts and text evidence citations are implemented.",
-    "next": "Complete PDF/DOCX annotation, shared approved feedback, fuller revision history and large-queue pagination."
+    "detail": "Independent marking, IQA, full submitted revision snapshots, personal feedback phrases, saved drafts and text citations are implemented. Marker and IQA queues use bounded data requests and paginated cards.",
+    "next": "Complete PDF/DOCX inline annotation and institution-shared approved feedback. Verify large real queues and the review workflow with allocated staff accounts."
   },
   {
     "name": "Learning content",

@@ -1,9 +1,11 @@
+import {allocatedAssessmentRows,assessmentRowsByIds} from '@/lib/assessment/queueRows';
+import MarkHistory from '@/components/assessment/MarkHistory';
 import FeedbackLibrary from '@/components/assessment/FeedbackLibrary';
 import EvidenceReview from '@/components/assessment/EvidenceReview';
 import {criterionComplete,feedbackPrompts,appendFeedback} from '@/lib/assessment/marking';
 import {useSearchParams} from 'react-router-dom';
 import CourseworkFiles from '@/components/assessment/CourseworkFiles';
-import {useCallback,useEffect,useMemo,useState} from 'react';
+import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {useAuth} from '@/contexts/AuthContext';
 import {db} from '@/lib/db';
@@ -38,39 +40,35 @@ function MarkerWorkspace(){
  const [query,setQuery]=useState(''),[filter,setFilter]=useState('action'),[dirty,setDirty]=useState(false);
  useEffect(()=>{if(!dirty)return;const warn=(e:BeforeUnloadEvent)=>{e.preventDefault();e.returnValue='';};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn);},[dirty]);
  const [loading,setLoading]=useState(true);const [busy,setBusy]=useState('');const [error,setError]=useState('');
+ const generation=useRef(0);const [page,setPage]=useState(0);
+ useEffect(()=>setPage(0),[query,filter]);
  const load=useCallback(async()=>{
+  const token=++generation.current,currentRequest=()=>token===generation.current;
   if(!uid||!tenant){setError('Allocated independent assessor credentials are required.');setLoading(false);return;}
-  setLoading(true);setError('');
+  setLoading(true);setError('');setPage(0);
   try{
-   const a=await db.from('unipathway_assessment_allocations').select('attempt_id,marker_id')
-    .eq('marker_id',uid).eq('tenant_id',tenant).limit(300);
+   const a=await allocatedAssessmentRows('unipathway_assessment_allocations','attempt_id,marker_id',tenant,'marker_id',uid,currentRequest);
    if(a.error)throw Error(a.error.message);
    const ids=((a.data||[]) as Allocation[]).map(x=>x.attempt_id);
    if(!ids.length){setAttempts([]);setBriefs([]);setCriteria([]);setDrafts([]);return;}
    const [at,ai]=await Promise.all([
-    db.from('unipathway_assessment_attempts').select('id,brief_id,student_id,attempt_no,evidence_text,status,submitted_at,resubmission_guidance')
-     .eq('tenant_id',tenant).in('id',ids).order('submitted_at',{ascending:false}),
-    db.from('unipathway_assessment_ai_drafts').select('id,attempt_id,criteria_results,suggested_raw_score,strengths,missing_work,feedback,created_at')
-     .eq('tenant_id',tenant).in('attempt_id',ids).order('created_at',{ascending:false}).limit(300)
+    assessmentRowsByIds('unipathway_assessment_attempts','id,brief_id,student_id,attempt_no,evidence_text,status,submitted_at,resubmission_guidance',tenant,'id',ids,currentRequest),
+    assessmentRowsByIds('unipathway_assessment_ai_drafts','id,attempt_id,criteria_results,suggested_raw_score,strengths,missing_work,feedback,created_at',tenant,'attempt_id',ids,currentRequest)
    ]);
    if(at.error||ai.error)throw Error(at.error?.message||ai.error?.message);
-   const list=(at.data||[]) as Attempt[],briefIds=[...new Set(list.map(x=>x.brief_id))];
-   setAttempts(list);setDrafts((ai.data||[]) as AIDraft[]);
+   const list=((at.data||[]) as Attempt[]).sort((a,b)=>b.submitted_at.localeCompare(a.submitted_at)||a.id.localeCompare(b.id)),briefIds=[...new Set(list.map(x=>x.brief_id))];
+   setAttempts(list);setDrafts(((ai.data||[]) as AIDraft[]).sort((a,b)=>b.created_at.localeCompare(a.created_at)));
    if(!briefIds.length){setBriefs([]);setCriteria([]);return;}
    const [b,c]=await Promise.all([
-    db.from('unipathway_assessment_briefs')
-     .select('id,title,lecturer_id,learning_outcomes,teaching_summary,student_expectations,required_evidence,policy_reference,max_attempts,submission_cutoff')
-     .in('id',briefIds),
-    db.from('unipathway_assessment_criteria')
-     .select('id,brief_id,criterion_code,criterion_description,learning_outcome,scoring_guidance,max_points,display_order')
-     .in('brief_id',briefIds).order('display_order')
+    assessmentRowsByIds('unipathway_assessment_briefs','id,title,lecturer_id,learning_outcomes,teaching_summary,student_expectations,required_evidence,policy_reference,max_attempts,submission_cutoff',tenant,'id',briefIds,currentRequest),
+    assessmentRowsByIds('unipathway_assessment_criteria','id,brief_id,criterion_code,criterion_description,learning_outcome,scoring_guidance,max_points,display_order',tenant,'brief_id',briefIds,currentRequest)
    ]);
    if(b.error||c.error)throw Error(b.error?.message||c.error?.message);
-   setBriefs((b.data||[]) as Brief[]);setCriteria((c.data||[]) as Criterion[]);
-  }catch(e){setError(e instanceof Error?e.message:'Unable to load independent assessor queue');}
-  finally{setLoading(false);}
+   setBriefs((b.data||[]) as Brief[]);setCriteria(((c.data||[]) as Criterion[]).sort((a,b)=>a.display_order-b.display_order));
+  }catch(e){if(!currentRequest())return;setAttempts([]);setBriefs([]);setCriteria([]);setDrafts([]);setError(e instanceof Error?e.message:'Unable to load independent assessor queue');}
+  finally{if(currentRequest())setLoading(false);}
  },[uid,tenant]);
- useEffect(()=>{void load();},[load]);
+ useEffect(()=>{void load();return()=>{generation.current++;};},[load]);
  const current=attempts.find(a=>a.id===selected);
  const brief=briefs.find(b=>b.id===current?.brief_id);
  useEffect(()=>{let active=true;setDraftReady('');setDraftError('');setSavedAt('');setDraftRevision(0);
@@ -158,11 +156,12 @@ function MarkerWorkspace(){
    <section className="rounded-xl border bg-card p-5"><h2 className="font-semibold">Your marking queue ({actionable.length} need action)</h2>
     <label className="mt-3 block text-sm">Find an assessment<Input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Title or anonymised reference"/></label>
     <label className="mt-3 block text-sm">Show<select className="mt-1 h-10 w-full rounded-md border bg-background px-3" value={filter} onChange={e=>setFilter(e.target.value)}><option value="action">Needs marking</option><option value="all">All allocated submissions</option></select></label>
-    <p className="mt-2 text-sm text-muted-foreground">{visible.length} shown · newest received first</p>
-    <div className="mt-3 space-y-2">{visible.map(a=><button key={a.id} disabled={!!busy} aria-pressed={selected===a.id} onClick={()=>select(a.id)} className={`w-full rounded-lg border p-3 text-left ${selected===a.id?'border-primary bg-primary/5':''}`}>
+    <p className="mt-2 text-sm text-muted-foreground">{visible.length} matching · newest received first</p>
+    <div className="mt-3 space-y-2">{visible.slice(page*25,page*25+25).map(a=><button key={a.id} disabled={!!busy} aria-pressed={selected===a.id} onClick={()=>select(a.id)} className={`w-full rounded-lg border p-3 text-left ${selected===a.id?'border-primary bg-primary/5':''}`}>
      <p className="text-sm font-semibold">{briefs.find(b=>b.id===a.brief_id)?.title||'Assessment'}</p>
      <p className="mt-1 text-xs text-muted-foreground">Anonymised ref {a.id.slice(0,8)} · attempt {a.attempt_no} · {a.status}</p>
     </button>)}</div>
+    {visible.length>25&&<nav aria-label="Marking queue pages" className="mt-4 flex flex-wrap items-center gap-2"><Button variant="outline" disabled={page===0} onClick={()=>setPage(p=>p-1)}>Previous submissions</Button><span className="text-sm">Page {page+1} of {Math.ceil(visible.length/25)}</span><Button variant="outline" disabled={(page+1)*25>=visible.length} onClick={()=>setPage(p=>p+1)}>Next submissions</Button></nav>}
     {!!attempts.length&&!visible.length&&<p className="mt-3 text-sm text-muted-foreground">No submissions match this view. Change your search or show all allocated work.</p>}
     {!attempts.length&&<p className="mt-3 text-sm text-muted-foreground">No student work has been assigned to you. Programme management allocates each independent marker explicitly.</p>}
    </section>
@@ -177,7 +176,7 @@ function MarkerWorkspace(){
        ['Required student evidence',brief.required_evidence]
       ] as const).map(([name,text])=><details key={name} className="mt-3 rounded-lg border p-3"><summary className="cursor-pointer text-sm font-semibold">{name}</summary><p className="mt-2 whitespace-pre-wrap text-sm">{text}</p></details>)}
       <EvidenceReview key={current.id} text={current.evidence_text} criteria={rubric} onCite={eligible&&!busy&&draftReady===current.id?(code,citation)=>{if(scores[code]?.evidence&&!window.confirm('Replace the existing evidence citation for this criterion?'))return;change(code,'evidence',citation);}:undefined}/>
-      <CourseworkFiles attemptId={current.id}/>
+      <CourseworkFiles attemptId={current.id}/><MarkHistory attemptId={current.id}/>
 
      </div>
      <div className="rounded-xl border bg-card p-5"><div className="flex flex-wrap items-center justify-between gap-2">

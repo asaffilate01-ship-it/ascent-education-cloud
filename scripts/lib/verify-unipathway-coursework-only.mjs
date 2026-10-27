@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-export async function verifyCourseworkOnly(db,{verifyIqaRevision=false}={}){
+export async function verifyCourseworkOnly(db,{verifyIqaRevision=false,verifySnapshots=false}={}){
  const id=n=>`81000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
  const [tenant,student,peer,lecturer,manager,marker,qa,root,programme,module,brief,draft]=Array.from({length:12},(_,i)=>id(i+1));
  let checks=0;const ok=(v,m)=>{assert.ok(v,m);checks++;};
@@ -50,6 +50,15 @@ export async function verifyCourseworkOnly(db,{verifyIqaRevision=false}={}){
   await login(qa);await denied(()=>review(0,'approve'));await denied(()=>review(1,'release'));await denied(()=>review(1,'unknown'));
   await review(1,'return');checks++;
   await login(marker);await db.query('select public.record_unipathway_human_mark($1,$2,$3)',[attempt,marks,'Revised feedback explains the strengths in your evidence and the improvements needed for your next assessment.']);
+  if(verifySnapshots){
+   const snapshots=(await db.query('SELECT revision,criteria_scores,feedback FROM unipathway_assessment_mark_history WHERE attempt_id=$1 ORDER BY revision',[attempt])).rows;
+   ok(snapshots.length===2,'Both submitted revisions retained');
+   ok(snapshots[0].feedback.startsWith('Your evidence')&&snapshots[1].feedback.startsWith('Revised feedback'),'Feedback snapshots remain distinct');
+   ok(snapshots.every(h=>h.criteria_scores.length===2&&h.criteria_scores[0].evidence==='Original coursework evidence'),'Full criterion evidence captured');
+   await denied(()=>db.query("UPDATE unipathway_assessment_mark_history SET feedback='overwrite' WHERE attempt_id=$1",[attempt]));
+   await login(qa);ok((await db.query('SELECT * FROM unipathway_assessment_mark_history WHERE attempt_id=$1',[attempt])).rows.length===2,'Allocated IQA can compare snapshots');
+   for(const person of [student,peer,lecturer]){await login(person);ok((await db.query('SELECT * FROM unipathway_assessment_mark_history WHERE attempt_id=$1',[attempt])).rows.length===0,'Unreleased history remains private');}
+  }
   await login(qa);await denied(()=>review(1,'approve'));await review(2,'approve');checks++;
   await denied(()=>review(1,'release'));await review(2,'release');checks++;await denied(()=>review(2,'release'));
   await login(student);ok((await db.query('select * from unipathway_assessment_released_results where attempt_id=$1',[attempt])).rows.length===1,'Only the checked approved revision is released');

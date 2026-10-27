@@ -38,7 +38,8 @@ CREATE TABLE storage.objects(id uuid primary key default gen_random_uuid(),bucke
 ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;GRANT USAGE ON SCHEMA storage TO authenticated,anon;GRANT SELECT,INSERT,UPDATE,DELETE ON storage.objects TO authenticated;`);
 await db.exec(migration('assessment_live_activation.sql'));
 await db.exec(migration('iqa_revision_guard.sql'));
+await db.exec(migration('assessment_revision_snapshots.sql'));
 await db.exec(migration('protected_module_materials_activation.sql'));await verifyMaterials(db);
-await verifyGuardianResults(db);await verifyCourseworkOnly(db,{verifyIqaRevision:true});
+await verifyGuardianResults(db);await verifyCourseworkOnly(db,{verifyIqaRevision:true,verifySnapshots:true});
 console.log('Legacy assessment activation and actual object policies verified');
 }finally{await db.close();}
