@@ -8,7 +8,7 @@
 - [ ] Add real phone, WhatsApp and address (waiting on user).
 - [ ] Switch on bot protection for enquiry forms so "Request counselling" works (waiting on user's Cloudflare Turnstile site key + secret key).
 - [x] Reset the 14 existing test dashboard accounts and create the requested Assessor, Awarding Body/EQA and Welfare Officer test accounts securely.
-- [ ] Assign the development student and lecturer to Level 4 Business Management and verify both signed-in course views.
+- [x] Assign the development student and lecturer to Level 4 Business Management and verify both signed-in course views.
 - [x] Audit PRs 47–53 against Live; identify missing schema, private Storage and provider configuration.
 - [x] Make Pakistan-wide online learning prominent in homepage/search metadata and relevant course pages; retain Jhelum as the first physical centre and research Pakistan keyword demand.
 - [ ] Diagnose the user's actual /blog preview access, cache and loading state; fix the evidenced cause (prioritised before activation).
