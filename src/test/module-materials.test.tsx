@@ -30,3 +30,10 @@ it('does not open a late private link after switching account',async()=>{
  let finish!:(v:unknown)=>void;mock.signed.mockReturnValueOnce(new Promise(resolve=>{finish=resolve;}));const close=vi.fn(),replace=vi.fn();const open=vi.spyOn(window,'open').mockImplementation(()=>({opener:null,close,location:{replace}} as unknown as Window));const view=mount();fireEvent.click(await screen.findByText('Open'));
  mock.user={id:'other',tenantId:'centre',roles:['student']};view.rerender(<MemoryRouter><ModuleMaterials/></MemoryRouter>);await act(async()=>finish({data:{signedUrl:'https://example.test/private'},error:null}));expect(open).toHaveBeenCalledWith('about:blank','_blank');expect(replace).not.toHaveBeenCalled();expect(close).toHaveBeenCalled();expect(screen.queryByRole('heading',{name:'Resource 1'})).toBeNull();open.mockRestore();
 });
+it('opens the exact search result and offers a return to all materials in that module',async()=>{
+ mock.tables.unipathway_module_materials=[material(1),material(2)];render(<MemoryRouter initialEntries={['/student/materials?module=module&material=2']}><ModuleMaterials/></MemoryRouter>);
+ await screen.findByRole('heading',{name:'Resource 2'});expect(screen.queryByRole('heading',{name:'Resource 1'})).toBeNull();fireEvent.click(screen.getByText('Show all module materials'));await screen.findByRole('heading',{name:'Resource 1'});expect(screen.getAllByRole('article')).toHaveLength(2);
+});
+it('does not reveal an unavailable material supplied in a search URL',async()=>{
+ render(<MemoryRouter initialEntries={['/student/materials?module=module&material=unavailable']}><ModuleMaterials/></MemoryRouter>);await screen.findByText(/This material is no longer available/);expect(screen.queryByText('Open')).toBeNull();expect(mock.signed).not.toHaveBeenCalled();
+});

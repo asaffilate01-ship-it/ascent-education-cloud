@@ -1,4 +1,4 @@
-import {useState,useEffect} from 'react';
+import {useState,useEffect,useRef} from 'react';
 import {useSearchParams} from 'react-router-dom';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -11,7 +11,8 @@ import {db} from '@/lib/db';
 import {lessonUrl,type Lesson} from '@/lib/structuredLessons';
 export const lessonForm=(l:Lesson)=>({title:l.title,body:l.body,position:l.position,video_url:l.video_url||'',transcript:l.transcript,resource_url:l.resource_url||'',status:l.status});
 const empty={title:'',body:'',position:1,video_url:'',transcript:'',resource_url:'',status:'draft' as Lesson['status']};
-export default function LessonBuilder(){
+export default function LessonBuilder(){const {user}=useAuth();const [params]=useSearchParams();return <LessonEditor key={`${user?.id}:${user?.tenantId}:${params.get('module')}:${params.get('lesson')}`}/>;}
+function LessonEditor(){
  const {user}=useAuth();const [params]=useSearchParams();const module=params.get('module')||'';
  const [editing,setEditing]=useState<Lesson|null>(null),[form,setForm]=useState(empty),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[preview,setPreview]=useState(false);
  useEffect(()=>{setEditing(null);setForm(empty);setMessage('');setPreview(false);},[module,user?.id,user?.tenantId]);
@@ -27,6 +28,15 @@ export default function LessonBuilder(){
   const search=copySearch.replace(/[%_\\]/g,'').slice(0,80);
   const r=await db.from('unipathway_lessons').select('*').eq('tenant_id',user!.tenantId).eq('status','published').ilike('title',`%${search}%`).order('title').limit(30);if(r.error)throw r.error;return r.data as Lesson[];
  }});
+ const opened=useRef(false);
+ useEffect(()=>{
+  const target=params.get('lesson');
+  if(!target||!lessons.data||opened.current)return;
+  opened.current=true;
+  const match=lessons.data.find(l=>l.id===target);
+  if(match){setEditing(match);setForm(lessonForm(match));setPreview(true);}
+  else setMessage('The selected lesson is no longer available to your account. Choose another lesson from this module.');
+ },[lessons.data,params]);
  function choose(l:Lesson|null){setEditing(l);setForm(l?lessonForm(l):{...empty,position:Math.max(0,...(lessons.data||[]).map(x=>x.position))+1});setMessage('');setPreview(false);}
  async function save(status:Lesson['status']){
   if(!user?.tenantId||!module)return;setBusy(true);setMessage('');

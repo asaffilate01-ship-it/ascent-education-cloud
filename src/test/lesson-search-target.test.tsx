@@ -1,0 +1,16 @@
+import {act,cleanup,fireEvent,render,screen} from '@testing-library/react';
+import {afterEach,beforeEach,it,expect,vi} from 'vitest';
+import {MemoryRouter} from 'react-router-dom';
+import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
+import LessonBuilder from '@/pages/learning/LessonBuilder';
+const mock=vi.hoisted(()=>({rows:[] as any[]}));
+vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'teacher',tenantId:'centre'}})}));
+vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:any)=><main>{children}</main>}));
+vi.mock('@/components/assessment/ModuleJourney',()=>({default:()=>null}));
+vi.mock('@/lib/db',()=>({db:{from:(table:string)=>{const q:any={select:()=>q,eq:()=>q,order:()=>q,limit:()=>q,then:(resolve:any)=>Promise.resolve({data:table==='unipathway_lessons'?mock.rows:[],error:null}).then(resolve)};return q;}}}));
+let client:QueryClient;
+beforeEach(()=>{client=new QueryClient({defaultOptions:{queries:{retry:false}}});mock.rows=[{id:'lesson',title:'Selected lesson',body:'Read this original lesson content.',position:1,revision:1,status:'published',transcript:'',video_url:'',resource_url:''}];});
+afterEach(()=>{cleanup();client.clear();});
+const mount=(lesson='lesson')=>render(<QueryClientProvider client={client}><MemoryRouter initialEntries={[`/lecturer/lessons?module=module&lesson=${lesson}`]}><LessonBuilder/></MemoryRouter></QueryClientProvider>);
+it('opens a searched lesson in preview without replacing later unsaved edits on refetch',async()=>{mount();await screen.findByRole('heading',{name:'Selected lesson'});fireEvent.click(screen.getByText('Edit content'));fireEvent.change(screen.getByLabelText('Title'),{target:{value:'My unsaved lesson title'}});mock.rows=[{...mock.rows[0],title:'Remote revised title',revision:2}];await act(async()=>{await client.invalidateQueries({queryKey:['lesson-builder']});});expect(screen.getByLabelText('Title')).toHaveValue('My unsaved lesson title');});
+it('reports an inaccessible or removed lesson target without selecting another lesson',async()=>{mount('unknown');await screen.findByText(/The selected lesson is no longer available/);expect(screen.getByLabelText('Title')).toHaveValue('');});
