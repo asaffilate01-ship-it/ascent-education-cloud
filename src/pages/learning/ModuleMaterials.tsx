@@ -1,5 +1,5 @@
 import {downloadPrivateMaterial} from '@/lib/learning/offlineSync';
-import {useSearchParams} from 'react-router-dom';
+import {Link,useSearchParams} from 'react-router-dom';
 import ModuleJourney from '@/components/assessment/ModuleJourney';
 import { useEffect, useRef, useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -17,8 +17,8 @@ type Module={id:string;title:string;lecturer_id:string|null;tenant_id:string;pro
 const safeName=(value:string)=>value.replace(/[^a-zA-Z0-9._-]/g,'_').slice(-100);
 const kinds=['slide','worksheet','reading','homework','video','whiteboard'] as const;
 const accepted=['application/pdf','application/vnd.openxmlformats-officedocument.presentationml.presentation','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','image/jpeg','image/png','video/mp4','text/plain'];
-export default function ModuleMaterials(){const {user}=useAuth();const [params]=useSearchParams();const filter=params.get('module')||'';return <MaterialsWorkspace key={`${user?.id}:${user?.tenantId}:${user?.roles.join(',')}:${filter}`} moduleFilter={filter}/>;}
-function MaterialsWorkspace({moduleFilter}:{moduleFilter:string}){
+export default function ModuleMaterials(){const {user}=useAuth();const [params]=useSearchParams();const filter=params.get('module')||'',material=params.get('material')||'';return <MaterialsWorkspace key={`${user?.id}:${user?.tenantId}:${user?.roles.join(',')}:${filter}:${material}`} moduleFilter={filter} materialFilter={material}/>;}
+function MaterialsWorkspace({moduleFilter,materialFilter}:{moduleFilter:string;materialFilter:string}){
  const {user}=useAuth();
  const [tenant,setTenant]=useState<string|null>(user?.tenantId||null);
  const [modules,setModules]=useState<Module[]>([]),[items,setItems]=useState<Material[]>([]);
@@ -59,7 +59,7 @@ function MaterialsWorkspace({moduleFilter}:{moduleFilter:string}){
  // The workspace key resets all account, role and module scope; refresh reruns the complete read.
  // eslint-disable-next-line react-hooks/exhaustive-deps
  },[refresh]);
- const filtered=items.filter(m=>`${m.title} ${m.kind} ${m.publication_status} ${modules.find(x=>x.id===m.module_id)?.title||''}`.toLowerCase().includes(search.toLowerCase()));
+ const filtered=items.filter(m=>(!materialFilter||m.id===materialFilter)&&`${m.title} ${m.kind} ${m.publication_status} ${modules.find(x=>x.id===m.module_id)?.title||''}`.toLowerCase().includes(search.toLowerCase()));
  const download=async(m:Material)=>{
   if(operation.current||loading)return;operation.current=true;setBusy(true);
   const preview=window.open('about:blank','_blank');
@@ -117,6 +117,7 @@ function MaterialsWorkspace({moduleFilter}:{moduleFilter:string}){
      <label className="text-sm font-medium">Private file (25 MB maximum)<Input disabled={busy||loading||!!error} className="mt-1" type="file" accept=".pdf,.pptx,.docx,.xlsx,.jpg,.png,.mp4,.txt" onChange={e=>setFile(e.target.files?.[0]||null)}/></label>
     </div><Button disabled={busy||loading||!!error||!tenant||!modules.length} onClick={upload}>Save secure draft</Button>
    </section>}
+   {materialFilter&&<div className="mb-4 rounded-lg border p-3 text-sm"><p>Showing the material selected in search.</p><Link className="underline" to={`?${new URLSearchParams(moduleFilter?{module:moduleFilter}:{})}`}>Show all module materials</Link>{!loading&&!error&&!items.some(m=>m.id===materialFilter)&&<p role="status">This material is no longer available to your account. It may have been withdrawn or your assignment may have changed.</p>}</div>}
    <div className="mb-4 flex flex-wrap items-end gap-3"><label className="text-sm font-medium">Search materials<Input value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}} placeholder="Title, module, type or status"/></label><Button variant="outline" disabled={busy||loading} onClick={reload}>Refresh materials</Button></div>
    {loading&&<p role="status">Loading your authorised modules…</p>}
    {error&&<p role="alert" className="rounded-lg border border-destructive p-4">{error}</p>}

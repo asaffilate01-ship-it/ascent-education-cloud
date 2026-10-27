@@ -16,3 +16,8 @@ it('preserves module identity only on supported tools',()=>{
  expect(workspacePath('/student/courses','?module=course-a')).toBe('/student/courses');
  expect(workspacePath('/director/finance','?module=course-a')).toBe('/director/finance');
 });
+
+it('preserves the selected module when opening student material and recording pages',()=>{
+ expect(workspacePath('/student/materials','?module=course-a&material=old')).toBe('/student/materials?module=course-a');
+ expect(workspacePath('/student/lesson-archive','?module=course-a')).toBe('/student/lesson-archive?module=course-a');
+});
