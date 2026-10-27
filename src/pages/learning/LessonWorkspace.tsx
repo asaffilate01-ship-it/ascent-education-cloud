@@ -103,13 +103,14 @@ function LearningWorkspace() {
  return <DashboardLayout title="Continue learning" subtitle="Study your next lesson, then pick up where you left off">
   <ModuleJourney moduleId={module} />
   <details className="mb-5 rounded-xl border p-4"><summary className="cursor-pointer font-semibold min-h-8">Study without internet · {packs.length} saved module{packs.length === 1 ? '' : 's'}</summary>
-   <p className="my-3 text-sm text-muted-foreground">Save lesson text and transcripts on your own device for 24 hours. Keep this signed-in page open when going offline. Videos and linked files need internet. Signing out removes saved packs and unsynced progress.</p>
+   <p className="my-3 text-sm text-muted-foreground">Save lesson text and transcripts on your own device for 24 hours. Reopen Saved learning without internet after this device has loaded the published site. Download supported private files separately from Course materials. External videos and linked files need internet. Signing out removes saved packs and unsynced progress.</p>
    {module && !!lessons.length && <Button variant="outline" disabled={busy || !online || state.isError} onClick={() => void run(async () => {
     const latest = await state.refetch(); if (latest.error || !latest.data) throw Error('Reconnect and retry before saving a pack.');
     await saveLessonPack(account!, module, latest.data.lessons, latest.data.progress);
     setFeedback('Text pack saved for 24 hours. Use your own device; remove it when finished.');
    })}>{currentPack ? 'Refresh text pack' : 'Save text pack on this device'}</Button>}
    <p className="mt-2 text-xs text-muted-foreground">Up to 10 modules, 5 MB per text pack. Device storage may be cleared by your browser. Saved content cannot receive access changes until you reconnect.</p>
+   <Link className="block underline min-h-11 py-3" to="/student/downloads">Manage all saved learning and sync progress</Link>
    <ul className="mt-4 space-y-3">{packs.map(p => <li key={p.key} className="flex flex-wrap items-center justify-between gap-3 border-t pt-3">
     <div><Link className="underline" to={`/student/lessons?module=${encodeURIComponent(p.module)}`}>{p.lessons[0]?.title || 'Saved module'} · {p.lessons.length} lessons</Link>
      <p className="text-sm text-muted-foreground">{Math.ceil(p.bytes / 1024)} KB · {p.expiresAt > Date.now() ? `Available until ${new Date(p.expiresAt).toLocaleString()}` : 'Expired — reconnect to refresh'} · {p.pending.length} waiting to sync</p></div>

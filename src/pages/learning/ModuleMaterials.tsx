@@ -1,3 +1,4 @@
+import {downloadPrivateMaterial} from '@/lib/learning/offlineSync';
 import {useSearchParams} from 'react-router-dom';
 import ModuleJourney from '@/components/assessment/ModuleJourney';
 import { useEffect, useRef, useState } from 'react';
@@ -70,6 +71,14 @@ function MaterialsWorkspace({moduleFilter}:{moduleFilter:string}){
   }catch{preview?.close();if(mounted.current)toast.error('File not available to this account. Refresh materials and retry.');}
   finally{operation.current=false;if(mounted.current)setBusy(false);}
  };
+ const saveOffline=async(m:Material)=>{
+  if(operation.current||loading||!user?.tenantId)return;
+  if(!window.confirm('Save this private learning file on this device for 24 hours? Use your own device. Exported copies cannot be removed on sign-out.'))return;
+  operation.current=true;setBusy(true);
+  try{await downloadPrivateMaterial({id:user.id,tenantId:user.tenantId},m.id);if(mounted.current)toast.success('File saved for 24 hours. Open Saved learning to use it offline.');}
+  catch(e){if(mounted.current)toast.error(e instanceof Error?e.message:'Download failed. Retry when connected.');}
+  finally{operation.current=false;if(mounted.current)setBusy(false);}
+ };
  const upload=async()=>{
   if(operation.current||loading||error)return;
   const module=modules.find(m=>m.id===moduleId);
@@ -115,7 +124,8 @@ function MaterialsWorkspace({moduleFilter}:{moduleFilter:string}){
    {!loading&&!error&&<div className="space-y-3">{filtered.slice(page*20,page*20+20).map(m=><article key={m.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4">
     <div><h3 className="flex items-center gap-2 font-semibold"><BookOpen className="size-4"/>{m.title}</h3>
      <p className="mt-1 text-xs text-muted-foreground">{modules.find(x=>x.id===m.module_id)?.title||'Module'} · {m.kind} · {m.publication_status}</p></div>
-    <div className="flex gap-2"><Button size="sm" variant="outline" disabled={busy} onClick={()=>download(m)}><Download className="mr-1 size-4"/>Open</Button>
+    <div className="flex flex-wrap gap-2"><Button size="sm" variant="outline" disabled={busy} onClick={()=>download(m)}><Download className="mr-1 size-4"/>Open</Button>
+      {!staff&&m.publication_status==='published'&&<Button size="sm" variant="outline" disabled={busy} onClick={()=>void saveOffline(m)}>Save offline</Button>}
       {staff&&m.publication_status==='draft'&&<Button size="sm" disabled={busy} onClick={()=>publish(m)}>Publish</Button>}</div>
    </article>)}</div>}
    {!loading&&!error&&filtered.length>20&&<nav aria-label="Material pages" className="mt-4 flex items-center gap-3"><Button variant="outline" disabled={page===0} onClick={()=>setPage(p=>p-1)}>Previous materials</Button><span>Page {page+1} of {Math.ceil(filtered.length/20)}</span><Button variant="outline" disabled={(page+1)*20>=filtered.length} onClick={()=>setPage(p=>p+1)}>Next materials</Button></nav>}

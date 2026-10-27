@@ -63,8 +63,8 @@ export const connectionCoverage=[
   {
     "name": "Offline learning",
     "state": "Further implementation required",
-    "detail": "Opt-in saved text works in an already-open workspace; resumable coursework uploads are implemented.",
-    "next": "Complete offline startup, protected media downloads and broader synchronisation with permission expiry."
+    "detail": "Offline startup, opt-in text packs, private course-file downloads and all-module progress sync are implemented with 24-hour device access. Coursework uploads can resume after interruption.",
+    "next": "Verify the published service worker on student devices, private file downloads and reconnect sync with real enrolled accounts. External streaming, live classes and assessed submissions still require internet."
   },
   {
     "name": "Parents and funding",

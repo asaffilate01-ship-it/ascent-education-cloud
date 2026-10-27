@@ -92,6 +92,7 @@ const ModuleMaterials = lazy(() => import("./pages/learning/ModuleMaterials"));
 
 // Student
 const StudentDashboard = lazy(() => import("./pages/student/StudentDashboard"));
+const LearningDownloads = lazy(() => import('./pages/learning/LearningDownloads'));
 const LessonWorkspace = lazy(() => import('./pages/learning/LessonWorkspace'));
 const LessonBuilder = lazy(() => import('./pages/learning/LessonBuilder'));
 const ModuleOverview = lazy(() => import('./pages/learning/ModuleOverview'));
@@ -514,6 +515,7 @@ function AppRoutes() {
         {/* ========== STUDENT ========== */}
         <Route path="/student/managed-labs" element={<StudentR><LMSVirtualLabs /></StudentR>} />
         <Route path="/student" element={<StudentR><StudentDashboard /></StudentR>} />
+        <Route path="/student/downloads" element={<StudentR><LearningDownloads /></StudentR>} />
         <Route path="/student/lessons" element={<StudentR><LessonWorkspace /></StudentR>} />
         <Route path="/lecturer/lessons" element={<LecturerR><LessonBuilder /></LecturerR>} />
         <Route path="/student/module" element={<StudentR><ModuleOverview /></StudentR>} />
