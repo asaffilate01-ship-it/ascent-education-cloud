@@ -64,3 +64,8 @@ Next delivery work remains hosted acceptance and provider activation as listed a
 - Add service-area filters and contextual counts to the shared student/staff/SaaS workspace directory, retaining role remounts and supported module links.
 
 The next substantial assessment capabilities remain geometric PDF annotations, controlled DOCX rendering, multiple independently editable annotation threads and institution-approved shared feedback. They require their own persistence, access-control and acceptance design; this batch does not pretend to supply them. Hosted learning, tenant acceptance and provider gates above remain open until tested with authorised deployed accounts.
+
+
+## DOCX review phase
+
+The next source gap now has a bounded main-document DOCX text view: local paragraph/table references, search, clear loading/fallback states and no external viewer. UI UX Pro Max's document-preview recovery guidance informs the controls. This completes searchable text review only; full Word layout rendering, geometric annotations, multi-thread comments and institution-approved shared feedback remain separate work. The hosted/provider/device release gates above are unchanged.
