@@ -29,8 +29,18 @@ try{
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);await page.getByRole('button',{name:'Mark as completed',exact:true}).click();await page.getByText('Completed on this device. Sign in online and sync to update your course.',{exact:true}).waitFor();
  await page.getByRole('button',{name:'View saved file',exact:true}).click();await page.getByRole('link',{name:'Download saved file to device'}).waitFor();await page.screenshot({path:'/tmp/offline-restart-mobile.png',fullPage:true});
  await page.reload();await page.getByRole('button',{name:'Completed on this device',exact:true}).waitFor();
+ await page.getByLabel('Search saved learning',{exact:true}).fill('no matching title');await page.getByText(/No saved learning matches/).waitFor();
+ await page.getByRole('button',{name:'Clear filters',exact:true}).click();await page.getByRole('heading',{name:'Offline academic writing',exact:true}).waitFor();
+ await page.getByLabel('Availability',{exact:true}).selectOption('available');await page.getByRole('button',{name:'View saved file',exact:true}).waitFor();
+ await page.getByRole('button',{name:'Clear filters',exact:true}).click();
+ // Expire just the file in real IndexedDB; the pending lesson completion must survive cleanup.
+ await page.evaluate(()=>new Promise((resolve,reject)=>{const r=indexedDB.open('unipathway-lesson-packs',2);r.onsuccess=()=>{const db=r.result,tx=db.transaction('materials','readwrite'),store=tx.objectStore('materials'),q=store.openCursor();q.onsuccess=()=>{const c=q.result;if(c){c.update({...c.value,expiresAt:Date.now()-1});c.continue();}};tx.oncomplete=()=>{db.close();resolve(true);};tx.onerror=()=>reject(tx.error);};r.onerror=()=>reject(r.error);}));
+ await page.reload();page.on('dialog',d=>d.accept());await page.getByRole('button',{name:'Remove expired copies',exact:true}).click();
+ await page.getByText(/1 expired copies removed/).waitFor();assert.equal(await page.getByRole('button',{name:'View saved file',exact:true}).count(),0);
+ await page.getByRole('button',{name:'Completed on this device',exact:true}).waitFor();
+
  await page.setViewportSize({width:1440,height:1000});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
  await context.setOffline(false);await page.getByRole('link',{name:'Sign in online to sync',exact:true}).click();await page.getByRole('button',{name:'Sync and check all saved learning',exact:true}).waitFor();await page.getByText('1 updates synced. 0 obsolete updates and 0 unavailable files removed.',{exact:true}).waitFor();assert.equal(progress[0].completed,true);
  await page.goto(`${base}/offline.html`);await page.getByRole('heading',{name:'Offline academic writing',exact:true}).waitFor();const other=await context.newPage();await other.goto(`${base}/offline.html`);await other.evaluate(()=>localStorage.removeItem('unipathway-learning-owner'));await page.getByText(/No current offline access is saved/).waitFor();assert.equal(await page.getByRole('heading',{name:'Offline academic writing',exact:true}).count(),0);
- assert.equal(errors.length,0,errors.join('\n'));console.log('Production service worker: cold offline navigation, reload, saved private PDF, queued completion, authenticated reconnect sync, cross-tab account removal and mobile/desktop layout passed. Synthetic API only.');
+ assert.equal(errors.length,0,errors.join('\n'));console.log('Production service worker: cold offline navigation, reload, saved private PDF, queued completion, authenticated reconnect sync, cross-tab account removal, search/filters, expired-file cleanup preserving queued work and mobile/desktop layout passed. Synthetic API only.');
 }finally{await browser.close();}
