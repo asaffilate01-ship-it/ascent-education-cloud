@@ -46,3 +46,9 @@ it('suppresses a late saved-draft success after the account boundary unmounts',a
  state.user={id:'other',tenantId:'another'};view.rerender(<MemoryRouter><IndependentMarkerQueue/></MemoryRouter>);await screen.findByText(/No student work has been assigned/);
  await act(async()=>finish(await receipt()('save_uni_marking_draft',state.rpc.mock.calls[0][1])));await waitFor(()=>expect(screen.queryByDisplayValue('Old account wording')).toBeNull());expect(state.success).not.toHaveBeenCalled();
 });
+
+it('offers private saved history for an allocated closed attempt without reopening marking',async()=>{
+ show('/assessor/queue?attempt=done');await screen.findByText('Original evidence done');
+ expect(screen.getByText('View private draft history')).toBeInTheDocument();expect(screen.queryByLabelText('Individual written feedback')).toBeNull();
+ fireEvent.click(screen.getByText('View private draft history'));await screen.findByText(/No saved revisions are available/);expect(state.rpc).not.toHaveBeenCalled();
+});
