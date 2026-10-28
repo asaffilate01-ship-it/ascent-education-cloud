@@ -1,4 +1,4 @@
-import {useEffect,useRef,useState} from 'react';
+import {useEffect,useId,useRef,useState} from 'react';
 import {useAuth} from '@/contexts/AuthContext';
 import {db} from '@/lib/db';
 import {pagedRows} from '@/lib/pagedRows';
@@ -14,6 +14,7 @@ export default function CentreFeedbackLibrary(props:Props){
 }
 const columns='id,tenant_id,proposed_by,title,body,status,revision,created_at,review_reference,reviewed_by';
 function Library({onInsert,disabled=false}:Props){
+ const statusId=useId();
  const {user}=useAuth();const owner=user!.id,tenant=user!.tenantId,reviewer=user!.role==='iqa_officer';
  const [open,setOpen]=useState(false),[items,setItems]=useState<Phrase[]>([]),[query,setQuery]=useState(''),[filter,setFilter]=useState(reviewer?'proposed':'approved'),[page,setPage]=useState(0);
  const [title,setTitle]=useState(''),[body,setBody]=useState(''),[references,setReferences]=useState<Record<string,string>>({});
@@ -75,7 +76,7 @@ function Library({onInsert,disabled=false}:Props){
  return <details onToggle={e=>setOpen(e.currentTarget.open)} className="my-4 min-w-0 rounded-xl border bg-card p-4 [&_button]:max-w-full [&_button]:whitespace-normal [overflow-wrap:anywhere]">
  <summary className="min-h-11 cursor-pointer py-2 font-semibold">Centre feedback catalogue</summary>
  <p className="my-2 text-sm text-muted-foreground">Generic centre wording, separate from your private phrases. An independent IQA must approve proposals before shared use. Never include learner names, evidence or private links. Withdrawal does not remove wording already used in drafts or marks.</p>
- <div className="grid gap-3 sm:grid-cols-2"><label className="min-w-0 text-sm">Find centre feedback<Input ref={search} type="search" maxLength={120} value={query} onChange={e=>{setQuery(e.target.value);setPage(0);}}/></label><label className="min-w-0 text-sm">Centre feedback status<select className="mt-1 min-h-11 w-full rounded border bg-background p-2" value={filter} onChange={e=>{setFilter(e.target.value);setPage(0);}}><option value="approved">Approved</option><option value="proposed">Awaiting IQA review</option><option value="withdrawn">Withdrawn</option><option value="all">All visible to my role</option></select></label></div>
+ <div className="grid gap-3 sm:grid-cols-2"><label className="min-w-0 text-sm">Find centre feedback<Input ref={search} type="search" maxLength={120} value={query} onChange={e=>{setQuery(e.target.value);setPage(0);}}/></label><div className="min-w-0 text-sm"><label htmlFor={statusId}>Centre feedback status</label><select id={statusId} className="mt-1 min-h-11 w-full rounded border bg-background p-2" value={filter} onChange={e=>{setFilter(e.target.value);setPage(0);}}><option value="approved">Approved</option><option value="proposed">Awaiting IQA review</option><option value="withdrawn">Withdrawn</option><option value="all">All visible to my role</option></select></div></div>
  <Button className="my-2" variant="outline" disabled={busy||loading} onClick={reload}>Reload centre feedback</Button>
  {loading&&<p role="status">Checking centre feedback…</p>}{error&&<p role="alert" className="my-2 text-sm text-destructive">{error}</p>}{notice&&<p role="status" className="my-2 text-sm">{notice}</p>}
  {verified&&!loading&&<><p role="status" className="my-2 text-sm text-muted-foreground">{rows.length} matching centre phrases · page {current+1} of {pages}</p>
