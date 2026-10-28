@@ -90,3 +90,9 @@ Status: source implementation and synthetic checks only. New migration deploymen
 ## Restore-as-new-draft phase
 
 Historical wording can be copied into an eligible assessor editor after confirmation and validation against the current rubric. Saving remains explicit and advances the latest loaded revision, preserving immutable older snapshots and stale-save conflicts. Cancelled, incompatible, metadata-only, closed-attempt, busy and uncertain-save cases do not replace content. UI UX Pro Max confirmation/feedback guidance informed the separate action and unsaved-status message. This is a source-only addition to the preceding history phase; its hosted migration and acceptance are still pending. Shared approved feedback and persistent annotations remain next capabilities.
+
+## Centre shared-feedback approval phase
+
+Source now includes a separate generic centre catalogue: assessor proposal, independent IQA approval, revision-bound withdrawal, immutable wording, atomic decision auditing and exact-request idempotency. No self-approval or cross-centre sharing is allowed. The assessor insertion action rechecks approval before copying text into unsaved feedback. UI UX Pro Max confirmation/status guidance informs explicit proposal, review and insertion outcomes. Full paging, search, ten-row presentation and account/role isolation follow the existing library patterns.
+
+The new incremental migration is prepared and synthetically checked, not deployed. Hosted security advisors and institutional acceptance of the role policy remain prerequisites to calling the catalogue live. Next source capabilities include an audit-history viewer, content replacement lineage and expiry; persistent document annotations and existing provider/device gates remain separate gaps.
