@@ -4,8 +4,8 @@ import PublicHero from '@/components/PublicHero';
 import PageContents from '@/components/PageContents';
 import {db} from '@/lib/db';
 import {courseOfferKey,currentCourseOffer,type CourseOffer} from '@/lib/courseOffers';
-import { useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { BookOpenCheck, GraduationCap, Search } from 'lucide-react';
 import PublicNav from '@/components/PublicNav';
 import PublicFooter from '@/components/PublicFooter';
@@ -20,12 +20,19 @@ export default function QualificationsCatalogue() {
   const [now,setNow]=useState(Date.now());useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),30000);return()=>clearInterval(timer);},[]);
   const [offers,setOffers]=useState<CourseOffer[]>([]);const [offersError,setOffersError]=useState(false);
   useEffect(()=>{let active=true;void Promise.resolve(db.from('unipathway_public_course_offers').select('*').eq('published',true)).then(r=>{if(!active)return;if(r.error)throw r.error;setOffers(r.data||[]);}).catch(()=>{if(active)setOffersError(true);});return()=>{active=false;};},[]);
-  const [params, setParams] = useSearchParams();
+  const [params] = useSearchParams();
+  const navigate=useNavigate(),{hash}=useLocation();
   const requested = params.get('body');
   const body = bodies.includes(requested as typeof bodies[number]) ? requested! : 'All';
-  const [query, setQuery] = useState('');
-  const [category, setCategory] = useState('All');
+  const search=useRef<HTMLInputElement>(null);
+  const query=(params.get('q')||'').slice(0,120);
   const categories = useMemo(() => ['All', ...new Set(qualificationSelection.map(q=>q.category))],[]);
+  const requestedSubject=params.get('subject')||'All';
+  const category=categories.includes(requestedSubject)?requestedSubject:'All';
+  const commitFilters=(next:URLSearchParams,replace=false)=>navigate({search:next.toString()?`?${next}`:'',hash},{replace});
+  const updateFilter=(name:string,value:string,replace=false)=>{const next=new URLSearchParams(params);if(!value||(name!=='q'&&value==='All'))next.delete(name);else next.set(name,value);commitFilters(next,replace);};
+  const clearFilters=()=>{const next=new URLSearchParams(params);for(const key of ['body','q','subject'])next.delete(key);commitFilters(next);search.current?.focus();};
+  const activeFilters=['body','q','subject'].some(key=>params.has(key));
   const filtered = qualificationSelection.filter(q =>
     (body === 'All' || q.body === body) &&
     (category === 'All' || q.category === category) &&
@@ -45,13 +52,13 @@ export default function QualificationsCatalogue() {
 
       <section className="rounded-xl border bg-card p-5" aria-label="Filter qualification options">
         <div className="flex flex-wrap gap-2" role="group" aria-label="Awarding body">
-          {bodies.map(b=><Button key={b} size="sm" type="button" aria-pressed={body===b} variant={body===b?'default':'outline'} onClick={()=>setParams(b==='All'?{}:{body:b})}>{b==='All'?'All catalogue options':b}</Button>)}
+          {bodies.map(b=><Button key={b} size="sm" className="max-w-full whitespace-normal md:min-h-11" type="button" aria-pressed={body===b} variant={body===b?'default':'outline'} onClick={()=>updateFilter('body',b)}>{b==='All'?'All catalogue options':b}</Button>)}
         </div>
-        <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_230px]">
-          <label className="block text-sm font-medium" htmlFor="qualification-search"><Search className="mr-1 inline size-4"/>Search programmes<Input id="qualification-search" className="mt-1" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Try cyber security, accounting or law"/></label>
-          <label className="block text-sm font-medium" htmlFor="qualification-category">Subject<select id="qualification-category" className="mt-1 block h-10 w-full rounded-md border bg-background px-3" value={category} onChange={e=>setCategory(e.target.value)}>{categories.map(c=><option key={c} value={c}>{c==='All'?'All subjects':c}</option>)}</select></label>
+        <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(12rem,0.6fr)]">
+          <label className="block min-w-0 text-sm font-medium" htmlFor="qualification-search"><Search aria-hidden="true" className="mr-1 inline size-4"/>Search programmes<Input ref={search} type="search" maxLength={120} aria-describedby="qualification-results" id="qualification-search" className="mt-1" value={query} onChange={e=>updateFilter('q',e.target.value,true)} placeholder="Try cyber security, accounting or law"/></label>
+          <div className="min-w-0 text-sm font-medium"><label htmlFor="qualification-category">Subject</label><select id="qualification-category" className="mt-1 block min-h-11 w-full rounded-md border bg-background px-3" value={category} onChange={e=>updateFilter('subject',e.target.value)}>{categories.map(c=><option key={c} value={c}>{c==='All'?'All subjects':c}</option>)}</select></div>
         </div>
-        <p className="mt-3 text-sm text-muted-foreground" role="status">{filtered.length} proposed qualification options match your selection.</p>
+        <p id="qualification-results" className="mt-3 text-sm text-muted-foreground" role="status" aria-atomic="true">{filtered.length} proposed qualification options match your selection.</p>{activeFilters&&<Button className="mt-2 max-w-full whitespace-normal" variant="outline" onClick={clearFilters}>Clear qualification filters</Button>}
       </section>
       {offersError&&<p role="status">Confirmed course details are temporarily unavailable. Please ask admissions before applying or paying.</p>}
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-label="Proposed qualifications">
@@ -61,7 +68,7 @@ export default function QualificationsCatalogue() {
           <div className="mt-4"><CourseAtAGlance compact course={`${q.body} ${q.name}`} entry={offer?.entry_requirements} fees={offer?.fees} intake={offer?.intake_date} delivery="Planned online study with in-centre academic visits, subject to programme approval."/></div>
           {offer&&<p className="mt-3 text-xs text-muted-foreground">{offer.availability==='open'?'Open for applications':offer.availability==='upcoming'?'Upcoming intake':'Applications closed'} · Reviewed {offer.verified_at.slice(0,10)} · Valid until {offer.valid_until.slice(0,10)}</p>}
         </article>})}
-        {filtered.length===0&&<p>No matching qualifications. Try a different subject or search.</p>}
+        {filtered.length===0&&<div className="col-span-full space-y-3 rounded-xl border bg-card p-5"><p>No matching qualifications. Try a different subject or search, or reset the filters.</p><Button className="max-w-full whitespace-normal" variant="outline" onClick={clearFilters}>Reset qualification search</Button></div>}
       </section>
       <section className="rounded-xl border bg-secondary/40 p-6">
         <BookOpenCheck className="size-7 text-success"/><h2 className="mt-3 text-xl font-bold">Teaching, curriculum and university progression</h2>
