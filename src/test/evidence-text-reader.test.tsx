@@ -60,3 +60,40 @@ it('retains evidence limits and offers read-only navigation without marking cont
  expect(screen.getByLabelText('Find in submitted text')).toBeInTheDocument();
  expect(screen.queryByText('Use selected lines as evidence')).toBeNull();
 });
+it('highlights every literal occurrence while preserving source case, Unicode and markup as text',()=>{
+ const source='😀 METHOD method [a+b] <script> İ and K\n';
+ const {container}=render(<EvidenceTextReader text={source}/>);
+ const input=screen.getByLabelText('Find in submitted text');
+ fireEvent.change(input,{target:{value:'method'}});
+ expect(Array.from(container.querySelectorAll('mark')).map(el=>el.textContent)).toEqual(['METHOD','method']);
+ expect(screen.getByRole('status')).toHaveTextContent('1 matching lines');
+ expect(screen.getByRole('listitem',{current:true})).toHaveTextContent(source.trim());
+ fireEvent.change(input,{target:{value:'[a+b]'}});
+ expect(container.querySelector('mark')).toHaveTextContent('[a+b]');
+ fireEvent.change(input,{target:{value:'<script>'}});
+ expect(container.querySelector('mark')).toHaveTextContent('<script>');
+ expect(container.querySelector('script')).toBeNull();
+ fireEvent.change(input,{target:{value:'İ'}});
+ expect(container.querySelector('mark')).toHaveTextContent('İ');
+ fireEvent.change(input,{target:{value:'k'}});
+ expect(container.querySelector('mark')).toHaveTextContent('K');
+ fireEvent.click(screen.getByRole('button',{name:'Clear evidence search'}));
+ expect(container.querySelectorAll('mark')).toHaveLength(0);
+ expect(screen.getByLabelText('Numbered submitted text')).toHaveAttribute('tabindex','0');
+});
+it('reveals initial and subsequent matches by scrolling only the evidence pane and retaining input focus',()=>{
+ const rect=vi.spyOn(HTMLElement.prototype,'getBoundingClientRect').mockImplementation(function(this:HTMLElement){
+  const top=this.tagName==='OL'?100:this.getAttribute('aria-current')==='true'?600:0;
+  return {top,bottom:top+(this.tagName==='OL'?200:30),left:0,right:400,width:400,height:30,x:0,y:top,toJSON:()=>({})};
+ });
+ try{
+  render(<EvidenceTextReader text={'first method\nsecond method'}/>);
+  const input=screen.getByLabelText('Find in submitted text');input.focus();
+  const list=screen.getByLabelText('Numbered submitted text');
+  fireEvent.change(input,{target:{value:'method'}});
+  expect(list.scrollTop).toBeGreaterThan(0);expect(input).toHaveFocus();
+  const initial=list.scrollTop;
+  fireEvent.keyDown(input,{key:'Enter'});
+  expect(list.scrollTop).toBeGreaterThan(initial);expect(input).toHaveFocus();
+ }finally{rect.mockRestore();}
+});
