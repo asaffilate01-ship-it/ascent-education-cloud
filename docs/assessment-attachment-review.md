@@ -15,3 +15,16 @@ Validation:
 - Browser fixture: scripts/test-attachment-review-responsive.mjs generates its own two-page PDF and uses a synthetic backend. Run against a production preview on port 8080 with CHROMIUM_PATH if needed; no real student records or assessment decisions are modified.
 
 Still outstanding: freehand/rectangle overlays, native DOCX rendering/annotation, multiple independently editable annotation threads, institution-approved shared feedback, and live enrolled-account/device acceptance. Page references are stored as rubric evidence, not geometric PDF annotations. This phase does not complete provider activation for Omniqora, Teams, hosted email, payments, language audio or cloud labs.
+
+
+## Evidence discovery phase — 28 October 2026
+
+Submitted-text review now has a local, case-insensitive literal search with numbered matching-line counts, previous/next navigation, keyboard Enter/Shift+Enter, Escape clearing, and a focused reset. All source lines remain visible and unchanged. An assessor can select a matching line, review it, then separately copy the citation; selection never assigns marks or saves/submits a draft. Read-only IQA review has search without citation controls.
+
+A declined replacement now explicitly reports that the existing criterion evidence is unchanged. A successful copy reminds the assessor to save the marking draft; it does not claim server persistence.
+
+PDF page text preserves extractable line endings and uses the same reader. Search is limited to the current page's existing 20,000-character extraction, resets on page/document changes and survives zoom. Zoom resizes the bounded canvas without reloading/re-extracting the page. Scanned pages continue to require visual review/download. This is text navigation, not whole-document OCR or geometric annotation.
+
+The shared role workspace directory also supports combined service-area and text filters, contextual counts and a clear action. Active-role changes remount and clear filters; links continue to preserve module context only on supported destinations.
+
+No schema, storage grant, provider setting or assessment release logic changed. The UI UX Pro Max search guidance used here covers no-result recovery, contextual feedback and visible navigation. Framework versions, branding and existing data boundaries are retained. Multiple annotation threads, freehand overlays, DOCX rendering and institution-shared feedback remain outstanding.

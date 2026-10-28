@@ -54,3 +54,13 @@ UI UX Pro Max was read from `.claude/skills/ui-ux-pro-max/SKILL.md` in the upstr
 - Tinted status badges have computed AA coverage. Primary/success/destructive colours were adjusted where the actual composed surfaces failed. Gradient panels have their own foreground token and darker endpoints, preserving readable text independently of filled primary buttons.
 
 Next delivery work remains hosted acceptance and provider activation as listed above. No production database migration, paid provider activation, push delivery, store signing or real-device certification is implied by this source change.
+
+
+## Next implemented batch — assessment evidence and role-service discovery
+
+- Add local source-text and current-PDF-page search with line counts, keyboard navigation and a clear path back to the full source. No evidence is sent to a search provider or stored on the device.
+- Keep search, line selection, criterion citation, draft save and final human marking as separate actions. Correct the false success message when an assessor declines replacement.
+- Preserve PDF search through zoom and clear it at the page boundary; do not imply scanned pages are searchable.
+- Add service-area filters and contextual counts to the shared student/staff/SaaS workspace directory, retaining role remounts and supported module links.
+
+The next substantial assessment capabilities remain geometric PDF annotations, controlled DOCX rendering, multiple independently editable annotation threads and institution-approved shared feedback. They require their own persistence, access-control and acceptance design; this batch does not pretend to supply them. Hosted learning, tenant acceptance and provider gates above remain open until tested with authorised deployed accounts.
