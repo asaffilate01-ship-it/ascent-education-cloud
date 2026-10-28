@@ -74,3 +74,9 @@ The next source gap now has a bounded main-document DOCX text view: local paragr
 ## Private feedback workflow fixes
 
 Complete paging replaces the former 200-phrase search ceiling. Account/centre/role remounts isolate unsaved wording and late responses. Confirmed mutation receipts, explicit recovery after uncertain writes, exact-duplicate detection after reload, scoped deletion and insertion-result feedback close identified source gaps. UI UX Pro Max guidance informs pagination, contextual counts and no-result recovery. The original Supabase permissions remain unchanged; institution-shared approved feedback still needs a separate governance and persistence phase.
+
+## Evidence search navigation polish
+
+Search now highlights literal occurrences with the existing primary/foreground theme pair, preserves original case and Unicode text, and reveals initial/subsequent matching lines inside the evidence pane without moving keyboard focus or scrolling the outer page. The source pane has a keyboard focus target with a visible ring so read-only reviewers can scroll through all lines. Counts remain matching-line counts; selecting a citation remains a separate action. This applies to submitted text, bounded DOCX extraction and current-page PDF extraction. UI UX Pro Max's targeted search recovery and keyboard-focus results informed this batch; word highlighting is a project-specific implementation choice. No new persistence, schema or provider activation is included.
+
+Next substantial phases remain institution-approved shared feedback with governance/versioning, saved-draft content history, and persistent document annotations. Hosted tenant acceptance, Microsoft provisioning, production signing and physical-device checks remain release gates rather than inferred successes from source CI.

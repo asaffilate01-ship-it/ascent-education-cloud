@@ -26,7 +26,7 @@ test('reviewers can search original evidence and private PDF and DOCX text at mo
  const tenant='00000000-0000-4000-8000-000000000002';
  await context.addInitScript(({user})=>{const token=btoa(JSON.stringify({alg:'HS256',typ:'JWT'}))+'.'+btoa(JSON.stringify({sub:user.id,role:'authenticated',exp:Math.floor(Date.now()/1000)+3600}))+'.synthetic';localStorage.setItem('sb-unipathway-browser-ci-auth-token',JSON.stringify({access_token:token,refresh_token:'synthetic',token_type:'bearer',expires_at:Math.floor(Date.now()/1000)+3600,expires_in:3600,user}));},{user});
 
- const tables:Record<string,any>={unipathway_assessment_allocations:[{attempt_id:'attempt',qa_reviewer_id:user.id,marker_id:'marker'}],unipathway_assessment_attempts:[{id:'attempt',brief_id:'brief',status:'human_marked',attempt_no:1,evidence_text:'The learner explains the method.\nThe conclusion refers to the observed evidence.',submitted_at:'2026-10-26T09:00:00Z'}],unipathway_assessment_briefs:[{id:'brief',title:'Academic writing review',lecturer_id:'lecturer',policy_reference:'Assessment policy'}],unipathway_assessment_criteria:['LO1','LO2'].map(code=>({id:code,brief_id:'brief',criterion_code:code,max_points:50,learning_outcome:'Explain and evaluate the method',criterion_description:'Use examples to support the conclusion.',scoring_guidance:'Assess the relevance and clarity of supporting evidence.'})),unipathway_assessment_human_marks:[{attempt_id:'attempt',marker_id:'marker',revision:2,criteria_scores:['LO1','LO2'].map(code=>({code,points:40,reason:'The conclusion is supported by the examples.',evidence:'Submitted text, lines 1–2',missing:'No required evidence missing'})),raw_score:80,penalty_points:0,adjusted_score:80,feedback:'Your explanation supports a clear conclusion. Compare alternatives in your next assignment.'}],unipathway_assessment_quality_decisions:[],unipathway_assessment_released_results:[]};
+ const tables:Record<string,any>={unipathway_assessment_allocations:[{attempt_id:'attempt',qa_reviewer_id:user.id,marker_id:'marker'}],unipathway_assessment_attempts:[{id:'attempt',brief_id:'brief',status:'human_marked',attempt_no:1,evidence_text:['The learner explains the method.',...Array.from({length:40},(_,i)=>`Supporting explanation ${i+1}.`),'The conclusion refers to the observed evidence.'].join('\n'),submitted_at:'2026-10-26T09:00:00Z'}],unipathway_assessment_briefs:[{id:'brief',title:'Academic writing review',lecturer_id:'lecturer',policy_reference:'Assessment policy'}],unipathway_assessment_criteria:['LO1','LO2'].map(code=>({id:code,brief_id:'brief',criterion_code:code,max_points:50,learning_outcome:'Explain and evaluate the method',criterion_description:'Use examples to support the conclusion.',scoring_guidance:'Assess the relevance and clarity of supporting evidence.'})),unipathway_assessment_human_marks:[{attempt_id:'attempt',marker_id:'marker',revision:2,criteria_scores:['LO1','LO2'].map(code=>({code,points:40,reason:'The conclusion is supported by the examples.',evidence:'Submitted text, lines 1–2',missing:'No required evidence missing'})),raw_score:80,penalty_points:0,adjusted_score:80,feedback:'Your explanation supports a clear conclusion. Compare alternatives in your next assignment.'}],unipathway_assessment_quality_decisions:[],unipathway_assessment_released_results:[]};
  tables.unipathway_assessment_mark_history=[2,1].map(revision=>({id:'history-'+revision,revision,raw_score:revision===2?80:70,adjusted_score:revision===2?80:70,penalty_points:0,recorded_at:'2026-10-27T10:00:00Z',feedback:'Submitted feedback revision '+revision,criteria_scores:[{code:'LO1',points:40,reason:'Verified explanation',evidence:'Submitted text line 1',missing:'Fully met'}]}));
  tables.unipathway_coursework_uploads=[{id:'attachment',file_name:'synthetic.pdf',mime_type:'application/pdf',byte_size:pdf.length,storage_path:'centre/student/attachment',attempt_id:'attempt'},{id:'docx',file_name:'synthetic.docx',mime_type:docxMime,byte_size:docx.length,storage_path:'centre/student/docx',attempt_id:'attempt'}];
  const receipts:unknown[]=[];
@@ -43,7 +43,10 @@ test('reviewers can search original evidence and private PDF and DOCX text at mo
  if(await consent.isVisible())await consent.getByRole('button',{name:'Reject all'}).click();
  const evidence=page.getByRole('region',{name:'Submitted text review'});
  await evidence.getByLabel('Find in submitted text').fill('observed');
- await expect(evidence.getByRole('status').filter({hasText:'matching lines'})).toContainText('line 2');
+ await expect(evidence.getByRole('status').filter({hasText:'matching lines'})).toContainText('line 42');
+ await expect(evidence.locator('mark')).toHaveText(['observed']);
+ await expect(evidence.getByLabel('Find in submitted text')).toBeFocused();
+ await expect.poll(()=>evidence.getByRole('list').evaluate(el=>el.scrollTop)).toBeGreaterThan(0);
  await expect(evidence.getByRole('button',{name:'Select matching line for citation'})).toHaveCount(0);
  await expect(page.getByLabel('QA rationale and evidence')).toHaveValue('');
  await page.getByRole('listitem').filter({hasText:'synthetic.pdf'}).getByRole('button',{name:'Review attachment',exact:true}).click();
@@ -52,6 +55,7 @@ test('reviewers can search original evidence and private PDF and DOCX text at mo
  await attachment.getByText('Read text from this page',{exact:true}).click();
  await attachment.getByLabel('Find in this page text').fill('page one');
  await expect(attachment.getByRole('status').filter({hasText:'matching lines'})).toContainText('Match 1 of 1');
+ await expect(attachment.locator('mark')).toHaveText(['page one']);
  await attachment.getByLabel('Document zoom').selectOption('200');
  await expect(attachment.getByLabel('Find in this page text')).toHaveValue('page one');
  await attachment.getByRole('button',{name:'Next page',exact:true}).click();
@@ -71,7 +75,8 @@ test('reviewers can search original evidence and private PDF and DOCX text at mo
  const word=page.getByRole('region',{name:'Review synthetic.docx',exact:true});
  await word.getByLabel('Find in DOCX text').fill('Comparison');
  await expect(word.getByRole('status').filter({hasText:'matching lines'})).toContainText('Match 1 of 1');
- await expect(word.getByText('Table 1, row 1, cell 1, paragraph 2: Comparison of costs.',{exact:true})).toBeVisible();
+ await expect(word.getByRole('listitem').filter({hasText:'Table 1, row 1, cell 1, paragraph 2: Comparison of costs.'})).toBeVisible();
+ await expect(word.locator('mark')).toHaveText(['Comparison']);
  await expect(word.getByText(/It does not reproduce page layout/)).toBeVisible();
  await expect(word.locator('iframe,img,script')).toHaveCount(0);
  for(const viewport of [{width:375,height:812},{width:812,height:375},{width:1440,height:1000}]){
