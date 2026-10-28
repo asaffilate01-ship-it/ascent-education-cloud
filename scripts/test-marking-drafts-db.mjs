@@ -26,10 +26,32 @@ await denied(1,save(1,'{"A":{"code":"A","points":null,"reason":"","evidence":"",
 await denied(1,save(1,'{"A":{"code":"A","points":0}}'));
 assert.equal((await as(1,save(1,'{"A":{"code":"A","points":0,"reason":"","evidence":"","missing":""}}'))).rows[0].revision,2);checks++;
 assert.equal((await as(1,'SELECT * FROM uni_marking_draft_events')).rows.length,2);checks++;
+// Rehearse upgrade from metadata-only receipts; only the surviving current revision is recoverable.
+await db.exec(readFileSync('supabase/migrations/20261028164935_private_marking_draft_snapshots.sql','utf8'));
+const history=(await as(1,'SELECT * FROM uni_marking_draft_events ORDER BY revision')).rows;
+assert.equal(history[0].criteria,null);assert.equal(history[0].feedback,null);checks++;
+assert.equal(history[1].criteria.A.code,'A');assert.equal(history[1].feedback,'Private feedback');checks++;
+for(const n of [2,3,4]){assert.equal((await as(n,'SELECT * FROM uni_marking_draft_events')).rows.length,0);checks++;}
+await denied(1,"UPDATE uni_marking_draft_events SET feedback='forged'");
+await denied(1,`INSERT INTO uni_marking_draft_events(attempt_id,marker_id,tenant_id,revision) VALUES('${id(30)}','${id(1)}','${id(10)}',99)`);
+// A failed snapshot insert must roll back the draft update and consume no revision.
+await db.exec(`CREATE FUNCTION fail_draft_snapshot() RETURNS trigger LANGUAGE plpgsql AS $$BEGIN RAISE EXCEPTION 'synthetic snapshot failure';END$$;
+CREATE TRIGGER fail_snapshot BEFORE INSERT ON uni_marking_draft_events FOR EACH ROW EXECUTE FUNCTION fail_draft_snapshot()`);
+await denied(1,save(2));assert.equal((await as(1,'SELECT revision FROM uni_marking_drafts')).rows[0].revision,2);checks++;
+assert.equal((await as(1,'SELECT * FROM uni_marking_draft_events')).rows.length,2);checks++;
+await db.exec('DROP TRIGGER fail_snapshot ON uni_marking_draft_events;DROP FUNCTION fail_draft_snapshot()');
+assert.equal((await as(1,save(2))).rows[0].revision,3);checks++;
+const latest=(await as(1,'SELECT * FROM uni_marking_draft_events WHERE revision=3')).rows[0];
+assert.deepEqual(latest.criteria,{});assert.equal(latest.feedback,'Private feedback');assert.equal(latest.guidance,'');checks++;
+await denied(1,save(2));assert.equal((await as(1,'SELECT * FROM uni_marking_draft_events')).rows.length,3);checks++;
+await assert.rejects(db.exec("UPDATE uni_marking_draft_events SET feedback=NULL WHERE revision=3"));checks++;
+await assert.rejects(db.exec("UPDATE uni_marking_draft_events SET criteria='[]' WHERE revision=3"));checks++;
+assert.equal((await db.query("SELECT relrowsecurity FROM pg_class WHERE relname='uni_marking_draft_events'")).rows[0].relrowsecurity,true);checks++;
+
 await denied(1,"UPDATE uni_marking_drafts SET feedback='forged'");await denied(1,'DELETE FROM uni_marking_draft_events');
-await db.exec(`UPDATE unipathway_assessment_attempts SET status='human_marked'`);await denied(1,save(2));
-await db.exec(`UPDATE unipathway_assessment_allocations SET marker_id='${id(2)}'`);assert.equal((await as(1,'SELECT * FROM uni_marking_drafts')).rows.length,0);checks++;
-await db.exec(`UPDATE unipathway_assessment_attempts SET status='qa_rejected'`);assert.equal((await as(2,save(0))).rows[0].revision,1);assert.equal((await as(2,'SELECT * FROM uni_marking_drafts')).rows.length,1);checks+=2;
+await db.exec(`UPDATE unipathway_assessment_attempts SET status='human_marked'`);await denied(1,save(3));
+await db.exec(`UPDATE unipathway_assessment_allocations SET marker_id='${id(2)}'`);assert.equal((await as(1,'SELECT * FROM uni_marking_drafts')).rows.length,0);checks++;assert.equal((await as(1,'SELECT * FROM uni_marking_draft_events')).rows.length,0);checks++;
+await db.exec(`UPDATE unipathway_assessment_attempts SET status='qa_rejected'`);assert.equal((await as(2,save(0))).rows[0].revision,1);assert.equal((await as(2,'SELECT * FROM uni_marking_drafts')).rows.length,1);checks+=2;assert.equal((await as(2,'SELECT * FROM uni_marking_draft_events')).rows.length,1);checks++;
 await as(1,"INSERT INTO uni_feedback_snippets(title,body) VALUES('Reasoning','Explain the reasoning behind your approach.')");checks++;
 for(const n of [2,3,4]){assert.equal((await as(n,'SELECT * FROM uni_feedback_snippets')).rows.length,0);checks++;}
 await denied(4,"INSERT INTO uni_feedback_snippets(title,body) VALUES('Bad','Forbidden')");

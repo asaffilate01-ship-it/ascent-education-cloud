@@ -1,3 +1,5 @@
+import PrivateDraftHistory from '@/components/assessment/PrivateDraftHistory';
+import {confirmedDraftReceipt} from '@/lib/assessment/draftReceipt';
 import {allocatedAssessmentRows,assessmentRowsByIds} from '@/lib/assessment/queueRows';
 import MarkHistory from '@/components/assessment/MarkHistory';
 import FeedbackLibrary from '@/components/assessment/FeedbackLibrary';
@@ -27,7 +29,7 @@ const empty=(criteria:Criterion[])=>Object.fromEntries(criteria.map(c=>[c.criter
 }])) as Record<string,MarkCriterion>;
 export default function IndependentMarkerQueue(){
  const {user}=useAuth();
- return <MarkerWorkspace key={`${user?.id}:${user?.tenantId}`}/>;
+ return <MarkerWorkspace key={`${user?.id}:${user?.tenantId}:${user?.role}`}/>;
 }
 function MarkerWorkspace(){
  const [params,setParams]=useSearchParams();
@@ -37,6 +39,9 @@ function MarkerWorkspace(){
  const [selected,setSelected]=useState(params.get('attempt')||'');const [scores,setScores]=useState<Record<string,MarkCriterion>>({});
  const [feedback,setFeedback]=useState('');const [guidance,setGuidance]=useState('');
  const [draftRevision,setDraftRevision]=useState(0),[draftReady,setDraftReady]=useState(''),[draftError,setDraftError]=useState(''),[draftReload,setDraftReload]=useState(0),[savedAt,setSavedAt]=useState('');
+ const [draftUncertain,setDraftUncertain]=useState(false);
+ const mounted=useRef(true),savingDraft=useRef(false);
+ useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;};},[]);
  const [query,setQuery]=useState(''),[filter,setFilter]=useState('action'),[dirty,setDirty]=useState(false);
  useEffect(()=>{if(!dirty)return;const warn=(e:BeforeUnloadEvent)=>{e.preventDefault();e.returnValue='';};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn);},[dirty]);
  const [loading,setLoading]=useState(true);const [busy,setBusy]=useState('');const [error,setError]=useState('');
@@ -71,7 +76,7 @@ function MarkerWorkspace(){
  useEffect(()=>{void load();return()=>{generation.current++;};},[load]);
  const current=attempts.find(a=>a.id===selected);
  const brief=briefs.find(b=>b.id===current?.brief_id);
- useEffect(()=>{let active=true;setDraftReady('');setDraftError('');setSavedAt('');setDraftRevision(0);
+ useEffect(()=>{let active=true;setDraftReady('');setDraftError('');setSavedAt('');setDraftRevision(0);setDraftUncertain(false);
   if(!current?.id)return;
   setScores({});setFeedback('');setGuidance('');setDirty(false);
   void Promise.resolve(db.from('uni_marking_drafts').select('criteria,feedback,guidance,revision,updated_at').eq('attempt_id',current.id).eq('marker_id',uid).eq('tenant_id',tenant).limit(1)).then(r=>{
@@ -81,11 +86,13 @@ function MarkerWorkspace(){
   }).catch(()=>{if(active)setDraftError('Saved draft could not be checked. Retry before editing to avoid overwriting existing work.');});
   return()=>{active=false;};
  },[current?.id,uid,tenant,draftReload]);
- async function saveDraft(){if(!current||draftReady!==current.id||busy)return;setBusy('draft');setDraftError('');
+ async function saveDraft(){if(!current||draftReady!==current.id||busy||savingDraft.current||draftUncertain)return;savingDraft.current=true;setBusy('draft');setDraftError('');
   try{const r=await db.rpc('save_uni_marking_draft',{p_attempt:current.id,p_revision:draftRevision,p_criteria:scores,p_feedback:feedback,p_guidance:guidance});
-   if(r.error)throw r.error;const row=Array.isArray(r.data)?r.data[0]:r.data;if(!row?.revision)throw Error('Save receipt unavailable. Reload the saved draft to check its status.');
+   if(!mounted.current)return;
+   if(r.error)throw r.error;const row=Array.isArray(r.data)&&r.data.length===1?r.data[0]:r.data;
+   if(!confirmedDraftReceipt(row,{attempt:current.id,owner:uid,tenant,revision:draftRevision,criteria:scores,feedback,guidance}))throw Error('Save receipt did not match this draft.');
    setDraftRevision(row.revision);setSavedAt(row.updated_at);setDirty(false);toast.success('Private draft saved. No mark submitted.');
-  }catch(e){setDraftError((e as {message?:string})?.message||'Draft save was not confirmed. Your edits remain here.');}finally{setBusy('');}
+  }catch(e){if(mounted.current){setDraftUncertain(true);setDraftError(`${(e as {message?:string})?.message||'Draft save was not confirmed.'} Your edits remain here. Reload the saved draft to verify its latest state before saving again.`);}}finally{savingDraft.current=false;if(mounted.current)setBusy('');}
  }
 
  const rubric=useMemo(()=>criteria.filter(c=>c.brief_id===current?.brief_id),[criteria,current?.brief_id]);
@@ -146,7 +153,7 @@ function MarkerWorkspace(){
  const actionable=attempts.filter(a=>['submitted','qa_rejected'].includes(a.status));
  const visible=attempts.filter(a=>(filter==='all'||['submitted','qa_rejected'].includes(a.status))&&`${briefs.find(b=>b.id===a.brief_id)?.title||''} ${a.id}`.toLowerCase().includes(query.toLowerCase()));
  const completed=rubric.filter(c=>criterionComplete(scores[c.criterion_code],Number(c.max_points))).length;
- return <DashboardLayout title="Independent Marker Workspace" subtitle="Mark curriculum evidence separately from the lecturer, using Omniqora only as a private assistant">
+ return <DashboardLayout title="Independent Marker Workspace" subtitle="Mark curriculum evidence separately from the lecturer, using Omniqora only as a private assistant"><div className="min-w-0 [&_button]:max-w-full [&_button]:whitespace-normal [&_button]:[overflow-wrap:anywhere]">
   <section className="mb-5 rounded-xl border bg-primary/5 p-4"><h2 className="flex items-center gap-2 font-semibold"><ShieldCheck className="size-5"/>AI suggestions are not grades</h2>
    <p className="mt-2 text-sm text-muted-foreground">You—not the teaching lecturer or AI—must score every criterion and cite actual submitted evidence. Document missing outcomes and your own reasoning. A separate IQA must approve or reject the marked submission before the student sees any score. Where the approved policy permits, request revisions before the final cutoff.</p>
   </section>
@@ -189,8 +196,9 @@ function MarkerWorkspace(){
      </div>
      {eligible&&<div className="rounded-xl border bg-card p-4"><p role="status" className="text-sm">{draftReady!==current.id?'Checking your saved draft…':savedAt?`Draft revision ${draftRevision} saved ${new Date(savedAt).toLocaleString()}`:'No saved draft yet.'}</p>
       {draftError&&<p role="alert" className="my-2 text-sm text-destructive">{draftError}</p>}
-      <div className="mt-2 flex flex-wrap gap-2"><Button variant="outline" disabled={!!busy||draftReady!==current.id||!dirty} onClick={()=>void saveDraft()}>{busy==='draft'?'Saving…':'Save private draft'}</Button>
+      <div className="mt-2 flex flex-wrap gap-2"><Button variant="outline" disabled={!!busy||draftReady!==current.id||!dirty||draftUncertain} onClick={()=>void saveDraft()}>{busy==='draft'?'Saving…':'Save private draft'}</Button>
       <Button variant="ghost" disabled={!!busy} onClick={()=>{if(!dirty||window.confirm('Discard unsaved edits and reload your latest saved draft?'))setDraftReload(x=>x+1);}}>Reload saved draft</Button></div><p className="mt-2 text-xs text-muted-foreground">Save before leaving this page. Drafts do not submit a mark or notify the learner.</p></div>}
+     <PrivateDraftHistory attemptId={current.id} savedRevision={draftRevision}/>
      {eligible&&draftReady===current.id&&<section className="rounded-xl border bg-card p-5"><h2 className="font-semibold"><ClipboardCheck className="mr-1 inline size-4"/>Independent criterion-by-criterion human assessment</h2>
       <p role="status" className="mt-2 text-sm text-muted-foreground">{completed} of {rubric.length} criteria complete · {dirty?'Unsaved edits — save your draft before leaving':'No unsaved edits'}</p><div className="mt-3 space-y-4">{rubric.map(c=>{const v=scores[c.criterion_code];
        return <fieldset disabled={!!busy} key={c.id} className="rounded-lg border p-4">
@@ -220,5 +228,5 @@ function MarkerWorkspace(){
     </>}
    </section>
   </div>}
- </DashboardLayout>;
+ </div></DashboardLayout>;
 }
