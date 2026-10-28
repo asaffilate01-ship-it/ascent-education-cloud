@@ -7,6 +7,11 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
+    // Unit tests must never inherit a real project's backend or credentials.
+    env: {
+      VITE_SUPABASE_URL: 'https://unipathway-browser-ci.invalid',
+      VITE_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_synthetic_ci_only',
+    },
     setupFiles: ["./src/test/setup.ts"],
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
   },

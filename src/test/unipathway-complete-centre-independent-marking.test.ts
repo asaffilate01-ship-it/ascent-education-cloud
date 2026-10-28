@@ -49,8 +49,10 @@ describe('UniPathway complete centre and independent marking contracts',()=>{
   expect(ai).toContain('AI cited text not present in submitted evidence');
   expect(ai).toContain("status:'advisory_only'");
   expect(marker).toContain("record_unipathway_human_mark");
-  expect(qa).toContain("decide_unipathway_quality_mark");
-  expect(qa).toContain("release_unipathway_assessment_mark");
+  expect(qa).toContain("review_uni_mark_revision");
+  expect(qa).toContain("p_action:approve?'approve':'return'");
+  expect(qa).toContain("p_action:'release'");
+  expect(qa).toContain("p_revision:mark.revision");
   expect(sql).toContain('REVOKE INSERT,UPDATE,DELETE ON public.unipathway_assessment_ai_drafts');
  });
 });

@@ -146,7 +146,7 @@ export default function DestinationApply() {
       if (error || !data?.success || !data?.id) throw new Error('Your application could not be confirmed. Please try again; your draft is still available.');
 
       toast({ title: 'Application received', description: 'Our counselling team will review your details and contact you.' });
-      try {localStorage.removeItem(draftKey);} catch {}
+      try {localStorage.removeItem(draftKey);} catch { /* Submission succeeded even when local draft cleanup is unavailable. */ }
       setSubmitted(true);
     } catch (e: any) {
       toast({ title: 'Could not submit', description: e.message, variant: 'destructive' });
