@@ -22,7 +22,7 @@ function SecurityDesk(){
  const camera=cameras.find(c=>c.id===selected);
  async function open(){if(!camera||busy)return;setBusy(true);setSession(null);setMediaError(false);setError('');try{
   const result=await supabase.functions.invoke('cctv-access',{body:{cameraId:camera.id,mode,startsAt:start?new Date(start).toISOString():null,endsAt:end?new Date(end).toISOString():null,reason}});
-  if(result.error){let message='CCTV is unavailable. Ask your administrator to check the gateway connection.';try{message=(await result.error.context.json()).error||message;}catch{}throw Error(message);}
+  if(result.error){let message='CCTV is unavailable. Ask your administrator to check the gateway connection.';try{message=(await result.error.context.json()).error||message;}catch{/* Non-JSON provider errors retain the safe fallback message. */}throw Error(message);}
   if(!result.data?.url||!result.data?.expiresAt)throw Error('No viewing session returned.');setSession(result.data);
  }catch(e){setError(e instanceof Error?e.message:'Unable to open camera');}finally{setBusy(false);}}
  async function save(){if(!manager||!user?.tenantId||busy)return;setBusy(true);try{const result=await db.from('unipathway_cctv_cameras').insert({...draft,tenant_id:user.tenantId});if(result.error)throw result.error;setDraft({name:'',location:'',provider_camera_id:'',enabled:false,security_live:false,security_playback:false});setRefresh(n=>n+1);toast.success('Camera registered');}catch{toast.error('Camera could not be saved. Check the centre and camera reference.');}finally{setBusy(false);}}

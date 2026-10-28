@@ -28,9 +28,9 @@ test.describe('public production smoke', () => {
     await expect(tabs.getByRole('link', { name: 'Home' })).toHaveAttribute('aria-current', 'page');
     await expect(page.getByRole('navigation', { name: 'Dashboard mobile tabs' })).toHaveCount(0);
 
-    await tabs.getByRole('link', { name: 'Study' }).click();
+    await tabs.getByRole('link', { name: 'Courses' }).click();
     await expect(page).toHaveURL(/\/study(?:\/?$|\?)/);
-    await expect(tabs.getByRole('link', { name: 'Study' })).toHaveAttribute('aria-current', 'page');
+    await expect(tabs.getByRole('link', { name: 'Courses' })).toHaveAttribute('aria-current', 'page');
 
     await tabs.getByRole('link', { name: 'Abroad' }).click();
     await expect(page).toHaveURL(/\/tenant\/unipathway\/pathways/);
@@ -48,9 +48,9 @@ test('page navigation starts at top instead of carrying old scroll positions', a
 
   await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'auto' }));
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(100);
-  await tabs.getByRole('link', { name: 'Study' }).click();
+  await tabs.getByRole('link', { name: 'Courses' }).click();
   await expect(page).toHaveURL(/\/study(?:\/?$|\?)/);
-  await expect(page.getByRole('heading', { name: 'Qualifications, skills and your next step.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Find the right course for you.' })).toBeVisible();
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(10);
 });
 
@@ -110,7 +110,7 @@ test('employer partnership management and student vacancies remain private when 
 
 test('UniPathway tenant homepage uses approved brand instead of legacy unverified claims', async ({ page }) => {
   await page.goto('/tenant/unipathway');
-  await expect(page.locator('main h1').first()).toContainText('Online learning.');
+  await expect(page.locator('main h1').first()).toContainText('Learn online.');
   await expect(page.getByText('342+', { exact: true })).toHaveCount(0);
   await expect(page.getByText('95% Pass Rate', { exact: false })).toHaveCount(0);
   await expect(page.getByText('50–70%', { exact: false })).toHaveCount(0);
@@ -162,11 +162,11 @@ test('study Explore options buttons navigate to working academy and qualificatio
  await page.goto('/study');
  const consent=page.getByRole('dialog',{name:'Cookie preferences'});
  if(await consent.isVisible())await consent.getByRole('button',{name:'Reject all'}).click();
- await page.locator('article').filter({has:page.getByRole('heading',{name:'Accounting and finance',exact:true})}).getByRole('link',{name:'Explore options'}).click();
+ await page.locator('article').filter({has:page.getByRole('heading',{name:'Accounting and finance',exact:true})}).getByRole('link',{name:'View course details'}).click();
  await expect(page).toHaveURL(/\/finance-academy/);
  await expect(page.locator('main h1').first()).toBeVisible();
  await page.goto('/study');
- await page.locator('article').filter({has:page.getByRole('heading',{name:'UK business and professional diplomas'})}).getByRole('link',{name:'Explore options'}).click();
+ await page.locator('article').filter({has:page.getByRole('heading',{name:'UK business and professional diplomas'})}).getByRole('link',{name:'View course details'}).click();
  await expect(page).toHaveURL(/\/qualifications\?body=OTHM/);
  await expect(page.getByRole('button',{name:'OTHM',exact:true})).toHaveAttribute('aria-pressed','true');
 });
@@ -206,8 +206,11 @@ test('European explorer filters all EU and wider European countries and stays on
 
 test('education-first homepage leads to learning and European explorer rather than only visa sales', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('heading',{name:/Education comes first. International opportunity follows./i})).toBeVisible();
-  const action=page.getByRole('link',{name:/Explore all 27 EU countries/i});
+  await expect(page.locator('main h1')).toContainText('Learn online.');
+  const consent=page.getByRole('dialog',{name:'Cookie preferences'});
+  if(await consent.isVisible())await consent.getByRole('button',{name:'Reject all'}).click();
+  await page.getByRole('navigation',{name:'Main navigation'}).getByRole('button',{name:'Study Abroad'}).click();
+  const action=page.getByRole('link',{name:/Europe — all EU countries/i}).first();
   await expect(action).toBeVisible();
   await action.click();
   await expect(page).toHaveURL(/\/europe(?:\/?$|\?)/);

@@ -7,6 +7,7 @@ const sidebar=readFileSync('src/components/layout/DashboardSidebar.tsx','utf8');
 const classroom=readFileSync('src/pages/classroom/TeamsClassroom.tsx','utf8');
 const scheduler=readFileSync('src/pages/classroom/LiveClassScheduler.tsx','utf8');
 const materials=readFileSync('src/pages/learning/ModuleMaterials.tsx','utf8');
+const media=readFileSync('src/lib/learning/classMedia.ts','utf8');
 const archive=readFileSync('src/pages/student/LessonArchive.tsx','utf8');
 describe('UniPathway invitation-only Teams classrooms and academic materials',()=>{
  it('requires both enrolment and explicit invitation before learner join',()=>{
@@ -56,9 +57,10 @@ describe('UniPathway invitation-only Teams classrooms and academic materials',()
  it('surfaces provider/migration errors and never claims unpublished Teams recordings are playable',()=>{
   expect(classroom).toContain("if(classes.error){setError(classes.error.message)");
   expect(classroom).toContain('Microsoft Teams lobby, presenter and recording permissions must be configured separately.');
-  expect(scheduler).toContain('Automatic Graph scheduling and recording ingestion require');
-  expect(archive).toContain("a.publication_status!=='published'");
-  expect(archive).toContain('createSignedUrl(a.storage_reference,120)');
+  expect(scheduler).toContain('The calendar worker, Graph consent and Teams licences must be connected before delivery.');
+  expect(archive).toContain("a.publication_status==='published'");
+  expect(archive).toContain('classMediaUrl(a.storage_reference)');
+  expect(media).toContain('createSignedUrl(path,120)');
   expect(materials).toContain("createSignedUrl(m.object_path,120)");
   expect(materials).toContain("publication_status:'draft'");
  });

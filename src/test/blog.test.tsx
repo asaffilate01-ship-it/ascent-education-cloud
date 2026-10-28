@@ -26,7 +26,9 @@ it('shares the published canonical URL without preview origins or tracking param
   const canonical = `${SITE_URL}/blog/${post.slug}`;
   expect(screen.getByRole('link', { name: 'Share on Facebook' })).toHaveAttribute('href', `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(canonical)}`);
   expect(document.querySelector('meta[property="og:image"]')).toHaveAttribute('content', SITE_URL + post.cover);
-  expect(screen.getAllByRole('img')).toHaveLength(5); // Cover, related covers, footer logo.
+  const article = screen.getByRole('article');
+  expect(within(article).getAllByRole('img')).toHaveLength(4); // Cover and three related covers; footer partners are independent.
+  expect(within(article).getByAltText(post.coverAlt)).toHaveAttribute('src', post.cover);
   expect(screen.getByText('Powered by iTechLounge')).toBeInTheDocument();
   expect(screen.getByText('ITech Education Ltd')).toBeInTheDocument();
 });
