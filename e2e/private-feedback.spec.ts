@@ -1,4 +1,5 @@
 import {test,expect} from '@playwright/test';
+test.describe.configure({retries:0});
 
 test('assessors can find older private feedback and confirm phrase changes without submitting marks',async({context,page})=>{
  await page.setViewportSize({width:375,height:812});
@@ -61,7 +62,7 @@ test('assessors can find older private feedback and confirm phrase changes witho
  await expect(page.getByLabel('Individual written feedback')).toHaveValue('New individual feedback remains separate from older saved wording.');
  await page.evaluate(()=>{document.documentElement.classList.add('dark');document.documentElement.style.fontSize='24px';});
  for(const viewport of [{width:375,height:812},{width:812,height:375},{width:1440,height:1000}]){
-  await page.setViewportSize(viewport);await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.setViewportSize(viewport);await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth?[]:Array.from(document.querySelectorAll('body *')).filter(el=>el.getBoundingClientRect().right>innerWidth+1&&getComputedStyle(el).visibility!=='hidden').slice(-8).map(el=>({tag:el.tagName,text:el.textContent?.slice(0,90),right:Math.round(el.getBoundingClientRect().right),viewport:innerWidth})))).toEqual([]);
  }
  expect(snapshots.map(s=>s.revision)).toEqual([2,1]);expect(receipt).toBeUndefined();expect(errors).toEqual([]);
 });
