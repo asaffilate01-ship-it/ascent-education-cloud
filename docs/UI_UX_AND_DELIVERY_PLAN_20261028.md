@@ -69,3 +69,8 @@ The next substantial assessment capabilities remain geometric PDF annotations, c
 ## DOCX review phase
 
 The next source gap now has a bounded main-document DOCX text view: local paragraph/table references, search, clear loading/fallback states and no external viewer. UI UX Pro Max's document-preview recovery guidance informs the controls. This completes searchable text review only; full Word layout rendering, geometric annotations, multi-thread comments and institution-approved shared feedback remain separate work. The hosted/provider/device release gates above are unchanged.
+
+
+## Private feedback workflow fixes
+
+Complete paging replaces the former 200-phrase search ceiling. Account/centre/role remounts isolate unsaved wording and late responses. Confirmed mutation receipts, explicit recovery after uncertain writes, exact-duplicate detection after reload, scoped deletion and insertion-result feedback close identified source gaps. UI UX Pro Max guidance informs pagination, contextual counts and no-result recovery. The original Supabase permissions remain unchanged; institution-shared approved feedback still needs a separate governance and persistence phase.
