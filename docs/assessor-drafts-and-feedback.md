@@ -4,7 +4,7 @@ Assessors can now save unfinished criterion scores, evidence citations, feedback
 
 The editor checks for an existing draft before allowing changes. A failed read blocks editing instead of treating an unknown draft as empty. Save requests include the loaded revision. A newer saved revision produces a conflict, retaining local edits until the assessor explicitly reloads. Reload and switching submissions require confirmation if there are unsaved edits. The UI reports the saved revision/time. This is not automatic saving: users should save before navigating away.
 
-The private feedback library supports creating, searching, inserting and deleting generic phrases. Phrases are private to the assessor and centre, not shared institutionally. No learner evidence or existing individual feedback is automatically copied into the library. Inserted wording must be adapted to the learner; existing bracket-placeholder checks and human judgement still apply. Up to 200 recent phrases are shown; a full managed institutional feedback catalogue is a later phase.
+The private feedback library supports creating, searching, inserting and deleting generic phrases. Phrases are private to the assessor and centre, not shared institutionally. No learner evidence or existing individual feedback is automatically copied into the library. Inserted wording must be adapted to the learner; existing bracket-placeholder checks and human judgement still apply. The private library loads complete owner/centre-filtered pages and presents ten matching phrases at a time; a managed institutional feedback catalogue remains a later phase.
 
 ## Permissions and storage
 
@@ -24,3 +24,14 @@ The browser integration uses a synthetic signed-in assessor/backend at 390px and
 The exact migration passed a live rollback preflight and was transactionally deployed with its migration ledger entry. Production table/RLS/grant checks followed. No real student drafts, grades, emails or invitations were created. Real staff acceptance and frontend publishing are separate from these checks.
 
 Still outstanding: PDF/DOCX inline annotation, shared approved feedback libraries, content-version history for drafts, full lab/media/provider activation and other integrations listed in the connection checklist.
+
+
+## Private library reliability and navigation — 28 October 2026
+
+The library now mounts within an account/centre/active-role boundary. Changing that boundary clears phrase search, list, unsaved wording, messages and operations; late responses from the old mount cannot clear another account's draft. Reads use complete, ordered 250-record requests, fail closed on any page error and render ten matching cards per page. Search includes older phrases, trims whitespace and has explicit empty/reset states with focus restoration and contextual counts.
+
+Creating a phrase requires its returned id/title/body receipt before reporting success. An uncertain response retains wording, blocks further writes and requires explicit reload. The reloaded snapshot identifies exact title/wording duplicates; this is a client safeguard, not a database uniqueness or exactly-once guarantee. Generic new wording can still be edited while loading is unavailable. Refreshing the list does not discard it.
+
+Deletion includes the displayed id plus owner and centre filters and requires exactly that returned id. Failed or zero-row deletion clears verified list state rather than claiming success. Inserted phrases are only local draft edits: insertion can decline (for example at the feedback length limit), and the library reports that outcome accurately. No phrase action submits marking or releases a result.
+
+The existing RLS/role/grant model is unchanged; no migration or broader sharing is introduced. Shared institution-approved phrases, editing/version history and approval governance remain separate capabilities. Nine library tests cover paging, recovery, account/late-response isolation, mutation receipts, duplicate safeguards and disabled actions. The existing 31-check PostgreSQL permissions/concurrency fixture passes. A synthetic assessor browser journey checks older-phrase discovery, insert/create/delete, phone/landscape/desktop layout and zero human-mark submissions.
