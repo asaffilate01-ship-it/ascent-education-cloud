@@ -1,3 +1,4 @@
+import CentreFeedbackLibrary from '@/components/assessment/CentreFeedbackLibrary';
 import {allocatedAssessmentRows,assessmentRowsByIds} from '@/lib/assessment/queueRows';
 import MarkHistory from '@/components/assessment/MarkHistory';
 import EvidenceReview from '@/components/assessment/EvidenceReview';
@@ -100,6 +101,7 @@ function QualityWorkspace(){
   <section className="mb-5 rounded-xl border bg-primary/5 p-4"><h2 className="flex items-center gap-2 font-semibold"><ShieldCheck className="size-5"/>No mark is final without human QA</h2>
    <p className="mt-2 text-sm text-muted-foreground">The assigned independent assessor's individual marks and evidence must be checked against the published criteria. This reviewer is a different user from the marker and teaching lecturer. AI remains advisory; an IQA must record reasons and explicitly release the approved revision.</p>
   </section>
+  <CentreFeedbackLibrary disabled={!!busy}/>
   {loading&&<p role="status">Verifying your own QA allocations…</p>}
   {error&&<p role="alert" className="rounded-xl border border-destructive p-4">{error}</p>}
   {!loading&&!error&&<div className="grid gap-5 lg:grid-cols-[minmax(15rem,1fr)_minmax(0,1.7fr)]">
