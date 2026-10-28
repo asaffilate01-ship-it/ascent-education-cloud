@@ -153,7 +153,7 @@ function MarkerWorkspace(){
  const actionable=attempts.filter(a=>['submitted','qa_rejected'].includes(a.status));
  const visible=attempts.filter(a=>(filter==='all'||['submitted','qa_rejected'].includes(a.status))&&`${briefs.find(b=>b.id===a.brief_id)?.title||''} ${a.id}`.toLowerCase().includes(query.toLowerCase()));
  const completed=rubric.filter(c=>criterionComplete(scores[c.criterion_code],Number(c.max_points))).length;
- return <DashboardLayout title="Independent Marker Workspace" subtitle="Mark curriculum evidence separately from the lecturer, using Omniqora only as a private assistant">
+ return <DashboardLayout title="Independent Marker Workspace" subtitle="Mark curriculum evidence separately from the lecturer, using Omniqora only as a private assistant"><div className="min-w-0 [&_button]:max-w-full [&_button]:whitespace-normal [&_button]:[overflow-wrap:anywhere]">
   <section className="mb-5 rounded-xl border bg-primary/5 p-4"><h2 className="flex items-center gap-2 font-semibold"><ShieldCheck className="size-5"/>AI suggestions are not grades</h2>
    <p className="mt-2 text-sm text-muted-foreground">You—not the teaching lecturer or AI—must score every criterion and cite actual submitted evidence. Document missing outcomes and your own reasoning. A separate IQA must approve or reject the marked submission before the student sees any score. Where the approved policy permits, request revisions before the final cutoff.</p>
   </section>
@@ -228,5 +228,5 @@ function MarkerWorkspace(){
     </>}
    </section>
   </div>}
- </DashboardLayout>;
+ </div></DashboardLayout>;
 }
