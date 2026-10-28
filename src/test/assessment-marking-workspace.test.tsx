@@ -3,7 +3,7 @@ import {MemoryRouter} from 'react-router-dom';
 import {it,expect,vi,beforeEach,afterEach} from 'vitest';
 import IndependentMarkerQueue from '@/pages/assessor/IndependentMarkerQueue';
 import {evidenceCitation,appendFeedback,criterionComplete} from '@/lib/assessment/marking';
-const state=vi.hoisted(()=>({user:{id:'marker',tenantId:'centre'},rpc:vi.fn(),error:vi.fn(),success:vi.fn(),draft:null as any,draftError:false}));
+const state=vi.hoisted(()=>({user:{id:'marker',tenantId:'centre'},rpc:vi.fn(),error:vi.fn(),success:vi.fn(),history:[] as any[],draft:null as any,draftError:false}));
 vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:state.user})}));
 vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:any)=><main>{children}</main>}));
 vi.mock('@/components/assessment/CourseworkFiles',()=>({default:({onCite}:any)=>onCite?<button onClick={()=>onCite('A','work.pdf, page 2: “Supporting calculation”')}>Use test document reference</button>:null}));
@@ -11,10 +11,10 @@ vi.mock('@/integrations/supabase/client',()=>({supabase:{functions:{invoke:vi.fn
 vi.mock('sonner',()=>({toast:{success:state.success,error:state.error}}));
 vi.mock('@/lib/db',()=>({db:{rpc:state.rpc,from:(table:string)=>{
  const attempts=['one','two','done'].map((id,i)=>({id,brief_id:'brief',student_id:`student${i}`,attempt_no:1,evidence_text:`Original evidence ${id}\nSecond evidence line`,status:id==='done'?'marked':'submitted',submitted_at:'2026-10-26T09:00:00Z'}));
- const tables:any={unipathway_assessment_allocations:attempts.map(a=>({attempt_id:a.id,marker_id:'marker'})),unipathway_assessment_attempts:attempts,unipathway_assessment_ai_drafts:[],unipathway_assessment_briefs:[{id:'brief',title:'English assessment',max_attempts:1}],unipathway_assessment_criteria:['A','B'].map(code=>({id:code,brief_id:'brief',criterion_code:code,criterion_description:'Explain your answer',learning_outcome:'Writing',max_points:50}))};
+ const tables:any={uni_marking_draft_events:state.history,unipathway_assessment_allocations:attempts.map(a=>({attempt_id:a.id,marker_id:'marker'})),unipathway_assessment_attempts:attempts,unipathway_assessment_ai_drafts:[],unipathway_assessment_briefs:[{id:'brief',title:'English assessment',max_attempts:1}],unipathway_assessment_criteria:['A','B'].map(code=>({id:code,brief_id:'brief',criterion_code:code,criterion_description:'Explain your answer',learning_outcome:'Writing',max_points:50}))};
  const q:any={then:(resolve:any)=>Promise.resolve({data:state.user.id==='marker'?(table==='uni_marking_drafts'?(state.draft?[state.draft]:[]):tables[table]||[]):[],error:table==='uni_marking_drafts'&&state.draftError?{message:'unavailable'}:null}).then(resolve)};for(const m of ['select','eq','in','order','limit','range'])q[m]=()=>q;return q;
 }}}));
-beforeEach(()=>{state.user={id:'marker',tenantId:'centre'};state.draft=null;state.draftError=false;state.rpc.mockReset().mockResolvedValue({error:null});state.error.mockReset();state.success.mockReset();vi.spyOn(window,'confirm').mockReturnValue(true);});afterEach(()=>{cleanup();vi.restoreAllMocks();});
+beforeEach(()=>{state.user={id:'marker',tenantId:'centre'};state.draft=null;state.history=[];state.draftError=false;state.rpc.mockReset().mockResolvedValue({error:null});state.error.mockReset();state.success.mockReset();vi.spyOn(window,'confirm').mockReturnValue(true);});afterEach(()=>{cleanup();vi.restoreAllMocks();});
 const show=(path='/assessor/queue')=>render(<MemoryRouter initialEntries={[path]}><IndependentMarkerQueue/></MemoryRouter>);
 const open=async()=>{show('/assessor/queue?attempt=one');await screen.findByText('Original evidence one');await screen.findByLabelText('Individual written feedback');};
 it('bounds evidence citations to real submitted lines without truncating a quote',()=>{expect(evidenceCitation('First line\nSecond line',1,2)).toBe('Submitted text, lines 1–2: “First line\nSecond line”');for(const range of [[0,1],[2,1],[1,3],[1.1,2]])expect(evidenceCitation('First\nSecond',...range as [number,number])).toBeNull();expect(evidenceCitation('x'.repeat(901),1,1)).toBeNull();expect(evidenceCitation('',1,1)).toBeNull();});
@@ -51,4 +51,31 @@ it('offers private saved history for an allocated closed attempt without reopeni
  show('/assessor/queue?attempt=done');await screen.findByText('Original evidence done');
  expect(screen.getByText('View private draft history')).toBeInTheDocument();expect(screen.queryByLabelText('Individual written feedback')).toBeNull();
  fireEvent.click(screen.getByText('View private draft history'));await screen.findByText(/No saved revisions are available/);expect(state.rpc).not.toHaveBeenCalled();
+});
+
+const older=()=>({id:'old',revision:2,created_at:'2026-10-27T10:00:00Z',criteria:{A:{code:'A',points:4,reason:'Earlier reasoning',evidence:'Earlier evidence',missing:'Earlier gap'}},feedback:'Earlier saved feedback',guidance:'Earlier guidance'});
+async function history(){fireEvent.click(screen.getByText('View private draft history'));await screen.findByText(/Draft revision 2 ·/);}
+it('copies an older snapshot only after confirmation and saves it against the latest revision as new work',async()=>{
+ state.draft={...older(),revision:5,updated_at:'2026-10-28T10:00:00Z',feedback:'Latest wording'};state.history=[older()];state.rpc.mockImplementation(receipt());await open();await history();
+ fireEvent.change(screen.getByLabelText('Individual written feedback'),{target:{value:'Unsaved individual edits'}});
+ vi.mocked(window.confirm).mockReturnValue(false);fireEvent.click(screen.getByText('Use revision 2 in editor'));
+ expect(screen.getByLabelText('Individual written feedback')).toHaveValue('Unsaved individual edits');expect(screen.getByText(/Revision 2 was not loaded/)).toBeInTheDocument();expect(state.rpc).not.toHaveBeenCalled();
+ vi.mocked(window.confirm).mockReturnValue(true);fireEvent.click(screen.getByText('Use revision 2 in editor'));
+ expect(window.confirm).toHaveBeenLastCalledWith(expect.stringContaining('replaces your unsaved edits'));
+ expect(screen.getByLabelText('Individual written feedback')).toHaveValue('Earlier saved feedback');expect(screen.getAllByLabelText('Evidence location or quoted excerpt')[0]).toHaveValue('Earlier evidence');
+ expect(screen.getByText(/Revision 2 copied into unsaved editor/)).toBeInTheDocument();expect(screen.getByText(/Draft revision 5 saved/)).toBeInTheDocument();expect(state.rpc).not.toHaveBeenCalled();
+ fireEvent.click(screen.getByText('Save private draft'));await screen.findByText(/Draft revision 6 saved/);
+ expect(state.rpc).toHaveBeenCalledExactlyOnceWith('save_uni_marking_draft',expect.objectContaining({p_attempt:'one',p_revision:5,p_feedback:'Earlier saved feedback',p_guidance:'Earlier guidance'}));expect(state.history[0].revision).toBe(2);
+});
+it('rejects saved content incompatible with the current rubric without overwriting current edits',async()=>{
+ state.history=[{...older(),criteria:{X:{...older().criteria.A,code:'X'}}}];await open();await history();fireEvent.change(screen.getByLabelText('Individual written feedback'),{target:{value:'Keep current wording'}});
+ fireEvent.click(screen.getByText('Use revision 2 in editor'));expect(screen.getByLabelText('Individual written feedback')).toHaveValue('Keep current wording');expect(state.error).toHaveBeenCalledWith(expect.stringContaining('current rubric'));expect(window.confirm).not.toHaveBeenCalled();expect(state.rpc).not.toHaveBeenCalled();
+});
+it('never offers restore controls for closed marking or an uncertain draft save',async()=>{
+ state.history=[older()];const view=show('/assessor/queue?attempt=done');await screen.findByText('Original evidence done');await history();expect(screen.queryByText('Use revision 2 in editor')).toBeNull();view.unmount();
+ state.rpc.mockResolvedValue({error:Error('Save was interrupted')});await open();await history();expect(screen.getByText('Use revision 2 in editor')).toBeInTheDocument();fireEvent.change(screen.getByLabelText('Individual written feedback'),{target:{value:'Retain this'}});fireEvent.click(screen.getByText('Save private draft'));await screen.findByText(/Save was interrupted/);expect(screen.queryByText('Use revision 2 in editor')).toBeNull();
+});
+it('retains restored wording after a stale revision conflict and never submits marking automatically',async()=>{
+ state.draft={...older(),revision:5,updated_at:'2026-10-28T10:00:00Z'};state.history=[older()];state.rpc.mockResolvedValue({error:{message:'A newer draft exists. Reload it before saving.'}});await open();await history();fireEvent.click(screen.getByText('Use revision 2 in editor'));fireEvent.click(screen.getByText('Save private draft'));
+ await screen.findByText(/A newer draft exists/);expect(screen.getByLabelText('Individual written feedback')).toHaveValue('Earlier saved feedback');expect(screen.getByText('Save private draft')).toBeDisabled();expect(state.rpc.mock.calls.every(([name])=>name==='save_uni_marking_draft')).toBe(true);
 });
