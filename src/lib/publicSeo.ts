@@ -1,4 +1,4 @@
-import catalogue from '../data/public-seo.json' with {type:'json'};
+import catalogue from '../data/public-seo.json';
 export const SITE_URL='https://unipathway.pk';
 export type PageSeo={title:string;description:string;keywords:string[]};
 export const publicSeo:Record<string,PageSeo>={...catalogue};
