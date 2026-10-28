@@ -1,0 +1,31 @@
+import {cleanup,fireEvent,render,screen} from '@testing-library/react';
+import {MemoryRouter} from 'react-router-dom';
+import {afterEach,expect,it,vi} from 'vitest';
+import LoginPage from '@/pages/auth/LoginPage';
+import RegisterPage from '@/pages/auth/RegisterPage';
+vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:null}),ROLE_HOME:{}}));
+vi.mock('@/integrations/supabase/client',()=>({supabase:{auth:{}}}));
+vi.mock('@/integrations/lovable/index',()=>({lovable:{auth:{}}}));
+afterEach(cleanup);
+it('labels login fields and exposes a named password toggle without losing typed text',()=>{
+ render(<MemoryRouter><LoginPage/></MemoryRouter>);
+ expect(screen.getByLabelText('Email')).toHaveAttribute('autocomplete','username');
+ const password=screen.getByLabelText('Password',{exact:true});
+ expect(password).toHaveAttribute('autocomplete','current-password');
+ fireEvent.change(password,{target:{value:'test-only-example'}});
+ const toggle=screen.getByRole('button',{name:'Show password'});
+ fireEvent.click(toggle);expect(password).toHaveAttribute('type','text');expect(password).toHaveValue('test-only-example');
+ expect(screen.getByRole('button',{name:'Hide password'})).toHaveAttribute('aria-pressed','true');
+ fireEvent.click(screen.getByRole('button',{name:'Hide password'}));expect(password).toHaveAttribute('type','password');
+});
+it('labels registration fields and keeps centre approval claims conditional',()=>{
+ render(<MemoryRouter><RegisterPage/></MemoryRouter>);
+ expect(screen.queryByText('OTHM, QUALIFI & IAB accredited')).toBeNull();
+ fireEvent.click(screen.getByRole('button',{name:/Continue/}));
+ expect(screen.getByLabelText('Full Name *')).toHaveAttribute('autocomplete','name');
+ expect(screen.getByLabelText('Email *')).toHaveAttribute('autocomplete','email');
+ expect(screen.getByLabelText('Phone',{exact:true})).toHaveAttribute('autocomplete','tel');
+ expect(screen.getByLabelText('Password *')).toHaveAttribute('autocomplete','new-password');
+ fireEvent.click(screen.getByRole('button',{name:'Show password'}));
+ expect(screen.getByLabelText('Password *')).toHaveAttribute('type','text');
+});

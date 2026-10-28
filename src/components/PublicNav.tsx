@@ -47,6 +47,9 @@ const linkCls = (active: boolean) => cn('relative inline-flex min-h-11 items-cen
 
 export default function PublicNav() {
   const headerRef = useRef<HTMLElement>(null);
+  const mobileTrigger = useRef<HTMLButtonElement>(null);
+  const coursesTrigger = useRef<HTMLButtonElement>(null);
+  const destinationsTrigger = useRef<HTMLButtonElement>(null);
   const [courseQuery, setCourseQuery] = useState('');
   const matchingCourses = studyLinks.filter(link => `${link.label} ${link.detail}`.toLowerCase().includes(courseQuery.trim().toLowerCase()));
   const [open, setOpen] = useState(false);
@@ -63,12 +66,12 @@ export default function PublicNav() {
   useEffect(() => { document.body.style.overflow = open ? 'hidden' : ''; return () => { document.body.style.overflow = ''; }; }, [open]);
 
   useEffect(() => {
-    const close = (event: KeyboardEvent) => { if (event.key === 'Escape') { setOpen(false); setStudyOpen(false); setDestinationsOpen(false); headerRef.current?.querySelector<HTMLButtonElement>('button[aria-label="Close menu"]')?.focus(); } };
+    const close = (event: KeyboardEvent) => { if (event.key === 'Escape') { const trigger = open ? mobileTrigger : studyOpen ? coursesTrigger : destinationsOpen ? destinationsTrigger : null; setOpen(false); setStudyOpen(false); setDestinationsOpen(false); trigger?.current?.focus(); } };
     const outside = (event: PointerEvent) => { if (!headerRef.current?.contains(event.target as Node)) { setStudyOpen(false); setDestinationsOpen(false); } };
     document.addEventListener('keydown', close);
     document.addEventListener('pointerdown', outside);
     return () => { document.removeEventListener('keydown', close); document.removeEventListener('pointerdown', outside); };
-  }, []);
+  }, [open, studyOpen, destinationsOpen]);
   useEffect(() => {
     if (!open) return;
     const containFocus = (event: KeyboardEvent) => {
@@ -87,7 +90,7 @@ export default function PublicNav() {
       <nav aria-label="Main navigation" className="hidden items-center gap-1 lg:flex">
         <Link to="/" className={linkCls(pathname === '/')}>Home</Link>
         <div className="relative">
-          <button type="button" aria-haspopup="true" aria-expanded={studyOpen} onClick={() => { setStudyOpen(!studyOpen); setDestinationsOpen(false); }} className={cn(linkCls(studyOpen), 'inline-flex items-center gap-1')}>Courses <ChevronDown className={cn('size-4 transition-transform', studyOpen && 'rotate-180')} /></button>
+          <button ref={coursesTrigger} type="button" aria-haspopup="true" aria-expanded={studyOpen} onClick={() => { setStudyOpen(!studyOpen); setDestinationsOpen(false); }} className={cn(linkCls(studyOpen), 'inline-flex items-center gap-1')}>Courses <ChevronDown className={cn('size-4 transition-transform', studyOpen && 'rotate-180')} /></button>
           {studyOpen && <div className="absolute left-1/2 top-full w-[760px] -translate-x-1/2 pt-3 animate-in fade-in-0 slide-in-from-top-1"><div className="grid grid-cols-[1fr_220px] overflow-hidden rounded-2xl border border-border bg-card shadow-surface-xl">
             <div className="grid max-h-[min(75vh,620px)] grid-cols-2 gap-1 overflow-y-auto p-3">
               {primaryStudyLinks.map(({ label, detail, to, icon: Icon }) => <Link key={label} to={to} className="group/item flex gap-3 rounded-xl p-3 transition-colors hover:bg-secondary"><span className="grid size-9 shrink-0 place-items-center rounded-lg bg-success/10 text-success transition-colors group-hover/item:bg-success group-hover/item:text-success-foreground"><Icon className="size-4" /></span><span><span className="block text-sm font-bold text-foreground">{label}</span><span className="mt-0.5 block text-xs leading-snug text-muted-foreground">{detail}</span></span></Link>)}
@@ -96,7 +99,7 @@ export default function PublicNav() {
           </div></div>}
         </div>
         <div className="relative">
-          <button type="button" aria-haspopup="true" aria-expanded={destinationsOpen} onClick={() => { setDestinationsOpen(!destinationsOpen); setStudyOpen(false); }} className={cn(linkCls(destinationsOpen), 'inline-flex items-center gap-1')}>Study Abroad <ChevronDown className={cn('size-4 transition-transform', destinationsOpen && 'rotate-180')} /></button>
+          <button ref={destinationsTrigger} type="button" aria-haspopup="true" aria-expanded={destinationsOpen} onClick={() => { setDestinationsOpen(!destinationsOpen); setStudyOpen(false); }} className={cn(linkCls(destinationsOpen), 'inline-flex items-center gap-1')}>Study Abroad <ChevronDown className={cn('size-4 transition-transform', destinationsOpen && 'rotate-180')} /></button>
           {destinationsOpen && <div className="absolute left-1/2 top-full w-[500px] -translate-x-1/2 pt-3 animate-in fade-in-0 slide-in-from-top-1"><div className="grid grid-cols-2 gap-1 rounded-2xl border border-border bg-card p-3 shadow-surface-xl">
             {destinationLinks.map(({ label, detail, to }) => <Link key={to} to={to} className="rounded-xl p-3 transition-colors hover:bg-secondary"><span className="block text-sm font-bold text-foreground">{label}</span><span className="mt-0.5 block text-xs text-muted-foreground">{detail}</span></Link>)}
           </div></div>}
@@ -105,14 +108,14 @@ export default function PublicNav() {
         <Link to="/contact" className={linkCls(pathname === '/contact')}>Contact</Link>
       </nav>
       <div className="hidden items-center gap-2 lg:flex"><Button variant="ghost" className="rounded-full font-semibold" asChild><Link to="/login">Sign in</Link></Button><Button className="rounded-full px-5 shadow-surface-lg" asChild><Link to="/apply">Apply now <ArrowRight /></Link></Button></div>
-      <Button variant="outline" size="icon" className="rounded-full lg:hidden" aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open} onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</Button>
+      <Button ref={mobileTrigger} variant="outline" size="icon" className="rounded-full lg:hidden" aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open} onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</Button>
     </div>
     {open && <nav aria-label="Mobile navigation" className="h-[calc(100dvh-4rem)] overflow-y-auto border-t border-border bg-background px-4 pb-28 pt-4 animate-in fade-in-0 slide-in-from-top-2 sm:h-[calc(100dvh-5rem)] sm:px-8 lg:hidden">
       <div className="mb-6 grid grid-cols-2 gap-2">{[['All courses','/study'],['Contact admissions','/contact'],['About UniPathway','/about'],['Student sign in','/login']].map(([label,to])=><Link key={to} to={to} className="flex min-h-12 items-center rounded-xl border bg-card px-4 text-sm font-semibold">{label}</Link>)}</div>
       <label htmlFor="mobile-course-search" className="text-label">Find a course or service</label>
       <input id="mobile-course-search" type="search" value={courseQuery} onChange={e => setCourseQuery(e.target.value)} placeholder="Try IELTS, tuition, technology…" className="mt-2 min-h-12 w-full rounded-xl border border-border bg-card px-4 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" />
       <p role="status" className="mt-2 text-xs text-muted-foreground">{courseQuery ? `${matchingCourses.length} matching options` : 'Explore our most popular courses'}</p>
-      {courseQuery && matchingCourses.length === 0 && <p className="mt-3 text-sm">No matches. <Link className="underline" to="/contact">Ask an adviser for help</Link>.</p>}
+      {courseQuery && matchingCourses.length === 0 && <p className="mt-3 text-sm">No matches. <button type="button" className="min-h-11 underline font-semibold" onClick={()=>{setCourseQuery('');document.getElementById('mobile-course-search')?.focus();}}>Clear course search</button> or <Link className="underline" to="/contact">Ask an adviser for help</Link>.</p>}
       <div className="mt-3 grid gap-2 sm:grid-cols-2">{(courseQuery ? matchingCourses : primaryStudyLinks).map(({ label, detail, to, icon: Icon }) => <Link key={to} to={to} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 active:scale-[0.99] transition-transform"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-success/10 text-success"><Icon className="size-5" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-bold">{label}</span><span className="block text-xs leading-relaxed text-muted-foreground">{detail}</span></span><ArrowRight className="size-4 shrink-0 text-muted-foreground" /></Link>)}</div>
       <details className="mt-6 rounded-xl border p-4"><summary className="cursor-pointer py-2 font-semibold">Explore study-abroad destinations</summary>
       <div className="mt-3 flex flex-wrap gap-2">{destinationLinks.map(({ label, to }) => <Link key={to} to={to} className="rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold">{label}</Link>)}</div>

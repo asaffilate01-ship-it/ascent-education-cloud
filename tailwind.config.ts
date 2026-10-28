@@ -14,6 +14,7 @@ export default {
     },
     extend: {
       colors: {
+        "gradient-foreground": "hsl(var(--gradient-foreground))",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

@@ -97,10 +97,10 @@ export default function RegisterPage() {
           <div className="flex items-center gap-3 mb-16">
             <span className="inline-flex rounded-xl bg-white p-2"><BrandLogo className="h-12" showTagline /></span>
           </div>
-          <h1 className="text-4xl font-bold text-primary-foreground leading-tight max-w-md">
+          <h1 className="text-4xl font-bold text-gradient-foreground leading-tight max-w-md">
             Join UniPathway
           </h1>
-          <p className="text-primary-foreground/70 mt-4 text-lg max-w-md leading-relaxed">
+          <p className="text-gradient-foreground/90 mt-4 text-lg max-w-md leading-relaxed">
             {accountType === 'student' && 'Start your journey to UK qualifications today.'}
             {accountType === 'agent' && 'Apply for recruitment-agent approval; commission payments require signed agreements and verified referrals.'}
             
@@ -108,13 +108,13 @@ export default function RegisterPage() {
         </div>
         <div className="space-y-3">
           {[
-            { icon: CheckCircle, text: 'OTHM, QUALIFI & IAB accredited' },
+            { icon: CheckCircle, text: 'Qualification routes subject to centre approval' },
             { icon: CheckCircle, text: 'University progression pathways' },
             { icon: CheckCircle, text: 'Virtual campus with live classes' },
           ].map((f) => (
             <div key={f.text} className="flex items-center gap-2">
-              <f.icon className="w-4 h-4 text-primary-foreground/80" />
-              <span className="text-primary-foreground/80 text-sm">{f.text}</span>
+              <f.icon className="w-4 h-4 text-gradient-foreground/90" />
+              <span className="text-gradient-foreground/90 text-sm">{f.text}</span>
             </div>
           ))}
         </div>
@@ -191,46 +191,46 @@ export default function RegisterPage() {
 
               <form onSubmit={handleRegister} className="space-y-4">
                 <div>
-                  <label className="text-label mb-1.5 block">Full Name *</label>
+                  <label htmlFor="register-name" className="text-label mb-1.5 block">Full Name *</label>
                   <input
                     type="text"
-                    value={formData.name}
+                    id="register-name" name="name" autoComplete="name" value={formData.name}
                     onChange={(e) => updateField('name', e.target.value)}
                     placeholder="Enter your full name"
                     className="w-full bg-secondary text-sm px-4 py-3 rounded-lg outline-none text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
                 <div>
-                  <label className="text-label mb-1.5 block">Email *</label>
+                  <label htmlFor="register-email" className="text-label mb-1.5 block">Email *</label>
                   <input
                     type="email"
-                    value={formData.email}
+                    id="register-email" name="email" autoComplete="email" value={formData.email}
                     onChange={(e) => updateField('email', e.target.value)}
                     placeholder="you@example.com"
                     className="w-full bg-secondary text-sm px-4 py-3 rounded-lg outline-none text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
                 <div>
-                  <label className="text-label mb-1.5 block">Phone</label>
+                  <label htmlFor="register-phone" className="text-label mb-1.5 block">Phone</label>
                   <input
                     type="tel"
-                    value={formData.phone}
+                    id="register-phone" name="phone" autoComplete="tel" value={formData.phone}
                     onChange={(e) => updateField('phone', e.target.value)}
                     placeholder="+92 300 1234567"
                     className="w-full bg-secondary text-sm px-4 py-3 rounded-lg outline-none text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
                 <div>
-                  <label className="text-label mb-1.5 block">Password *</label>
+                  <label htmlFor="register-password" className="text-label mb-1.5 block">Password *</label>
                   <div className="relative">
                     <input
                       type={showPassword ? 'text' : 'password'}
-                      value={formData.password}
+                      id="register-password" name="password" autoComplete="new-password" value={formData.password}
                       onChange={(e) => updateField('password', e.target.value)}
-                      placeholder="Min 8 characters"
+                      placeholder="Min 8 characters" style={{paddingRight: '3.5rem'}}
                       className="w-full bg-secondary text-sm px-4 py-3 rounded-lg outline-none text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20"
                     />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? 'Hide password' : 'Show password'} aria-pressed={showPassword} className="absolute right-1 top-1/2 grid min-h-11 min-w-11 -translate-y-1/2 place-items-center rounded-lg text-muted-foreground">
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
