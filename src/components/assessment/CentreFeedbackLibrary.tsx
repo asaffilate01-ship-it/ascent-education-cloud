@@ -18,6 +18,7 @@ function Library({onInsert,disabled=false}:Props){
  const [open,setOpen]=useState(false),[items,setItems]=useState<Phrase[]>([]),[query,setQuery]=useState(''),[filter,setFilter]=useState(reviewer?'proposed':'approved'),[page,setPage]=useState(0);
  const [title,setTitle]=useState(''),[body,setBody]=useState(''),[references,setReferences]=useState<Record<string,string>>({});
  const [busy,setBusy]=useState(false),[loading,setLoading]=useState(false),[verified,setVerified]=useState(false),[refresh,setRefresh]=useState(0),[error,setError]=useState(''),[notice,setNotice]=useState('');
+ const insertion=useRef({onInsert,disabled});insertion.current={onInsert,disabled};
  const active=useRef(true),operation=useRef(false),request=useRef<{id:string;title:string;body:string}>(),search=useRef<HTMLInputElement>(null);
  useEffect(()=>{active.current=true;return()=>{active.current=false;};},[]);
  useEffect(()=>{
@@ -66,7 +67,9 @@ function Library({onInsert,disabled=false}:Props){
   try{
    const r=await db.from('uni_centre_feedback').select(columns).eq('id',row.id).eq('tenant_id',tenant).eq('status','approved').single();if(!active.current)return;
    if(r.error||r.data?.id!==row.id||r.data.status!=='approved'||r.data.tenant_id!==tenant||r.data.body!==row.body||r.data.revision!==row.revision)throw Error('Approval changed');
-   setNotice(onInsert(row.body)?'Approved wording inserted as an unsaved draft edit. Tailor it to this learner and save separately.':'Wording was not inserted. Your marking feedback is unchanged.');
+   const target=insertion.current;
+   if(target.disabled||!target.onInsert){setNotice('Wording was not inserted. Your marking feedback is unchanged.');return;}
+   setNotice(target.onInsert(row.body)?'Approved wording inserted as an unsaved draft edit. Tailor it to this learner and save separately.':'Wording was not inserted. Your marking feedback is unchanged.');
   }catch{if(active.current){invalidate();setError('Approval could not be rechecked. No wording was inserted. Reload the catalogue; it may have changed or been withdrawn.');}}finally{pending(false);}
  }
  return <details onToggle={e=>setOpen(e.currentTarget.open)} className="my-4 min-w-0 rounded-xl border bg-card p-4 [&_button]:max-w-full [&_button]:whitespace-normal [overflow-wrap:anywhere]">

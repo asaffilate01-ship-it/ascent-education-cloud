@@ -55,3 +55,12 @@ it('clears form state across account boundaries and suppresses a late proposal r
  state.user={id:'other',tenantId:'other-centre',role:'assessor'};view.rerender(<CentreFeedbackLibrary onInsert={()=>true}/>);await open();expect(screen.getByLabelText('Centre phrase title')).toHaveValue('');fill();
  await act(async()=>finish({data:{...phrase('request-1','proposed','assessor'),title:'Compare methods',body:'Compare the alternatives and explain your reasoning.'},error:null}));expect(screen.getByLabelText('Centre phrase title')).toHaveValue('Compare methods');expect(screen.queryByText(/Proposal submitted for independent/)).toBeNull();
 });
+
+it('uses the latest insertion callback after an approval read so recent typing is not overwritten',async()=>{
+ state.rows=[phrase()];let finish!:(value:any)=>void;state.single.mockReturnValue(new Promise(r=>{finish=r;}));const old=vi.fn().mockReturnValue(true),latest=vi.fn().mockReturnValue(true);const view=mount(old);await open();fireEvent.click(screen.getByText('Insert approved wording'));await waitFor(()=>expect(state.single).toHaveBeenCalledTimes(1));
+ view.rerender(<CentreFeedbackLibrary onInsert={latest}/>);await act(async()=>finish({data:phrase(),error:null}));expect(old).not.toHaveBeenCalled();expect(latest).toHaveBeenCalledExactlyOnceWith('Generic wording phrase');
+});
+it('does not insert an approval read that finishes while the marking editor is disabled',async()=>{
+ state.rows=[phrase()];let finish!:(value:any)=>void;state.single.mockReturnValue(new Promise(r=>{finish=r;}));const insert=vi.fn().mockReturnValue(true);const view=mount(insert);await open();fireEvent.click(screen.getByText('Insert approved wording'));await waitFor(()=>expect(state.single).toHaveBeenCalledTimes(1));
+ view.rerender(<CentreFeedbackLibrary onInsert={insert} disabled/>);await act(async()=>finish({data:phrase(),error:null}));expect(insert).not.toHaveBeenCalled();expect(screen.getByText(/Wording was not inserted/)).toBeInTheDocument();
+});

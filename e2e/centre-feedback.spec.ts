@@ -6,7 +6,7 @@ test('centre wording requires independent approval and is rechecked before inser
  async function workspace(role:'assessor'|'iqa_officer',number:number){
   const context=await browser.newContext({viewport:{width:375,height:812},reducedMotion:'reduce'});contexts.push(context);
   const user={id:`00000000-0000-4000-8000-${String(number).padStart(12,'0')}`,aud:'authenticated',role:'authenticated',email:`synthetic-${number}@unipathway.pk`,app_metadata:{provider:'email'},user_metadata:{},created_at:'2026-01-01T00:00:00Z'};
-  await context.addInitScript(({user})=>{const token=btoa(JSON.stringify({alg:'HS256',typ:'JWT'}))+'.'+btoa(JSON.stringify({sub:user.id,role:'authenticated',exp:Math.floor(Date.now()/1000)+3600}))+'.synthetic';localStorage.setItem('sb-unipathway-browser-ci-auth-token',JSON.stringify({access_token:token,refresh_token:'synthetic',token_type:'bearer',expires_at:Math.floor(Date.now()/1000)+3600,expires_in:3600,user}));},{user});
+  await context.addInitScript(({user})=>{if(location.origin==='null')return;const token=btoa(JSON.stringify({alg:'HS256',typ:'JWT'}))+'.'+btoa(JSON.stringify({sub:user.id,role:'authenticated',exp:Math.floor(Date.now()/1000)+3600}))+'.synthetic';localStorage.setItem('sb-unipathway-browser-ci-auth-token',JSON.stringify({access_token:token,refresh_token:'synthetic',token_type:'bearer',expires_at:Math.floor(Date.now()/1000)+3600,expires_in:3600,user}));},{user});
   const tables:Record<string,any>={unipathway_assessment_allocations:role==='assessor'?[{attempt_id:'attempt',marker_id:user.id}]:[],unipathway_assessment_attempts:[{id:'attempt',brief_id:'brief',student_id:'student',attempt_no:1,evidence_text:'Synthetic learner evidence for browser checks.',status:'submitted',submitted_at:'2026-10-26T09:00:00Z'}],unipathway_assessment_briefs:[{id:'brief',title:'Synthetic written assessment',max_attempts:1}],unipathway_assessment_criteria:['A','B'].map(code=>({id:code,brief_id:'brief',criterion_code:code,learning_outcome:'Explain reasoning',criterion_description:'Explain with evidence',max_points:50}))};
   await context.route('https://unipathway-browser-ci.invalid/**',async route=>{
    const request=route.request(),url=new URL(request.url()),name=url.pathname.split('/').at(-1);let data:any=tables[name]||[];
@@ -23,7 +23,7 @@ test('centre wording requires independent approval and is rechecked before inser
    }else if(name==='record_unipathway_human_mark'){marks.push(request.postDataJSON());data=null;}
    await route.fulfill({status:200,headers:{'access-control-allow-origin':'*','content-type':'application/json'},body:JSON.stringify(data)});
   });
-  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto(role==='assessor'?'/assessor/queue?attempt=attempt':'/qa/assessment-approval');
+  const page=await context.newPage();page.setDefaultTimeout(15_000);page.on('pageerror',e=>errors.push(e.message));await page.goto(role==='assessor'?'/assessor/queue?attempt=attempt':'/qa/assessment-approval');
   const consent=page.getByRole('dialog',{name:'Cookie preferences'});if(await consent.isVisible())await consent.getByRole('button',{name:'Reject all'}).click();
   await page.getByText('Centre feedback catalogue',{exact:true}).click();await expect(page.getByText(/matching centre phrases/)).toBeVisible();return page;
  }
@@ -38,5 +38,5 @@ test('centre wording requires independent approval and is rechecked before inser
   await borrower.evaluate(()=>{document.documentElement.classList.add('dark');document.documentElement.style.fontSize='24px';});
   for(const viewport of [{width:375,height:812},{width:812,height:375},{width:1440,height:1000}]){await borrower.setViewportSize(viewport);await expect.poll(()=>borrower.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
   expect(rows[0].status).toBe('withdrawn');expect(rows[0].revision).toBe(3);expect(writes.map(x=>x.name)).toEqual(['propose_uni_centre_feedback','review_uni_centre_feedback','review_uni_centre_feedback']);expect(marks).toEqual([]);expect(errors).toEqual([]);
- }finally{await Promise.all(contexts.map(c=>c.close()));}
+ }catch(error){console.error('Centre feedback journey failed:',error);throw error;}finally{await Promise.allSettled(contexts.map(c=>c.close()));}
 });
