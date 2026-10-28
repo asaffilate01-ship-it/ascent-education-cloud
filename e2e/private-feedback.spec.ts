@@ -9,11 +9,11 @@ test('assessors can find older private feedback and confirm phrase changes witho
  const tenant='00000000-0000-4000-8000-000000000002';
  await context.addInitScript(({user})=>{const token=btoa(JSON.stringify({alg:'HS256',typ:'JWT'}))+'.'+btoa(JSON.stringify({sub:user.id,role:'authenticated',exp:Math.floor(Date.now()/1000)+3600}))+'.synthetic';localStorage.setItem('sb-unipathway-browser-ci-auth-token',JSON.stringify({access_token:token,refresh_token:'synthetic',token_type:'bearer',expires_at:Math.floor(Date.now()/1000)+3600,expires_in:3600,user}));},{user});
  const tables:Record<string,any>={unipathway_assessment_allocations:[{attempt_id:'attempt',marker_id:user.id}],unipathway_assessment_attempts:[{id:'attempt',brief_id:'brief',student_id:'student',attempt_no:1,evidence_text:'The writer makes a clear argument using examples.\nThe conclusion connects the examples to the main idea.\n'+('LongWord'.repeat(40)),status:'submitted',submitted_at:'2026-10-26T09:00:00Z'}],unipathway_assessment_briefs:[{id:'brief',title:'Academic writing: explanation and evidence',max_attempts:1,learning_outcomes:'Build an argument with evidence.'}],unipathway_assessment_criteria:['A','B'].map(code=>({id:code,brief_id:'brief',criterion_code:code,criterion_description:'Use evidence to explain your answer',learning_outcome:'Develop written reasoning',scoring_guidance:'Assess the clarity and relevance of each example.',max_points:50}))};
- let receipt:unknown,draft:any;const snapshots:any[]=[];
+ let receipt:unknown,draft:any;const snapshots:any[]=[],draftWrites:any[]=[];
  let snippets=Array.from({length:301},(_,i)=>({id:String(i).padStart(4,'0'),owner_id:user.id,tenant_id:tenant,title:`Phrase ${i}`,body:`Generic feedback wording ${i}`,created_at:'2026-01-01T00:00:00Z'}));
  const mutations:Record<string,unknown>[]=[];const reads:Record<string,string|null>[]=[];
  await context.route('https://unipathway-browser-ci.invalid/**',async route=>{const r=route.request(),url=new URL(r.url()),name=url.pathname.split('/').at(-1);let data=tables[name]||[];
- if(name==='uni_marking_drafts')data=draft?[draft]:[];else if(name==='save_uni_marking_draft'){const input=r.postDataJSON();draft={attempt_id:input.p_attempt,marker_id:user.id,tenant_id:tenant,criteria:input.p_criteria,feedback:input.p_feedback,guidance:input.p_guidance,revision:(draft?.revision||0)+1,updated_at:new Date().toISOString()};snapshots.unshift({...draft,id:`snapshot-${draft.revision}`,created_at:draft.updated_at});data=draft;}else if(name==='uni_marking_draft_events'){const offset=Number(url.searchParams.get('offset')||0),limit=Number(url.searchParams.get('limit')||11);data=snapshots.slice(offset,offset+limit);}else if(name==='uni_feedback_snippets'){
+ if(name==='uni_marking_drafts')data=draft?[draft]:[];else if(name==='save_uni_marking_draft'){const input=r.postDataJSON();draftWrites.push(input);draft={attempt_id:input.p_attempt,marker_id:user.id,tenant_id:tenant,criteria:input.p_criteria,feedback:input.p_feedback,guidance:input.p_guidance,revision:(draft?.revision||0)+1,updated_at:new Date().toISOString()};snapshots.unshift({...draft,id:`snapshot-${draft.revision}`,created_at:draft.updated_at});data=draft;}else if(name==='uni_marking_draft_events'){const offset=Number(url.searchParams.get('offset')||0),limit=Number(url.searchParams.get('limit')||11);data=snapshots.slice(offset,offset+limit);}else if(name==='uni_feedback_snippets'){
   if(r.method()==='POST'){
    const input=r.postDataJSON();mutations.push(input);data={...input,id:'saved-phrase',created_at:new Date().toISOString()};snippets.push(data);
   }else if(r.method()==='DELETE'){
@@ -60,9 +60,26 @@ test('assessors can find older private feedback and confirm phrase changes witho
  await history.locator('summary').filter({hasText:'Draft revision 1 ·'}).click();
  await expect(history.getByText('Generic feedback wording 300',{exact:true})).toBeVisible();
  await expect(page.getByLabel('Individual written feedback')).toHaveValue('New individual feedback remains separate from older saved wording.');
+ await page.getByLabel('Individual written feedback').fill('Unsaved changes must survive a cancelled restore.');
+ page.once('dialog',dialog=>dialog.dismiss());
+ await history.getByRole('button',{name:'Use revision 1 in editor',exact:true}).click();
+ await expect(page.getByLabel('Individual written feedback')).toHaveValue('Unsaved changes must survive a cancelled restore.');
+ await expect(history.getByText(/Revision 1 was not loaded/)).toBeVisible();
+ expect(snapshots.map(s=>s.revision)).toEqual([2,1]);
+ page.once('dialog',dialog=>dialog.accept());
+ await history.getByRole('button',{name:'Use revision 1 in editor',exact:true}).click();
+ await expect(page.getByLabel('Individual written feedback')).toHaveValue('Generic feedback wording 300');
+ await expect(history.getByText(/Revision 1 copied into unsaved editor fields/)).toBeVisible();
+ await expect(page.getByText(/Draft revision 2 saved/)).toBeVisible();
+ expect(draftWrites).toHaveLength(2);
+ await page.getByRole('button',{name:'Save private draft',exact:true}).click();
+ await expect(page.getByText(/Draft revision 3 saved/)).toBeVisible();
+ expect(draftWrites[2].p_revision).toBe(2);
+ expect(snapshots[0].feedback).toBe(snapshots[2].feedback);
+ await expect(history.getByText(/Revision 1 copied into unsaved editor fields/)).toHaveCount(0);
  await page.evaluate(()=>{document.documentElement.classList.add('dark');document.documentElement.style.fontSize='24px';});
  for(const viewport of [{width:375,height:812},{width:812,height:375},{width:1440,height:1000}]){
   await page.setViewportSize(viewport);await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth?[]:Array.from(document.querySelectorAll('body *')).filter(el=>el.getBoundingClientRect().right>innerWidth+1&&getComputedStyle(el).visibility!=='hidden').slice(-8).map(el=>({tag:el.tagName,text:el.textContent?.slice(0,90),right:Math.round(el.getBoundingClientRect().right),viewport:innerWidth})))).toEqual([]);
  }
- expect(snapshots.map(s=>s.revision)).toEqual([2,1]);expect(receipt).toBeUndefined();expect(errors).toEqual([]);
+ expect(snapshots.map(s=>s.revision)).toEqual([3,2,1]);expect(receipt).toBeUndefined();expect(errors).toEqual([]);
 });

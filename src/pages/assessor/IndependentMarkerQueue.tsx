@@ -1,4 +1,5 @@
-import PrivateDraftHistory from '@/components/assessment/PrivateDraftHistory';
+import {prepareDraftRestore} from '@/lib/assessment/draftRestore';
+import PrivateDraftHistory,{type PrivateDraftSnapshot} from '@/components/assessment/PrivateDraftHistory';
 import {confirmedDraftReceipt} from '@/lib/assessment/draftReceipt';
 import {allocatedAssessmentRows,assessmentRowsByIds} from '@/lib/assessment/queueRows';
 import MarkHistory from '@/components/assessment/MarkHistory';
@@ -98,6 +99,14 @@ function MarkerWorkspace(){
  const rubric=useMemo(()=>criteria.filter(c=>c.brief_id===current?.brief_id),[criteria,current?.brief_id]);
  const ai=drafts.find(d=>d.attempt_id===selected);
  const eligible=current&&['submitted','qa_rejected'].includes(current.status);
+ const restoreDraft=(snapshot:PrivateDraftSnapshot)=>{
+  if(!eligible||!current||draftReady!==current.id||busy||savingDraft.current||draftUncertain)return false;
+  const content=prepareDraftRestore(snapshot,rubric);
+  if(!content||!Number.isInteger(snapshot.revision)||snapshot.revision<1){toast.error('This saved revision does not match the current rubric or field limits. Your editor is unchanged.');return false;}
+  const warning=dirty?'This replaces your unsaved edits. ':'This replaces the current editor fields. ';
+  if(!window.confirm(`${warning}Load private draft revision ${snapshot.revision} for review? You must save separately to create a new revision. No mark will be submitted.`))return false;
+  setScores(content.criteria);setFeedback(content.feedback);setGuidance(content.guidance);setDirty(true);return true;
+ };
  const select=(id:string)=>{
   if(busy||id===selected)return;
   if(dirty&&!window.confirm('Discard your unsent marking edits and open another submission?'))return;
@@ -198,7 +207,7 @@ function MarkerWorkspace(){
       {draftError&&<p role="alert" className="my-2 text-sm text-destructive">{draftError}</p>}
       <div className="mt-2 flex flex-wrap gap-2"><Button variant="outline" disabled={!!busy||draftReady!==current.id||!dirty||draftUncertain} onClick={()=>void saveDraft()}>{busy==='draft'?'Saving…':'Save private draft'}</Button>
       <Button variant="ghost" disabled={!!busy} onClick={()=>{if(!dirty||window.confirm('Discard unsaved edits and reload your latest saved draft?'))setDraftReload(x=>x+1);}}>Reload saved draft</Button></div><p className="mt-2 text-xs text-muted-foreground">Save before leaving this page. Drafts do not submit a mark or notify the learner.</p></div>}
-     <PrivateDraftHistory attemptId={current.id} savedRevision={draftRevision}/>
+     <PrivateDraftHistory attemptId={current.id} savedRevision={draftRevision} onRestore={eligible&&draftReady===current.id&&!busy&&!draftUncertain?restoreDraft:undefined}/>
      {eligible&&draftReady===current.id&&<section className="rounded-xl border bg-card p-5"><h2 className="font-semibold"><ClipboardCheck className="mr-1 inline size-4"/>Independent criterion-by-criterion human assessment</h2>
       <p role="status" className="mt-2 text-sm text-muted-foreground">{completed} of {rubric.length} criteria complete · {dirty?'Unsaved edits — save your draft before leaving':'No unsaved edits'}</p><div className="mt-3 space-y-4">{rubric.map(c=>{const v=scores[c.criterion_code];
        return <fieldset disabled={!!busy} key={c.id} className="rounded-lg border p-4">
