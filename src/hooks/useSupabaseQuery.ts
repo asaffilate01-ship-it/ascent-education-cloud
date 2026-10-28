@@ -24,7 +24,7 @@ export function useSupabaseQuery<T extends TableName>(
   const fetchData = useCallback(async () => {
     const token = ++generation.current;
     const current = () => token === generation.current && currentKey.current === key;
-    if (options?.enabled === false) {
+    if (options?.enabled === false || options?.filters?.some(f => f.operator === 'in' && Array.isArray(f.value) && f.value.length === 0)) {
       setState({key, data: [], loading: false, error: null});
       return;
     }
@@ -33,7 +33,12 @@ export function useSupabaseQuery<T extends TableName>(
       const rows: Tables<T>[] = [];
       for (let offset = 0; current(); offset += 250) {
         let query = supabase.from(table).select(options?.select || '*');
-        for (const f of options?.filters || []) query = (query as any).filter(f.column, f.operator, f.value);
+        for (const f of options?.filters || []) {
+          if (f.operator === 'in') {
+            if (!Array.isArray(f.value)) throw new Error('List filters require an array of values.');
+            query = (query as any).in(f.column, f.value);
+          } else query = (query as any).filter(f.column, f.operator, f.value);
+        }
         if (options?.orderBy) query = query.order(options.orderBy.column, {ascending: options.orderBy.ascending ?? false});
         // RLS still controls visibility. The unique ID order makes pagination stable.
         if (options?.orderBy?.column !== 'id') query = query.order('id', {ascending: true});
