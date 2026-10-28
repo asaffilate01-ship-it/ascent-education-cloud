@@ -14,3 +14,28 @@ it('connects the full student service directory to real routes',()=>{render(<Mem
 it('resets role-specific services and search when switching roles',()=>{const view=render(<MemoryRouter><RoleWorkspace/></MemoryRouter>);fireEvent.change(screen.getByLabelText('Find a service'),{target:{value:'fees'}});mock.role='lecturer';view.rerender(<MemoryRouter><RoleWorkspace/></MemoryRouter>);expect(screen.queryByRole('link',{name:/Fees, paid/})).toBeNull();expect(screen.getByRole('link',{name:/Coursework briefs/})).toHaveAttribute('href','/lecturer/assessments');});
 it('keeps parent navigation limited to separately shared areas',()=>{mock.role='parent_guardian';render(<MemoryRouter><RoleWorkspace/></MemoryRouter>);expect(screen.getByRole('link',{name:/Results and progress/})).toHaveAttribute('href','/parent/progress');expect(screen.queryByRole('link',{name:/Identity and certificates/})).toBeNull();expect(screen.queryByRole('link',{name:/Fees, paid/})).toBeNull();});
 it('has no dead application routes in any role directory',()=>{const app=readFileSync('src/App.tsx','utf8');for(const g of Object.values(workspaceCatalog).flat())for(const item of g.items)expect(app,`${item.label}: ${item.to}`).toContain(`path="${item.to}"`);});
+
+it('combines service-area and text filters, announces counts and restores focus when cleared',()=>{
+ render(<MemoryRouter initialEntries={['/workspace?module=math']}><RoleWorkspace/></MemoryRouter>);
+ const input=screen.getByLabelText('Find a service');
+ fireEvent.change(screen.getByLabelText('Service area'),{target:{value:'Study'}});
+ fireEvent.change(input,{target:{value:'  MATERIALS  '}});
+ expect(screen.getByRole('link',{name:/Materials and recorded lessons/})).toHaveAttribute('href','/student/library?module=math');
+ expect(screen.getByRole('status')).toHaveTextContent(/^1 of/);
+ fireEvent.change(input,{target:{value:'zz-no-service'}});
+ expect(screen.getByRole('heading',{name:'No services match this search'})).toBeInTheDocument();
+ fireEvent.click(screen.getByRole('button',{name:'Clear service filters'}));
+ expect(input).toHaveFocus();expect(input).toHaveValue('');
+ expect(screen.getByLabelText('Service area')).toHaveValue('all');
+ expect(screen.getByRole('link',{name:/Fees, paid and outstanding/})).toHaveAttribute('href','/student/finance');
+});
+it('clears both service filters when the active role changes',()=>{
+ const view=render(<MemoryRouter><RoleWorkspace/></MemoryRouter>);
+ fireEvent.change(screen.getByLabelText('Service area'),{target:{value:'Study'}});
+ fireEvent.change(screen.getByLabelText('Find a service'),{target:{value:'classes'}});
+ mock.role='parent_guardian';view.rerender(<MemoryRouter><RoleWorkspace/></MemoryRouter>);
+ expect(screen.getByLabelText('Find a service')).toHaveValue('');
+ expect(screen.getByLabelText('Service area')).toHaveValue('all');
+ expect(screen.queryByRole('link',{name:/Identity and certificates/})).toBeNull();
+ expect(screen.getByRole('link',{name:/Results and progress/})).toBeInTheDocument();
+});
