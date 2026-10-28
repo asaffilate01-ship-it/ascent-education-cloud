@@ -62,8 +62,8 @@ export async function readBoundedPrivateFile(address:string,current:()=>boolean)
   const response=await fetch(url,{signal:controller.signal,redirect:'error',cache:'no-store',credentials:'omit'});
   const type=(response.headers.get('content-type')||'').split(';')[0].trim().toLowerCase();
   if(!response.ok||!response.body||!OFFLINE_MIME_TYPES.includes(type)||Number(response.headers.get('content-length'))>MATERIAL_BYTES)throw Error('Choose a supported file no larger than 25 MB.');
-  const reader=response.body.getReader(),parts:Uint8Array[]=[];let size=0;
-  try{for(;;){const {value,done}=await reader.read();if(!current())throw Error('Your account changed.');if(done)break;size+=value.byteLength;if(size>MATERIAL_BYTES)throw Error('This file exceeds the 25 MB offline limit.');parts.push(value);}}
+  const reader=response.body.getReader(),parts:BlobPart[]=[];let size=0;
+  try{for(;;){const {value,done}=await reader.read();if(!current())throw Error('Your account changed.');if(done)break;size+=value.byteLength;if(size>MATERIAL_BYTES)throw Error('This file exceeds the 25 MB offline limit.');parts.push(new Uint8Array(value).buffer);}}
   finally{await reader.cancel().catch(()=>{});}
   if(!size)throw Error('The file is empty.');return new Blob(parts,{type});
  }finally{clearTimeout(timer);controller.abort();}
