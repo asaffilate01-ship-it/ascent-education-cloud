@@ -11,7 +11,7 @@
 - [x] Assign the development student and lecturer to Level 4 Business Management and verify both signed-in course views.
 - [x] Audit PRs 47–53 against Live; identify missing schema, private Storage and provider configuration.
 - [x] Make Pakistan-wide online learning prominent in homepage/search metadata and relevant course pages; retain Jhelum as the first physical centre and research Pakistan keyword demand.
-- [ ] Diagnose the user's actual /blog preview access, cache and loading state; fix the evidenced cause (prioritised before activation).
+- [ ] Verify the user's editor preview resumes after repairing the offline-download type error and unreachable package-cache addresses; direct hosted access requires Lovable sign-in, so the actual editor tab remains unverified.
 - [ ] Connect Microsoft and validate consent/approved organisers (deferred by user; not a prerequisite for database preparation).
 - [ ] Reconcile and apply forward-only production migrations (ready for preparation; user deferred backup/export confirmation; recovery remains unverified; never replay fresh-staging replacements).
 - [ ] Verify authorised Teams, guided audio and recording journeys (blocked by missing hosted foundations, Microsoft administrator setup and external worker hosting).
