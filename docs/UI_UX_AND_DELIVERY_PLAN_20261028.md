@@ -41,3 +41,16 @@ Preserve bundled Sora/Manrope, navy/green/red branding, existing semantic tokens
 ## Working rule
 
 Track each item as source implemented, locally checked, hosted checked, or provider accepted. A merged PR alone cannot move an item to the last two states. Each release batch should name changed files, checks run, remaining failures and external dependencies.
+
+
+## Phase 2 implementation — shared navigation, account forms and operations guide
+
+UI UX Pro Max was read from `.claude/skills/ui-ux-pro-max/SKILL.md` in the upstream repository. Targeted searches returned verified guidance for empty-state recovery, contextual live status counts, semantic controls and keyboard focus management. The React/Tailwind results mention newer framework versions; this implementation retains the project's React 18/Tailwind 3 APIs and existing components. No global installer or new dependency was used.
+
+- Public desktop and mobile menus return focus to their own trigger on Escape. Empty mobile course searches have one explicit clear action which returns focus to the search field.
+- Sign-in and registration inputs now have associated visible labels, password-manager autocomplete metadata and named, pressed-state password visibility controls with 44px targets. Existing authentication and role behaviour is retained.
+- Registration no longer asserts unconditional awarding-body accreditation; centre approval remains conditional.
+- The SaaS connection guide searches names, boundaries and next steps; combines search with recorded implementation status; announces a contextual count; and provides a clear empty-state reset. Filters change only the displayed guide, never recorded integration health.
+- Tinted status badges have computed AA coverage. Primary/success/destructive colours were adjusted where the actual composed surfaces failed. Gradient panels have their own foreground token and darker endpoints, preserving readable text independently of filled primary buttons.
+
+Next delivery work remains hosted acceptance and provider activation as listed above. No production database migration, paid provider activation, push delivery, store signing or real-device certification is implied by this source change.

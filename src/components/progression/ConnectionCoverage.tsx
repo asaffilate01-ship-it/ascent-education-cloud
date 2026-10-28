@@ -1,4 +1,6 @@
-import {useState} from 'react';
+import {useRef,useState} from 'react';
+import {Input} from '@/components/ui/input';
+import {Button} from '@/components/ui/button';
 export const connectionCoverage=[
   {
     "name": "Publishing and permissions",
@@ -86,6 +88,21 @@ export const connectionCoverage=[
   }
 ];
 export default function ConnectionCoverage(){
- const [filter,setFilter]=useState('all');const rows=connectionCoverage.filter(r=>filter==='all'||r.state===filter);
- return <details className="surface-card p-5 space-y-4"><summary className="font-semibold cursor-pointer">Implementation and connection guide · 14 areas</summary><p className="text-sm text-muted-foreground">Source review: 26 October 2026. This guide describes implementation boundaries, not live health. Use the recorded checks above for evidence and decisions. Never put credentials in review notes.</p><label className="block">Filter implementation status<select className="block w-full sm:w-auto max-w-full border rounded p-2 bg-background" value={filter} onChange={e=>setFilter(e.target.value)}><option value="all">All areas</option>{[...new Set(connectionCoverage.map(r=>r.state))].map(state=><option key={state}>{state}</option>)}</select></label><div className="grid gap-3 md:grid-cols-2">{rows.map(r=><article aria-label={r.name} key={r.name} className="border rounded p-4 space-y-2 min-w-0"><h3 className="font-medium">{r.name}</h3><p className="text-sm text-muted-foreground">{r.state}</p><p>{r.detail}</p><p className="text-sm"><strong>Next step:</strong> {r.next}</p></article>)}</div></details>;
+ const [filter,setFilter]=useState('all'),[search,setSearch]=useState('');
+ const searchInput=useRef<HTMLInputElement>(null);
+ const query=search.trim().toLowerCase();
+ const rows=connectionCoverage.filter(r=>(filter==='all'||r.state===filter)&&`${r.name} ${r.state} ${r.detail} ${r.next}`.toLowerCase().includes(query));
+ const filtered=!!search||filter!=='all';
+ const clear=()=>{setFilter('all');setSearch('');searchInput.current?.focus();};
+ return <details className="surface-card p-5 space-y-4">
+  <summary className="min-h-11 font-semibold cursor-pointer">Implementation and connection guide · {connectionCoverage.length} areas</summary>
+  <p className="text-sm text-muted-foreground">Source review: 26 October 2026. This guide describes implementation boundaries, not live health. Use the recorded checks above for evidence and decisions. Never put credentials in review notes.</p>
+  <div className="grid gap-4 sm:grid-cols-2">
+   <label className="block text-sm font-medium">Find an integration<Input ref={searchInput} type="search" placeholder="Try recordings, payments or offline" value={search} onChange={e=>setSearch(e.target.value)}/></label>
+   <label className="block text-sm font-medium">Filter implementation status<select className="mt-1 min-h-11 block w-full min-w-0 rounded-lg border p-2 bg-background" value={filter} onChange={e=>setFilter(e.target.value)}><option value="all">All areas</option>{[...new Set(connectionCoverage.map(r=>r.state))].map(state=><option key={state}>{state}</option>)}</select></label>
+  </div>
+  <div className="flex flex-wrap items-center justify-between gap-3"><p role="status" aria-atomic="true" className="text-sm text-muted-foreground">{rows.length} of {connectionCoverage.length} integration areas shown</p>{filtered&&rows.length>0&&<Button variant="outline" onClick={clear}>Clear integration filters</Button>}</div>
+  {!rows.length&&<div className="rounded-xl border p-5"><h3 className="font-semibold">No integration areas match</h3><p className="mt-2 text-sm text-muted-foreground">Try another service name or clear the status filter to see every area.</p><Button variant="outline" className="mt-3" onClick={clear}>Clear integration filters</Button></div>}
+  <div className="grid gap-3 md:grid-cols-2">{rows.map(r=><article aria-label={r.name} key={r.name} className="border rounded-xl p-4 space-y-2 min-w-0 break-words"><h3 className="font-semibold">{r.name}</h3><p className="text-sm font-medium text-muted-foreground">{r.state}</p><p className="text-sm leading-relaxed">{r.detail}</p><p className="text-sm leading-relaxed"><strong>Next step:</strong> {r.next}</p></article>)}</div>
+ </details>;
 }

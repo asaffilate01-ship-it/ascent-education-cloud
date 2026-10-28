@@ -4,3 +4,18 @@ import ConnectionCoverage from '@/components/progression/ConnectionCoverage';
 afterEach(cleanup);
 it('distinguishes source implementation from live health',()=>{render(<ConnectionCoverage/>);expect(screen.getByText(/not live health/)).toBeInTheDocument();const teams=screen.getByRole('article',{name:'Teams and recordings'});expect(within(teams).getByText('Provider activation required')).toBeInTheDocument();expect(within(teams).getByText(/Source code does not establish account activation/)).toBeInTheDocument();});
 it('filters incomplete connectors without changing recorded integration status',()=>{render(<ConnectionCoverage/>);fireEvent.change(screen.getByLabelText('Filter implementation status'),{target:{value:'Merchant connection required'}});expect(screen.getByRole('article',{name:'Pakistan payments'})).toBeInTheDocument();expect(screen.queryByRole('article',{name:'Admissions'})).not.toBeInTheDocument();expect(screen.queryByRole('button',{name:/activate/i})).not.toBeInTheDocument();});
+it('searches next steps, combines status filters and recovers from no results',()=>{
+ render(<ConnectionCoverage/>);
+ const search=screen.getByLabelText('Find an integration');
+ fireEvent.change(search,{target:{value:'retrieval'}});
+ expect(screen.getByRole('article',{name:'Teams and recordings'})).toBeInTheDocument();
+ expect(screen.getByRole('status')).toHaveTextContent('1 of 14 integration areas shown');
+ fireEvent.change(screen.getByLabelText('Filter implementation status'),{target:{value:'Merchant connection required'}});
+ expect(screen.queryByRole('article')).toBeNull();
+ expect(screen.getByRole('heading',{name:'No integration areas match'})).toBeInTheDocument();
+ fireEvent.click(screen.getByRole('button',{name:'Clear integration filters'}));
+ expect(search).toHaveValue('');expect(search).toHaveFocus();
+ expect(screen.getByLabelText('Filter implementation status')).toHaveValue('all');
+ expect(screen.getAllByRole('article')).toHaveLength(14);
+ expect(screen.getByText(/not live health/)).toBeInTheDocument();
+});

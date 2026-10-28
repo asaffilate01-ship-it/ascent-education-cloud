@@ -72,7 +72,7 @@ const AIChatWidget = forwardRef<HTMLDivElement>(function AIChatWidget(_props, re
             exit={{ scale: 0 }}
             aria-label="Open AI Study Tutor"
             onClick={() => setOpen(true)}
-            className="fixed bottom-20 lg:bottom-6 right-4 z-50 w-14 h-14 rounded-full gradient-primary text-primary-foreground shadow-xl hover:shadow-2xl transition-all flex items-center justify-center"
+            className="fixed bottom-20 lg:bottom-6 right-4 z-50 w-14 h-14 rounded-full gradient-primary text-gradient-foreground shadow-xl hover:shadow-2xl transition-all flex items-center justify-center"
           >
             <Sparkles className="w-6 h-6" />
           </motion.button>
@@ -93,7 +93,7 @@ const AIChatWidget = forwardRef<HTMLDivElement>(function AIChatWidget(_props, re
             <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-primary-foreground" />
+                  <Sparkles className="w-4 h-4 text-gradient-foreground" />
                 </div>
                 <div>
                   <p className="text-sm font-bold">AI Study Tutor</p>
@@ -180,7 +180,7 @@ const AIChatWidget = forwardRef<HTMLDivElement>(function AIChatWidget(_props, re
                 <button
                   aria-label="Send question" type="submit"
                   disabled={!input.trim() || loading}
-                  className="p-2.5 rounded-xl gradient-primary text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-md"
+                  className="p-2.5 rounded-xl gradient-primary text-gradient-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-md"
                 >
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                 </button>

@@ -74,10 +74,10 @@ export default function LoginPage() {
               <img src={unipathwayLogo} alt="UniPathway" className="h-11 w-auto" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold text-primary-foreground leading-tight max-w-md">
+          <h1 className="text-4xl font-bold text-gradient-foreground leading-tight max-w-md">
             Your Gateway to Global Qualifications
           </h1>
-          <p className="text-primary-foreground/70 mt-4 text-lg max-w-md leading-relaxed">
+          <p className="text-gradient-foreground/90 mt-4 text-lg max-w-md leading-relaxed">
             Study UK-regulated diplomas online and progress to universities in the UK, Germany and beyond.
           </p>
         </div>
@@ -88,8 +88,8 @@ export default function LoginPage() {
             { stat: 'UK diplomas', label: 'Accreditation Support' },
           ].map((s) => (
             <div key={s.label} className="flex items-center gap-3">
-              <span className="text-2xl font-bold text-primary-foreground">{s.stat}</span>
-              <span className="text-primary-foreground/60 text-sm">{s.label}</span>
+              <span className="text-2xl font-bold text-gradient-foreground">{s.stat}</span>
+              <span className="text-gradient-foreground/90 text-sm">{s.label}</span>
             </div>
           ))}
         </div>
@@ -107,9 +107,9 @@ export default function LoginPage() {
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="text-label mb-1.5 block">Email</label>
+              <label htmlFor="login-email" className="text-label mb-1.5 block">Email</label>
               <input
-                type="email"
+                id="login-email" name="email" autoComplete="username" type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
@@ -118,18 +118,18 @@ export default function LoginPage() {
             </div>
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-label">Password</label>
+                <label htmlFor="login-password" className="text-label">Password</label>
                 <Link to="/forgot-password" className="text-xs text-primary hover:underline">Forgot password?</Link>
               </div>
               <div className="relative">
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  id="login-password" name="password" autoComplete="current-password" type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder="••••••••" style={{paddingRight: '3.5rem'}}
                   className="w-full bg-secondary text-sm px-4 py-3 rounded-lg outline-none text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20"
                 />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                <button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? 'Hide password' : 'Show password'} aria-pressed={showPassword} className="absolute right-1 top-1/2 grid min-h-11 min-w-11 -translate-y-1/2 place-items-center rounded-lg text-muted-foreground">
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
