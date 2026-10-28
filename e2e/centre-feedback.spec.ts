@@ -2,7 +2,7 @@ import {test,expect,type BrowserContext} from '@playwright/test';
 test.describe.configure({retries:0});
 test('centre wording requires independent approval and is rechecked before insertion after withdrawal',async({browser})=>{
  test.setTimeout(60_000);
- const tenant='00000000-0000-4000-8000-000000000010';const contexts:BrowserContext[]=[],rows:any[]=[],writes:any[]=[],marks:any[]=[],errors:string[]=[];
+ const tenant='00000000-0000-4000-8000-000000000010';const contexts:BrowserContext[]=[],rows:any[]=[],writes:any[]=[],marks:any[]=[],errors:string[]=[],events:any[]=[],auditReads:any[]=[];
  async function workspace(role:'assessor'|'iqa_officer',number:number){
   const context=await browser.newContext({viewport:{width:375,height:812},reducedMotion:'reduce'});contexts.push(context);
   const user={id:`00000000-0000-4000-8000-${String(number).padStart(12,'0')}`,aud:'authenticated',role:'authenticated',email:`synthetic-${number}@unipathway.pk`,app_metadata:{provider:'email'},user_metadata:{},created_at:'2026-01-01T00:00:00Z'};
@@ -12,9 +12,13 @@ test('centre wording requires independent approval and is rechecked before inser
    const request=route.request(),url=new URL(request.url()),name=url.pathname.split('/').at(-1);let data:any=tables[name]||[];
    if(name==='profiles')data={full_name:'Synthetic staff',tenant_id:tenant};else if(name==='user_roles')data=[{role}];else if(url.pathname.endsWith('/auth/v1/user'))data=user;
    else if(name==='propose_uni_centre_feedback'){
-    const p=request.postDataJSON();writes.push({name,...p});const row={id:p.p_request,tenant_id:tenant,proposed_by:user.id,title:p.p_title,body:p.p_body,status:'proposed',revision:1,created_at:'2026-10-28T10:00:00Z',reviewed_by:null,review_reference:''};rows.push(row);data=row;
+    const p=request.postDataJSON();writes.push({name,...p});const row={id:p.p_request,tenant_id:tenant,proposed_by:user.id,title:p.p_title,body:p.p_body,status:'proposed',revision:1,created_at:'2026-10-28T10:00:00Z',reviewed_by:null,review_reference:''};rows.push(row);events.push({id:'event-1',feedback_id:row.id,tenant_id:tenant,actor_id:user.id,revision:1,status:'proposed',reference:'Submitted for independent IQA review',created_at:row.created_at});data=row;
    }else if(name==='review_uni_centre_feedback'){
-    const p=request.postDataJSON();writes.push({name,...p});const row=rows.find(x=>x.id===p.p_feedback);Object.assign(row,{status:p.p_action==='approve'?'approved':'withdrawn',revision:row.revision+1,reviewed_by:user.id,review_reference:p.p_reference});data={...row};
+    const p=request.postDataJSON();writes.push({name,...p});const row=rows.find(x=>x.id===p.p_feedback);Object.assign(row,{status:p.p_action==='approve'?'approved':'withdrawn',revision:row.revision+1,reviewed_by:user.id,review_reference:p.p_reference});events.push({id:`event-${row.revision}`,feedback_id:row.id,tenant_id:tenant,actor_id:user.id,revision:row.revision,status:row.status,reference:p.p_reference,created_at:'2026-10-28T11:00:00Z'});data={...row};
+   }else if(name==='uni_centre_feedback_events'){
+    const phraseId=url.searchParams.get('feedback_id')?.replace('eq.',''),centre=url.searchParams.get('tenant_id')?.replace('eq.','');auditReads.push({phraseId,centre});
+    const visible=rows.some(x=>x.id===phraseId&&(role==='iqa_officer'||x.status==='approved'||x.proposed_by===user.id));
+    const offset=Number(url.searchParams.get('offset')||0),limit=Number(url.searchParams.get('limit')||6);data=visible?events.filter(x=>x.feedback_id===phraseId&&x.tenant_id===centre).sort((a,b)=>b.revision-a.revision).slice(offset,offset+limit):[];
    }else if(name==='uni_centre_feedback'){
     data=rows.filter(x=>role==='iqa_officer'||x.status==='approved'||x.proposed_by===user.id);
     for(const key of ['id','status','tenant_id']){const value=url.searchParams.get(key);if(value)data=data.filter((x:any)=>x[key]===value.replace('eq.',''));}
@@ -35,8 +39,20 @@ test('centre wording requires independent approval and is rechecked before inser
   const borrower=await workspace('assessor',3);await borrower.getByRole('button',{name:'Insert approved wording',exact:true}).click();await expect(borrower.getByLabel('Individual written feedback')).toHaveValue(rows[0].body);await expect(borrower.getByText(/Approved wording inserted as an unsaved draft edit/)).toBeVisible();
   await reviewer.getByLabel('Centre feedback status',{exact:true}).selectOption('approved');await reviewer.getByLabel('Internal review reference for Compare the alternatives',{exact:true}).fill('Centre withdrawal record 2026-10');reviewer.once('dialog',d=>d.accept());await reviewer.getByRole('button',{name:'Withdraw centre wording',exact:true}).click();await expect(reviewer.getByText(/Centre wording withdrawn/)).toBeVisible();
   await borrower.getByRole('button',{name:'Insert approved wording',exact:true}).click();await expect(borrower.getByText(/Approval could not be rechecked/)).toBeVisible();await expect(borrower.getByLabel('Individual written feedback')).toHaveValue(rows[0].body);
+  expect(auditReads).toEqual([]);
+  await reviewer.getByLabel('Centre feedback status',{exact:true}).selectOption('withdrawn');
+  await reviewer.getByRole('button',{name:'View decision history for Compare the alternatives',exact:true}).click();
+  const history=reviewer.getByRole('region',{name:'Decision history for Compare the alternatives',exact:true});
+  await expect(history.getByRole('heading',{name:'Revision 3 · withdrawn',exact:true})).toBeVisible();
+  await expect(history.getByRole('heading',{name:'Revision 2 · approved',exact:true})).toBeVisible();
+  await expect(history.getByText('Reference: Centre approval record 2026-10',{exact:true})).toBeVisible();
+  await expect(history.getByText('Reference: Centre withdrawal record 2026-10',{exact:true})).toBeVisible();
+  expect(auditReads.every(x=>x.phraseId===rows[0].id&&x.centre===tenant)).toBe(true);
+  await reviewer.evaluate(()=>{document.documentElement.classList.add('dark');document.documentElement.style.fontSize='24px';});
   await borrower.evaluate(()=>{document.documentElement.classList.add('dark');document.documentElement.style.fontSize='24px';});
-  for(const viewport of [{width:375,height:812},{width:812,height:375},{width:1440,height:1000}]){await borrower.setViewportSize(viewport);await expect.poll(()=>borrower.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
-  expect(rows[0].status).toBe('withdrawn');expect(rows[0].revision).toBe(3);expect(writes.map(x=>x.name)).toEqual(['propose_uni_centre_feedback','review_uni_centre_feedback','review_uni_centre_feedback']);expect(marks).toEqual([]);expect(errors).toEqual([]);
+  for(const viewport of [{width:375,height:812},{width:812,height:375},{width:1440,height:1000}]){await borrower.setViewportSize(viewport);await reviewer.setViewportSize(viewport);await expect.poll(()=>borrower.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await expect.poll(()=>reviewer.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
+  await history.getByRole('button',{name:'Hide decision history for Compare the alternatives',exact:true}).click();
+  await expect(history.getByRole('heading',{name:'Revision 3 · withdrawn',exact:true})).toHaveCount(0);
+  expect(events.map(x=>x.revision)).toEqual([1,2,3]);expect(rows[0].status).toBe('withdrawn');expect(rows[0].revision).toBe(3);expect(writes.map(x=>x.name)).toEqual(['propose_uni_centre_feedback','review_uni_centre_feedback','review_uni_centre_feedback']);expect(marks).toEqual([]);expect(errors).toEqual([]);
  }catch(error){console.error('Centre feedback journey failed:',error);throw error;}finally{await Promise.allSettled(contexts.map(c=>c.close()));}
 });
