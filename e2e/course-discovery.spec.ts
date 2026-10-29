@@ -53,6 +53,12 @@ test('Pearson Fine Art and craft options expose sourced modules and a course-spe
  const enquiry=hnd.getByRole('link',{name:/Ask about Pearson BTEC Level 5/});
  expect(new URL(await enquiry.getAttribute('href')||'',page.url()).searchParams.get('course')).toBe('Pearson BTEC Level 5 Higher National Diploma in Fine Art');
  await expect(hnd.getByRole('link',{name:/Pearson Fine Art specification/})).toHaveAttribute('href',/qualifications\.pearson\.com/);
+ const enterprise=page.getByRole('region',{name:'Fine art and crafts for women building a business',exact:true});
+ await expect(enterprise.getByRole('article')).toHaveCount(7);
+ await expect(enterprise.getByText(/Specifically designed for women in Pakistan/)).toBeVisible();
+ const workshop=enterprise.getByRole('link',{name:'Enquire about Ecommerce and social selling',exact:true});
+ expect(new URL(await workshop.getAttribute('href')||'',page.url()).searchParams.get('course')).toBe('Women’s creative enterprise: Ecommerce and social selling');
+ await expect(enterprise.getByText(/They are not Pearson qualifications/)).toBeVisible();
  await page.evaluate(()=>{document.documentElement.classList.add('dark');document.documentElement.style.fontSize='24px';});
  for(const viewport of [{width:375,height:812},{width:812,height:375},{width:1440,height:1000}]){await page.setViewportSize(viewport);await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
 });

@@ -7,6 +7,7 @@ export default function QualificationCurriculum({qualification:q}:{qualification
  return <div className="mt-4 space-y-3 text-sm [overflow-wrap:anywhere]">
   <p><strong>{curriculum.credits} credits</strong> · Qualification number {curriculum.qualificationNumber}</p>
   <p className="text-muted-foreground">{curriculum.creditNote}</p>
+  <p>Our Fine Art and craft pathway specifically supports women in Pakistan developing creative microbusinesses and ecommerce selling. <a href="#women-creative-enterprise" className="font-semibold underline">Explore women’s creative enterprise, short courses and workshops</a>.</p>
   <details className="rounded-lg border p-3">
    <summary className="min-h-11 cursor-pointer py-3 font-semibold">Modules and craft study · Level {q.level}</summary>
    <div className="space-y-4 pt-2">
