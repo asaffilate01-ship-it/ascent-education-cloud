@@ -118,3 +118,9 @@ The shared dashboard query key now includes the active role as well as user, cen
 Regression fixtures cover a role-only switch, immediate result clearing, a stale retry during the replacement read, and a late response from the former role. Hosted migration activation, provider acceptance and physical-device release gates above remain open.
 
 CI initially stopped before browser tests because ubuntu-latest resolved to Ubuntu 26.04, unsupported by pinned Playwright 1.58.2. Pin only browser acceptance to Ubuntu 24.04 so the existing browser version can install and run; package versions and lockfiles are unchanged.
+
+## Learning library access recovery — 29 October 2026
+
+Private access requests now carry a generation guard. Refresh immediately invalidates pending access work and clears the displayed link; module/account/active-role changes and unmount also discard old completions. A late link or error cannot overwrite a newer resource view or a newly requested link. Duplicate access requests are blocked synchronously while one is pending. Existing storage permissions, two-minute expiry and enrolled-resource queries remain authoritative; this client guard does not revoke an already issued signed URL.
+
+Search trims surrounding whitespace, reports matching and total authorised resources, and distinguishes no matches from an empty library. Clear filters restores all resource types and search focus. Resource cards and pagination wrap for narrow screens and enlarged text. Tests cover late success after refresh, late failure after module change and filter recovery. Hosted activation and provider/device acceptance gates remain open.
