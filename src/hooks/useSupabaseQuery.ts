@@ -15,13 +15,15 @@ export function useSupabaseQuery<T extends TableName>(
   }
 ) {
   const {user} = useAuth();
-  const key = JSON.stringify([table, options, user?.id, user?.tenantId, user?.roles]);
+  const key = JSON.stringify([table, options, user?.id, user?.tenantId, user?.role, user?.roles]);
   const currentKey = useRef(key);
   currentKey.current = key;
   const generation = useRef(0);
   const [state, setState] = useState<{key: string; data: Tables<T>[]; loading: boolean; error: string | null}>({key, data: [], loading: options?.enabled !== false, error: null});
 
   const fetchData = useCallback(async () => {
+    // A retained callback from an earlier account, role or query must not cancel the current read.
+    if (currentKey.current !== key) return;
     const token = ++generation.current;
     const current = () => token === generation.current && currentKey.current === key;
     if (options?.enabled === false || options?.filters?.some(f => f.operator === 'in' && Array.isArray(f.value) && f.value.length === 0)) {
