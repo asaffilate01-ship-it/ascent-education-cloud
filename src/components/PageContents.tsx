@@ -9,11 +9,25 @@ export default function PageContents() {
   useEffect(() => {
     const main = ref.current?.closest('main');
     if (!main) return;
-    const headings = Array.from(main.querySelectorAll('h2')).filter(h => !h.closest('header'));
-    setItems(headings.slice(0, 12).map((heading, index) => {
-      if (!heading.id) heading.id = `page-section-${index + 1}`;
-      return { id: heading.id, label: heading.textContent || 'Section' };
-    }));
+    let nextAnchor=1;
+    const scan=()=>{
+      const headings=Array.from(main.querySelectorAll('h2')).filter(h=>!h.closest('header')&&!ref.current?.contains(h));
+      const next=headings.slice(0,12).map(heading=>{
+        if(!heading.id){
+          while(document.getElementById(`page-section-${nextAnchor}`))nextAnchor++;
+          heading.id=`page-section-${nextAnchor++}`;
+        }
+        return {id:heading.id,label:heading.textContent||'Section'};
+      });
+      setItems(previous=>previous.length===next.length&&previous.every((item,index)=>item.id===next[index].id&&item.label===next[index].label)?previous:next);
+    };
+    scan();
+    const observer=new MutationObserver(records=>{
+      // Updating this menu must not cause it to rescan itself indefinitely.
+      if(records.some(record=>!ref.current?.contains(record.target)))scan();
+    });
+    observer.observe(main,{childList:true,subtree:true,characterData:true});
+    return()=>observer.disconnect();
   }, [pathname]);
   return <nav ref={ref} aria-label="On this page" className="page-contents rounded-xl border bg-card p-4 sm:p-5">
     <details><summary className="min-h-11 cursor-pointer py-3 text-sm font-bold">On this page — jump to a section</summary>
