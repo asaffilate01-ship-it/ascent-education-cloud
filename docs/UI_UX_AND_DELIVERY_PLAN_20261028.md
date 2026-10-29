@@ -116,3 +116,5 @@ UI UX Pro Max back-navigation, no-result recovery and control-layout guidance in
 The shared dashboard query key now includes the active role as well as user, centre and assigned roles. Switching roles clears the previous result and starts a fresh read even when the same account retains both assigned roles. A retained retry callback from an older query scope now returns before changing request generations, so it cannot cancel or replace the current scope's pending read. Existing server-side RLS and query filters remain the authority for access; this change corrects client result lifecycle only.
 
 Regression fixtures cover a role-only switch, immediate result clearing, a stale retry during the replacement read, and a late response from the former role. Hosted migration activation, provider acceptance and physical-device release gates above remain open.
+
+CI initially stopped before browser tests because ubuntu-latest resolved to Ubuntu 26.04, unsupported by pinned Playwright 1.58.2. Pin only browser acceptance to Ubuntu 24.04 so the existing browser version can install and run; package versions and lockfiles are unchanged.
