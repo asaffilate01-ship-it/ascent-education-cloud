@@ -2,7 +2,7 @@ import {useEffect,useMemo,useState} from 'react';
 import {Link,useNavigate} from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {db} from '@/lib/db';
-import {useAuth} from '@/contexts/AuthContext';
+import {ROLE_HOME,useAuth} from '@/contexts/AuthContext';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {toast} from 'sonner';
@@ -10,10 +10,13 @@ import {AlertTriangle,BookOpen,Lock,PenTool,Plus,Users} from 'lucide-react';
 type Session={id:string;title:string;module_id:string|null;tenant_id:string;starts_at:string;capacity:number;organiser_user_id:string};
 type Board={id:string;title:string;session_id:string;prepared_by:string|null;locked_after_class:boolean;current_sequence:number};
 export default function WhiteboardStudio(){
+ const {user}=useAuth();return <Studio key={`${user?.id}:${user?.tenantId}:${user?.role}`}/>;
+}
+function Studio(){
  const {user}=useAuth();const navigate=useNavigate();
  const [sessions,setSessions]=useState<Session[]>([]);
  const [boards,setBoards]=useState<Board[]>([]);
- const [loading,setLoading]=useState(true);const [error,setError]=useState('');
+ const [loading,setLoading]=useState(true);const [error,setError]=useState('');const [refresh,setRefresh]=useState(0);
  const [selected,setSelected]=useState('');const [title,setTitle]=useState('');
  const [saving,setSaving]=useState(false);
  const [tenant,setTenant]=useState(user?.tenantId||'');
@@ -25,8 +28,8 @@ export default function WhiteboardStudio(){
     .then(({data})=>setTenant(data?.id||''));
  },[user?.id,user?.tenantId]);
  useEffect(()=>{
-  if(!tenant||!user?.id)return;
-  let active=true;setLoading(true);setError('');
+  if(!tenant||!user?.id){setLoading(false);setError('Your centre could not be verified. Return to your dashboard or contact support.');return;}
+  let active=true;setLoading(true);setError('');setSessions([]);setBoards([]);setSelected('');
   void Promise.all([
    db.from('live_class_sessions').select('id,title,module_id,tenant_id,starts_at,capacity,organiser_user_id')
     .eq('tenant_id',tenant).order('starts_at',{ascending:false}).limit(100),
@@ -35,12 +38,12 @@ export default function WhiteboardStudio(){
   ]).then(([classes,whiteboards])=>{
    if(!active)return;
    const problem=classes.error||whiteboards.error;
-   if(problem){setError(problem.message);setLoading(false);return;}
+   if(problem){setError('Whiteboards are unavailable for your centre. Your administrator needs to check classroom access and setup. You can continue using your dashboard.');setLoading(false);return;}
    const available=manager?(classes.data||[]):(classes.data||[]).filter((s:Session)=>s.organiser_user_id===user.id);
    setSessions(available as Session[]);setBoards((whiteboards.data||[]) as Board[]);setLoading(false);
-  }).catch(()=>{if(active){setError('Whiteboard service unavailable');setLoading(false);}});
+  }).catch(()=>{if(active){setError('The whiteboard service could not be reached. Retry or continue to your dashboard.');setLoading(false);}});
   return()=>{active=false};
- },[tenant,user?.id,manager]);
+ },[tenant,user?.id,manager,refresh]);
  const availableSessions=useMemo(()=>sessions.filter(s=>s.module_id&&!boards.some(b=>b.session_id===s.id)),[sessions,boards]);
  const create=async()=>{
   const session=availableSessions.find(s=>s.id===selected);
@@ -67,7 +70,7 @@ export default function WhiteboardStudio(){
    <p className="mt-2 text-sm text-muted-foreground">Create one presenter-controlled whiteboard for each scheduled lecture. All eligible students view the same board; one stroke is stored once and delivered through a private live channel. Saved changes form a revision replay, separate from any Teams video recording.</p>
   </div>
   {loading&&<p role="status">Checking your authorised lectures and whiteboards…</p>}
-  {error&&<div className="rounded-xl border border-destructive p-5" role="alert"><AlertTriangle className="mr-2 inline size-4"/>{error}. The classroom and security migrations must be deployed to staging before this is usable.</div>}
+  {error&&<div className="rounded-xl border border-destructive p-5" role="alert"><AlertTriangle className="mr-2 inline size-4"/>{error}<div className="mt-4 flex flex-wrap gap-3"><Button variant="outline" onClick={()=>setRefresh(value=>value+1)}>Retry whiteboards</Button><Button variant="outline" asChild><Link to={user?ROLE_HOME[user.role]||'/':'/login'}>Return to my dashboard</Link></Button></div></div>}
   {!loading&&!error&&<div className="space-y-7">
    {availableSessions.length>0&&<section className="rounded-xl border bg-card p-5">
     <h2 className="font-semibold">Create a lecture whiteboard</h2>
