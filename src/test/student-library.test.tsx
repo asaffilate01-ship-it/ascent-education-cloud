@@ -1,6 +1,6 @@
 import {MemoryRouter} from 'react-router-dom';
 import {afterEach,beforeEach,expect,it,vi} from 'vitest';
-import {cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
+import {act,cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
 import {Library} from '@/pages/student/StudentLibrary';
 const mock=vi.hoisted(()=>({tables:{} as Record<string,unknown>,signed:vi.fn()}));
 vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:{children:React.ReactNode})=><main>{children}</main>}));
@@ -39,4 +39,38 @@ it('resolves a released recording from a class beyond the first 500 sessions',as
  mock.tables.live_class_artifacts={data:[{id:'old',session_id:'s600',artifact_type:'recording',storage_reference:'centre/s600/old.mp4',available_at:'2020-01-01'}]};
  render(<Library userId="student" tenantId="centre" initialKind="recording"/>);
  await screen.findByText('Class 600');expect(screen.getAllByText('Get private access')).toHaveLength(1);
+});
+
+it('ignores a late private link after refresh while allowing a new access request',async()=>{
+ let resolveOld:(value:unknown)=>void=()=>{};
+ mock.signed.mockImplementationOnce(()=>new Promise(resolve=>{resolveOld=resolve;}));
+ render(<Library userId="student" tenantId="centre"/>);await screen.findByText('Approved notes');
+ fireEvent.click(screen.getAllByText('Get private access')[0]);
+ fireEvent.click(screen.getByText('Refresh library'));await screen.findByText('Approved notes');
+ mock.signed.mockResolvedValueOnce({data:{signedUrl:'https://storage.invalid/current'}});
+ fireEvent.click(screen.getAllByText('Get private access')[0]);
+ const link=await screen.findByRole('link',{name:'Open or download Approved notes'});
+ expect(link).toHaveAttribute('href','https://storage.invalid/current');
+ await act(async()=>{resolveOld({data:{signedUrl:'https://storage.invalid/stale'}});});
+ expect(link).toHaveAttribute('href','https://storage.invalid/current');expect(screen.queryByRole('alert')).toBeNull();
+});
+it('suppresses an old access failure after the module scope changes',async()=>{
+ let rejectOld:(reason:unknown)=>void=()=>{};
+ mock.signed.mockImplementationOnce(()=>new Promise((_,reject)=>{rejectOld=reject;}));
+ const view=render(<MemoryRouter><Library userId="student" tenantId="centre" moduleId="m"/></MemoryRouter>);
+ await screen.findByText('Approved notes');fireEvent.click(screen.getAllByText('Get private access')[0]);
+ view.rerender(<MemoryRouter><Library userId="student" tenantId="centre" moduleId="other"/></MemoryRouter>);
+ await screen.findByText('No published resources match your library yet.');
+ await act(async()=>{rejectOld(new Error('Old access denied'));});
+ expect(screen.queryByRole('alert')).toBeNull();expect(screen.queryByRole('link',{name:/Open or download/})).toBeNull();
+});
+it('distinguishes filtered results and resets both filters with search focus',async()=>{
+ render(<Library userId="student" tenantId="centre"/>);await screen.findByText('Approved notes');
+ const input=screen.getByLabelText('Search library');
+ fireEvent.change(input,{target:{value:'  Approved notes  '}});expect(screen.getByRole('status')).toHaveTextContent('1 of 2');
+ fireEvent.change(screen.getByLabelText('Resource type'),{target:{value:'recording'}});
+ expect(screen.getByText(/No resources match your filters/)).toBeInTheDocument();
+ fireEvent.click(screen.getByText('Clear library filters'));
+ expect(input).toHaveFocus();expect(input).toHaveValue('');expect(screen.getByLabelText('Resource type')).toHaveValue('all');
+ expect(screen.getByRole('status')).toHaveTextContent('2 of 2');
 });
