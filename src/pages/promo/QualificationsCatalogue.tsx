@@ -1,3 +1,4 @@
+import WomenCreativeEnterprise from '@/components/WomenCreativeEnterprise';
 import QualificationCurriculum from '@/components/QualificationCurriculum';
 import AwardingBodyGuidance from '@/components/AwardingBodyGuidance';
 import CourseAtAGlance from '@/components/CourseAtAGlance';
@@ -71,6 +72,7 @@ export default function QualificationsCatalogue() {
         </article>})}
         {filtered.length===0&&<div className="col-span-full space-y-3 rounded-xl border bg-card p-5"><p>No matching qualifications. Try a different subject or search, or reset the filters.</p><Button className="max-w-full whitespace-normal" variant="outline" onClick={clearFilters}>Reset qualification search</Button></div>}
       </section>
+      <WomenCreativeEnterprise/>
       <section className="rounded-xl border bg-secondary/40 p-6">
         <BookOpenCheck className="size-7 text-success"/><h2 className="mt-3 text-xl font-bold">Teaching, curriculum and university progression</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Approved awarding-body unit specifications and assessment rules will determine the final modules, credits, assignment briefs and delivery method. Our planned model includes online study and two 14-day centre-based academic visits where permitted. A Level 4 or 5 diploma is not itself a UK university degree and admission or advanced standing is subject to the receiving university.</p>

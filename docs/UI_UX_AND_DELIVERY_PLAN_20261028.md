@@ -135,3 +135,9 @@ Sources checked on 29 October 2026:
 - Linked creative-suite module descriptors, Fine Art section (modules A and B): https://qualifications.pearson.com/content/dam/pdf/BTEC-Higher-Nationals/animation/2023/teaching-and-learning-materials/unit-desc-hn-crea-art-book.pdf
 
 Uses the current Fine Art route rather than the older Art and Design (2017) award. Search includes craft teaching themes and unit/module titles. Regression checks cover body/subject links, qualification identities and cumulative credits, source links and course-specific enquiries, with a browser journey for expanded curriculum in narrow/wide layouts and enlarged dark-mode text.
+
+## Women’s creative enterprise — 29 October 2026
+
+The Fine Art catalogue now explicitly targets women in Pakistan building creative microbusinesses, home-based ventures and ecommerce ranges. Pearson cards link to an on-page enterprise section with four UniPathway short courses (fine art products, textiles, ceramics and microbusiness foundations) and three workshops (photography/branding, ecommerce/social selling and marketing/sales). Teaching outlines cover making, costing, pricing, stock, listings, promotion, orders, fulfilment and customer care, with practical learner outputs.
+
+Each option passes its exact title to the existing admissions enquiry. No dates, prices, guaranteed sales, confirmed facilities or accreditation claims have been invented. These separate short options carry no Pearson HNC/HND credits. Admissions confirms delivery, women-focused groups, equipment/materials, duration, fees and any completion document before booking. No registration/payment/provider activation or hosted curriculum writes were performed. Component tests verify audience, formats, content boundaries and enquiry identities; the existing Fine Art browser journey checks the enterprise cards and enquiry alongside enlarged-text layouts.
