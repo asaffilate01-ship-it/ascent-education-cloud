@@ -12,6 +12,7 @@
 - [x] Audit PRs 47–53 against Live; identify missing schema, private Storage and provider configuration.
 - [x] Make Pakistan-wide online learning prominent in homepage/search metadata and relevant course pages; retain Jhelum as the first physical centre and research Pakistan keyword demand.
 - [ ] Verify the user's editor preview resumes after repairing the offline-download type error and unreachable package-cache addresses; direct hosted access requires Lovable sign-in, so the actual editor tab remains unverified.
+- [ ] Diagnose the newly reported stuck homepage preview using a fresh browser load and current preview logs.
 - [ ] Connect Microsoft and validate consent/approved organisers (deferred by user; not a prerequisite for database preparation).
 - [ ] Reconcile and apply forward-only production migrations (ready for preparation; user deferred backup/export confirmation; recovery remains unverified; never replay fresh-staging replacements).
 - [ ] Verify authorised Teams, guided audio and recording journeys (blocked by missing hosted foundations, Microsoft administrator setup and external worker hosting).
