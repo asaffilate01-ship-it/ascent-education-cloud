@@ -1,6 +1,6 @@
 import {PGlite} from '@electric-sql/pglite';
-import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
+import {employerActivationSql} from './activation/prepare-unipathway-employers.mjs';
 const db=new PGlite(),T1='10000000-0000-0000-0000-000000000001',T2='10000000-0000-0000-0000-000000000002';
 const DIRECTOR='20000000-0000-0000-0000-000000000001',EMP='20000000-0000-0000-0000-000000000002';
 const STUDENT='20000000-0000-0000-0000-000000000003',OTHER='20000000-0000-0000-0000-000000000004',ADMISSIONS='20000000-0000-0000-0000-000000000005';
@@ -8,15 +8,33 @@ let checks=0;
 await db.exec([
 'CREATE ROLE authenticated;','CREATE ROLE anon;',
 'CREATE SCHEMA auth;','GRANT USAGE ON SCHEMA public,auth TO authenticated;',
-'CREATE TABLE public.tenants(id uuid PRIMARY KEY);',
+'CREATE TABLE public.tenants(id uuid PRIMARY KEY,slug text UNIQUE);',
 "CREATE TYPE public.app_role AS ENUM ('superadmin','centre_director','admissions_admin','employer_partner','student');",
 'CREATE TABLE public.user_roles(user_id uuid,tenant_id uuid,role public.app_role);',
 "CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT NULLIF(current_setting('test.uid',true),'')::uuid $$;",
 "CREATE FUNCTION public.get_user_tenant_id(u uuid) RETURNS uuid LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO public AS $$ SELECT NULLIF(current_setting('test.tenant',true),'')::uuid $$;",
 "CREATE FUNCTION public.has_role(u uuid,r public.app_role) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO public AS $$ SELECT EXISTS(SELECT 1 FROM public.user_roles m WHERE m.user_id=u AND m.role=r AND (m.tenant_id IS NULL OR m.tenant_id=public.get_user_tenant_id(u))) $$;"
 ].join('\n'));
-await db.exec(readFileSync('supabase/migrations/20261018230000_unipathway_employer_opportunities.sql','utf8'));
-await db.query('INSERT INTO public.tenants(id) VALUES($1),($2)',[T1,T2]);
+await db.query("INSERT INTO public.tenants(id,slug) VALUES($1,'unipathway'),($2,'other')",[T1,T2]);
+// Reproduce older hosted defaults, including privileges that bypass row policies.
+await db.exec('ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon,authenticated; ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO anon,authenticated;');
+await db.exec(employerActivationSql());
+assert.equal((await db.query("SELECT to_regclass('public.unipathway_employer_memberships') AS relation")).rows[0].relation,null);checks++;
+await db.exec(employerActivationSql(true));
+for (const table of ['organisations','memberships','opportunities','applications']) {
+ const name='public.unipathway_employer_'+table;
+ for (const privilege of ['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER']) {
+  assert.equal((await db.query('SELECT has_table_privilege($1,$2,$3) AS allowed',['anon',name,privilege])).rows[0].allowed,false);checks++;
+ }
+ for (const privilege of ['DELETE','TRUNCATE','REFERENCES','TRIGGER']) {
+  assert.equal((await db.query('SELECT has_table_privilege($1,$2,$3) AS allowed',['authenticated',name,privilege])).rows[0].allowed,false);checks++;
+ }
+}
+for(const fn of ['unipathway_assert_employer_tenant()','unipathway_assert_employer_opportunity()','unipathway_guard_employer_application()']) {
+ for(const role of ['anon','authenticated']) {
+  assert.equal((await db.query('SELECT has_function_privilege($1,$2,$3) AS allowed',[role,'public.'+fn,'EXECUTE'])).rows[0].allowed,false);checks++;
+ }
+}
 await db.query("INSERT INTO public.user_roles(user_id,tenant_id,role) VALUES($1,$2,'centre_director'),($3,$2,'employer_partner'),($4,$2,'student'),($5,$6,'student'),($7,$2,'admissions_admin')",[DIRECTOR,T1,EMP,STUDENT,OTHER,T2,ADMISSIONS]);
 async function as(uid,tenant,fn){await db.exec('SET ROLE authenticated');await db.query("SELECT set_config('test.uid',$1,false),set_config('test.tenant',$2,false)",[uid,tenant]);try{return await fn()}finally{await db.exec('RESET ROLE')}}
 async function denied(fn){await assert.rejects(fn);checks++}
@@ -58,5 +76,8 @@ await as(EMP,T1,async()=>{
 await as(STUDENT,T1,async()=>{
  const withdrawn=await db.query("UPDATE public.unipathway_employer_applications SET status='withdrawn' WHERE id=$1 RETURNING status",[app]);assert.equal(withdrawn.rows[0].status,'withdrawn');checks++;
 });
+await assert.rejects(()=>db.exec(employerActivationSql(true)),/already or partially installed/);checks++;
+await db.exec('ROLLBACK');
+assert.equal(Number((await db.query('SELECT count(*) AS n FROM public.unipathway_employer_applications')).rows[0].n),1);checks++;
 await db.close();
 console.log('UniPathway employer partnership and placement RLS staging checks passed ('+checks+' assertions).');

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BriefcaseBusiness, Building2, ClipboardCheck, FileCheck2, ShieldCheck, Users } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,15 +11,23 @@ type Membership={organisation_id:string;unipathway_employer_organisations:{name:
 type Opportunity={id:string;organisation_id:string;title:string;status:string;opportunity_type:string;city:string|null;role_description:string;created_at:string};
 type Application={opportunity_id:string;status:string};
 export default function EmployerPortal(){
+ const {user}=useAuth();
+ return <EmployerWorkspace key={`${user?.id}:${user?.tenantId}:${user?.roles?.join('|')||user?.role}`} />;
+}
+function EmployerWorkspace(){
  const {user}=useAuth();const tenant=user?.tenantId;
+ const generation=useRef(0);
  const [members,setMembers]=useState<Membership[]>([]),[opps,setOpps]=useState<Opportunity[]>([]),[applications,setApplications]=useState<Application[]>([]);
  const [loading,setLoading]=useState(true),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[refresh,setRefresh]=useState(0);
  const [organisation,setOrganisation]=useState(''),[title,setTitle]=useState(''),[city,setCity]=useState(''),[kind,setKind]=useState('internship'),[summary,setSummary]=useState(''),[safety,setSafety]=useState(''),[stipend,setStipend]=useState('');
  const load=useCallback(async()=>{
+  const request=++generation.current;
+  const current=()=>request===generation.current;
   setError('');setLoading(true);setMembers([]);setOpps([]);setApplications([]);
   if(!user || !tenant){setError('A verified centre assignment is required. No student records are available.');setLoading(false);return;}
   try{
    const m=await db.from('unipathway_employer_memberships').select('organisation_id,unipathway_employer_organisations(name,sector,status)').eq('tenant_id',tenant).eq('user_id',user.id).eq('status','verified');
+   if(!current())return;
    if(m.error)throw new Error('Employer organisation verification is not available in Supabase. The approved employer schema must be deployed and checked before recruitment is enabled.');
    const verified=(m.data||[]).filter((x:Membership)=>x.unipathway_employer_organisations?.status==='verified') as Membership[];
    setMembers(verified);
@@ -29,13 +37,14 @@ export default function EmployerPortal(){
     db.from('unipathway_employer_opportunities').select('id,organisation_id,title,status,opportunity_type,city,role_description,created_at').eq('tenant_id',tenant).in('organisation_id',orgs).order('created_at',{ascending:false}),
     db.from('unipathway_employer_applications').select('opportunity_id,status').eq('tenant_id',tenant)
    ]);
+   if(!current())return;
    if(jobs.error||apps.error)throw new Error('Employer vacancies or consent-scoped applicant workflow is not available. Ask the centre to verify RLS and migrations.');
    setOpps((jobs.data||[]) as Opportunity[]);setApplications((apps.data||[]) as Application[]);
    setOrganisation(v=>orgs.includes(v)?v:orgs[0]);
-  }catch(e){setError(e instanceof Error?e.message:'Employer account unavailable.');}
-  finally{setLoading(false);}
- },[user,tenant,refresh]);
- useEffect(()=>{void load();},[load]);
+  }catch(e){if(current())setError(e instanceof Error?e.message:'Employer account unavailable.');}
+  finally{if(current())setLoading(false);}
+ },[user,tenant]);
+ useEffect(()=>{const requests=generation;void load();return()=>{requests.current++;};},[load,refresh]);
  const counts=useMemo(()=>new Map(opps.map(o=>[o.id,applications.filter(x=>x.opportunity_id===o.id).length])),[opps,applications]);
  async function submit(){
   if(!tenant||!user||!organisation||title.trim().length<5||summary.trim().length<25){
