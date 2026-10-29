@@ -2,12 +2,19 @@
  * Titles originate from the awarding bodies' published directories; NOT a list
  * of programmes for which the centre has already received delivery permission.
  */
-export type AwardingBody = 'OTHM' | 'Qualifi';
-export type QualificationOption = { body: AwardingBody; category: string; name: string; level: number; source: string };
+import {pearsonFineArtQualifications, pearsonFineArtSource} from './pearsonFineArt';
+export type AwardingBody = 'OTHM' | 'Qualifi' | 'Pearson BTEC';
+export type QualificationOption = { body: AwardingBody; category: string; name: string; level: number; source: string;
+  curriculum?: {
+    qualificationNumber: string; credits: number; creditNote: string;
+    modules: {code: string; title: string; level: number; units: {code: string; title: string; credits: number}[]}[];
+    craftFocus: string[];
+  };
+};
 const othm = 'https://othm.org.uk/qualification';
 const qualifi = 'https://qualifi.net/qualifications/';
 const options: QualificationOption[] = [];
-function add(body: AwardingBody, category: string, titles: [number, string][]) {
+function add(body: Exclude<AwardingBody, 'Pearson BTEC'>, category: string, titles: [number, string][]) {
   const source = body === 'OTHM' ? othm : qualifi;
   for (const [level, name] of titles) options.push({body,category,name,level,source});
 }
@@ -75,8 +82,10 @@ add('Qualifi','Law, Logistics & Hospitality',[
   [4,'Level 4 Diploma in Hospitality and Tourism Management'],
   [5,'Level 5 Diploma in Hospitality and Tourism Management'],
 ]);
+options.push(...pearsonFineArtQualifications);
 export const qualificationSelection = options;
 export const officialAwardingBodies: Record<AwardingBody,{url:string;label:string}> = {
+  'Pearson BTEC': {url:pearsonFineArtSource,label:'Pearson Fine Art qualification and specification'},
   OTHM: {url:othm,label:'OTHM official qualification directory'},
   Qualifi: {url:qualifi,label:'Qualifi regulated qualification directory'},
 };

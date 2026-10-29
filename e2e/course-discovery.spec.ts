@@ -38,3 +38,21 @@ test('students search and page enrolled modules, retain module links and recover
  failModules=true;await page.reload();await expect(page.getByRole('alert').filter({hasText:'Your courses could not be verified'})).toBeVisible();await expect(page.getByText(/No active enrolments yet/)).toHaveCount(0);failModules=false;await page.getByRole('button',{name:'Retry my courses',exact:true}).click();await expect(page.getByRole('link',{name:'Learning module 0',exact:true})).toBeVisible();
  await page.evaluate(()=>{document.documentElement.classList.add('dark');document.documentElement.style.fontSize='24px';});for(const viewport of [{width:375,height:812},{width:812,height:375},{width:1440,height:1000}]){await page.setViewportSize(viewport);await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth?[]:Array.from(document.querySelectorAll('body *')).filter(el=>el.getBoundingClientRect().right>innerWidth+1&&getComputedStyle(el).visibility!=='hidden').slice(-8).map(el=>({tag:el.tagName,text:el.textContent?.slice(0,90),right:Math.round(el.getBoundingClientRect().right),viewport:innerWidth})))).toEqual([]);}
 });
+
+test('Pearson Fine Art and craft options expose sourced modules and a course-specific enquiry',async({context,page})=>{
+ test.setTimeout(45_000);
+ await context.route('https://unipathway-browser-ci.invalid/**',route=>route.fulfill({status:200,headers:{'access-control-allow-origin':'*','content-type':'application/json'},body:'[]'}));
+ await page.setViewportSize({width:375,height:812});await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto('/qualifications?body=Pearson+BTEC&subject=Fine+Art+%26+Craft&q=textile');
+ const consent=page.getByRole('dialog',{name:'Cookie preferences'});if(await consent.isVisible())await consent.getByRole('button',{name:'Reject all'}).click();
+ const cards=page.getByRole('region',{name:'Proposed qualifications',exact:true}).getByRole('article');await expect(cards).toHaveCount(2);
+ const hnd=cards.filter({has:page.getByRole('heading',{name:'Level 5 Higher National Diploma in Fine Art',exact:true})});
+ await hnd.getByText('Modules and craft study · Level 5',{exact:true}).click();
+ await expect(hnd.getByText('B2 · Professional Project — 75 credits',{exact:true})).toBeVisible();
+ await expect(hnd.getByText(/not additional Pearson units or extra credits/)).toBeVisible();
+ const enquiry=hnd.getByRole('link',{name:/Ask about Pearson BTEC Level 5/});
+ expect(new URL(await enquiry.getAttribute('href')||'',page.url()).searchParams.get('course')).toBe('Pearson BTEC Level 5 Higher National Diploma in Fine Art');
+ await expect(hnd.getByRole('link',{name:/Pearson Fine Art specification/})).toHaveAttribute('href',/qualifications\.pearson\.com/);
+ await page.evaluate(()=>{document.documentElement.classList.add('dark');document.documentElement.style.fontSize='24px';});
+ for(const viewport of [{width:375,height:812},{width:812,height:375},{width:1440,height:1000}]){await page.setViewportSize(viewport);await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
+});
