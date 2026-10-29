@@ -3,39 +3,50 @@ import SocialIcons from '@/components/SocialIcons';
 import PublicHero from '@/components/PublicHero';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { MapPin, Phone, Mail, Clock, Send, Globe, MessageSquare, MessageCircle } from 'lucide-react';
-import { useState } from 'react';
+import { Mail, Clock, Send, Globe } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import TenantNav from '@/components/TenantNav';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantBranding } from '@/hooks/useTenantBranding';
 import Seo from '@/components/Seo';
 export default function TenantContactPage() {
-  const { slug } = useParams();
+  const {slug}=useParams();
+  return <ContactWorkspace key={slug||'unipathway'} slug={slug}/>;
+}
+function ContactWorkspace({slug}:{slug?:string}) {
   const [params] = useSearchParams();
   const requestedCourse = (params.get('course') || '').slice(0,240);
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', subject: params.get('subject') === 'Course Enquiry' || requestedCourse ? 'Course Enquiry' : '', message: requestedCourse ? `I would like to enquire about ${requestedCourse}. Please confirm entry requirements, delivery, duration, fees and the next intake.` : '' });
   const [sending, setSending] = useState(false);
+  const pending=useRef(false),alive=useRef(true);
+  const [feedback,setFeedback]=useState<{kind:'success'|'error';message:string}|null>(null);
+  useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
   const { brandName, primaryColor } = useTenantBranding();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if(pending.current)return;
     if (!formData.name || !formData.email || !formData.message) {
       toast.error('Please fill in all required fields');
       return;
     }
-    setSending(true);
+    pending.current=true;setSending(true);setFeedback(null);
     try {
       const { data, error } = await supabase.functions.invoke('contact-form', {
         body: { ...formData, tenant_slug: slug || 'unipathway' },
       });
-      if (error || !data?.success) throw new Error('Your message could not be confirmed. Please try again.');
-      toast.success('Message sent. Our admissions team will reply using your contact details.');
+      if(!alive.current)return;
+      if (error || data?.success!==true) throw new Error('Your message could not be confirmed. Please try again.');
+      const message='Message sent. Our admissions team will reply using your contact details.';
+      setFeedback({kind:'success',message});toast.success(message);
       setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to send message. Please try again.');
+    } catch {
+      if(!alive.current)return;
+      const message='Your message could not be confirmed. Your details are still here. Please retry or contact admissions by email.';
+      setFeedback({kind:'error',message});toast.error(message);
     } finally {
-      setSending(false);
+      pending.current=false;if(alive.current)setSending(false);
     }
   };
 
@@ -81,6 +92,9 @@ export default function TenantContactPage() {
             {/* Form */}
             <form id="contact-form" aria-busy={sending} onSubmit={handleSubmit} className="scroll-mt-28 lg:col-span-2 surface-card p-4 sm:p-6">
               <h3 className="text-lg font-bold mb-4">Send us a message</h3>
+              {feedback&&<p role={feedback.kind==='error'?'alert':'status'} className="mb-4 rounded-lg border p-3 text-sm">{feedback.message}</p>}
+              <fieldset disabled={sending} className="min-w-0">
+              <legend className="sr-only">Admissions enquiry details</legend>
               <div className="grid sm:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label htmlFor="contact-name" className="text-label mb-1.5 block">Full Name *</label>
@@ -122,6 +136,7 @@ export default function TenantContactPage() {
               <Button className="px-8" type="submit" disabled={sending}>
                 {sending ? 'Sending...' : <><Send className="w-4 h-4 mr-1.5" /> Send Message</>}
               </Button>
+              </fieldset>
             </form>
           </div>
         </div>
