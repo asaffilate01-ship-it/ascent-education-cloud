@@ -12,7 +12,7 @@ export const studyLinks = [
   { label: 'Complete Education Centre', detail: 'Pakistan board exams, O/A Levels, global languages, professional certification, care, beauty and UK diplomas', to: '/education-centre', icon: GraduationCap },
   { label: 'All study options', detail: 'Live online / in-centre tuition, qualifications, digital skills, finance and more', to: '/study', icon: BookOpen },
   { label: 'European country explorer', detail: 'All EU university destinations with language and study preparation', to: '/europe', icon: Globe2 },
-  { label: 'UniPathway scholarships', detail: 'Foundation opportunity fund for merit and financial need', to: '/scholarships', icon: GraduationCap },
+  { label: 'UniPathway Foundation', detail: 'Reduced or fully funded fees, talent and financial need, employer co-funding', to: '/scholarships', icon: GraduationCap },
   { label: 'School partnerships', detail: 'Tuition support, referrals and optional school software', to: '/school-partners', icon: School },
   { label: 'Study in Pakistan', detail: 'HEC universities, local degree progression and study guidance', to: '/pakistan', icon: School },
   { label: 'Women’s Beauty & Aesthetics', detail: 'CIBTAC, VTCT Skills guidance, salon skills and CPD training', to: '/beauty-aesthetics', icon: GraduationCap },
@@ -43,7 +43,7 @@ export const destinationLinks = [
   { label: 'Canada', detail: 'English/French study routes and university options', to: '/canada' },
 ];
 
-const primaryStudyLinks = studyLinks.filter(link => ['/study', '/qualifications', '/tuition', '/ielts-preparation', '/german-preparation', '/tech-academy', '/finance-academy', '/beauty-aesthetics', '/creative-crafts'].includes(link.to));
+const primaryStudyLinks = studyLinks.filter(link => ['/study', '/scholarships', '/qualifications', '/tuition', '/ielts-preparation', '/german-preparation', '/tech-academy', '/finance-academy', '/beauty-aesthetics', '/creative-crafts'].includes(link.to));
 
 const linkCls = (active: boolean) => cn('relative inline-flex min-h-11 items-center rounded-full px-4 py-2 text-sm font-semibold transition-colors', active ? 'bg-primary/5 text-primary' : 'text-foreground/80 hover:bg-accent hover:text-foreground');
 

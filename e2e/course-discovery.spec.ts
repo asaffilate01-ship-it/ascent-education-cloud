@@ -133,3 +133,16 @@ test('career shortcuts activate tabs and failed reads offer explicit retry',asyn
  await page.getByRole('button',{name:'Browse jobs',exact:true}).click();await expect(page.getByRole('tab',{name:'Jobs',exact:true})).toHaveAttribute('aria-selected','true');await page.getByRole('button',{name:'Retry opportunities',exact:true}).click();await expect(page.getByText('No job listings available at the moment.',{exact:true})).toBeVisible();
  await page.getByRole('button',{name:/CV Builder/}).click();await expect(page.getByLabel('Full Name',{exact:true})).toBeVisible();await expect(page.getByLabel('Work Experience',{exact:true})).toBeVisible();
 });
+
+test('Foundation routes student support and employer co-funding enquiries separately',async({context,page})=>{
+ test.setTimeout(45_000);
+ await context.route('https://unipathway-browser-ci.invalid/**',route=>route.fulfill({status:200,headers:{'access-control-allow-origin':'*','content-type':'application/json'},body:'[]'}));
+ await page.setViewportSize({width:375,height:812});await page.goto('/scholarships');
+ const consent=page.getByRole('dialog',{name:'Cookie preferences'});if(await consent.isVisible())await consent.getByRole('button',{name:'Reject all'}).click();
+ await expect(page.getByRole('heading',{name:'Fully funded tuition',exact:true})).toBeVisible();
+ await page.getByRole('link',{name:'Ask about student fee support',exact:true}).click();await expect(page.getByLabel('Message *',{exact:true})).toHaveValue(/UniPathway Foundation: student fee support/);
+ await page.goBack();await page.getByRole('link',{name:'Help fund a student',exact:true}).click();await expect(page.getByLabel('Message *',{exact:true})).toHaveValue(/UniPathway Foundation: employer co-funding and placements/);
+ await page.goBack();await expect(page.getByRole('heading',{name:'From supported learning to work opportunities',exact:true})).toBeVisible();
+ await page.evaluate(()=>{document.documentElement.classList.add('dark');document.documentElement.style.fontSize='24px';});
+ for(const viewport of [{width:375,height:812},{width:812,height:375},{width:1440,height:1000}]){await page.setViewportSize(viewport);await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
+});

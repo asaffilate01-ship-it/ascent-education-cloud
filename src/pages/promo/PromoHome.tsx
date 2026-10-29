@@ -20,6 +20,7 @@ const pathways = [
   { title: 'German Courses', caption: 'A1–C1, Goethe, TestDaF, telc and DSH preparation', to: '/german-preparation', icon: BookOpen, number: '06' },
   { title: 'Pakistan Funded Skills', caption: 'PSDF, PITB e-Rozgaar, WDD SEHR and NAVTTC programmes', to: '/funded-courses', icon: GraduationCap, number: '07' },
   { title: 'Careers & Internships', caption: 'Pakistan employers, placements and overseas student support', to: '/careers', icon: BriefcaseBusiness, number: '08' },
+  { title: 'UniPathway Foundation', caption: 'Reduced or fully funded fees for talented students from less privileged backgrounds, with employer co-funding', to: '/scholarships', icon: GraduationCap, number: '12' },
 ];
 
 export default function PromoHome() {
@@ -30,7 +31,7 @@ export default function PromoHome() {
     'School tuition': ['/tuition', '/education-centre'],
     'Languages': ['/ielts-preparation', '/german-preparation'],
     'Career skills': ['/tech-academy', '/finance-academy', '/beauty-aesthetics', '/creative-crafts', '/funded-courses', '/careers'],
-    'Qualifications & university': ['/qualifications', '/europe'],
+    'Qualifications & university': ['/qualifications', '/europe', '/scholarships'],
   };
   const matches = pathways.filter(p => `${p.title} ${p.caption}`.toLowerCase().includes(query.trim().toLowerCase()) && (area === 'All subjects' || areas[area].includes(p.to)));
   return <div className="public-site min-h-dvh bg-background text-foreground">
