@@ -1,3 +1,4 @@
+import QualificationCurriculum from '@/components/QualificationCurriculum';
 import AwardingBodyGuidance from '@/components/AwardingBodyGuidance';
 import CourseAtAGlance from '@/components/CourseAtAGlance';
 import PublicHero from '@/components/PublicHero';
@@ -15,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { qualificationSelection } from '@/lib/qualificationSelection';
 
 
-const bodies = ['All', 'OTHM', 'Qualifi'] as const;
+const bodies = ['All', 'OTHM', 'Qualifi', 'Pearson BTEC'] as const;
 export default function QualificationsCatalogue() {
   const [now,setNow]=useState(Date.now());useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),30000);return()=>clearInterval(timer);},[]);
   const [offers,setOffers]=useState<CourseOffer[]>([]);const [offersError,setOffersError]=useState(false);
@@ -36,7 +37,7 @@ export default function QualificationsCatalogue() {
   const filtered = qualificationSelection.filter(q =>
     (body === 'All' || q.body === body) &&
     (category === 'All' || q.category === category) &&
-    `${q.name} ${q.body} ${q.category}`.toLowerCase().includes(query.trim().toLowerCase())
+    `${q.name} ${q.body} ${q.category} ${q.curriculum?.craftFocus.join(' ')||''} ${q.curriculum?.modules.map(m=>`${m.title} ${m.units.map(u=>u.title).join(' ')}`).join(' ')||''}`.toLowerCase().includes(query.trim().toLowerCase())
   );
   return <div className="public-site min-h-dvh bg-background">
     <Seo canonical="/qualifications" title="UK Qualification Pathways in Pakistan | UniPathway" description="Explore OTHM, Qualifi, ATHE, Pearson BTEC and VTCT Skills pathways with programme approval and admissions guidance for Pakistan."/>
@@ -45,7 +46,7 @@ export default function QualificationsCatalogue() {
       <PublicHero topic="guidance">
         <p className="text-label text-success">UK & international qualifications</p>
         <h1 className="mt-3 text-3xl font-extrabold sm:text-5xl">Choose a pathway that moves you forward</h1>
-        <p className="mt-4 text-muted-foreground">Explore OTHM and Qualifi catalogue options alongside ATHE, Pearson BTEC and VTCT Skills pathway guidance for learners in Pakistan. Options without current confirmed details are for planning only. Admissions must verify centre authorisation, entry eligibility and a place on the chosen intake before enrolment.</p>
+        <p className="mt-4 text-muted-foreground">Explore OTHM, Qualifi and Pearson BTEC Fine Art catalogue options alongside ATHE and VTCT Skills pathway guidance for learners in Pakistan. Options without current confirmed details are for planning only. Admissions must verify centre authorisation, entry eligibility and a place on the chosen intake before enrolment.</p>
       </PublicHero>
 <PageContents/>
       <AwardingBodyGuidance/>
@@ -65,7 +66,7 @@ export default function QualificationsCatalogue() {
         {filtered.map(q=>{const offer=offers.find(o=>o.course_key===courseOfferKey(q.body,q.name)&&currentCourseOffer(o,now));return <article key={q.body+q.name} className="flex flex-col rounded-xl border bg-card p-5">
           <span className="text-xs font-bold text-success">{q.body} · Level {q.level}</span>
           <h2 className="mt-2 text-lg font-bold">{q.name}</h2><p className="mt-2 text-sm text-muted-foreground">{q.category}</p>
-          <div className="mt-4"><CourseAtAGlance compact course={`${q.body} ${q.name}`} entry={offer?.entry_requirements} fees={offer?.fees} intake={offer?.intake_date} delivery="Planned online study with in-centre academic visits, subject to programme approval."/></div>
+          <QualificationCurriculum qualification={q}/><div className="mt-4"><CourseAtAGlance compact course={`${q.body} ${q.name}`} entry={offer?.entry_requirements} fees={offer?.fees} intake={offer?.intake_date} delivery={q.curriculum?'Planned blended study with supervised studio and craft workshops. Practical attendance and facilities must be confirmed before enrolment.':'Planned online study with in-centre academic visits, subject to programme approval.'}/></div>
           {offer&&<p className="mt-3 text-xs text-muted-foreground">{offer.availability==='open'?'Open for applications':offer.availability==='upcoming'?'Upcoming intake':'Applications closed'} · Reviewed {offer.verified_at.slice(0,10)} · Valid until {offer.valid_until.slice(0,10)}</p>}
         </article>})}
         {filtered.length===0&&<div className="col-span-full space-y-3 rounded-xl border bg-card p-5"><p>No matching qualifications. Try a different subject or search, or reset the filters.</p><Button className="max-w-full whitespace-normal" variant="outline" onClick={clearFilters}>Reset qualification search</Button></div>}
@@ -73,7 +74,7 @@ export default function QualificationsCatalogue() {
       <section className="rounded-xl border bg-secondary/40 p-6">
         <BookOpenCheck className="size-7 text-success"/><h2 className="mt-3 text-xl font-bold">Teaching, curriculum and university progression</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Approved awarding-body unit specifications and assessment rules will determine the final modules, credits, assignment briefs and delivery method. Our planned model includes online study and two 14-day centre-based academic visits where permitted. A Level 4 or 5 diploma is not itself a UK university degree and admission or advanced standing is subject to the receiving university.</p>
-        <div className="mt-4 flex flex-wrap gap-4 text-sm text-muted-foreground"><span>OTHM · Level 3–6 diploma titles</span><span>Qualifi · Level 3–6 diploma titles</span></div>
+        <div className="mt-4 flex flex-wrap gap-4 text-sm text-muted-foreground"><span>OTHM · Level 3–6 diploma titles</span><span>Qualifi · Level 3–6 diploma titles</span><span>Pearson BTEC · Level 4 HNC and Level 5 HND in Fine Art, with craft-focused teaching</span></div>
         <Button asChild className="mt-5"><Link to="/university-progression">Explore university progression <GraduationCap className="ml-2 size-4"/></Link></Button>
       </section>
     </main><PublicFooter/>

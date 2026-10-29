@@ -30,3 +30,12 @@ it('ignores invalid body/subject values without crashing and bounds externally s
  await mount('/qualifications?body=Unknown&subject=Unknown&q='+('x'.repeat(200)));expect(screen.getByRole('button',{name:'All catalogue options'})).toHaveAttribute('aria-pressed','true');expect(screen.getByRole('combobox',{name:'Subject'})).toHaveValue('All');expect(screen.getByLabelText('Search programmes')).toHaveValue('x'.repeat(120));
  fireEvent.click(screen.getByText('Clear qualification filters'));expect(params().toString()).toBe('');
 });
+it('finds both Pearson Fine Art awards by craft focus and displays the correct staged curriculum',async()=>{
+ await mount('/qualifications?body=Pearson+BTEC&subject=Fine+Art+%26+Craft&q=textile');
+ expect(screen.getByRole('button',{name:'Pearson BTEC'})).toHaveAttribute('aria-pressed','true');
+ const cards=within(screen.getByLabelText('Proposed qualifications')).getAllByRole('article');expect(cards).toHaveLength(2);
+ expect(cards[0]).toHaveTextContent('610/1794/2');expect(cards[0]).toHaveTextContent('120 credits');expect(cards[0]).not.toHaveTextContent('B1');
+ expect(cards[1]).toHaveTextContent('610/1795/4');expect(cards[1]).toHaveTextContent('240 credits overall: 120 at Level 4 plus 120 at Level 5');
+ expect(cards[1]).toHaveTextContent('B2 · Professional Project');expect(cards[0]).toHaveTextContent('not additional Pearson units or extra credits');
+ expect(within(cards[0]).getByRole('link',{name:/Pearson Fine Art specification/})).toHaveAttribute('href',expect.stringContaining('qualifications.pearson.com'));
+});

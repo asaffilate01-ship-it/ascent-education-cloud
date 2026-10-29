@@ -124,3 +124,14 @@ CI initially stopped before browser tests because ubuntu-latest resolved to Ubun
 Private access requests now carry a generation guard. Refresh immediately invalidates pending access work and clears the displayed link; module/account/active-role changes and unmount also discard old completions. A late link or error cannot overwrite a newer resource view or a newly requested link. Duplicate access requests are blocked synchronously while one is pending. Existing storage permissions, two-minute expiry and enrolled-resource queries remain authoritative; this client guard does not revoke an already issued signed URL.
 
 Search trims surrounding whitespace, reports matching and total authorised resources, and distinguishes no matches from an empty library. Clear filters restores all resource types and search focus. Resource cards and pagination wrap for narrow screens and enlarged text. Tests cover late success after refresh, late failure after module change and filter recovery. Hosted activation and provider/device acceptance gates remain open.
+
+## Pearson Fine Art and craft catalogue — 29 October 2026
+
+Added the current Pearson BTEC Fine Art Level 4 HNC and Level 5 HND to the shared qualification selection, public awarding-body/subject filters and existing staff course-offer selector. The HND credit display explicitly includes its Level 4 stage. Expandable curriculum separates Pearson modules and assessment units from UniPathway craft-focused teaching themes. The themes receive no separate credit values or invented Pearson unit codes. Practical studio attendance/facilities and the final programme require confirmation; existing approval, admissions, fee and intake checks remain in place. No hosted programmes, enrolments or approval records were created.
+
+Sources checked on 29 October 2026:
+- Pearson current qualification page: https://qualifications.pearson.com/en/qualifications/btec-higher-nationals/fine-art-2023.html
+- Fine Art specification, Issue 3, August 2026, sections 6.1–6.2: https://qualifications.pearson.com/content/dam/pdf/BTEC-Higher-Nationals/Fine-Art/2023/specification-and-sample-assessments/9781292720579-hn-fineart-spec.pdf
+- Linked creative-suite module descriptors, Fine Art section (modules A and B): https://qualifications.pearson.com/content/dam/pdf/BTEC-Higher-Nationals/animation/2023/teaching-and-learning-materials/unit-desc-hn-crea-art-book.pdf
+
+Uses the current Fine Art route rather than the older Art and Design (2017) award. Search includes craft teaching themes and unit/module titles. Regression checks cover body/subject links, qualification identities and cumulative credits, source links and course-specific enquiries, with a browser journey for expanded curriculum in narrow/wide layouts and enlarged dark-mode text.

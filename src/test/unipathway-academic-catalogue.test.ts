@@ -4,10 +4,10 @@ import { programmePriorities, progressionDestinations } from '@/lib/programmePri
 import { isPublicMobilePath } from '@/lib/mobileTabRoutes';
 
 describe('UniPathway academic and careers catalogue', () => {
-  it('keeps OTHM and Qualifi qualifications distinguishable and sourced', () => {
+  it('keeps awarding-body qualifications distinguishable and sourced', () => {
     expect(qualificationSelection.length).toBeGreaterThan(35);
     const bodies = new Set(qualificationSelection.map(q=>q.body));
-    expect([...bodies].sort()).toEqual(['OTHM','Qualifi']);
+    expect([...bodies].sort()).toEqual(['OTHM','Pearson BTEC','Qualifi']);
     const unique = new Set(qualificationSelection.map(q=>q.body + q.name));
     expect(unique.size).toBe(qualificationSelection.length);
     for (const qualification of qualificationSelection) {
