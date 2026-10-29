@@ -4,7 +4,7 @@ import { Briefcase, FileText, GraduationCap, Globe, ChevronRight, ExternalLink, 
 import { Button } from '@/components/ui/button';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { useMemo, useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -17,13 +17,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function StudentCareer() {
   const [cvOpen, setCvOpen] = useState(false);
+  const [tab,setTab]=useState('pathway');
   const [selectedCountry, setSelectedCountry] = useState<string>('All');
 
-  const { data: universities, loading: unisLoading } = useSupabaseQuery('partner_universities' as any, {
+  const { data: universities, loading: unisLoading, error: unisError, refetch: retryUniversities } = useSupabaseQuery('partner_universities', {
     orderBy: { column: 'country', ascending: true },
   });
 
-  const { data: jobListings, loading: jobsLoading } = useSupabaseQuery('job_listings' as any, {
+  const { data: jobListings, loading: jobsLoading, error: jobsError, refetch: retryJobs } = useSupabaseQuery('job_listings', {
     orderBy: { column: 'created_at', ascending: false },
   });
 
@@ -72,45 +73,45 @@ export default function StudentCareer() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Dialog open={cvOpen} onOpenChange={setCvOpen}>
           <DialogTrigger asChild>
-            <div className="surface-card p-5 text-center hover:shadow-lg transition-default cursor-pointer group">
+            <button type="button" className="surface-card p-5 text-center hover:shadow-lg transition-default group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-3 group-hover:bg-primary/20 transition-default">
                 <FileText className="w-5 h-5 text-primary" />
               </div>
               <p className="text-sm font-semibold">CV Builder</p>
               <p className="text-xs text-muted-foreground mt-0.5">Create professional CV</p>
-              <Button variant="outline" size="sm" className="mt-3 text-xs">Build CV</Button>
-            </div>
+              <span className="mt-3 inline-block text-xs font-semibold underline">Build CV</span>
+            </button>
           </DialogTrigger>
           <DialogContent className="max-w-md">
-            <DialogHeader><DialogTitle className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-primary" />CV Builder</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-primary" />CV Builder</DialogTitle><DialogDescription>Create a local text draft. Review your details before sharing it.</DialogDescription></DialogHeader>
             <form onSubmit={handleCvGenerate} className="space-y-3">
-              <div><Label>Full Name</Label><Input name="name" required placeholder="Your full name" /></div>
-              <div><Label>Email</Label><Input name="email" type="email" required placeholder="email@example.com" /></div>
-              <div><Label>Phone</Label><Input name="phone" placeholder="+44 7700 900000" /></div>
-              <div><Label>Professional Summary</Label><Textarea name="summary" rows={3} placeholder="Brief professional summary..." /></div>
-              <div><Label>Skills (comma-separated)</Label><Input name="skills" placeholder="Excel, Communication, Data Analysis" /></div>
-              <div><Label>Work Experience</Label><Textarea name="experience" rows={3} placeholder="Role, Company, Duration..." /></div>
+              <div><Label htmlFor="cv-name">Full Name</Label><Input id="cv-name" autoComplete="name" name="name" required placeholder="Your full name" /></div>
+              <div><Label htmlFor="cv-email">Email</Label><Input id="cv-email" name="email" type="email" required placeholder="email@example.com" /></div>
+              <div><Label htmlFor="cv-phone">Phone</Label><Input id="cv-phone" name="phone" type="tel" autoComplete="tel" placeholder="+92" /></div>
+              <div><Label htmlFor="cv-summary">Professional Summary</Label><Textarea id="cv-summary" name="summary" rows={3} placeholder="Brief professional summary..." /></div>
+              <div><Label htmlFor="cv-skills">Skills (comma-separated)</Label><Input id="cv-skills" name="skills" placeholder="Excel, Communication, Data Analysis" /></div>
+              <div><Label htmlFor="cv-experience">Work Experience</Label><Textarea id="cv-experience" name="experience" rows={3} placeholder="Role, Company, Duration..." /></div>
               <Button type="submit" className="w-full"><Download className="w-4 h-4 mr-2" />Download CV text draft</Button>
             </form>
           </DialogContent>
         </Dialog>
 
-        <div className="surface-card p-5 text-center hover:shadow-lg transition-default cursor-pointer group" onClick={() => document.getElementById('uni-section')?.scrollIntoView({ behavior: 'smooth' })}>
+        <div className="surface-card p-5 text-center hover:shadow-lg transition-default group">
           <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-3 group-hover:bg-primary/20 transition-default">
             <GraduationCap className="w-5 h-5 text-primary" />
           </div>
           <p className="text-sm font-semibold">University Apps</p>
-          <p className="text-xs text-muted-foreground mt-0.5">{stats.universities} partner universities</p>
-          <Button variant="outline" size="sm" className="mt-3 text-xs">Browse</Button>
+          <p className="text-xs text-muted-foreground mt-0.5">{unisError?'University list unavailable':unisLoading?'Loading universities…':`${stats.universities} partner universities`}</p>
+          <Button variant="outline" size="sm" className="mt-3 text-xs" onClick={()=>setTab('universities')}>Browse universities</Button>
         </div>
 
-        <div className="surface-card p-5 text-center hover:shadow-lg transition-default cursor-pointer group" onClick={() => document.getElementById('jobs-section')?.scrollIntoView({ behavior: 'smooth' })}>
+        <div className="surface-card p-5 text-center hover:shadow-lg transition-default group">
           <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-3 group-hover:bg-primary/20 transition-default">
             <Briefcase className="w-5 h-5 text-primary" />
           </div>
           <p className="text-sm font-semibold">Job Board</p>
-          <p className="text-xs text-muted-foreground mt-0.5">{stats.jobs} opportunities</p>
-          <Button variant="outline" size="sm" className="mt-3 text-xs">Browse</Button>
+          <p className="text-xs text-muted-foreground mt-0.5">{jobsError?'Opportunities unavailable':jobsLoading?'Loading opportunities…':`${stats.jobs} opportunities`}</p>
+          <Button variant="outline" size="sm" className="mt-3 text-xs" onClick={()=>setTab('jobs')}>Browse jobs</Button>
         </div>
 
         <div className="surface-card p-5 text-center hover:shadow-lg transition-default cursor-pointer group">
@@ -124,8 +125,8 @@ export default function StudentCareer() {
       </div>
 
       {/* Tabbed Content: Pathway, Requirements, Accreditation, Universities, Jobs */}
-      <Tabs defaultValue="pathway" className="mb-6">
-        <TabsList className="mb-4">
+      <Tabs value={tab} onValueChange={setTab} className="mb-6">
+        <TabsList className="mb-4 h-auto flex-wrap justify-start">
           <TabsTrigger value="pathway">Progression Pathway</TabsTrigger>
           <TabsTrigger value="requirements">Entry Requirements</TabsTrigger>
           <TabsTrigger value="accreditation">Accreditation</TabsTrigger>
@@ -170,7 +171,7 @@ export default function StudentCareer() {
 
             {unisLoading ? (
               <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
-            ) : (
+            ) : unisError ? (<div role="alert" className="space-y-3 rounded border p-4"><p>University options could not be loaded. Retry or contact your adviser.</p><Button variant="outline" onClick={()=>void retryUniversities()}>Retry universities</Button></div>) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
                 {filteredUnis.map((uni: any) => (
                   <div key={uni.id} className="surface-card p-4 hover:shadow-lg transition-default group relative overflow-hidden">
@@ -216,7 +217,7 @@ export default function StudentCareer() {
             </h3>
             {jobsLoading ? (
               <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
-            ) : (
+            ) : jobsError ? (<div role="alert" className="space-y-3 rounded border p-4"><p>Opportunities could not be loaded. Retry or contact your careers adviser.</p><Button variant="outline" onClick={()=>void retryJobs()}>Retry opportunities</Button></div>) : (
               <div className="space-y-2">
                 {jobs.map((job: any) => (
                   <div key={job.id} className="surface-card p-4 flex items-center gap-4 hover:shadow-lg transition-default group">

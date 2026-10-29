@@ -113,3 +113,23 @@ test('course enquiry preserves details after failure and locks fields during a p
  await form.getByRole('button',{name:'Send Message',exact:true}).click();await expect(page.getByLabel('Message *',{exact:true})).toBeDisabled();await expect.poll(()=>requests).toBe(2);
  release();await expect(form.getByRole('status')).toContainText('Message sent.');await expect(page.getByLabel('Full Name *',{exact:true})).toBeEmpty();
 });
+
+
+test('career shortcuts activate tabs and failed reads offer explicit retry',async({context,page})=>{
+ test.setTimeout(45_000);
+ const tenant='00000000-0000-4000-8000-000000000010',user={id:'00000000-0000-4000-8000-000000000001',aud:'authenticated',role:'authenticated',email:'synthetic-student@unipathway.pk',app_metadata:{provider:'email'},user_metadata:{},created_at:'2026-01-01T00:00:00Z'};
+ await context.addInitScript(({user})=>{if(location.origin==='null')return;const token=btoa(JSON.stringify({alg:'HS256',typ:'JWT'}))+'.'+btoa(JSON.stringify({sub:user.id,role:'authenticated',exp:Math.floor(Date.now()/1000)+3600}))+'.synthetic';localStorage.setItem('sb-unipathway-browser-ci-auth-token',JSON.stringify({access_token:token,refresh_token:'synthetic',token_type:'bearer',expires_at:Math.floor(Date.now()/1000)+3600,expires_in:3600,user}));},{user});
+ let fail=true;
+ await context.route('https://unipathway-browser-ci.invalid/**',route=>{
+  const url=new URL(route.request().url()),name=url.pathname.split('/').at(-1);let data:unknown=[];
+  if(name==='profiles')data={full_name:'Synthetic learner',tenant_id:tenant};else if(name==='user_roles')data=[{role:'student'}];else if(url.pathname.endsWith('/auth/v1/user'))data=user;
+  if(fail&&(name==='partner_universities'||name==='job_listings'))return route.fulfill({status:503,headers:{'access-control-allow-origin':'*','content-type':'application/json'},body:JSON.stringify({message:'Synthetic unavailable'})});
+  return route.fulfill({status:200,headers:{'access-control-allow-origin':'*','content-type':'application/json'},body:JSON.stringify(data)});
+ });
+ await page.goto('/student/career');
+ const consent=page.getByRole('dialog',{name:'Cookie preferences'});if(await consent.isVisible())await consent.getByRole('button',{name:'Reject all'}).click();
+ await page.getByRole('button',{name:'Browse universities',exact:true}).click();await expect(page.getByRole('tab',{name:'Universities',exact:true})).toHaveAttribute('aria-selected','true');await expect(page.getByRole('alert').filter({hasText:'University options could not be loaded'})).toBeVisible();
+ fail=false;await page.getByRole('button',{name:'Retry universities',exact:true}).click();await expect(page.getByText('No partner universities found for this country.',{exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Browse jobs',exact:true}).click();await expect(page.getByRole('tab',{name:'Jobs',exact:true})).toHaveAttribute('aria-selected','true');await page.getByRole('button',{name:'Retry opportunities',exact:true}).click();await expect(page.getByText('No job listings available at the moment.',{exact:true})).toBeVisible();
+ await page.getByRole('button',{name:/CV Builder/}).click();await expect(page.getByLabel('Full Name',{exact:true})).toBeVisible();await expect(page.getByLabel('Work Experience',{exact:true})).toBeVisible();
+});
