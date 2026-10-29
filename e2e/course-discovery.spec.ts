@@ -94,3 +94,22 @@ test('page contents follows qualification filters without obsolete anchors',asyn
  await expect(contents.getByRole('link',{name:'Level 3 Diploma in Business Studies',exact:true})).toBeVisible();
  expect(await contents.getByRole('link').evaluateAll(links=>links.every(link=>{const target=link.getAttribute('href')?.slice(1);return !!target&&!!document.getElementById(target);}))).toBe(true);
 });
+
+test('course enquiry preserves details after failure and locks fields during a pending send',async({context,page})=>{
+ test.setTimeout(45_000);
+ let requests=0,release=()=>{};
+ await context.route('https://unipathway-browser-ci.invalid/**',async route=>{
+  if(new URL(route.request().url()).pathname.endsWith('/functions/v1/contact-form')){
+   requests++;if(requests===2)await new Promise<void>(resolve=>{release=resolve;});
+   return route.fulfill({status:200,headers:{'access-control-allow-origin':'*','content-type':'application/json'},body:JSON.stringify({success:requests===2})});
+  }
+  return route.fulfill({status:200,headers:{'access-control-allow-origin':'*','content-type':'application/json'},body:'[]'});
+ });
+ await page.goto('/contact?course=Sewing');
+ const consent=page.getByRole('dialog',{name:'Cookie preferences'});if(await consent.isVisible())await consent.getByRole('button',{name:'Reject all'}).click();
+ await page.getByLabel('Full Name *',{exact:true}).fill('Synthetic Learner');await page.getByLabel('Email *',{exact:true}).fill('learner@example.invalid');
+ const form=page.locator('#contact-form');await form.getByRole('button',{name:'Send Message',exact:true}).click();
+ await expect(form.getByRole('alert')).toContainText('could not be confirmed');await expect(page.getByLabel('Full Name *',{exact:true})).toHaveValue('Synthetic Learner');await expect(page.getByLabel('Message *',{exact:true})).toHaveValue(/Sewing/);
+ await form.getByRole('button',{name:'Send Message',exact:true}).click();await expect(page.getByLabel('Message *',{exact:true})).toBeDisabled();await expect.poll(()=>requests).toBe(2);
+ release();await expect(form.getByRole('status')).toContainText('Message sent.');await expect(page.getByLabel('Full Name *',{exact:true})).toBeEmpty();
+});
