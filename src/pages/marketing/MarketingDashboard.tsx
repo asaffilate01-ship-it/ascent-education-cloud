@@ -5,9 +5,11 @@ import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { useMemo } from 'react';
+import {Link} from 'react-router-dom';
+import {DashboardSkeleton} from '@/components/ui/Skeletons';
 
 export default function MarketingDashboard() {
-  const { data: applications } = useSupabaseQuery('applications', {
+  const { data: applications, loading, error, refetch } = useSupabaseQuery('applications', {
     orderBy: { column: 'created_at', ascending: false },
   });
 
@@ -31,10 +33,12 @@ export default function MarketingDashboard() {
   const monthlyData = useMemo(() => {
     const months: Record<string, number> = {};
     applications.forEach((a) => {
-      const month = new Date(a.created_at).toLocaleDateString('en-US', { month: 'short' });
+      const date = new Date(a.created_at);
+      if (Number.isNaN(date.getTime())) return;
+      const month = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
       months[month] = (months[month] || 0) + 1;
     });
-    return Object.entries(months).slice(-6).map(([month, count]) => ({ month, leads: count }));
+    return Object.entries(months).sort(([a], [b]) => a.localeCompare(b)).slice(-6).map(([month, count]) => ({ month, leads: count }));
   }, [applications]);
 
   const totalLeads = applications.length;
@@ -51,11 +55,14 @@ export default function MarketingDashboard() {
     return Object.entries(map).sort((a, b) => b[1] - a[1]);
   }, [applications]);
 
+  if (loading) return <DashboardLayout title="Marketing Dashboard"><DashboardSkeleton /></DashboardLayout>;
+  if (error) return <DashboardLayout title="Marketing Dashboard"><div role="alert"><p>Lead data could not be loaded. Marketing totals are unavailable.</p><Button className="mt-3" onClick={() => void refetch()}>Retry marketing data</Button></div></DashboardLayout>;
+
   return (
     <DashboardLayout
       title="Marketing Dashboard"
       subtitle="Campaigns, leads, and recruitment funnel"
-      actions={<Button size="sm"><Megaphone className="w-3.5 h-3.5 mr-1.5" />New Campaign</Button>}
+      actions={<Button size="sm" asChild><Link to="/marketing/email-campaigns"><Megaphone className="w-3.5 h-3.5 mr-1.5" />Email campaigns</Link></Button>}
     >
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Total Leads" value={totalLeads} icon={Users} />
