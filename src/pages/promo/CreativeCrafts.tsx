@@ -1,8 +1,8 @@
 import CourseAtAGlance from '@/components/CourseAtAGlance';
 import PublicHero from '@/components/PublicHero';
 import PageContents from '@/components/PageContents';
-import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useMemo, useRef } from 'react';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowRight, Camera, CheckCircle2, GraduationCap, Palette, Scissors, Search, ShieldCheck, ShoppingBag, Store } from 'lucide-react';
 import PublicNav from '@/components/PublicNav';
 import PublicFooter from '@/components/PublicFooter';
@@ -20,8 +20,20 @@ const highlights = [
 ];
 
 export default function CreativeCrafts() {
-  const [format, setFormat] = useState<string>('All');
-  const [query, setQuery] = useState('');
+  const [params]=useSearchParams();
+  const navigate=useNavigate(),{hash}=useLocation(),search=useRef<HTMLInputElement>(null);
+  const requestedFormat=params.get('format');
+  const format=formats.includes(requestedFormat as typeof formats[number])?requestedFormat!:'All';
+  const query=(params.get('q')||'').slice(0,120);
+  const updateFilter=(name:string,value:string)=>{
+    const next=new URLSearchParams(params);
+    if(!value||(name==='format'&&value==='All'))next.delete(name);else next.set(name,value);
+    navigate({search:next.toString()?`?${next}`:'',hash},{replace:name==='q'});
+  };
+  const clearFilters=()=>{
+    const next=new URLSearchParams(params);next.delete('q');next.delete('format');
+    navigate({search:next.toString()?`?${next}`:'',hash});search.current?.focus();
+  };
   const courses = useMemo(() => creativeEnterpriseCourses.filter(course =>
     (format === 'All' || course.format === format) &&
     `${course.title} ${course.topics.join(' ')} ${course.outcome}`.toLowerCase().includes(query.trim().toLowerCase())
@@ -30,7 +42,7 @@ export default function CreativeCrafts() {
   return <div className="public-site min-h-dvh bg-background">
     <Seo canonical="/creative-crafts" title="Art, Crafts & Sewing Courses in Pakistan | UniPathway" description="Learn fine art, sewing, tailoring, embroidery, ceramics and handmade product selling online across Pakistan, with supervised practical workshops in Jhelum." />
     <PublicNav />
-    <main className="mx-auto max-w-7xl space-y-12 px-5 py-12 sm:px-8">
+    <main className="mx-auto max-w-7xl space-y-12 px-5 py-12 sm:px-8 [overflow-wrap:anywhere] [&_button]:max-w-full [&_button]:whitespace-normal [&_a.inline-flex]:h-auto [&_a.inline-flex]:min-h-11 [&_a.inline-flex]:max-w-full [&_a.inline-flex]:whitespace-normal">
       <PublicHero topic="crafts">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#128F58]">Art, crafts &amp; sewing</p>
@@ -54,21 +66,22 @@ export default function CreativeCrafts() {
           <h2 id="crafts-options-heading" className="mt-2 text-2xl font-bold sm:text-3xl">Choose the craft, then the business skills around it</h2>
           <p className="mt-2 max-w-3xl text-sm text-muted-foreground">These are UniPathway learning descriptions and teaching plans, not a guarantee that every option is currently running. Admissions will confirm start dates, duration, fees, materials, equipment, facilities and workshop attendance before you book.</p>
         </div>
-        <div className="grid gap-3 rounded-xl border bg-card p-4 sm:grid-cols-[1fr_220px]">
-          <label htmlFor="crafts-search" className="text-sm font-semibold"><Search className="mr-1 inline size-4" />Search crafts and skills<Input id="crafts-search" value={query} onChange={e => setQuery(e.target.value)} className="mt-1" placeholder="Search art, sewing, embroidery, ceramics, selling…" /></label>
-          <label htmlFor="crafts-format" className="text-sm font-semibold">Learning format<select className="mt-1 h-10 w-full rounded-md border bg-background px-3" id="crafts-format" value={format} onChange={e => setFormat(e.target.value)}>{formats.map(f => <option key={f} value={f}>{f === 'All' ? 'All formats' : f}</option>)}</select></label>
+        <div className="grid gap-3 rounded-xl border bg-card p-4 sm:grid-cols-[minmax(0,1fr)_minmax(12rem,0.6fr)]">
+          <label htmlFor="crafts-search" className="text-sm font-semibold"><Search aria-hidden="true" className="mr-1 inline size-4" />Search crafts and skills<Input ref={search} type="search" maxLength={120} aria-describedby="crafts-results" id="crafts-search" value={query} onChange={e => updateFilter('q',e.target.value)} className="mt-1" placeholder="Search art, sewing, embroidery, ceramics, selling…" /></label>
+          <label htmlFor="crafts-format" className="text-sm font-semibold">Learning format<select className="mt-1 min-h-11 w-full rounded-md border bg-background px-3" id="crafts-format" value={format} onChange={e => updateFilter('format',e.target.value)}>{formats.map(f => <option key={f} value={f}>{f === 'All' ? 'All formats' : f}</option>)}</select></label>
         </div>
-        <p role="status" className="text-sm text-muted-foreground">{courses.length} learning options match your selection.</p>
+        <p id="crafts-results" role="status" aria-atomic="true" className="text-sm text-muted-foreground">{courses.length} learning options match your selection.</p>
+        {(params.has('q')||params.has('format'))&&<Button variant="outline" onClick={clearFilters}>Clear craft filters</Button>}
         <div className="grid gap-4 lg:grid-cols-2">
           {courses.map(course => <article key={course.id} className="flex flex-col rounded-xl border bg-card p-6">
             <p className="text-xs font-bold uppercase tracking-wide text-success">UniPathway · {course.format}</p>
             <h3 className="mt-2 text-xl font-bold">{course.title}</h3>
             <div className="mt-5"><h4 className="text-sm font-semibold">What you will cover</h4><ul className="mt-3 space-y-2">{course.topics.map(topic => <li key={topic} className="flex items-start gap-2 text-sm"><CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" /><span>{topic}</span></li>)}</ul></div>
             <div className="mt-5 border-t pt-4"><p className="text-sm font-semibold">What you will work towards</p><p className="mt-1 text-sm text-muted-foreground">{course.outcome}</p></div>
-            <Button asChild variant="outline" className="mt-auto self-start pt-5"><Link to={creativeEnterpriseEnquiry(course.title)}>Request course details</Link></Button>
+            <Button asChild variant="outline" className="mt-auto h-auto min-h-11 max-w-full self-start whitespace-normal"><Link to={creativeEnterpriseEnquiry(course.title)}>Request course details</Link></Button>
           </article>)}
         </div>
-        {courses.length === 0 && <div className="rounded-xl border p-8"><h3 className="font-bold">No craft matches that search yet.</h3><p className="mt-2 text-sm text-muted-foreground">Try a broader word such as art, sewing, gifts or selling — or tell an adviser what you would like to learn.</p><button type="button" onClick={() => { setQuery(''); setFormat('All'); }} className="mt-4 min-h-11 font-semibold underline">Show all craft options</button></div>}
+        {courses.length === 0 && <div className="rounded-xl border p-8"><h3 className="font-bold">No craft matches that search yet.</h3><p className="mt-2 text-sm text-muted-foreground">Try a broader word such as art, sewing, gifts or selling — or tell an adviser what you would like to learn.</p><button type="button" onClick={clearFilters} className="mt-4 min-h-11 font-semibold underline">Show all craft options</button></div>}
       </section>
 
       <section aria-labelledby="crafts-qualification-heading" className="grid gap-5 rounded-xl border bg-secondary/40 p-6 md:grid-cols-2">

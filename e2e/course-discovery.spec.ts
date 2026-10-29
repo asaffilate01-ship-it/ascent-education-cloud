@@ -63,3 +63,19 @@ test('Pearson Fine Art and craft options expose sourced modules and a course-spe
  await page.evaluate(()=>{document.documentElement.classList.add('dark');document.documentElement.style.fontSize='24px';});
  for(const viewport of [{width:375,height:812},{width:812,height:375},{width:1440,height:1000}]){await page.setViewportSize(viewport);await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
 });
+
+test('craft discovery restores shared filters and recovers with keyboard focus on narrow screens',async({context,page})=>{
+ test.setTimeout(45_000);
+ await context.route('https://unipathway-browser-ci.invalid/**',route=>route.fulfill({status:200,headers:{'access-control-allow-origin':'*','content-type':'application/json'},body:'[]'}));
+ await page.setViewportSize({width:375,height:812});await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto('/creative-crafts?q=sewing&format=Short+course&utm_source=synthetic#crafts-options-heading');
+ const consent=page.getByRole('dialog',{name:'Cookie preferences'});if(await consent.isVisible())await consent.getByRole('button',{name:'Reject all'}).click();
+ const options=page.getByRole('region',{name:'Choose the craft, then the business skills around it',exact:true});
+ await expect(options.getByRole('article')).toHaveCount(1);await page.reload();await expect(page.getByLabel('Search crafts and skills',{exact:true})).toHaveValue('sewing');
+ await page.getByLabel('Learning format',{exact:true}).selectOption('Workshop');await expect(page.getByText('No craft matches that search yet.',{exact:true})).toBeVisible();
+ await page.goBack();await expect(options.getByRole('article')).toHaveCount(1);
+ await page.getByRole('button',{name:'Clear craft filters',exact:true}).click();await expect(page.getByLabel('Search crafts and skills',{exact:true})).toBeFocused();
+ expect(new URL(page.url()).searchParams.toString()).toBe('utm_source=synthetic');expect(new URL(page.url()).hash).toBe('#crafts-options-heading');await expect(options.getByRole('article')).toHaveCount(8);
+ await page.evaluate(()=>{document.documentElement.classList.add('dark');document.documentElement.style.fontSize='24px';});
+ for(const viewport of [{width:375,height:812},{width:812,height:375},{width:1440,height:1000}]){await page.setViewportSize(viewport);await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
+});

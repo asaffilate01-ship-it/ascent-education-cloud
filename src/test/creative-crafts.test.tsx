@@ -1,6 +1,6 @@
 import {act,cleanup,render,screen,within} from '@testing-library/react';
 import {fireEvent} from '@testing-library/react';
-import {MemoryRouter} from 'react-router-dom';
+import {MemoryRouter,useLocation,useNavigate} from 'react-router-dom';
 import {afterEach,expect,it,vi} from 'vitest';
 import {readFileSync} from 'node:fs';
 import CreativeCrafts from '@/pages/promo/CreativeCrafts';
@@ -16,7 +16,8 @@ vi.mock('@/components/CourseAtAGlance',()=>({default:()=>null}));
 vi.mock('@/components/PublicHero',()=>({default:({children}:any)=><div>{children}</div>}));
 
 afterEach(cleanup);
-async function mount(){await act(async()=>{render(<MemoryRouter><CreativeCrafts/></MemoryRouter>);});}
+function Location(){const location=useLocation(),navigate=useNavigate();return <><output data-testid="url">{location.search}{location.hash}</output><button onClick={()=>navigate(-1)}>Go back</button></>;}
+async function mount(url='/creative-crafts'){await act(async()=>{render(<MemoryRouter initialEntries={[url]}><CreativeCrafts/><Location/></MemoryRouter>);});}
 const options=()=>within(screen.getByRole('region',{name:'Choose the craft, then the business skills around it'})).getAllByRole('article');
 
 it('lists all eight craft and selling options with the sewing course included',async()=>{
@@ -57,4 +58,22 @@ it('publishes sewing and craft search metadata, a sitemap entry and navigation l
  expect(readFileSync('public/sitemap.xml','utf8')).toContain(`<loc>${SITE_URL}/creative-crafts</loc>`);
  expect(studyLinks.some(link=>link.to==='/creative-crafts'&&link.label.includes('Sewing'))).toBe(true);
  expect(isPublicMobilePath('/creative-crafts')).toBe(true);
+});
+
+it('restores craft filters from a shared URL and preserves campaign and fragment through history and reset',async()=>{
+ await mount('/creative-crafts?q=sewing&format=Short+course&utm_source=partner#crafts-options-heading');
+ expect(options()).toHaveLength(1);expect(screen.getByLabelText('Learning format')).toHaveValue('Short course');
+ fireEvent.change(screen.getByLabelText('Learning format'),{target:{value:'Workshop'}});
+ expect(screen.getByText('No craft matches that search yet.')).toBeInTheDocument();
+ expect(screen.getByTestId('url')).toHaveTextContent('utm_source=partner');
+ fireEvent.click(screen.getByText('Go back'));expect(options()).toHaveLength(1);
+ fireEvent.click(screen.getByText('Clear craft filters'));
+ expect(screen.getByTestId('url')).toHaveTextContent('?utm_source=partner#crafts-options-heading');
+ expect(screen.getByLabelText(/Search crafts and skills/)).toHaveFocus();expect(options()).toHaveLength(8);
+});
+it('bounds external search and recovers from an invalid format without losing literal search values',async()=>{
+ await mount('/creative-crafts?format=Unknown&q='+('x'.repeat(180)));
+ expect(screen.getByLabelText('Learning format')).toHaveValue('All');expect(screen.getByLabelText(/Search crafts and skills/)).toHaveValue('x'.repeat(120));
+ fireEvent.click(screen.getByText('Show all craft options'));expect(options()).toHaveLength(8);expect(screen.getByLabelText(/Search crafts and skills/)).toHaveFocus();
+ fireEvent.change(screen.getByLabelText(/Search crafts and skills/),{target:{value:'All'}});expect(screen.getByTestId('url')).toHaveTextContent('q=All');
 });
