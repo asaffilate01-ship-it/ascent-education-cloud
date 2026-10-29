@@ -146,3 +146,20 @@ test('Foundation routes student support and employer co-funding enquiries separa
  await page.evaluate(()=>{document.documentElement.classList.add('dark');document.documentElement.style.fontSize='24px';});
  for(const viewport of [{width:375,height:812},{width:812,height:375},{width:1440,height:1000}]){await page.setViewportSize(viewport);await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
 });
+
+
+test('unavailable whiteboard setup provides recovery without exposing schema errors',async({context,page})=>{
+ test.setTimeout(45_000);
+ const tenant='00000000-0000-4000-8000-000000000010',user={id:'00000000-0000-4000-8000-000000000001',aud:'authenticated',role:'authenticated',email:'synthetic-student@unipathway.pk',app_metadata:{provider:'email'},user_metadata:{},created_at:'2026-01-01T00:00:00Z'};
+ await context.addInitScript(({user})=>{if(location.origin==='null')return;const token=btoa(JSON.stringify({alg:'HS256',typ:'JWT'}))+'.'+btoa(JSON.stringify({sub:user.id,role:'authenticated',exp:Math.floor(Date.now()/1000)+3600}))+'.synthetic';localStorage.setItem('sb-unipathway-browser-ci-auth-token',JSON.stringify({access_token:token,refresh_token:'synthetic',token_type:'bearer',expires_at:Math.floor(Date.now()/1000)+3600,expires_in:3600,user}));},{user});
+ let missing=true;
+ await context.route('https://unipathway-browser-ci.invalid/**',route=>{
+  const url=new URL(route.request().url()),name=url.pathname.split('/').at(-1);let data:unknown=[];
+  if(name==='profiles')data={full_name:'Synthetic teacher',tenant_id:tenant};else if(name==='user_roles')data=[{role:'lecturer'}];else if(url.pathname.endsWith('/auth/v1/user'))data=user;
+  if(name==='lesson_whiteboards'&&missing)return route.fulfill({status:404,headers:{'access-control-allow-origin':'*','content-type':'application/json'},body:JSON.stringify({code:'PGRST205',message:"Could not find the table 'public.lesson_whiteboards' in the schema cache"})});
+  return route.fulfill({status:200,headers:{'access-control-allow-origin':'*','content-type':'application/json'},body:JSON.stringify(data)});
+ });
+ await page.goto('/lecturer/whiteboards');
+ await expect(page.getByRole('alert').filter({hasText:'Whiteboards are unavailable for your centre'})).toBeVisible();await expect(page.getByText(/schema cache/)).toHaveCount(0);await expect(page.getByRole('link',{name:'Return to my dashboard',exact:true})).toHaveAttribute('href','/lecturer');
+ missing=false;await page.getByRole('button',{name:'Retry whiteboards',exact:true}).click();await expect(page.getByText(/No authorised boards yet/)).toBeVisible();
+});
