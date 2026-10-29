@@ -54,8 +54,9 @@ test('Pearson Fine Art and craft options expose sourced modules and a course-spe
  expect(new URL(await enquiry.getAttribute('href')||'',page.url()).searchParams.get('course')).toBe('Pearson BTEC Level 5 Higher National Diploma in Fine Art');
  await expect(hnd.getByRole('link',{name:/Pearson Fine Art specification/})).toHaveAttribute('href',/qualifications\.pearson\.com/);
  const enterprise=page.getByRole('region',{name:'Fine art and crafts for women building a business',exact:true});
- await expect(enterprise.getByRole('article')).toHaveCount(7);
+ await expect(enterprise.getByRole('article')).toHaveCount(8);
  await expect(enterprise.getByText(/Specifically designed for women in Pakistan/)).toBeVisible();
+ await expect(enterprise.getByRole('heading',{name:'Sewing and tailoring for women',exact:true})).toBeVisible();
  const workshop=enterprise.getByRole('link',{name:'Enquire about Ecommerce and social selling',exact:true});
  expect(new URL(await workshop.getAttribute('href')||'',page.url()).searchParams.get('course')).toBe('Women’s creative enterprise: Ecommerce and social selling');
  await expect(enterprise.getByText(/They are not Pearson qualifications/)).toBeVisible();

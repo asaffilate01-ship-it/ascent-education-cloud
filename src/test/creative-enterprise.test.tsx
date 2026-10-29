@@ -9,8 +9,8 @@ it('targets women entrepreneurs with distinct art/craft and selling learning opt
  const section=screen.getByRole('region',{name:'Fine art and crafts for women building a business'});
  expect(section).toHaveTextContent('Specifically designed for women in Pakistan');
  expect(section).toHaveTextContent('microbusiness');expect(section).toHaveTextContent('ecommerce');
- expect(within(section).getAllByRole('article')).toHaveLength(7);
- expect(creativeEnterpriseCourses.filter(c=>c.format==='Short course')).toHaveLength(4);
+ expect(within(section).getAllByRole('article')).toHaveLength(8);
+ expect(creativeEnterpriseCourses.filter(c=>c.format==='Short course')).toHaveLength(5);
  expect(creativeEnterpriseCourses.filter(c=>c.format==='Workshop')).toHaveLength(3);
  expect(section).toHaveTextContent('profit-aware pricing');expect(section).toHaveTextContent('tracking results');
  expect(section).toHaveTextContent('They are not Pearson qualifications and do not carry HNC or HND credits.');
