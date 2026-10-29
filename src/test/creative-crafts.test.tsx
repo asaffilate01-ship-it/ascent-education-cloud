@@ -48,9 +48,12 @@ it('keeps craft enquiries on-site through the admissions contact form',async()=>
 
 it('publishes sewing and craft search metadata, a sitemap entry and navigation links',()=>{
  const page=publicSeo['/creative-crafts'];
- expect(page.title).toContain('Sewing, Crafts & Creative Enterprise Courses in Pakistan');
+ expect(page.title).toContain('Art, Crafts & Sewing Courses in Pakistan');
+ expect(page.keywords).toContain('art and craft courses Pakistan');
+ expect(page.keywords).toContain('fine art courses Pakistan');
  expect(page.keywords).toContain('sewing courses in Pakistan');
  expect(page.keywords).toContain('tailoring courses for women in Pakistan');
+
  expect(readFileSync('public/sitemap.xml','utf8')).toContain(`<loc>${SITE_URL}/creative-crafts</loc>`);
  expect(studyLinks.some(link=>link.to==='/creative-crafts'&&link.label.includes('Sewing'))).toBe(true);
  expect(isPublicMobilePath('/creative-crafts')).toBe(true);

@@ -13,8 +13,8 @@ import { creativeEnterpriseCourses, creativeEnterpriseEnquiry } from '@/lib/crea
 
 const formats = ['All', 'Short course', 'Workshop'] as const;
 const highlights = [
-  { icon: Scissors, title: 'Learn the craft', desc: 'Machine skills, fabric, stitch and finishing' },
-  { icon: Palette, title: 'Make real products', desc: 'Samples, garments and a small product range' },
+  { icon: Palette, title: 'Learn the craft', desc: 'Drawing, painting, machine skills, fabric and stitch' },
+  { icon: Scissors, title: 'Make real products', desc: 'Samples, garments and a small product range' },
   { icon: Store, title: 'Price with confidence', desc: 'Materials, time, overheads and profit-aware pricing' },
   { icon: ShoppingBag, title: 'Sell online', desc: 'Photography, listings, enquiries and delivery' },
 ];
@@ -28,21 +28,21 @@ export default function CreativeCrafts() {
   ), [format, query]);
 
   return <div className="public-site min-h-dvh bg-background">
-    <Seo canonical="/creative-crafts" title="Sewing, Crafts & Creative Enterprise Courses in Pakistan | UniPathway" description="Learn sewing, tailoring, embroidery, ceramics and handmade product making online across Pakistan, with supervised practical workshops in Jhelum." />
+    <Seo canonical="/creative-crafts" title="Art, Crafts & Sewing Courses in Pakistan | UniPathway" description="Learn fine art, sewing, tailoring, embroidery, ceramics and handmade product selling online across Pakistan, with supervised practical workshops in Jhelum." />
     <PublicNav />
     <main className="mx-auto max-w-7xl space-y-12 px-5 py-12 sm:px-8">
       <PublicHero topic="crafts">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#128F58]">Sewing, crafts &amp; creative enterprise</p>
+          <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#128F58]">Art, crafts &amp; sewing</p>
           <h1 className="mt-4 text-3xl font-extrabold text-[#0B2D5B] dark:text-white sm:text-5xl">Turn creative skills into a business you can run from home.</h1>
-          <p className="mt-5 max-w-3xl leading-relaxed text-slate-700 dark:text-slate-300">Sewing and tailoring, embroidery and textile crafts, clay and ceramics, product photography and online selling — taught online across Pakistan and in supervised practical workshops at our Jhelum centre. Ask admissions to confirm the dates, fees, materials, equipment and workshop places available to you.</p>
+          <p className="mt-5 max-w-3xl leading-relaxed text-slate-700 dark:text-slate-300">Fine art and drawing, sewing and tailoring, embroidery and textile crafts, clay and ceramics, product photography and online selling — taught online across Pakistan and in supervised practical workshops at our Jhelum centre. Ask admissions to confirm the dates, fees, materials, equipment and workshop places available to you.</p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Button asChild><Link to="/contact">Ask about enrolling <ArrowRight className="ml-1 size-4" /></Link></Button>
             <Button asChild variant="outline"><Link to="/qualifications?body=Pearson%20BTEC&subject=Fine%20Art%20%26%20Craft">Explore Fine Art diplomas</Link></Button>
           </div>
         </div>
       </PublicHero>
-      <CourseAtAGlance course="Sewing, Crafts & Creative Enterprise" /><PageContents />
+      <CourseAtAGlance course="Art, Crafts & Sewing" /><PageContents />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {highlights.map(({ icon: Icon, title, desc }) => <div key={title} className="rounded-xl border bg-white p-4 dark:bg-card"><Icon className="size-6 text-success" /><h2 className="mt-2 text-sm font-bold">{title}</h2><p className="mt-1 text-xs text-muted-foreground">{desc}</p></div>)}
@@ -55,7 +55,7 @@ export default function CreativeCrafts() {
           <p className="mt-2 max-w-3xl text-sm text-muted-foreground">These are UniPathway learning descriptions and teaching plans, not a guarantee that every option is currently running. Admissions will confirm start dates, duration, fees, materials, equipment, facilities and workshop attendance before you book.</p>
         </div>
         <div className="grid gap-3 rounded-xl border bg-card p-4 sm:grid-cols-[1fr_220px]">
-          <label htmlFor="crafts-search" className="text-sm font-semibold"><Search className="mr-1 inline size-4" />Search crafts and skills<Input id="crafts-search" value={query} onChange={e => setQuery(e.target.value)} className="mt-1" placeholder="Search sewing, embroidery, ceramics, selling…" /></label>
+          <label htmlFor="crafts-search" className="text-sm font-semibold"><Search className="mr-1 inline size-4" />Search crafts and skills<Input id="crafts-search" value={query} onChange={e => setQuery(e.target.value)} className="mt-1" placeholder="Search art, sewing, embroidery, ceramics, selling…" /></label>
           <label htmlFor="crafts-format" className="text-sm font-semibold">Learning format<select className="mt-1 h-10 w-full rounded-md border bg-background px-3" id="crafts-format" value={format} onChange={e => setFormat(e.target.value)}>{formats.map(f => <option key={f} value={f}>{f === 'All' ? 'All formats' : f}</option>)}</select></label>
         </div>
         <p role="status" className="text-sm text-muted-foreground">{courses.length} learning options match your selection.</p>
@@ -68,7 +68,7 @@ export default function CreativeCrafts() {
             <Button asChild variant="outline" className="mt-auto self-start pt-5"><Link to={creativeEnterpriseEnquiry(course.title)}>Request course details</Link></Button>
           </article>)}
         </div>
-        {courses.length === 0 && <div className="rounded-xl border p-8"><h3 className="font-bold">No craft matches that search yet.</h3><p className="mt-2 text-sm text-muted-foreground">Try a broader word such as sewing, gifts or selling — or tell an adviser what you would like to learn.</p><button type="button" onClick={() => { setQuery(''); setFormat('All'); }} className="mt-4 min-h-11 font-semibold underline">Show all craft options</button></div>}
+        {courses.length === 0 && <div className="rounded-xl border p-8"><h3 className="font-bold">No craft matches that search yet.</h3><p className="mt-2 text-sm text-muted-foreground">Try a broader word such as art, sewing, gifts or selling — or tell an adviser what you would like to learn.</p><button type="button" onClick={() => { setQuery(''); setFormat('All'); }} className="mt-4 min-h-11 font-semibold underline">Show all craft options</button></div>}
       </section>
 
       <section aria-labelledby="crafts-qualification-heading" className="grid gap-5 rounded-xl border bg-secondary/40 p-6 md:grid-cols-2">
