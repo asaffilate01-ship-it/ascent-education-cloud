@@ -17,3 +17,4 @@
 - [ ] Verify authorised Teams, guided audio and recording journeys (blocked by missing hosted foundations, Microsoft administrator setup and external worker hosting).
 - [x] Request publication of the latest application; confirm public homepage rendering and hosted legacy retirement response 410. Paid AWS and payments remain unconfigured.
 - [x] Surface sewing, crafts and creative enterprise as its own public page with navigation, homepage, footer, sitemap and search metadata.
+- [x] Name and describe the new public page as art, crafts and sewing so fine art is discoverable in navigation, homepage, metadata and keywords.
