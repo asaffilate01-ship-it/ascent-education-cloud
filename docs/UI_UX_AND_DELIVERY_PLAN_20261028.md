@@ -110,3 +110,11 @@ The routed student **My courses** page now scopes programme/module queries to cu
 The shared dashboard hook now uses the Supabase SDK's `in()` method for array membership. Previously the raw `filter()` path encoded arrays as comma-separated strings without PostgREST parentheses. An actual-client request test verifies the encoded URL; empty membership sets return no rows without a request and malformed membership input fails closed. Existing equality filters, paging, RLS and stale-response guards remain in place.
 
 UI UX Pro Max back-navigation, no-result recovery and control-layout guidance informed this batch. Shared dashboard header controls can wrap within the viewport when enlarged text increases the width of student shortcuts. Synthetic browser acceptance covers public link/reload/Back/Forward behaviour and private module search, pagination, preserved links and read-error recovery, including narrow/large-text layouts. No database migration or provider activation is introduced. Hosted publication/acceptance, earlier pending catalogue migrations, replacement lineage/expiry, persistent annotations and provider/device release gates remain outstanding.
+
+## Dashboard query role and retry isolation — 29 October 2026
+
+The shared dashboard query key now includes the active role as well as user, centre and assigned roles. Switching roles clears the previous result and starts a fresh read even when the same account retains both assigned roles. A retained retry callback from an older query scope now returns before changing request generations, so it cannot cancel or replace the current scope's pending read. Existing server-side RLS and query filters remain the authority for access; this change corrects client result lifecycle only.
+
+Regression fixtures cover a role-only switch, immediate result clearing, a stale retry during the replacement read, and a late response from the former role. Hosted migration activation, provider acceptance and physical-device release gates above remain open.
+
+CI initially stopped before browser tests because ubuntu-latest resolved to Ubuntu 26.04, unsupported by pinned Playwright 1.58.2. Pin only browser acceptance to Ubuntu 24.04 so the existing browser version can install and run; package versions and lockfiles are unchanged.
