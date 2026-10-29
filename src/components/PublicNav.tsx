@@ -16,7 +16,7 @@ export const studyLinks = [
   { label: 'School partnerships', detail: 'Tuition support, referrals and optional school software', to: '/school-partners', icon: School },
   { label: 'Study in Pakistan', detail: 'HEC universities, local degree progression and study guidance', to: '/pakistan', icon: School },
   { label: 'Women’s Beauty & Aesthetics', detail: 'CIBTAC, VTCT Skills guidance, salon skills and CPD training', to: '/beauty-aesthetics', icon: GraduationCap },
-  { label: 'Sewing, Crafts & Creative Enterprise', detail: 'Sewing, tailoring, embroidery, ceramics and selling handmade products', to: '/creative-crafts', icon: BookOpen },
+  { label: 'Art, Crafts & Sewing', detail: 'Fine art, sewing, tailoring, embroidery, ceramics and selling handmade products', to: '/creative-crafts', icon: BookOpen },
 
   { label: 'UK & international qualifications', detail: 'OTHM, Qualifi, ATHE, Pearson BTEC and VTCT Skills guidance', to: '/qualifications', icon: GraduationCap },
   { label: 'University progression directory', detail: 'OTHM and Qualifi named university routes with in-site guidance', to: '/university-progression', icon: GraduationCap },

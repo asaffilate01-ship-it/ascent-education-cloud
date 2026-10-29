@@ -12,7 +12,7 @@ const pathways = [
   { title: 'Technology Academy', caption: 'AI, software, Python, cyber security, cloud and DevOps', to: '/tech-academy', icon: School, number: '02' },
   { title: 'Accounting & Finance Academy', caption: 'Bookkeeping, tax, financial reporting and IFA/ACCA preparation', to: '/finance-academy', icon: GraduationCap, number: '09' },
   { title: 'Women’s Beauty & Aesthetics', caption: 'Planned beauty training; CIBTAC centre and CPD UK approvals under preparation', to: '/beauty-aesthetics', icon: GraduationCap, number: '10' },
-  { title: 'Sewing, Crafts & Creative Enterprise', caption: 'Sewing, tailoring, embroidery, ceramics and selling handmade products online across Pakistan', to: '/creative-crafts', icon: School, number: '11' },
+  { title: 'Art, Crafts & Sewing', caption: 'Fine art, sewing, tailoring, embroidery, ceramics and selling handmade products online across Pakistan', to: '/creative-crafts', icon: School, number: '11' },
 
   { title: 'Years 8–12 Tuition', caption: 'Online and in-centre maths, English, biology, chemistry, physics and tech', to: '/tuition', icon: BriefcaseBusiness, number: '03' },
   { title: 'European & Global University Pathways', caption: 'Explore EU and wider European destinations, alongside the UK, USA, Canada, Australia and Pakistan', to: '/europe', icon: Globe2, number: '04' },
