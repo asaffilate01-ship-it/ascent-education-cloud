@@ -68,7 +68,7 @@ export default function CreativeCrafts() {
         </div>
         <div className="grid gap-3 rounded-xl border bg-card p-4 sm:grid-cols-[minmax(0,1fr)_minmax(12rem,0.6fr)]">
           <label htmlFor="crafts-search" className="text-sm font-semibold"><Search aria-hidden="true" className="mr-1 inline size-4" />Search crafts and skills<Input ref={search} type="search" maxLength={120} aria-describedby="crafts-results" id="crafts-search" value={query} onChange={e => updateFilter('q',e.target.value)} className="mt-1" placeholder="Search art, sewing, embroidery, ceramics, selling…" /></label>
-          <label htmlFor="crafts-format" className="text-sm font-semibold">Learning format<select className="mt-1 min-h-11 w-full rounded-md border bg-background px-3" id="crafts-format" value={format} onChange={e => updateFilter('format',e.target.value)}>{formats.map(f => <option key={f} value={f}>{f === 'All' ? 'All formats' : f}</option>)}</select></label>
+          <div className="min-w-0 text-sm font-semibold"><label htmlFor="crafts-format">Learning format</label><select className="mt-1 min-h-11 w-full rounded-md border bg-background px-3" id="crafts-format" value={format} onChange={e => updateFilter('format',e.target.value)}>{formats.map(f => <option key={f} value={f}>{f === 'All' ? 'All formats' : f}</option>)}</select></div>
         </div>
         <p id="crafts-results" role="status" aria-atomic="true" className="text-sm text-muted-foreground">{courses.length} learning options match your selection.</p>
         {(params.has('q')||params.has('format'))&&<Button variant="outline" onClick={clearFilters}>Clear craft filters</Button>}
