@@ -8,6 +8,8 @@ const images = {
   technology: { src: '/images/heroes/academy-technology-v3.webp', alt: 'Young adult male students at computer desks learning programming in a technology classroom' },
   finance: { src: '/images/heroes/academy-accountancy-v3.webp', alt: 'Female instructor teaching accountancy to young women at classroom desks' },
   beauty: { src: '/images/heroes/academy-beauty-v3.webp', alt: 'Young women practising make-up on mannequins at separate beauty-training workstations' },
+  crafts: { src: '/images/heroes/academy-crafts-v1.webp', alt: 'Young women sewing at individual workstations while an instructor demonstrates a technique' },
+
   campus: { src: '/images/heroes/tuition.jpg', alt: 'Independent study with notes and learning materials' },
   germany: { src: '/images/heroes/germany.jpg', alt: 'Brandenburg Gate in Berlin' },
   uk: { src: '/images/heroes/uk.jpg', alt: 'London skyline beside the River Thames' },

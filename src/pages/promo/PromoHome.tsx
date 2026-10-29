@@ -12,6 +12,8 @@ const pathways = [
   { title: 'Technology Academy', caption: 'AI, software, Python, cyber security, cloud and DevOps', to: '/tech-academy', icon: School, number: '02' },
   { title: 'Accounting & Finance Academy', caption: 'Bookkeeping, tax, financial reporting and IFA/ACCA preparation', to: '/finance-academy', icon: GraduationCap, number: '09' },
   { title: 'Women’s Beauty & Aesthetics', caption: 'Planned beauty training; CIBTAC centre and CPD UK approvals under preparation', to: '/beauty-aesthetics', icon: GraduationCap, number: '10' },
+  { title: 'Art, Crafts & Sewing', caption: 'Fine art, sewing, tailoring, embroidery, ceramics and selling handmade products online across Pakistan', to: '/creative-crafts', icon: School, number: '11' },
+
   { title: 'Years 8–12 Tuition', caption: 'Online and in-centre maths, English, biology, chemistry, physics and tech', to: '/tuition', icon: BriefcaseBusiness, number: '03' },
   { title: 'European & Global University Pathways', caption: 'Explore EU and wider European destinations, alongside the UK, USA, Canada, Australia and Pakistan', to: '/europe', icon: Globe2, number: '04' },
   { title: 'IELTS Preparation', caption: 'Academic & General Training with guided practice', to: '/ielts-preparation', icon: BookOpen, number: '05' },
@@ -27,7 +29,7 @@ export default function PromoHome() {
     'All subjects': [],
     'School tuition': ['/tuition', '/education-centre'],
     'Languages': ['/ielts-preparation', '/german-preparation'],
-    'Career skills': ['/tech-academy', '/finance-academy', '/beauty-aesthetics', '/funded-courses', '/careers'],
+    'Career skills': ['/tech-academy', '/finance-academy', '/beauty-aesthetics', '/creative-crafts', '/funded-courses', '/careers'],
     'Qualifications & university': ['/qualifications', '/europe'],
   };
   const matches = pathways.filter(p => `${p.title} ${p.caption}`.toLowerCase().includes(query.trim().toLowerCase()) && (area === 'All subjects' || areas[area].includes(p.to)));
