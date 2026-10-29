@@ -15,7 +15,7 @@ export default function PublicFooter() {
       </div>
       <div className="grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr]">
         <div><Link to="/" aria-label="UniPathway home"><BrandLogo className="h-16" /></Link><p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">Qualifications, school tuition, employer learning and global progression — connected through one learning experience.</p><p className="mt-3 text-sm font-semibold">Learn online across Pakistan or in class in Jhelum.</p><SocialIcons className="mt-4" /></div>
-        <FooterCol title="Learn" links={studyLinks.filter(l => ['/study', '/qualifications', '/tuition', '/ielts-preparation', '/german-preparation', '/tech-academy', '/finance-academy', '/beauty-aesthetics'].includes(l.to)).map(l => [l.label, l.to])} />
+        <FooterCol title="Learn" links={studyLinks.filter(l => ['/study', '/qualifications', '/tuition', '/ielts-preparation', '/german-preparation', '/tech-academy', '/finance-academy', '/beauty-aesthetics', '/creative-crafts'].includes(l.to)).map(l => [l.label, l.to])} />
         <FooterCol title="Study abroad" links={destinationLinks.map(l => [l.label, l.to])} />
         <FooterCol title="Company" links={[['About', '/about'], ['Contact', '/contact'], ['Blog', '/blog'], ['Careers & internships', '/careers'], ['Sign in', '/login']]} />
       </div>

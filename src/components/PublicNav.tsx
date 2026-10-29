@@ -16,6 +16,8 @@ export const studyLinks = [
   { label: 'School partnerships', detail: 'Tuition support, referrals and optional school software', to: '/school-partners', icon: School },
   { label: 'Study in Pakistan', detail: 'HEC universities, local degree progression and study guidance', to: '/pakistan', icon: School },
   { label: 'Women’s Beauty & Aesthetics', detail: 'CIBTAC, VTCT Skills guidance, salon skills and CPD training', to: '/beauty-aesthetics', icon: GraduationCap },
+  { label: 'Sewing, Crafts & Creative Enterprise', detail: 'Sewing, tailoring, embroidery, ceramics and selling handmade products', to: '/creative-crafts', icon: BookOpen },
+
   { label: 'UK & international qualifications', detail: 'OTHM, Qualifi, ATHE, Pearson BTEC and VTCT Skills guidance', to: '/qualifications', icon: GraduationCap },
   { label: 'University progression directory', detail: 'OTHM and Qualifi named university routes with in-site guidance', to: '/university-progression', icon: GraduationCap },
   { label: 'Years 8–12 tuition', detail: 'Matric, Intermediate/FSc, Cambridge; online and in-centre', to: '/tuition', icon: School },
@@ -41,7 +43,7 @@ export const destinationLinks = [
   { label: 'Canada', detail: 'English/French study routes and university options', to: '/canada' },
 ];
 
-const primaryStudyLinks = studyLinks.filter(link => ['/study', '/qualifications', '/tuition', '/ielts-preparation', '/german-preparation', '/tech-academy', '/finance-academy', '/beauty-aesthetics'].includes(link.to));
+const primaryStudyLinks = studyLinks.filter(link => ['/study', '/qualifications', '/tuition', '/ielts-preparation', '/german-preparation', '/tech-academy', '/finance-academy', '/beauty-aesthetics', '/creative-crafts'].includes(link.to));
 
 const linkCls = (active: boolean) => cn('relative inline-flex min-h-11 items-center rounded-full px-4 py-2 text-sm font-semibold transition-colors', active ? 'bg-primary/5 text-primary' : 'text-foreground/80 hover:bg-accent hover:text-foreground');
 

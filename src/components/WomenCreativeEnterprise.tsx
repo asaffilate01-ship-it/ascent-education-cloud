@@ -23,7 +23,7 @@ export default function WomenCreativeEnterprise(){
    <h3 className="font-semibold">Choose a route that fits your starting point</h3>
    <p>Tell admissions about your experience, preferred craft, business goals and availability. Ask about women-focused groups, online business sessions and supervised in-centre practical workshops. Dates, duration, fees, materials, equipment and any completion document will be confirmed before booking.</p>
    <p className="text-muted-foreground">These short courses and workshops are separate UniPathway learning options. They are not Pearson qualifications and do not carry HNC or HND credits. Pearson programme entry and approval checks apply separately.</p>
-   <Button asChild className="h-auto min-h-11 max-w-full whitespace-normal"><Link to={creativeEnterpriseEnquiry('short courses and workshops')}>Ask about women’s creative enterprise</Link></Button>
+   <div className="flex flex-wrap gap-3"><Button asChild className="h-auto min-h-11 max-w-full whitespace-normal"><Link to={creativeEnterpriseEnquiry('short courses and workshops')}>Ask about women’s creative enterprise</Link></Button><Button asChild variant="outline" className="h-auto min-h-11 max-w-full whitespace-normal"><Link to="/creative-crafts">See sewing, crafts and creative enterprise courses</Link></Button></div>
   </div>
  </section>;
 }
