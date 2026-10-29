@@ -17,7 +17,7 @@ vi.mock('@/components/PublicHero',()=>({default:({children}:any)=><div>{children
 
 afterEach(cleanup);
 async function mount(){await act(async()=>{render(<MemoryRouter><CreativeCrafts/></MemoryRouter>);});}
-const options=()=>within(screen.getByRole('region',{name:'Short courses and workshops'})).getAllByRole('article');
+const options=()=>within(screen.getByRole('region',{name:'Choose the craft, then the business skills around it'})).getAllByRole('article');
 
 it('lists all eight craft and selling options with the sewing course included',async()=>{
  await mount();
@@ -39,11 +39,12 @@ it('narrows craft options by search text and by learning format',async()=>{
 
 it('keeps craft enquiries on-site through the admissions contact form',async()=>{
  await mount();
- const link=screen.getByRole('link',{name:'Request course details'});
- const url=new URL(link.getAttribute('href')!,'https://unipathway.pk');
+ const sewingCard=options().find(card=>card.textContent?.includes('Sewing and tailoring for women'))!;
+ const url=new URL(within(sewingCard).getByRole('link',{name:'Request course details'}).getAttribute('href')!,'https://unipathway.pk');
  expect(url.pathname).toBe('/contact');
- expect(url.searchParams.get('course')).toBe('Women’s creative enterprise: Fine art for products and prints');
+ expect(url.searchParams.get('course')).toBe('Women’s creative enterprise: Sewing and tailoring for women');
 });
+
 
 it('publishes sewing and craft search metadata, a sitemap entry and navigation links',()=>{
  const page=publicSeo['/creative-crafts'];
