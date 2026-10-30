@@ -223,7 +223,7 @@ test('student lab workspace searches safely and recovers from schema failure on 
  const tables:Record<string,unknown>={profiles:{full_name:'Synthetic learner',tenant_id:tenant},user_roles:[{role:'student'}],modules:[{id:'m1',tenant_id:tenant,title:'Cloud networking'},{id:'m2',tenant_id:tenant,title:'Python programming'}],lab_templates:[{id:'t1',provider:'aws_managed'},{id:'t2',provider:'jupyter'}],lms_lab_offerings:[{id:'o1',tenant_id:tenant,module_id:'m1',template_id:'t1',title:'Private network exercise',description:'Build a private VPC',modes:['self_study'],published:true,launch_enabled:false,session_minutes:60,max_active_learners:15},{id:'o2',tenant_id:tenant,module_id:'m2',template_id:'t2',title:'Notebook exercise',description:'Practice Python',modes:['self_study'],published:true,launch_enabled:false,session_minutes:45,max_active_learners:15}]};
  await context.route('https://unipathway-browser-ci.invalid/**',async route=>{
   const request=route.request(),url=new URL(request.url()),name=url.pathname.split('/').at(-1)||'';
-  if(request.method()!=='GET'&&!url.pathname.includes('/functions/'))writes.push(url.pathname);
+  if(request.method()!=='GET'&&(/\/(?:lms_lab_|lab_)/.test(url.pathname)||(name==='unipathway-aws-lab-gateway'&&request.postDataJSON()?.action!=='readiness')))writes.push(url.pathname);
   const headers={'access-control-allow-origin':'*','content-type':'application/json'};
   if(name==='lms_lab_offerings'&&failed)return route.fulfill({status:404,headers,body:JSON.stringify({code:'PGRST205',message:"Could not find the table 'public.lms_lab_offerings' in the schema cache"})});
   const data=url.pathname.endsWith('/auth/v1/user')?user:name==='unipathway-aws-lab-gateway'?{aws_managed_configured:false}:tables[name]||[];
