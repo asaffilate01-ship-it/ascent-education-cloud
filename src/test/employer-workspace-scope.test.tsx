@@ -40,3 +40,21 @@ it('keeps the latest refresh when an older verification fails late',async()=>{
  await waitFor(()=>expect(screen.queryByRole('alert')).not.toBeInTheDocument());
  expect(screen.getByText('Organisation approval pending')).toBeInTheDocument();
 });
+
+it('shows only consented, non-withdrawn statements from the verified employer scope',async()=>{
+ state.query.mockImplementation((table:string)=>{
+  if(table==='unipathway_employer_memberships')return Promise.resolve(verified);
+  if(table==='unipathway_employer_opportunities')return Promise.resolve({data:[{id:'job-1',organisation_id:'old-org',title:'QA Placement',status:'published',opportunity_type:'internship',city:'Islamabad',role_description:'Learn QA',created_at:'2026-10-30T10:00:00Z'}],error:null});
+  return Promise.resolve({data:[
+   {id:'submitted-app-1',opportunity_id:'job-1',status:'submitted',statement:'Consented personal statement',applicant_consent_at:'2026-10-30T10:00:00Z',created_at:'2026-10-30T10:00:00Z'},
+   {id:'withdrawn-app-2',opportunity_id:'job-1',status:'withdrawn',statement:'Private withdrawn statement',applicant_consent_at:'2026-10-30T10:00:00Z',created_at:'2026-10-30T10:00:00Z'},
+   {id:'unconsented-app-3',opportunity_id:'job-1',status:'submitted',statement:'No consent statement',applicant_consent_at:null,created_at:'2026-10-30T10:00:00Z'},
+  ],error:null});
+ });
+ render(<EmployerPortal/>);
+ expect(await screen.findByText('Consented personal statement')).toBeInTheDocument();
+ expect(screen.getByText(/Consenting applicant records: 1/)).toBeInTheDocument();
+ expect(screen.queryByText('Private withdrawn statement')).not.toBeInTheDocument();
+ expect(screen.queryByText('No consent statement')).not.toBeInTheDocument();
+ expect(screen.queryByRole('button',{name:/Record accepted|Shortlist|Start screening/})).not.toBeInTheDocument();
+});
