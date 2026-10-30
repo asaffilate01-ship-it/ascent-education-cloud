@@ -1,4 +1,4 @@
-import {useCallback,useEffect,useMemo,useState} from 'react';
+import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import {Link,useSearchParams} from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {useAuth} from '@/contexts/AuthContext';
@@ -34,7 +34,13 @@ const providerName=(p:string)=>({
  azure:'Azure cloud lab',managed_lab:'Managed specialist lab'
 }[p]||p);
 export default function LMSVirtualLabs(){
+ const {user}=useAuth();
+ return <LMSVirtualLabsContent key={JSON.stringify([user?.id,user?.tenantId,user?.role,[...(user?.roles||[])].sort()])}/>;
+}
+function LMSVirtualLabsContent(){
  const {user}=useAuth();const [params]=useSearchParams();
+ const readGeneration=useRef(0),gatewayGeneration=useRef(0);
+ useEffect(()=>()=>{readGeneration.current++;gatewayGeneration.current++;},[]);
  const staff=!!user?.roles.some(r=>['lecturer','programme_leader','centre_director','superadmin'].includes(r));
  const centreManager=!!user?.roles.some(r=>['centre_director','superadmin'].includes(r));
  const [tenant,setTenant]=useState(user?.tenantId||'');
@@ -47,21 +53,27 @@ export default function LMSVirtualLabs(){
  const [invites,setInvites]=useState<{run_id:string;student_id:string;status:string}[]>([]);
  const [selectedId,setSelectedId]=useState('');const [mode,setMode]=useState<Mode>('self_study');
  const [classRun,setClassRun]=useState('');const [launch,setLaunch]=useState<LabResults|null>(null);
- const [busy,setBusy]=useState(false);const [helpText,setHelpText]=useState('');const [taskNote,setTaskNote]=useState('');
+ const [busy,setBusy]=useState(false);const [helpText,setHelpText]=useState('');
+ const [taskNotes,setTaskNotes]=useState<Record<string,string>>({});
+ const [search,setSearch]=useState('');const searchInput=useRef<HTMLInputElement>(null);
  const [newTitle,setNewTitle]=useState('');const [newModule,setNewModule]=useState('');
  const [newProvider,setNewProvider]=useState('aws_managed');const [courseDuration,setCourseDuration]=useState(90);
  const [runName,setRunName]=useState('');const [runStart,setRunStart]=useState('');const [runEnd,setRunEnd]=useState('');
  const [taskTitle,setTaskTitle]=useState('');const [taskInstructions,setTaskInstructions]=useState('');
- const [reviewText,setReviewText]=useState('');
+ const [reviewNotes,setReviewNotes]=useState<Record<string,string>>({});
  useEffect(()=>{
   if(user?.tenantId){setTenant(user.tenantId);return;}
+  let active=true;
   if(user?.roles.includes('superadmin'))void db.from('tenants').select('id')
    .eq('slug','unipathway').maybeSingle().then(({data,error:e})=>{
-    if(!e&&data?.id)setTenant(data.id);
+    if(active&&!e&&data?.id)setTenant(data.id);
    });
- },[user?.id,user?.tenantId,user?.roles.join('|')]);
+  return()=>{active=false;};
+ },[user?.id,user?.tenantId,user?.roles]);
 
  const reload=useCallback(async()=>{
+  const generation=++readGeneration.current;
+  const current=()=>readGeneration.current===generation;
   if(!user?.id||!tenant){setError('An approved centre assignment is required.');setLoading(false);return;}
   setLoading(true);setError('');
   try{
@@ -78,6 +90,7 @@ export default function LMSVirtualLabs(){
     db.from('lms_lab_class_invitations').select('run_id,student_id,status').eq('tenant_id',tenant).limit(700),
    ];
    const responses=await Promise.all(req);
+   if(!current())return;
    const rejected=responses.find(x=>x.error);
    if(rejected)throw Error(rejected.error.message);
    const [o,t,m,r,s,ta,h,p,i]=responses;
@@ -90,24 +103,32 @@ export default function LMSVirtualLabs(){
    setHelpRequests((h.data||[]) as Help[]);
    setProgress((p.data||[]) as TaskProgress[]);
    setInvites((i.data||[]) as {run_id:string;student_id:string;status:string}[]);
-  }catch(e){setError(e instanceof Error?e.message:'LMS labs could not be loaded');}
-  finally{setLoading(false);}
+  }catch(e){if(current())setError(e instanceof Error?e.message:'LMS labs could not be loaded');}
+  finally{if(current())setLoading(false);}
  },[tenant,user?.id]);
  useEffect(()=>{void reload();},[reload]);
- useEffect(()=>{
+ const checkGateway=useCallback(async()=>{
+  const generation=++gatewayGeneration.current;
+  setAwsReady(false);setGatewayNote('Checking AWS provider configuration…');
   if(!user?.id)return;
-  void supabase.functions.invoke('unipathway-aws-lab-gateway',{body:{action:'readiness'}})
-   .then(({data,error:e})=>{
-    setAwsReady(!e&&data?.aws_managed_configured===true);
-    setGatewayNote(e?'AWS lab connector has not been deployed.':String(data?.note||'AWS provider verification pending.'));
-   }).catch(()=>{setAwsReady(false);setGatewayNote('AWS provider connector is unavailable.');});
+  try{
+   const {data,error:e}=await supabase.functions.invoke('unipathway-aws-lab-gateway',{body:{action:'readiness'}});
+   if(gatewayGeneration.current!==generation)return;
+   setAwsReady(!e&&data?.aws_managed_configured===true);
+   setGatewayNote(e?'AWS lab connector is unavailable.':String(data?.note||'AWS provider verification pending.'));
+  }catch{if(gatewayGeneration.current===generation){setAwsReady(false);setGatewayNote('AWS provider connector is unavailable.');}}
  },[user?.id]);
+ useEffect(()=>{void checkGateway();},[checkGateway]);
+ const refreshLabs=()=>{void reload();void checkGateway();};
  const eligibleModules=useMemo(()=>staff&&!centreManager&&!user?.roles.includes('programme_leader')?
   modules.filter(m=>m.lecturer_id===user?.id):modules,[staff,centreManager,modules,user?.id,user?.roles]);
- const allowedModules=new Set(eligibleModules.map(m=>m.id));
+ const allowedModules=useMemo(()=>new Set(eligibleModules.map(m=>m.id)),[eligibleModules]);
  const visibleOfferings=useMemo(()=>offerings.filter(o=>allowedModules.has(o.module_id)&&
-  (staff||o.published)&&(!params.get('module')||params.get('module')===o.module_id)),[offerings,modules,staff,params,allowedModules]);
- const selected=visibleOfferings.find(x=>x.id===selectedId)||visibleOfferings[0]||null;
+  (staff||o.published)&&(!params.get('module')||params.get('module')===o.module_id)),[offerings,staff,params,allowedModules]);
+ const query=search.trim().toLocaleLowerCase();
+ const matchingOfferings=visibleOfferings.filter(o=>[o.title,o.description,modules.find(m=>m.id===o.module_id)?.title,providerName(templates.find(t=>t.id===o.template_id)?.provider||'')].join(' ').toLocaleLowerCase().includes(query));
+ const selected=matchingOfferings.find(x=>x.id===selectedId)||matchingOfferings[0]||null;
+ useEffect(()=>{setLaunch(null);setClassRun('');setMode('self_study');setHelpText('');},[selected?.id]);
  const template=templates.find(x=>x.id===selected?.template_id);
  const activeRuns=runs.filter(r=>r.template_id===template?.id&&['scheduled','active'].includes(r.status)&&
   (staff||invites.some(i=>i.run_id===r.id&&i.student_id===user?.id&&i.status==='invited')));
@@ -121,13 +142,15 @@ export default function LMSVirtualLabs(){
  const possibleMode=selected?.modes?.includes(mode)?mode:(selected?.modes?.[0]||'self_study');
  const call=async(action:'request_and_launch'|'launch_existing',args:Record<string,unknown>)=>{
   setBusy(true);setLaunch(null);
-  const {data,error:e}=await supabase.functions.invoke('unipathway-aws-lab-gateway',{body:{action,...args}});
-  setBusy(false);
-  if(e||data?.error||!data?.url){toast.error(String(data?.error||e?.message||'Cloud workspace not available'));return;}
-  if(typeof data.url!=='string'||!data.url.startsWith('https://')){toast.error('AWS returned an invalid launch URL');return;}
-  setLaunch({url:data.url,status:String(data.status),sessionId:String(data.sessionId),validitySeconds:Number(data.validitySeconds)||60});
-  toast.success('Short-lived AWS workspace link ready. Open within 60 seconds.');
-  void reload();
+  try{
+   const {data,error:e}=await supabase.functions.invoke('unipathway-aws-lab-gateway',{body:{action,...args}});
+   if(e||data?.error||!data?.url){toast.error('Cloud workspace could not be opened. Please retry or contact your instructor.');return;}
+   if(typeof data.url!=='string'||!data.url.startsWith('https://')){toast.error('AWS returned an invalid launch URL');return;}
+   setLaunch({url:data.url,status:String(data.status),sessionId:String(data.sessionId),validitySeconds:Number(data.validitySeconds)||60});
+   toast.success('Short-lived AWS workspace link ready. Open within 60 seconds.');
+   void reload();
+  }catch{toast.error('Cloud workspace request failed. Please check your connection and retry.');}
+  finally{setBusy(false);}
  };
  const request=()=>{
   if(!selected||!providerReady||!user?.id)return;
@@ -144,21 +167,32 @@ export default function LMSVirtualLabs(){
   setHelpText('');toast.success('Private instructor help request recorded');void reload();
  };
  const submitTask=async(taskId:string)=>{
-  if(!ownSession||!taskNote.trim())return;
+  if(!ownSession)return;
+  const noteKey=`${ownSession.id}:${taskId}`;const taskNote=taskNotes[noteKey]||'';
+  if(taskNote.trim().length<5)return;
   setBusy(true);
-  const {error:e}=await db.rpc('submit_unipathway_lab_task',{p_session:ownSession.id,p_task:taskId,p_note:taskNote});
-  setBusy(false);
-  if(e){toast.error(e.message);return;}
-  setTaskNote('');toast.success('Evidence noted for tutor review, not graded automatically.');void reload();
+  try{
+   const {error:e}=await db.rpc('submit_unipathway_lab_task',{p_session:ownSession.id,p_task:taskId,p_note:taskNote});
+   if(e){toast.error('Your evidence note could not be saved. Please retry.');return;}
+   setTaskNotes(notes=>{const next={...notes};if(next[noteKey]===taskNote)delete next[noteKey];return next;});
+   toast.success('Evidence noted for tutor review, not graded automatically.');void reload();
+  }catch{toast.error('Your evidence note could not be saved. Check your connection and retry.');}
+  finally{setBusy(false);}
  };
  const claimHelp=async(id:string,resolve:boolean)=>{
   setBusy(true);const {error:e}=await db.rpc('claim_unipathway_lab_help',{p_request:id,p_resolved:resolve});
   setBusy(false);if(e){toast.error(e.message);return;}void reload();
  };
  const review=async(p:TaskProgress,approved:boolean)=>{
-  setBusy(true);const {error:e}=await db.rpc('review_unipathway_lab_task',{
-   p_session:p.session_id,p_task:p.task_id,p_approved:approved,p_feedback:reviewText});
-  setBusy(false);if(e){toast.error(e.message);return;}setReviewText('');void reload();
+  const feedback=reviewNotes[p.id]||'';
+  setBusy(true);
+  try{
+   const {error:e}=await db.rpc('review_unipathway_lab_task',{
+    p_session:p.session_id,p_task:p.task_id,p_approved:approved,p_feedback:feedback});
+   if(e){toast.error('The review could not be saved. Please retry.');return;}
+   setReviewNotes(notes=>{const next={...notes};if(next[p.id]===feedback)delete next[p.id];return next;});void reload();
+  }catch{toast.error('The review could not be saved. Check your connection and retry.');}
+  finally{setBusy(false);}
  };
  const createCourse=async()=>{
   const m=eligibleModules.find(m=>m.id===newModule);
@@ -225,6 +259,7 @@ export default function LMSVirtualLabs(){
   setBusy(false);if(e){toast.error(e.message);return;}setTaskTitle('');setTaskInstructions('');void reload();
  };
  return <DashboardLayout title="UniPathway Tech & AWS Virtual Labs" subtitle="Course-linked cloud coding, practical tasks, Teams classes and supervised independent learning">
+  <div className="min-w-0 break-words [&_button]:h-auto [&_button]:min-h-11 [&_button]:whitespace-normal">
   <section className="mb-5 rounded-xl border bg-primary/5 p-5">
    <h2 className="flex items-center gap-2 text-xl font-bold"><ShieldCheck className="size-5"/>One secure lab workspace for every learning mode</h2>
    <p className="mt-2 text-sm text-muted-foreground">Enrolled students access practical exercises from their LMS course on a centre laptop, from live Teams lessons, or independently at home. Labs are private by module, session and student. AWS streaming links expire after 60 seconds; budgets and provider capacity must be independently configured before launch.</p>
@@ -236,11 +271,16 @@ export default function LMSVirtualLabs(){
   </section>
   <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border p-4">
    <p className="text-sm"><strong>AWS managed lab:</strong> {awsReady?'Server configuration detected (fleet, cost and identity checks still required).':'Not activated — students cannot start paid cloud workspaces.'}</p>
-   <Button size="sm" variant="outline" onClick={()=>void reload()}><RefreshCcw className="mr-1 size-4"/>Refresh labs</Button>
+   <Button size="sm" variant="outline" onClick={refreshLabs}><RefreshCcw className="mr-1 size-4"/>Refresh labs</Button>
    {gatewayNote&&<p className="w-full text-xs text-muted-foreground">{gatewayNote}</p>}
   </div>
   {loading&&<p role="status">Loading your authorised lab catalogue…</p>}
-  {error&&<p role="alert" className="rounded-xl border border-destructive p-5">Lab LMS could not load: {error}. Confirm staging migrations, your centre/role permissions and course enrolment.</p>}
+  {error&&<section role="alert" className="space-y-3 rounded-xl border border-destructive p-5">
+   <h2 className="font-semibold">Your labs are temporarily unavailable</h2>
+   <p className="text-sm">{/schema cache|does not exist|could not find the table/i.test(error)?'The lab service is awaiting a system update. Your course access has not been changed.':error.includes('centre assignment')?'Your account needs an approved centre assignment. Please contact your programme team.':'We could not verify your lab records. Check your connection and try again, or contact your programme team.'}</p>
+   <div className="flex flex-wrap gap-3"><Button variant="outline" disabled={loading} onClick={refreshLabs}>Retry lab catalogue</Button><Button variant="outline" asChild><Link to={staff?'/lecturer/teaching':'/student/courses'}>Back to course modules</Link></Button>{!staff&&<Button variant="outline" asChild><Link to="/student/support">Contact learning support</Link></Button>}</div>
+   {staff&&<details className="text-sm"><summary className="cursor-pointer font-semibold">Technical details for your administrator</summary><p className="mt-2 break-words">{error}</p><p className="mt-2">Check deployed classroom and lab migrations, centre assignment, role permissions and active course enrolment.</p></details>}
+  </section>}
   {!loading&&!error&&<div className="space-y-6">
    {staff&&<section className="rounded-xl border bg-card p-5">
     <h2 className="flex items-center gap-2 font-bold"><Plus className="size-5"/>Create practical course lab (draft)</h2>
@@ -256,19 +296,22 @@ export default function LMSVirtualLabs(){
     <p className="mt-2 text-xs text-muted-foreground">A draft offers content only. AWS provider configuration, verified funding and director approval are separate; this does not create an AWS VM.</p>
    </section>}
    <section className="grid gap-5 lg:grid-cols-[minmax(16rem,1fr)_minmax(0,2fr)]">
-    <aside className="rounded-xl border bg-card p-4">
+    <aside className="min-w-0 rounded-xl border bg-card p-4">
      <h2 className="font-bold">My learning labs ({visibleOfferings.length})</h2>
+     <label className="mt-3 block text-sm font-medium">Find a lab, module or provider<Input ref={searchInput} className="mt-1" value={search} maxLength={160} disabled={busy} onChange={e=>setSearch(e.target.value)}/></label>
+     <p role="status" className="mt-2 text-xs text-muted-foreground">{matchingOfferings.length} of {visibleOfferings.length} labs shown</p>
+     {query&&matchingOfferings.length===0&&<div className="mt-3 space-y-2"><p className="text-sm">No course labs match your search.</p><Button variant="outline" onClick={()=>{setSearch('');searchInput.current?.focus();}}>Clear lab search</Button></div>}
      {visibleOfferings.length===0&&<p className="mt-3 text-sm text-muted-foreground">No practical labs have been published for your enrolled courses. Your lecturer can prepare labs for the next intake.</p>}
-     <div className="mt-3 space-y-2">{visibleOfferings.map(o=>{
+     <div className="mt-3 space-y-2">{matchingOfferings.map(o=>{
       const provider=templates.find(t=>t.id===o.template_id)?.provider||'not configured';
-      return <button key={o.id} type="button" onClick={()=>{setSelectedId(o.id);setLaunch(null);setClassRun('');setMode('self_study');}}
+      return <button key={o.id} type="button" disabled={busy} onClick={()=>{setSelectedId(o.id);setLaunch(null);setClassRun('');setMode('self_study');}}
         aria-pressed={selected?.id===o.id} className={'w-full rounded-lg border p-3 text-left text-sm '+(selected?.id===o.id?'border-primary bg-primary/5':'hover:bg-secondary/50')}>
         <span className="font-semibold">{o.title}</span><span className="mt-1 block text-xs text-muted-foreground">{providerName(provider)}</span>
         <span className="mt-1 block text-xs">{o.session_minutes} min · {o.published?'Published':'Draft'} · {o.launch_enabled?'Launch approved':'Access pending'}</span>
        </button>;
      })}</div>
     </aside>
-    <div className="space-y-5">
+    <div className="min-w-0 space-y-5">
      {selected&&<section className="rounded-xl border bg-card p-5">
       <h2 className="text-xl font-bold">{selected.title}</h2><p className="mt-2 text-sm text-muted-foreground">{selected.description||'Tutor-led learning, course exercises and self-study practicals.'}</p>
       <div className="mt-3 grid grid-cols-2 gap-3 text-xs sm:grid-cols-3">
@@ -323,8 +366,8 @@ export default function LMSVirtualLabs(){
         <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">{t.instructions||'See tutor instructions for this practical.'}</p>
         {!staff&&<div className="mt-3 space-y-2">
          <p className="text-xs">Progress: {mark?.status||'Not started'}. Student notes require human checking and never create final grades automatically.</p>
-         {ownSession&&<><label className="block text-xs font-medium">Work completed / evidence reference<Textarea rows={2} value={taskNote} maxLength={1200} onChange={e=>setTaskNote(e.target.value)} placeholder="Describe the steps and evidence for tutor review"/></label>
-          <Button size="sm" variant="outline" disabled={busy||taskNote.trim().length<5} onClick={()=>void submitTask(t.id)}>Submit practical evidence note</Button></>}
+         {ownSession&&<><label className="block text-xs font-medium">Work completed / evidence reference<Textarea rows={2} value={taskNotes[`${ownSession.id}:${t.id}`]||''} maxLength={1200} onChange={e=>setTaskNotes(notes=>({...notes,[`${ownSession.id}:${t.id}`]:e.target.value}))} placeholder="Describe the steps and evidence for tutor review"/></label>
+          <Button size="sm" variant="outline" disabled={busy||(taskNotes[`${ownSession.id}:${t.id}`]||'').trim().length<5} onClick={()=>void submitTask(t.id)}>Submit practical evidence note</Button></>}
         </div>}
        </article>;
       })}</div>
@@ -358,7 +401,7 @@ export default function LMSVirtualLabs(){
        {progress.filter(p=>p.session_id===s.id&&p.status==='pending_review').map(p=><div key={p.id} className="mt-2 rounded-md bg-secondary p-3">
         <p>Pending tutor evidence: {tasks.find(t=>t.id===p.task_id)?.title||'Task'}</p>
         <p className="mt-1 whitespace-pre-wrap">{String(p.verification_result?.student_note||'No note')}</p>
-        <label className="mt-2 block">Review feedback<Input className="mt-1" maxLength={1200} value={reviewText} onChange={e=>setReviewText(e.target.value)}/></label>
+        <label className="mt-2 block">Review feedback<Input className="mt-1" maxLength={1200} value={reviewNotes[p.id]||''} onChange={e=>setReviewNotes(notes=>({...notes,[p.id]:e.target.value}))}/></label>
         <div className="mt-2 flex flex-wrap gap-2"><Button size="sm" disabled={busy} onClick={()=>void review(p,true)}>Verify completed</Button>
          <Button size="sm" variant="outline" disabled={busy} onClick={()=>void review(p,false)}>Request revision</Button></div>
        </div>)}
@@ -375,5 +418,6 @@ export default function LMSVirtualLabs(){
   <footer className="mt-6 rounded-lg border p-4 text-xs text-muted-foreground">
    <p><strong>Security and cost:</strong> AWS labs are separate cloud resources, not automatically included in a Teams licence. Course approval, budget alerts/actions, per-user attempt limits, concurrency quotas, restricted AWS IAM permissions and fleet idle timeouts must be verified. AWS Academy Learner Lab access is provided by an authorised AWS Academy educator; it cannot be assumed from this LMS integration.</p>
   </footer>
+  </div>
  </DashboardLayout>;
 }
