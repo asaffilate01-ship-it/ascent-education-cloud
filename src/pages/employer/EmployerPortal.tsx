@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 
 type Membership={organisation_id:string;unipathway_employer_organisations:{name:string;sector:string;status:string}|null};
 type Opportunity={id:string;organisation_id:string;title:string;status:string;opportunity_type:string;city:string|null;role_description:string;created_at:string};
-type Application={opportunity_id:string;status:string};
+type Application={id:string;opportunity_id:string;status:string;statement:string|null;applicant_consent_at:string;created_at:string};
 export default function EmployerPortal(){
  const {user}=useAuth();
  return <EmployerWorkspace key={`${user?.id}:${user?.tenantId}:${user?.roles?.join('|')||user?.role}`} />;
@@ -35,11 +35,11 @@ function EmployerWorkspace(){
    const orgs=verified.map(x=>x.organisation_id);
    const [jobs,apps]=await Promise.all([
     db.from('unipathway_employer_opportunities').select('id,organisation_id,title,status,opportunity_type,city,role_description,created_at').eq('tenant_id',tenant).in('organisation_id',orgs).order('created_at',{ascending:false}),
-    db.from('unipathway_employer_applications').select('opportunity_id,status').eq('tenant_id',tenant)
+    db.from('unipathway_employer_applications').select('id,opportunity_id,status,statement,applicant_consent_at,created_at').eq('tenant_id',tenant)
    ]);
    if(!current())return;
    if(jobs.error||apps.error)throw new Error('Employer vacancies or consent-scoped applicant workflow is not available. Ask the centre to verify RLS and migrations.');
-   setOpps((jobs.data||[]) as Opportunity[]);setApplications((apps.data||[]) as Application[]);
+   setOpps((jobs.data||[]) as Opportunity[]);setApplications(((apps.data||[]) as Application[]).filter(a=>a.status!=='withdrawn'&&Boolean(a.applicant_consent_at)));
    setOrganisation(v=>orgs.includes(v)?v:orgs[0]);
   }catch(e){if(current())setError(e instanceof Error?e.message:'Employer account unavailable.');}
   finally{if(current())setLoading(false);}
@@ -47,7 +47,7 @@ function EmployerWorkspace(){
  useEffect(()=>{const requests=generation;void load();return()=>{requests.current++;};},[load,refresh]);
  const counts=useMemo(()=>new Map(opps.map(o=>[o.id,applications.filter(x=>x.opportunity_id===o.id).length])),[opps,applications]);
  async function submit(){
-  if(!tenant||!user||!organisation||title.trim().length<5||summary.trim().length<25){
+  if(!tenant||!user||!organisation||!members.some(m=>m.organisation_id===organisation)||title.trim().length<5||summary.trim().length<25){
    setError('Choose a verified employer and enter a specific role title and description (at least 25 characters).');return;
   }
   setBusy(true);setError('');setNotice('');
@@ -79,7 +79,11 @@ function EmployerWorkspace(){
        <label className="block text-sm font-semibold">Safety and eligibility requirements<Textarea className="mt-1" value={safety} onChange={e=>setSafety(e.target.value)}/></label>
        <label className="block text-sm font-semibold">Salary/stipend arrangement (confirm in writing)<Textarea className="mt-1" value={stipend} onChange={e=>setStipend(e.target.value)}/></label>
      </div><Button className="mt-4" disabled={busy} onClick={()=>void submit()}>{busy?'Submitting…':'Save draft for approval'}</Button></section>
-     <section className="rounded-xl border bg-card p-5"><h2 className="text-xl font-bold">Your organisation's opportunities</h2>{!opps.length?<p className="mt-2 text-sm text-muted-foreground">No verified opportunities or drafts are recorded.</p>:<div className="mt-4 grid gap-3 lg:grid-cols-2">{opps.map(o=><article key={o.id} className="rounded-lg border p-4"><BriefcaseBusiness className="size-5 text-success"/><h3 className="mt-2 font-bold">{o.title}</h3><p className="mt-1 text-sm text-muted-foreground">{o.city||'Pakistan'} · {o.opportunity_type.replace(/_/g,' ')} · {o.status}</p><p className="mt-2 text-xs text-muted-foreground">Consenting applicant records: {counts.get(o.id)||0}. Applications are read-only here; employment decisions require the centre's controlled workflow.</p></article>)}</div>}</section>
+     <section className="rounded-xl border bg-card p-5"><h2 className="text-xl font-bold">Your organisation's opportunities</h2>{!opps.length?<p className="mt-2 text-sm text-muted-foreground">No verified opportunities or drafts are recorded.</p>:<div className="mt-4 grid gap-3 lg:grid-cols-2">{opps.map(o=><article key={o.id} className="rounded-lg border p-4"><BriefcaseBusiness className="size-5 text-success"/><h3 className="mt-2 font-bold">{o.title}</h3><p className="mt-1 text-sm text-muted-foreground">{o.city||'Pakistan'} · {o.opportunity_type.replace(/_/g,' ')} · {o.status}</p><p className="mt-2 text-xs text-muted-foreground">Consenting applicant records: {counts.get(o.id)||0}. Applicant details are read-only here; employment decisions require the centre's controlled workflow.</p>
+      {applications.filter(a=>a.opportunity_id===o.id).length>0&&<div className="mt-4 space-y-3 border-t pt-3"><p className="text-sm font-semibold">Consented statements (read-only)</p>
+       {applications.filter(a=>a.opportunity_id===o.id).map(a=><div key={a.id} className="rounded-lg bg-secondary/40 p-3"><p className="text-xs text-muted-foreground">Application {a.id.slice(0,8)} · {a.status} · {new Date(a.created_at).toLocaleDateString()}</p><p className="mt-2 whitespace-pre-wrap text-sm">{a.statement||'No statement provided.'}</p></div>)}
+      </div>}
+    </article>)}</div>}</section>
    </>}
   </div>
  </DashboardLayout>;
