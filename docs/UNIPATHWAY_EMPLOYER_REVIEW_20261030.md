@@ -12,6 +12,8 @@ Lovable project `2c97a03a-f146-4ff5-a22b-3765cf2f538f` was inspected directly th
 
 The separately named staging Lovable project `6b6517b6-1468-4a03-84a3-0fa5c40a40a2` remains in `building` status; a database status probe reports enabled but an attempted **read-only** schema query failed. Staging auth/tenant isolation is **not** verified or available for protected test data. No hosted or staging database writes were made.
 
+A read-only hosted schema check also confirmed `public.unipathway_placements`, `public.unipathway_placement_activity_logs` and `public.unipathway_placement_audit` are **absent**. The placement UI in source therefore is not proof of a deployed supervised-placement service. It must pass its own additive migration, tenancy and safeguarding acceptance separately.
+
 ## Confirmed gaps in the previous source
 
 1. Student marketplace had consented application submission but no usable withdrawal.
