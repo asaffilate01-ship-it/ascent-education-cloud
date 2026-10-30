@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import Seo from '@/components/Seo';
 import PublicNav from '@/components/PublicNav';
 import PublicFooter from '@/components/PublicFooter';
-import heroImage from '@/assets/promo-hero.jpg';
+import heroImage from '@/assets/promo-hero-1200.webp';
+import heroImageSmall from '@/assets/promo-hero-640.webp';
 const pathways = [
   { title: 'Complete Education Centre', caption: 'Matric, FSc, FA/ICS/ICom, Cambridge O/A Levels, global languages and vocational certifications', to: '/education-centre', icon: GraduationCap, number: '00' },
   { title: 'UK & international qualifications', caption: 'Online LMS plus two 14-day centre visits for eligible programmes', to: '/qualifications', icon: GraduationCap, number: '01' },
@@ -47,7 +48,7 @@ export default function PromoHome() {
             <div className="mt-8 flex flex-col gap-3 sm:flex-row"><Button size="lg" className="h-12 px-6" asChild><a href="#study">Find your course <ArrowRight /></a></Button><Button variant="outline" size="lg" className="h-12" asChild><Link to="/contact">Talk to an adviser</Link></Button></div>
             <a href="#how-it-works" className="mt-5 inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4">See how learning works</a>
           </div>
-          <figure className="min-w-0"><img src={heroImage} alt="Pakistani students in separate groups of girls and boys with space between them" className="aspect-[5/4] w-full rounded-2xl object-cover" fetchPriority="high" /><figcaption className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold"><span className="flex items-center gap-2"><Video className="size-4 text-success" />Online across Pakistan</span><span className="flex items-center gap-2"><School className="size-4 text-success" />In class in Jhelum</span></figcaption></figure>
+          <figure className="min-w-0"><img src={heroImage} srcSet={`${heroImageSmall} 640w, ${heroImage} 1200w`} sizes="(min-width: 1280px) 576px, (min-width: 1024px) calc((100vw - 128px) / 2), (min-width: 640px) calc(100vw - 64px), calc(100vw - 40px)" width={1200} height={756} alt="Pakistani students in separate groups of girls and boys with space between them" className="aspect-[5/4] w-full rounded-2xl object-cover" fetchPriority="high" /><figcaption className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold"><span className="flex items-center gap-2"><Video className="size-4 text-success" />Online across Pakistan</span><span className="flex items-center gap-2"><School className="size-4 text-success" />In class in Jhelum</span></figcaption></figure>
         </div>
       </section>
       <section id="study" className="scroll-mt-28 py-14 sm:py-20"><div className="mx-auto max-w-7xl px-5 sm:px-8">
