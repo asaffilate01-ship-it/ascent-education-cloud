@@ -1,5 +1,37 @@
 import {test,expect} from '@playwright/test';
 test.describe.configure({retries:0});
+test('home hero plays locally, pauses and keeps course and support choices accessible',async({context,page})=>{
+ await context.route('https://unipathway-browser-ci.invalid/**',route=>route.fulfill({status:200,headers:{'access-control-allow-origin':'*','content-type':'application/json'},body:'[]'}));
+ await page.emulateMedia({reducedMotion:'no-preference'});await page.goto('/');
+ const consent=page.getByRole('dialog',{name:'Cookie preferences'});if(await consent.isVisible())await consent.getByRole('button',{name:'Reject all'}).click();
+ const video=page.locator('main video');
+ await expect.poll(()=>video.evaluate((v:HTMLVideoElement)=>v.readyState)).toBeGreaterThanOrEqual(2);
+ await expect.poll(()=>video.evaluate((v:HTMLVideoElement)=>v.currentTime)).toBeGreaterThan(0);
+ expect(await video.evaluate((v:HTMLVideoElement)=>v.muted&&v.loop&&v.playsInline)).toBe(true);
+ await page.getByRole('button',{name:'Pause background animation'}).click();
+ await expect.poll(()=>video.evaluate((v:HTMLVideoElement)=>v.paused)).toBe(true);
+ await page.getByRole('button',{name:'Play background animation'}).click();
+ await expect.poll(()=>video.evaluate((v:HTMLVideoElement)=>v.paused)).toBe(false);
+ await expect(page.getByRole('link',{name:'Plan your application',exact:true})).toHaveAttribute('href','/apply');
+ await expect(page.getByRole('navigation',{name:'Learning and student support'}).getByRole('link',{name:'Student portal',exact:true})).toHaveAttribute('href','/login');
+ await page.getByRole('link',{name:'Find your course',exact:true}).click();
+ await expect(page.getByLabel('Search learning areas')).toBeVisible();
+ await page.getByLabel('Search learning areas').fill('sewing');
+ await expect(page.getByRole('heading',{name:'Art, Crafts & Sewing',exact:true})).toBeVisible();
+});
+test('home keeps a still hero for reduced motion and data saving without requesting video',async({context,page})=>{
+ const videos:string[]=[];page.on('request',r=>{if(r.url().endsWith('.mp4'))videos.push(r.url());});
+ await context.route('https://unipathway-browser-ci.invalid/**',route=>route.fulfill({status:200,headers:{'access-control-allow-origin':'*','content-type':'application/json'},body:'[]'}));
+ await page.setViewportSize({width:375,height:812});await page.emulateMedia({reducedMotion:'reduce'});await page.goto('/');
+ await expect(page.getByRole('heading',{level:1})).toContainText('Learn online.');await expect(page.locator('main video')).toHaveCount(0);
+ await page.evaluate(()=>{document.documentElement.style.fontSize='24px';});
+ for(const viewport of [{width:375,height:812},{width:812,height:375},{width:1440,height:1000}]){
+  await page.setViewportSize(viewport);await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ }
+ await context.addInitScript(()=>Object.defineProperty(navigator,'connection',{configurable:true,value:{saveData:true,addEventListener(){},removeEventListener(){}}}));
+ await page.reload();
+ await expect(page.getByRole('heading',{level:1})).toContainText('Learn online.');await page.emulateMedia({reducedMotion:'no-preference'});await expect(page.locator('main video')).toHaveCount(0);expect(videos).toEqual([]);
+});
 test('qualification filters survive shared links, reload and browser navigation with empty-result recovery',async({context,page})=>{
  test.setTimeout(45_000);
  await context.route('https://unipathway-browser-ci.invalid/**',route=>route.fulfill({status:200,headers:{'access-control-allow-origin':'*','content-type':'application/json'},body:'[]'}));
