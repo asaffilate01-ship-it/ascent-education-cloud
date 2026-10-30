@@ -1,6 +1,7 @@
 import {PGlite} from '@electric-sql/pglite';
 import assert from 'node:assert/strict';
 import {employerActivationSql} from './activation/prepare-unipathway-employers.mjs';
+import {employerPrivacySql} from './activation/prepare-unipathway-employer-privacy.mjs';
 const db=new PGlite(),T1='10000000-0000-0000-0000-000000000001',T2='10000000-0000-0000-0000-000000000002';
 const DIRECTOR='20000000-0000-0000-0000-000000000001',EMP='20000000-0000-0000-0000-000000000002';
 const STUDENT='20000000-0000-0000-0000-000000000003',OTHER='20000000-0000-0000-0000-000000000004',ADMISSIONS='20000000-0000-0000-0000-000000000005';
@@ -73,8 +74,38 @@ await as(EMP,T1,async()=>{
  const apps=await db.query('SELECT id,student_id FROM public.unipathway_employer_applications');assert.equal(apps.rows.length,1);assert.equal(apps.rows[0].student_id,STUDENT);checks++;
  const unpublished=await db.query("UPDATE public.unipathway_employer_applications SET status='accepted' WHERE id=$1 RETURNING id",[app]);assert.equal(unpublished.rows.length,0,'Employer cannot secretly approve applicants');checks++;
 });
+// First prove that a dry run changes nothing: the pre-patch policy exposes the
+// submitted applicant to this verified employer, even after withdrawal.
+await db.exec(employerPrivacySql());
+await as(EMP,T1,async()=>{
+ const r=await db.query('SELECT id FROM public.unipathway_employer_applications');
+ assert.equal(r.rows.length,1);checks++;
+});
+await db.exec(employerPrivacySql(true));
 await as(STUDENT,T1,async()=>{
+ await denied(()=>db.query("UPDATE public.unipathway_employer_applications SET status='withdrawn', statement='Changed without renewed consent' WHERE id=$1",[app]));
  const withdrawn=await db.query("UPDATE public.unipathway_employer_applications SET status='withdrawn' WHERE id=$1 RETURNING status",[app]);assert.equal(withdrawn.rows[0].status,'withdrawn');checks++;
+});
+await as(EMP,T1,async()=>{
+ const r=await db.query('SELECT id FROM public.unipathway_employer_applications');
+ assert.equal(r.rows.length,0,'Withdrawn statements cannot remain visible to the employer');checks++;
+});
+await as(DIRECTOR,T1,async()=>{
+ const audit=await db.query("SELECT status FROM public.unipathway_employer_applications WHERE id=$1",[app]);
+ assert.equal(audit.rows[0].status,'withdrawn');checks++;
+ await denied(()=>db.query("UPDATE public.unipathway_employer_applications SET status='accepted' WHERE id=$1",[app]));
+});
+let expired;
+await as(EMP,T1,async()=>{
+ const r=await db.query("INSERT INTO public.unipathway_employer_opportunities(tenant_id,organisation_id,title,opportunity_type,role_description,created_by,application_deadline) VALUES($1,$2,'Expired QA Role','internship','A supervised placement with a deadline that has passed',$3,CURRENT_DATE-INTERVAL '1 day') RETURNING id",[T1,org,EMP]);
+ expired=r.rows[0].id;
+});
+await as(DIRECTOR,T1,async()=>{
+ const r=await db.query("UPDATE public.unipathway_employer_opportunities SET status='published',verification_reference='VACANCY-AGREEMENT-EXPIRED',approved_by=$1,approved_at=now() WHERE id=$2 RETURNING id",[DIRECTOR,expired]);
+ assert.equal(r.rows.length,1);checks++;
+});
+await as(STUDENT,T1,async()=>{
+ await denied(()=>db.query("INSERT INTO public.unipathway_employer_applications(tenant_id,opportunity_id,student_id,applicant_consent_at) VALUES($1,$2,$3,now())",[T1,expired,STUDENT]));
 });
 await assert.rejects(()=>db.exec(employerActivationSql(true)),/already or partially installed/);checks++;
 await db.exec('ROLLBACK');
