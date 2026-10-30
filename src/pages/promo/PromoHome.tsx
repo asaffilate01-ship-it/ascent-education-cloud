@@ -5,8 +5,7 @@ import { Button } from '@/components/ui/button';
 import Seo from '@/components/Seo';
 import PublicNav from '@/components/PublicNav';
 import PublicFooter from '@/components/PublicFooter';
-import heroImage from '@/assets/promo-hero-1200.webp';
-import heroImageSmall from '@/assets/promo-hero-640.webp';
+import LearningHero from '@/components/promo/LearningHero';
 const pathways = [
   { title: 'Complete Education Centre', caption: 'Matric, FSc, FA/ICS/ICom, Cambridge O/A Levels, global languages and vocational certifications', to: '/education-centre', icon: GraduationCap, number: '00' },
   { title: 'UK & international qualifications', caption: 'Online LMS plus two 14-day centre visits for eligible programmes', to: '/qualifications', icon: GraduationCap, number: '01' },
@@ -39,18 +38,13 @@ export default function PromoHome() {
     <Seo title="UniPathway | Online & In-Class Learning in Pakistan" description="Explore tuition, languages, qualifications and skills. Learn online across Pakistan or in class in Jhelum." canonical="/" />
     <PublicNav />
     <main id="main-content">
-      <section className="border-b bg-[#f6f5ef] dark:bg-background">
-        <div className="mx-auto grid max-w-7xl items-center gap-10 px-5 py-12 sm:px-8 lg:grid-cols-2 lg:gap-16 lg:py-20">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-success">Your next chapter starts in Pakistan</p>
-            <h1 className="mt-5 text-[2.6rem] font-extrabold leading-[1.08] tracking-tight sm:text-6xl">Learn online.<br />Learn in class.<br /><span className="text-success">Move forward.</span></h1>
-            <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground">Build your skills, prepare for exams or take your next academic step. Online across Pakistan. In class at our Jhelum centre.</p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row"><Button size="lg" className="h-12 px-6" asChild><a href="#study">Find your course <ArrowRight /></a></Button><Button variant="outline" size="lg" className="h-12" asChild><Link to="/contact">Talk to an adviser</Link></Button></div>
-            <a href="#how-it-works" className="mt-5 inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4">See how learning works</a>
-          </div>
-          <figure className="min-w-0"><img src={heroImage} srcSet={`${heroImageSmall} 640w, ${heroImage} 1200w`} sizes="(min-width: 1280px) 576px, (min-width: 1024px) calc((100vw - 128px) / 2), (min-width: 640px) calc(100vw - 64px), calc(100vw - 40px)" width={1200} height={756} alt="Pakistani students in separate groups of girls and boys with space between them" className="aspect-[5/4] w-full rounded-2xl object-cover" fetchPriority="high" /><figcaption className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold"><span className="flex items-center gap-2"><Video className="size-4 text-success" />Online across Pakistan</span><span className="flex items-center gap-2"><School className="size-4 text-success" />In class in Jhelum</span></figcaption></figure>
-        </div>
-      </section>
+      <LearningHero />
+      <nav aria-label="Learning and student support" className="border-b bg-secondary/30">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-px px-5 py-3 sm:grid-cols-2 sm:px-8 lg:grid-cols-4">{([
+          ['Explore courses', '/study', BookOpen], ['Funding & Foundation', '/scholarships', GraduationCap],
+          ['Study abroad support', '/student-support', Globe2], ['Student portal', '/login', Video],
+        ] as const).map(([label,to,Icon])=><Link key={to} to={to} className="group flex min-h-14 items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold hover:bg-success/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><Icon className="size-5 shrink-0 text-success"/><span className="min-w-0 break-words">{label}</span><ArrowRight className="ml-auto size-4 shrink-0 text-muted-foreground"/></Link>)}</div>
+      </nav>
       <section id="study" className="scroll-mt-28 py-14 sm:py-20"><div className="mx-auto max-w-7xl px-5 sm:px-8">
         <p className="text-xs font-bold uppercase tracking-widest text-success">01 / Find your direction</p>
         <div className="mt-3 flex flex-col justify-between gap-6 md:flex-row md:items-end"><div><h2 className="text-3xl font-bold tracking-tight sm:text-4xl">What would you like to learn?</h2><p className="mt-3 max-w-xl text-muted-foreground">Start with a subject. Check the course details, then speak to us about entry requirements, fees and the next intake.</p></div><div className="relative md:w-80 md:shrink-0"><label htmlFor="home-course-search" className="sr-only">Search learning areas</label><Search className="pointer-events-none absolute left-4 top-4 size-5 text-muted-foreground" /><input id="home-course-search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Try Python, IELTS or finance" className="h-14 w-full rounded-xl border bg-card pl-12 pr-4 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" /></div></div>
@@ -65,6 +59,11 @@ export default function PromoHome() {
         ['Start with a plan','Once enrolled, use your student portal for your timetable, available materials and learning support.'],
       ].map(([title,copy],i)=><article key={title} className="border-t border-border pt-5"><span className="text-sm font-bold text-success">0{i+1}</span><h3 className="mt-4 text-xl font-bold">{title}</h3><p className="mt-3 leading-relaxed text-muted-foreground">{copy}</p></article>)}</div></div></section>
       <section className="py-14 sm:py-20"><div className="mx-auto grid max-w-7xl gap-10 px-5 sm:px-8 lg:grid-cols-2 lg:items-center"><div><p className="text-xs font-bold uppercase tracking-widest text-success">03 / Keep learning simple</p><h2 className="mt-3 text-3xl font-bold sm:text-4xl">Your learning.<br />In one place.</h2><p className="mt-5 max-w-lg leading-relaxed text-muted-foreground">On your phone, tablet or computer, your student portal helps you find the next thing to do. Features and class delivery depend on your programme.</p><Button asChild className="mt-7"><Link to="/login">Sign in to your portal <ArrowRight /></Link></Button></div><div className="rounded-2xl border bg-card p-6 sm:p-8"><p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Inside your student portal</p>{[['Your classes','Check your timetable and join available live sessions.'],['Your study materials','Find the resources shared for your modules.'],['Your next steps','Keep track of coursework and ask for support.']].map(([title,copy])=><div key={title} className="flex gap-4 border-b py-6 last:border-0 last:pb-0"><CheckCircle2 className="mt-1 size-5 shrink-0 text-success" /><div><h3 className="font-bold">{title}</h3><p className="mt-1 text-sm leading-relaxed text-muted-foreground">{copy}</p></div></div>)}</div></div></section>
+      <section aria-labelledby="home-support-title" className="border-t bg-secondary/25 py-14 sm:py-20"><div className="mx-auto max-w-7xl px-5 sm:px-8"><p className="text-xs font-bold uppercase tracking-widest text-success">04 / Support for your next step</p><h2 id="home-support-title" className="mt-3 text-3xl font-bold sm:text-4xl">Make a confident choice.</h2><p className="mt-4 max-w-2xl leading-relaxed text-muted-foreground">Returning to study, planning a career change or exploring university? Get the details that matter before you apply.</p><div className="mt-8 grid gap-4 md:grid-cols-3">{[
+        {title:'Understand your study route',copy:'Compare qualifications, entry requirements and progression options. University entry depends on the receiving institution.',to:'/university-progression',label:'Explore progression'},
+        {title:'Discuss fees and support',copy:'Ask about your course fees and circumstance-based Foundation support. Reduced or fully funded places depend on eligibility and available funding.',to:'/scholarships',label:'Explore Foundation support'},
+        {title:'Speak to a real adviser',copy:'Discuss the next intake, course delivery and the support you may need before making your decision.',to:'/contact',label:'Talk to an adviser'},
+      ].map(item=><article key={item.to} className="flex flex-col rounded-2xl border bg-card p-6"><h3 className="text-xl font-bold">{item.title}</h3><p className="mb-6 mt-3 text-sm leading-relaxed text-muted-foreground">{item.copy}</p><Link to={item.to} className="mt-auto inline-flex min-h-11 items-center gap-2 font-semibold text-success underline-offset-4 hover:underline">{item.label}<ArrowRight className="size-4"/></Link></article>)}</div></div></section>
       <section className="bg-primary py-14 text-primary-foreground"><div className="mx-auto flex max-w-7xl flex-col justify-between gap-6 px-5 sm:px-8 md:flex-row md:items-center"><div><h2 className="text-3xl font-bold">Not sure where to start?</h2><p className="mt-3 max-w-xl text-primary-foreground/80">Tell us your goals. We’ll help you understand your options and choose your next step.</p></div><Button size="lg" variant="secondary" asChild className="h-12 shrink-0"><Link to="/contact">Talk to an adviser <ArrowRight /></Link></Button></div></section>
     </main><PublicFooter />
   </div>;

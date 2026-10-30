@@ -8,6 +8,8 @@ import { VitePWA } from "vite-plugin-pwa";
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
+    // Exact host used by the managed preview; keep Vite's host check enabled.
+    allowedHosts: ["terminal.local"],
     port: 8080,
     hmr: {
       overlay: false,
