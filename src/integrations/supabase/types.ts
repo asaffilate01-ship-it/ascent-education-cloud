@@ -5336,6 +5336,276 @@ export type Database = {
           },
         ]
       }
+      unipathway_employer_applications: {
+        Row: {
+          applicant_consent_at: string
+          created_at: string
+          id: string
+          opportunity_id: string
+          statement: string | null
+          status: string
+          student_id: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          applicant_consent_at: string
+          created_at?: string
+          id?: string
+          opportunity_id: string
+          statement?: string | null
+          status?: string
+          student_id: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          applicant_consent_at?: string
+          created_at?: string
+          id?: string
+          opportunity_id?: string
+          statement?: string | null
+          status?: string
+          student_id?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_employer_applications_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "unipathway_employer_opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_employer_applications_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_employer_applications_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_employer_memberships: {
+        Row: {
+          created_at: string
+          id: string
+          organisation_id: string
+          role: string
+          status: string
+          tenant_id: string
+          user_id: string
+          verification_reference: string | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organisation_id: string
+          role?: string
+          status?: string
+          tenant_id: string
+          user_id: string
+          verification_reference?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organisation_id?: string
+          role?: string
+          status?: string
+          tenant_id?: string
+          user_id?: string
+          verification_reference?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_employer_memberships_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "unipathway_employer_organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_employer_memberships_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_employer_memberships_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_employer_opportunities: {
+        Row: {
+          application_deadline: string | null
+          approved_at: string | null
+          approved_by: string | null
+          city: string | null
+          country: string
+          created_at: string
+          created_by: string | null
+          employer_display_name: string
+          id: string
+          opportunity_type: string
+          organisation_id: string
+          remote: boolean
+          role_description: string
+          safety_requirements: string | null
+          status: string
+          stipend_details: string | null
+          tenant_id: string
+          title: string
+          updated_at: string
+          verification_reference: string | null
+        }
+        Insert: {
+          application_deadline?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          city?: string | null
+          country?: string
+          created_at?: string
+          created_by?: string | null
+          employer_display_name?: string
+          id?: string
+          opportunity_type: string
+          organisation_id: string
+          remote?: boolean
+          role_description: string
+          safety_requirements?: string | null
+          status?: string
+          stipend_details?: string | null
+          tenant_id: string
+          title: string
+          updated_at?: string
+          verification_reference?: string | null
+        }
+        Update: {
+          application_deadline?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          city?: string | null
+          country?: string
+          created_at?: string
+          created_by?: string | null
+          employer_display_name?: string
+          id?: string
+          opportunity_type?: string
+          organisation_id?: string
+          remote?: boolean
+          role_description?: string
+          safety_requirements?: string | null
+          status?: string
+          stipend_details?: string | null
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+          verification_reference?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_employer_opportunities_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "unipathway_employer_organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_employer_opportunities_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_employer_opportunities_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_employer_organisations: {
+        Row: {
+          city: string | null
+          contact_reference: string | null
+          created_at: string
+          id: string
+          name: string
+          sector: string
+          status: string
+          tenant_id: string
+          updated_at: string
+          verification_reference: string | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          city?: string | null
+          contact_reference?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          sector: string
+          status?: string
+          tenant_id: string
+          updated_at?: string
+          verification_reference?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          city?: string | null
+          contact_reference?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          sector?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+          verification_reference?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_employer_organisations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_employer_organisations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       unipathway_funding_events: {
         Row: {
           changed_by: string
@@ -6709,12 +6979,20 @@ export type Database = {
         }
         Returns: boolean
       }
+      unipathway_student_verified_employer: {
+        Args: { _org: string; _tenant: string }
+        Returns: boolean
+      }
       unipathway_task_assignees: {
         Args: never
         Returns: {
           full_name: string
           user_id: string
         }[]
+      }
+      unipathway_verified_employer_member: {
+        Args: { _org: string; _user: string }
+        Returns: boolean
       }
       update_uni_mail_thread: {
         Args: {
