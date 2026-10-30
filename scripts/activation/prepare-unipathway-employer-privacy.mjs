@@ -53,14 +53,21 @@ BEGIN
      OR OLD.student_id<>NEW.student_id THEN
    RAISE EXCEPTION 'Cannot change application ownership';
   END IF;
-  IF OLD.status='withdrawn' AND NEW.status<>'withdrawn' THEN
-   RAISE EXCEPTION 'A withdrawn application cannot be reactivated';
-  END IF;
-  IF auth.uid()=OLD.student_id AND
-    public.has_role(auth.uid(),'student'::public.app_role) AND
-    (NEW.statement IS DISTINCT FROM OLD.statement OR
-     NEW.applicant_consent_at IS DISTINCT FROM OLD.applicant_consent_at)
-  THEN RAISE EXCEPTION 'Withdrawal cannot modify the original consent or statement'; END IF;
+  -- The application, original consent and audit identity are immutable.
+  IF NEW.id IS DISTINCT FROM OLD.id OR
+     NEW.created_at IS DISTINCT FROM OLD.created_at OR
+     NEW.applicant_consent_at IS DISTINCT FROM OLD.applicant_consent_at OR
+     NEW.statement IS DISTINCT FROM OLD.statement
+  THEN RAISE EXCEPTION 'Application identity, statement and consent cannot be changed'; END IF;
+  -- Enforce the same state machine on direct API requests as on the centre UI.
+  -- Late-stage withdrawals can be recorded by authorised centre staff,
+  -- while direct student withdrawal is restricted by the existing RLS rule.
+  IF NEW.status IS DISTINCT FROM OLD.status AND NOT (
+       (OLD.status='submitted' AND NEW.status IN ('screening','declined','withdrawn'))
+    OR (OLD.status='screening' AND NEW.status IN ('shortlisted','declined','withdrawn'))
+    OR (OLD.status='shortlisted' AND NEW.status IN ('accepted','declined','withdrawn'))
+    OR (OLD.status IN ('accepted','declined') AND NEW.status='withdrawn')
+  ) THEN RAISE EXCEPTION 'Invalid application status transition'; END IF;
  END IF;
  NEW.updated_at:=now();
  RETURN NEW;
