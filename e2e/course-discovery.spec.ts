@@ -195,3 +195,21 @@ test('unavailable whiteboard setup provides recovery without exposing schema err
  await expect(page.getByRole('alert').filter({hasText:'Whiteboards are unavailable for your centre'})).toBeVisible();await expect(page.getByText(/schema cache/)).toHaveCount(0);await expect(page.getByRole('link',{name:'Return to my dashboard',exact:true})).toHaveAttribute('href','/lecturer');
  missing=false;await page.getByRole('button',{name:'Retry whiteboards',exact:true}).click();await expect(page.getByText(/No authorised boards yet/)).toBeVisible();
 });
+
+test('mobile hero shows the complete original image above the copy without downloading video',async({context,page})=>{
+ const videos:string[]=[];page.on('request',r=>{if(r.url().endsWith('.mp4'))videos.push(r.url());});
+ await context.route('https://unipathway-browser-ci.invalid/**',route=>route.fulfill({status:200,headers:{'access-control-allow-origin':'*','content-type':'application/json'},body:'[]'}));
+ await page.setViewportSize({width:375,height:812});await page.emulateMedia({reducedMotion:'no-preference'});await page.goto('/');
+ const heading=page.getByRole('heading',{level:1});await expect(heading).toContainText('Learn online.');
+ for(const width of [320,375,430,812]){
+  await page.setViewportSize({width,height:812});
+  const image=page.locator('main section[aria-labelledby="home-hero-title"] img');
+  await expect.poll(()=>image.evaluate((img:HTMLImageElement)=>img.complete&&img.naturalWidth>0)).toBe(true);
+  const dimensions=await image.evaluate((img:HTMLImageElement)=>({ratio:img.clientWidth/img.clientHeight,natural:img.naturalWidth/img.naturalHeight,bottom:img.getBoundingClientRect().bottom}));
+  expect(Math.abs(dimensions.ratio-dimensions.natural)).toBeLessThan(0.02);
+  expect((await heading.boundingBox())!.y).toBeGreaterThan(dimensions.bottom);
+  await expect(page.locator('main video')).toHaveCount(0);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ }
+ expect(videos).toEqual([]);
+});
