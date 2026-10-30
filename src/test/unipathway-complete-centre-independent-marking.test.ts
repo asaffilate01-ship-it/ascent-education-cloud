@@ -46,7 +46,7 @@ describe('UniPathway complete centre and independent marking contracts',()=>{
  it('keeps Omniqora analysis private and advisory, requires attributable criterion evidence',()=>{
   expect(ai).toContain('UNIPATHWAY_OMNIQORA_ASSESSMENT_ENABLED');
   expect(ai).toContain("allocation.marker_id!==auth.userId");
-  expect(ai).toContain('AI cited text not present in submitted evidence');
+  expect(get('supabase/functions/_shared/assessment-draft-validation.ts')).toContain('AI cited text not present in submitted evidence');
   expect(ai).toContain("status:'advisory_only'");
   expect(marker).toContain("record_unipathway_human_mark");
   expect(qa).toContain("review_uni_mark_revision");

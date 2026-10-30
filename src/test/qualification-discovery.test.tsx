@@ -39,3 +39,21 @@ it('finds both Pearson Fine Art awards by craft focus and displays the correct s
  expect(cards[1]).toHaveTextContent('B2 · Professional Project');expect(cards[0]).toHaveTextContent('not additional Pearson units or extra credits');
  expect(within(cards[0]).getByRole('link',{name:/Pearson Fine Art specification/})).toHaveAttribute('href',expect.stringContaining('qualifications.pearson.com'));
 });
+it('restores and updates the level filter while preserving campaign and browser history',async()=>{
+ await mount('/qualifications?level=3&utm_source=pathway#qualification-filters');
+ expect(screen.getByRole('combobox',{name:'Qualification level'})).toHaveValue('3');
+ expect(within(screen.getByLabelText('Proposed qualifications')).getAllByRole('article').every(el=>el.textContent?.includes('Level 3'))).toBe(true);
+ fireEvent.change(screen.getByRole('combobox',{name:'Qualification level'}),{target:{value:'5'}});
+ expect(params().get('level')).toBe('5');expect(params().get('utm_source')).toBe('pathway');
+ expect(within(screen.getByLabelText('Proposed qualifications')).getAllByRole('article').every(el=>el.textContent?.includes('Level 5'))).toBe(true);
+ fireEvent.click(screen.getByText('Browser back'));expect(screen.getByRole('combobox',{name:'Qualification level'})).toHaveValue('3');
+ fireEvent.click(screen.getByText('Clear qualification filters'));expect(params().has('level')).toBe(false);expect(params().get('utm_source')).toBe('pathway');
+});
+it('keeps foundation years, foundation degrees and diploma availability distinct',async()=>{
+ await mount('/qualifications?level=invalid');
+ expect(screen.getByRole('combobox',{name:'Qualification level'})).toHaveValue('All');
+ const guide=screen.getByRole('region',{name:'From Level 3 to postgraduate study'});
+ expect(guide).toHaveTextContent('University foundation year');expect(guide).toHaveTextContent('Level 5 · Diploma or foundation degree');
+ expect(guide).toHaveTextContent('not a list of approved UniPathway intakes');
+ expect(within(guide).getByRole('link',{name:'Explore Level 3'})).toHaveAttribute('href','/qualifications?level=3#qualification-filters');
+});
