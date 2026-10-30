@@ -16,7 +16,10 @@ BEGIN
  THEN RAISE EXCEPTION 'Existing employer activation required; do not replay foundation migrations'; END IF;
  IF NOT EXISTS (SELECT 1 FROM pg_policies
     WHERE schemaname='public' AND tablename='unipathway_employer_applications'
-      AND policyname='Verified employers read consenting applicants for own opportunities')
+      -- PostgreSQL truncates policy identifiers to 63 bytes (PGlite may retain
+      -- the full spelling); both resolve to the same quoted ALTER POLICY target.
+      AND policyname IN ('Verified employers read consenting applicants for own opportunities',
+                         'Verified employers read consenting applicants for own opportuni'))
  THEN RAISE EXCEPTION 'Expected applicant access policy missing; manual reconciliation required'; END IF;
 END;
 $preflight$;
