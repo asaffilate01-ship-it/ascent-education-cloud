@@ -33,13 +33,26 @@ function EmployerWorkspace(){
    setMembers(verified);
    if(!verified.length){setLoading(false);return;}
    const orgs=verified.map(x=>x.organisation_id);
-   const [jobs,apps]=await Promise.all([
-    db.from('unipathway_employer_opportunities').select('id,organisation_id,title,status,opportunity_type,city,role_description,created_at').eq('tenant_id',tenant).in('organisation_id',orgs).order('created_at',{ascending:false}),
-    db.from('unipathway_employer_applications').select('id,opportunity_id,status,statement,applicant_consent_at,created_at').eq('tenant_id',tenant)
-   ]);
+   const jobs=await db.from('unipathway_employer_opportunities')
+    .select('id,organisation_id,title,status,opportunity_type,city,role_description,created_at')
+    .eq('tenant_id',tenant).in('organisation_id',orgs).order('created_at',{ascending:false});
    if(!current())return;
-   if(jobs.error||apps.error)throw new Error('Employer vacancies or consent-scoped applicant workflow is not available. Ask the centre to verify RLS and migrations.');
-   setOpps((jobs.data||[]) as Opportunity[]);setApplications(((apps.data||[]) as Application[]).filter(a=>a.status!=='withdrawn'&&Boolean(a.applicant_consent_at)));
+   if(jobs.error)throw new Error('Employer vacancies are unavailable. Ask the centre to verify RLS and migrations.');
+   const allowedJobs=((jobs.data||[]) as Opportunity[]).filter(j=>orgs.includes(j.organisation_id));
+   const allowedJobIds=new Set(allowedJobs.map(j=>j.id));
+   let scopedApps:Application[]=[];
+   if(allowedJobIds.size){
+    // Restrict the query and the rendered records: a dual-role staff account
+    // must not see other organisations' applications in the employer workspace.
+    const apps=await db.from('unipathway_employer_applications')
+     .select('id,opportunity_id,status,statement,applicant_consent_at,created_at')
+     .eq('tenant_id',tenant).in('opportunity_id',[...allowedJobIds]);
+    if(!current())return;
+    if(apps.error)throw new Error('Consent-scoped applicants are unavailable. Ask the centre to verify RLS and migrations.');
+    scopedApps=((apps.data||[]) as Application[]).filter(a=>
+     allowedJobIds.has(a.opportunity_id)&&a.status!=='withdrawn'&&Boolean(a.applicant_consent_at));
+   }
+   setOpps(allowedJobs);setApplications(scopedApps);
    setOrganisation(v=>orgs.includes(v)?v:orgs[0]);
   }catch(e){if(current())setError(e instanceof Error?e.message:'Employer account unavailable.');}
   finally{if(current())setLoading(false);}
