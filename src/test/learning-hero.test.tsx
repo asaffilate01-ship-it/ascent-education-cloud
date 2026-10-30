@@ -3,10 +3,12 @@ import {MemoryRouter} from 'react-router-dom';
 import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 import LearningHero from '@/components/promo/LearningHero';
 let preference:EventTarget & {matches:boolean};
+let desktop:EventTarget & {matches:boolean};
 const show=()=>render(<MemoryRouter><LearningHero/></MemoryRouter>);
 beforeEach(()=>{
  preference=Object.assign(new EventTarget(),{matches:false});
- vi.spyOn(window,'matchMedia').mockReturnValue(preference as MediaQueryList);
+ desktop=Object.assign(new EventTarget(),{matches:true});
+ vi.spyOn(window,'matchMedia').mockImplementation(query=>(query.includes('min-width')?desktop:preference) as MediaQueryList);
  vi.spyOn(HTMLMediaElement.prototype,'play').mockResolvedValue();vi.spyOn(HTMLMediaElement.prototype,'pause').mockImplementation(()=>{});
  Object.defineProperty(navigator,'connection',{configurable:true,value:undefined});
 });
@@ -42,4 +44,16 @@ it('keeps the still image and course choices if autoplay or video loading fails'
  const {container}=show();await waitFor(()=>expect(container.querySelector('video')).toBeNull());
  expect(container.querySelector('img')).toBeInTheDocument();
  expect(screen.getByRole('link',{name:'Find your course'})).toBeInTheDocument();
+});
+
+it('keeps the full original still on mobile and reacts when the viewport changes',async()=>{
+ desktop.matches=false;const {container}=show();
+ expect(container.querySelector('video')).toBeNull();
+ expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
+ expect(container.querySelector('img')).toHaveClass('h-auto');
+ await act(async()=>{desktop.matches=true;desktop.dispatchEvent(new Event('change'));});
+ expect(container.querySelector('video source')).toBeInTheDocument();
+ await act(async()=>{desktop.matches=false;desktop.dispatchEvent(new Event('change'));});
+ expect(container.querySelector('video')).toBeNull();
+ expect(screen.queryByRole('button',{name:'Pause background animation'})).toBeNull();
 });
