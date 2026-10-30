@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import { Plus, Play, Clock, Trophy, Pencil, Trash2, CheckCircle, XCircle, BarCha
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { db } from '@/lib/db';
 import StatusBadge from '@/components/ui/StatusBadge';
 
 interface Quiz {
@@ -68,6 +69,13 @@ export default function QuizDashboard() {
   const [quizTimer, setQuizTimer] = useState(0);
   const [showAddQ, setShowAddQ] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [attemptId, setAttemptId] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [saveStatus, setSaveStatus] = useState('');
+  const deadline = useRef(0);
+  const answersRef = useRef<Record<string,string>>({});
+  const submitting = useRef(false);
+  const saveQueue = useRef<Promise<unknown>>(Promise.resolve());
 
   // Form state
   const [form, setForm] = useState({
@@ -90,8 +98,9 @@ export default function QuizDashboard() {
     const [qRes, mRes, aRes] = await Promise.all([
       supabase.from('quizzes').select('*').order('created_at', { ascending: false }),
       supabase.from('modules').select('*').order('title'),
-      supabase.from('quiz_attempts').select('*').eq('student_id', user.id).order('started_at', { ascending: false }),
+      db.rpc('my_quiz_attempts'),
     ]);
+    if (qRes.error || mRes.error || aRes.error) toast.error('Some quiz information could not be loaded. Please retry.');
     if (qRes.data) setQuizzes(qRes.data as any);
     if (mRes.data) setModules(mRes.data);
     if (aRes.data) setAttempts(aRes.data as any);
@@ -115,8 +124,8 @@ export default function QuizDashboard() {
   };
 
   const loadQuestions = async (quizId: string) => {
-    // Staff see full questions via safe view (correct_answer populated for staff, null for students)
-    const { data } = await supabase.from('quiz_questions_safe' as any).select('*').eq('quiz_id', quizId).order('sort_order');
+    const { data, error } = await supabase.from('quiz_questions').select('*').eq('quiz_id', quizId).order('sort_order');
+    if (error) { toast.error('Questions could not be loaded'); return; }
     setQuestions((data as any) || []);
   };
 
@@ -141,64 +150,70 @@ export default function QuizDashboard() {
   };
 
   const publishQuiz = async (quizId: string) => {
-    await supabase.from('quizzes').update({ status: 'published' } as any).eq('id', quizId);
+    const { error } = await supabase.from('quizzes').update({ status: 'published' } as any).eq('id', quizId);
+    if (error) { toast.error(error.message); return; }
     toast.success('Quiz published');
     fetchData();
     if (activeQuiz?.id === quizId) setActiveQuiz({ ...activeQuiz!, status: 'published' });
   };
 
   const deleteQuestion = async (id: string) => {
-    await supabase.from('quiz_questions').delete().eq('id', id);
+    const { error } = await supabase.from('quiz_questions').delete().eq('id', id);
+    if (error) { toast.error(error.message); return; }
     toast.success('Question removed');
     loadQuestions(activeQuiz!.id);
   };
 
-  // Student: take quiz
   const startQuiz = async (quiz: Quiz) => {
-    const existingAttempts = attempts.filter(a => a.quiz_id === quiz.id);
-    if (existingAttempts.length >= quiz.max_attempts) {
-      toast.error(`Maximum ${quiz.max_attempts} attempt(s) reached`);
-      return;
-    }
-    await loadQuestions(quiz.id);
-    setTakingQuiz(quiz);
-    setQuizAnswers({});
-    setQuizTimer(quiz.time_limit_minutes * 60);
+    if (busy) return;
+    setBusy(true);
+    try {
+      const {data,error}=await db.rpc('start_quiz_attempt',{p_quiz_id:quiz.id});
+      if (error) throw error;
+      setQuestions(data.questions);setAttemptId(data.attempt_id);
+      answersRef.current=data.answers||{};setQuizAnswers(answersRef.current);
+      const remaining=Math.max(0,new Date(data.expires_at).getTime()-new Date(data.server_now).getTime());
+      deadline.current=Date.now()+remaining;setQuizTimer(Math.ceil(remaining/1000));
+      setSaveStatus('Answers saved');setTakingQuiz(quiz);
+    } catch(error) { toast.error(error instanceof Error?error.message:(error as {message?:string})?.message||'Quiz could not be started'); }
+    finally { setBusy(false); }
   };
 
-  // Timer
-  useEffect(() => {
-    if (!takingQuiz || quizTimer <= 0) return;
-    const t = setInterval(() => setQuizTimer(s => {
-      if (s <= 1) { submitQuiz(); return 0; }
-      return s - 1;
-    }), 1000);
-    return () => clearInterval(t);
-  }, [takingQuiz, quizTimer]);
+  const submitQuiz = useCallback(async () => {
+    if (!attemptId || submitting.current) return;
+    submitting.current=true;setBusy(true);
+    try {
+      await saveQueue.current;
+      const {data,error}=await db.rpc('submit_quiz_attempt',{p_attempt_id:attemptId,p_answers:answersRef.current});
+      if (error) throw error;
+      toast.success(data.results_visible?`Quiz submitted! Score: ${data.percentage}%`:'Quiz submitted. Results are withheld by your teacher.');
+      setTakingQuiz(null);setAttemptId(null);void fetchData();
+    } catch { toast.error('Submission was not confirmed. Your attempt remains open; please retry.'); }
+    finally { submitting.current=false;setBusy(false); }
+  },[attemptId]);
 
-  const submitQuiz = async () => {
+  useEffect(()=>{
     if (!takingQuiz) return;
-    let score = 0;
-    let total = 0;
-    questions.forEach(q => {
-      total += q.points;
-      if (quizAnswers[q.id] === q.correct_answer) score += q.points;
-    });
-    const pct = total > 0 ? Math.round((score / total) * 100) : 0;
-    const profile = await supabase.from('profiles').select('tenant_id').eq('user_id', user!.id).single();
-    await supabase.from('quiz_attempts').insert({
-      quiz_id: takingQuiz.id,
-      student_id: user!.id,
-      tenant_id: profile.data?.tenant_id,
-      answers: quizAnswers,
-      score, total_points: total, percentage: pct,
-      passed: pct >= takingQuiz.pass_percentage,
-      completed_at: new Date().toISOString(),
-      time_spent_seconds: (takingQuiz.time_limit_minutes * 60) - quizTimer,
-    } as any);
-    toast.success(`Quiz submitted! Score: ${pct}%`);
-    setTakingQuiz(null);
-    fetchData();
+    const tick=()=>setQuizTimer(Math.max(0,Math.ceil((deadline.current-Date.now())/1000)));
+    tick();const timer=setInterval(tick,1000);return()=>clearInterval(timer);
+  },[takingQuiz]);
+  useEffect(()=>{
+    if (takingQuiz && quizTimer===0) void submitQuiz();
+  },[takingQuiz,quizTimer,submitQuiz]);
+  useEffect(()=>{
+    if (!attemptId || !takingQuiz || submitting.current || quizTimer===0) return;
+    setSaveStatus('Saving answers…');
+    const timer=setTimeout(()=>{
+      const snapshot=quizAnswers;
+      saveQueue.current=saveQueue.current.catch(()=>{}).then(async()=>{
+        const {error}=await db.rpc('save_quiz_answers',{p_attempt_id:attemptId,p_answers:snapshot});
+        setSaveStatus(error?'Answers not saved. Check your connection and submit before time runs out.':'Answers saved');
+      });
+    },350);
+    return()=>clearTimeout(timer);
+  },[quizAnswers,attemptId,takingQuiz]);
+  const answer=(id:string,value:string)=>{
+    answersRef.current={...answersRef.current,[id]:value};setQuizAnswers(answersRef.current);
   };
 
   const modMap: Record<string, any> = {};
@@ -223,23 +238,24 @@ export default function QuizDashboard() {
               {q.question_type === 'mcq' && (q.options as string[]).map((opt, oi) => (
                 <label key={oi} className={`flex items-center gap-3 p-3 rounded-lg border mb-2 cursor-pointer transition-all ${quizAnswers[q.id] === opt ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/30'}`}>
                   <input type="radio" name={q.id} value={opt} checked={quizAnswers[q.id] === opt}
-                    onChange={() => setQuizAnswers(p => ({ ...p, [q.id]: opt }))} className="accent-primary" />
+                    disabled={busy || quizTimer===0} onChange={() => answer(q.id,opt)} className="accent-primary" />
                   <span className="text-sm">{opt}</span>
                 </label>
               ))}
               {q.question_type === 'true_false' && ['True', 'False'].map(opt => (
                 <label key={opt} className={`flex items-center gap-3 p-3 rounded-lg border mb-2 cursor-pointer transition-all ${quizAnswers[q.id] === opt ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/30'}`}>
                   <input type="radio" name={q.id} value={opt} checked={quizAnswers[q.id] === opt}
-                    onChange={() => setQuizAnswers(p => ({ ...p, [q.id]: opt }))} className="accent-primary" />
+                    disabled={busy || quizTimer===0} onChange={() => answer(q.id,opt)} className="accent-primary" />
                   <span className="text-sm">{opt}</span>
                 </label>
               ))}
               {q.question_type === 'short_answer' && (
-                <Input value={quizAnswers[q.id] || ''} onChange={e => setQuizAnswers(p => ({ ...p, [q.id]: e.target.value }))} placeholder="Type your answer" />
+                <Input aria-label={`Answer to question ${i+1}`} maxLength={4000} disabled={busy || quizTimer===0} value={quizAnswers[q.id] || ''} onChange={e => answer(q.id,e.target.value)} placeholder="Type your answer" />
               )}
             </div>
           ))}
-          <Button className="w-full" onClick={submitQuiz}>Submit Quiz</Button>
+          <p role="status" className="text-sm text-muted-foreground">{saveStatus}</p><p className="text-xs text-muted-foreground">Answers are saved as you work. When time expires, only answers received by the server before the deadline are marked. Short answers ignore letter case and surrounding spaces.</p>
+          <Button disabled={busy} className="w-full" onClick={submitQuiz}>{busy ? 'Submitting…' : 'Submit Quiz'}</Button>
         </div>
       </DashboardLayout>
     );
@@ -340,7 +356,7 @@ export default function QuizDashboard() {
                 </div>
               </div>
               <div>
-                <Label>Explanation (shown after submit)</Label>
+                <Label>Explanation (staff reference)</Label>
                 <Textarea value={qForm.explanation} onChange={e => setQForm(p => ({ ...p, explanation: e.target.value }))} />
               </div>
             </div>
@@ -395,7 +411,9 @@ export default function QuizDashboard() {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {quizzes.filter(q => q.status === 'published').map(quiz => {
                 const myAttempts = attempts.filter(a => a.quiz_id === quiz.id);
-                const best = myAttempts.length > 0 ? Math.max(...myAttempts.map(a => a.percentage || 0)) : null;
+                const marked = myAttempts.filter(a=>a.percentage!==null && a.completed_at);
+                const resumable=myAttempts.some(a=>!a.completed_at);
+                const best = marked.length > 0 ? Math.max(...marked.map(a => a.percentage)) : null;
                 return (
                   <div key={quiz.id} className="surface-card p-5">
                     <h3 className="text-sm font-bold mb-1">{quiz.title}</h3>
@@ -410,8 +428,8 @@ export default function QuizDashboard() {
                         Best: {best}% {best >= quiz.pass_percentage ? '✓ Passed' : '✗ Failed'}
                       </p>
                     )}
-                    <Button size="sm" className="w-full" onClick={() => startQuiz(quiz)} disabled={myAttempts.length >= quiz.max_attempts}>
-                      <Play className="w-3.5 h-3.5 mr-1" /> {myAttempts.length > 0 ? 'Retake' : 'Start Quiz'}
+                    <Button size="sm" className="w-full" onClick={() => startQuiz(quiz)} disabled={busy || (!resumable && myAttempts.length >= quiz.max_attempts)}>
+                      <Play className="w-3.5 h-3.5 mr-1" /> {resumable ? 'Resume attempt' : myAttempts.length > 0 ? 'Retake' : 'Start Quiz'}
                     </Button>
                   </div>
                 );
@@ -436,8 +454,8 @@ export default function QuizDashboard() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className={`text-lg font-bold ${a.passed ? 'text-success' : 'text-destructive'}`}>{a.percentage}%</p>
-                      <p className="text-xs text-muted-foreground">{a.score}/{a.total_points} pts</p>
+                      <p className={`text-lg font-bold ${a.passed ? 'text-success' : 'text-destructive'}`}>{!a.completed_at ? 'In progress' : a.percentage===null ? 'Results withheld' : `${a.percentage}%`}</p>
+                      <p className="text-xs text-muted-foreground">{a.score!==null && a.completed_at ? `${a.score}/${a.total_points} pts` : ''}</p>
                     </div>
                   </div>
                 );

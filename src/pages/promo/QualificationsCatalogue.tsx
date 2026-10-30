@@ -1,3 +1,4 @@
+import QualificationStages from '@/components/QualificationStages';
 import WomenCreativeEnterprise from '@/components/WomenCreativeEnterprise';
 import QualificationCurriculum from '@/components/QualificationCurriculum';
 import AwardingBodyGuidance from '@/components/AwardingBodyGuidance';
@@ -17,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { qualificationSelection } from '@/lib/qualificationSelection';
 
 
+const levels = ['All', '3', '4', '5', '6'] as const;
 const bodies = ['All', 'OTHM', 'Qualifi', 'Pearson BTEC'] as const;
 export default function QualificationsCatalogue() {
   const [now,setNow]=useState(Date.now());useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),30000);return()=>clearInterval(timer);},[]);
@@ -29,15 +31,18 @@ export default function QualificationsCatalogue() {
   const search=useRef<HTMLInputElement>(null);
   const query=(params.get('q')||'').slice(0,120);
   const categories = useMemo(() => ['All', ...new Set(qualificationSelection.map(q=>q.category))],[]);
+  const requestedLevel=params.get('level');
+  const level=levels.includes(requestedLevel as typeof levels[number])?requestedLevel!:'All';
   const requestedSubject=params.get('subject')||'All';
   const category=categories.includes(requestedSubject)?requestedSubject:'All';
   const commitFilters=(next:URLSearchParams,replace=false)=>navigate({search:next.toString()?`?${next}`:'',hash},{replace});
   const updateFilter=(name:string,value:string,replace=false)=>{const next=new URLSearchParams(params);if(!value||(name!=='q'&&value==='All'))next.delete(name);else next.set(name,value);commitFilters(next,replace);};
-  const clearFilters=()=>{const next=new URLSearchParams(params);for(const key of ['body','q','subject'])next.delete(key);commitFilters(next);search.current?.focus();};
-  const activeFilters=['body','q','subject'].some(key=>params.has(key));
+  const clearFilters=()=>{const next=new URLSearchParams(params);for(const key of ['body','q','subject','level'])next.delete(key);commitFilters(next);search.current?.focus();};
+  const activeFilters=['body','q','subject','level'].some(key=>params.has(key));
   const filtered = qualificationSelection.filter(q =>
     (body === 'All' || q.body === body) &&
     (category === 'All' || q.category === category) &&
+    (level === 'All' || String(q.level) === level) &&
     `${q.name} ${q.body} ${q.category} ${q.curriculum?.craftFocus.join(' ')||''} ${q.curriculum?.modules.map(m=>`${m.title} ${m.units.map(u=>u.title).join(' ')}`).join(' ')||''}`.toLowerCase().includes(query.trim().toLowerCase())
   );
   return <div className="public-site min-h-dvh bg-background">
@@ -50,15 +55,17 @@ export default function QualificationsCatalogue() {
         <p className="mt-4 text-muted-foreground">Explore OTHM, Qualifi and Pearson BTEC Fine Art catalogue options alongside ATHE and VTCT Skills pathway guidance for learners in Pakistan. Options without current confirmed details are for planning only. Admissions must verify centre authorisation, entry eligibility and a place on the chosen intake before enrolment.</p>
       </PublicHero>
 <PageContents/>
+      <QualificationStages/>
       <AwardingBodyGuidance/>
 
-      <section className="rounded-xl border bg-card p-5" aria-label="Filter qualification options">
+      <section id="qualification-filters" className="scroll-mt-24 rounded-xl border bg-card p-5" aria-label="Filter qualification options">
         <div className="flex flex-wrap gap-2" role="group" aria-label="Awarding body">
           {bodies.map(b=><Button key={b} size="sm" className="max-w-full whitespace-normal md:min-h-11" type="button" aria-pressed={body===b} variant={body===b?'default':'outline'} onClick={()=>updateFilter('body',b)}>{b==='All'?'All catalogue options':b}</Button>)}
         </div>
-        <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(12rem,0.6fr)]">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(12rem,0.6fr)_minmax(8rem,0.35fr)]">
           <label className="block min-w-0 text-sm font-medium" htmlFor="qualification-search"><Search aria-hidden="true" className="mr-1 inline size-4"/>Search programmes<Input ref={search} type="search" maxLength={120} aria-describedby="qualification-results" id="qualification-search" className="mt-1" value={query} onChange={e=>updateFilter('q',e.target.value,true)} placeholder="Try cyber security, accounting or law"/></label>
           <div className="min-w-0 text-sm font-medium"><label htmlFor="qualification-category">Subject</label><select id="qualification-category" className="mt-1 block min-h-11 w-full rounded-md border bg-background px-3" value={category} onChange={e=>updateFilter('subject',e.target.value)}>{categories.map(c=><option key={c} value={c}>{c==='All'?'All subjects':c}</option>)}</select></div>
+          <div className="min-w-0 text-sm font-medium"><label htmlFor="qualification-level">Qualification level</label><select id="qualification-level" className="mt-1 block min-h-11 w-full rounded-md border bg-background px-3" value={level} onChange={e=>updateFilter('level',e.target.value)}>{levels.map(l=><option key={l} value={l}>{l==='All'?'All catalogue levels':`Level ${l}`}</option>)}</select></div>
         </div>
         <p id="qualification-results" className="mt-3 text-sm text-muted-foreground" role="status" aria-atomic="true">{filtered.length} proposed qualification options match your selection.</p>{activeFilters&&<Button className="mt-2 max-w-full whitespace-normal" variant="outline" onClick={clearFilters}>Clear qualification filters</Button>}
       </section>
