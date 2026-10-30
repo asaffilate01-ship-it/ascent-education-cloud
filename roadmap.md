@@ -19,4 +19,4 @@
 - [x] Request publication of the latest application; confirm public homepage rendering and hosted legacy retirement response 410. Paid AWS and payments remain unconfigured.
 - [x] Surface sewing, crafts and creative enterprise as its own public page with navigation, homepage, footer, sitemap and search metadata.
 - [x] Name and describe the new public page as art, crafts and sewing so fine art is discoverable in navigation, homepage, metadata and keywords.
-- [ ] Reduce oversized site icons and homepage imagery, verify loading and publish the lighter site.
+- [x] Reduce oversized site icons and homepage imagery; desktop/mobile image loading and course navigation verified, seven related tests passed; publish the lighter site.
