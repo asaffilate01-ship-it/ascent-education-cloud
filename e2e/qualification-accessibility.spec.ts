@@ -1,4 +1,4 @@
-import {test,expect} from '../playwright-fixture';
+import {test,expect} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 for (const width of [375,1440]) test(`qualification stages and filters are accessible at ${width}px`,async({context,page})=>{
  await context.route('https://unipathway-browser-ci.invalid/**',route=>route.fulfill({status:200,headers:{'access-control-allow-origin':'*','content-type':'application/json'},body:'[]'}));
