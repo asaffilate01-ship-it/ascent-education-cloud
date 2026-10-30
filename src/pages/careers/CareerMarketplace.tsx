@@ -42,7 +42,9 @@ function CareerWorkspace(){
  const existing=new Set(applications.map(a=>a.opportunity_id));
  // Deadlines are shown in the Pakistan local calendar; the reviewed SQL guard
  // also enforces them on direct API writes (the UI check is not authorization).
- const todayPakistan=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Karachi',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+ const pakistanParts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Karachi',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+ const part=(type:string)=>pakistanParts.find(p=>p.type===type)?.value||'';
+ const todayPakistan=`${part('year')}-${part('month')}-${part('day')}`;
  async function apply(){
   if(!user||!tenant||!selected||!consent||statement.trim().length<20){setError('Choose an open opportunity, add at least 20 characters explaining your interest and agree to share this application with the verified employer.');return;}
   setBusy(true);setError('');setNotice('');
