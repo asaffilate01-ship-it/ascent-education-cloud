@@ -6,6 +6,12 @@ PR #142 successfully activated **four** existing employer tables in the hosted U
 
 This change advances the existing workflow without creating or approving any real employer, student, opportunity, internship or application. No hosted database changes or portal publication are performed by this pull request.
 
+## Independently verified hosted baseline (read-only)
+
+Lovable project `2c97a03a-f146-4ff5-a22b-3765cf2f538f` was inspected directly through its read-only project database connection on 30 October 2026. All four employer tables exist with RLS enabled; counts are **0 organisations, 0 memberships, 0 opportunities and 0 applications**. The existing application trigger and consent-policy predicate match PR #142's source. The actual PostgreSQL applicant-policy name is `Verified employers read consenting applicants for own opportuni` because PostgreSQL truncates identifiers to 63 bytes. The forward patch preflight accepts the hosted truncated name and the longer fixture name.
+
+The separately named staging Lovable project `6b6517b6-1468-4a03-84a3-0fa5c40a40a2` remains in `building` status; a database status probe reports enabled but an attempted **read-only** schema query failed. Staging auth/tenant isolation is **not** verified or available for protected test data. No hosted or staging database writes were made.
+
 ## Confirmed gaps in the previous source
 
 1. Student marketplace had consented application submission but no usable withdrawal.
