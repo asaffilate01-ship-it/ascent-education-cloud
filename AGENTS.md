@@ -12,3 +12,4 @@
 - Academy students should predominantly look 18–25, with only an occasional older learner; instructors may be older. Preserve varied faces and classroom settings. The academy-v3 WebP assets are AI-edited illustrative scenes, not photographs of actual premises.
 - UniPathway enrols students based in Pakistan. Contact/application residence fields should use Pakistan without overseas residence options; overseas countries remain valid study-abroad destinations.
 - Import JSON data without import attributes (`with {type:'json'}`) in app code; the preview dev server serves JSON as JavaScript, so the attribute makes the whole app fail to load. Only fall back to the offline reader when the device is actually offline.
+- Serve the homepage illustration using local responsive WebP derivatives of the approved original and keep PWA PNG dimensions consistent with their manifest declarations, so slower connections avoid oversized image downloads without changing imagery.

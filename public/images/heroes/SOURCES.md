@@ -14,6 +14,8 @@ Illustrative stock photography from Unsplash, downloaded 25 October 2026. These 
 
 General study and campus heroes use `tuition.jpg`; guidance and careers use the individual document-review scene in `finance.jpg`. The homepage uses the approved original Pakistani student illustration (`src/assets/promo-hero.jpg`), with girls and boys in separate groups and space between them. Technology imagery uses the existing single-learner English study illustration. The diploma article cover also uses `finance.jpg`; the legacy social image uses the people-free UniPathway brand card. Men and women must not be seated or standing directly next to each other or intermingled; clearly separated groups within one image are permitted.
 
+The homepage serves 1200px and 640px WebP derivatives (`src/assets/promo-hero-{1200,640}.webp`) of that same approved original, with unchanged composition and display crop, to reduce downloads on slower connections.
+
 ## Academy illustrations — 25 October 2026
 
 Five illustrative scenes generated with the built-in image-generation tool, stored as 1200px WebP with 640px responsive variants. They do not depict actual premises, staff or learners. Original homepage image is retained.
