@@ -49,6 +49,7 @@ it('shows only consented, non-withdrawn statements from the verified employer sc
    {id:'submitted-app-1',opportunity_id:'job-1',status:'submitted',statement:'Consented personal statement',applicant_consent_at:'2026-10-30T10:00:00Z',created_at:'2026-10-30T10:00:00Z'},
    {id:'withdrawn-app-2',opportunity_id:'job-1',status:'withdrawn',statement:'Private withdrawn statement',applicant_consent_at:'2026-10-30T10:00:00Z',created_at:'2026-10-30T10:00:00Z'},
    {id:'unconsented-app-3',opportunity_id:'job-1',status:'submitted',statement:'No consent statement',applicant_consent_at:null,created_at:'2026-10-30T10:00:00Z'},
+   {id:'other-employer-app-4',opportunity_id:'other-employer-job',status:'submitted',statement:'Other employer private statement',applicant_consent_at:'2026-10-30T10:00:00Z',created_at:'2026-10-30T10:00:00Z'},
   ],error:null});
  });
  render(<EmployerPortal/>);
@@ -56,5 +57,6 @@ it('shows only consented, non-withdrawn statements from the verified employer sc
  expect(screen.getByText(/Consenting applicant records: 1/)).toBeInTheDocument();
  expect(screen.queryByText('Private withdrawn statement')).not.toBeInTheDocument();
  expect(screen.queryByText('No consent statement')).not.toBeInTheDocument();
+ expect(screen.queryByText('Other employer private statement')).not.toBeInTheDocument();
  expect(screen.queryByRole('button',{name:/Record accepted|Shortlist|Start screening/})).not.toBeInTheDocument();
 });
