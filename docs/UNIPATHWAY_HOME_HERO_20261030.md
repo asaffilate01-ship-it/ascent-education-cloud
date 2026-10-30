@@ -27,3 +27,11 @@ The actual hero component was viewed in the managed browser and the real 13-seco
 The full local app preview hit its existing online-import/offline-reader recovery path, so the visual review used an isolated component harness without backend setup; temporary harness files were removed. Full-app navigation, mobile/large-text overflow, playback and no-video reduced-motion/data-saving checks are covered by the added Chromium acceptance tests. Unit tests cover motion preferences, restricted connections, pause/resume and playback failure. Production build/type checks and CI establish their separate results; browser component review does not prove live publication.
 
 The hero has no production subscription or generation charges. Serving the video consumes the site's normal bandwidth; this work does not guarantee unlimited free hosting or change a hosting plan.
+
+## Hero polish revision
+
+The revised desktop hero puts the film beside the headline in a restrained split layout. It removes the heavy image overlays and preserves classroom framing in a 3:2 media panel. Mobile retains the full original still above the copy and does not attach a video source.
+
+`unipathway-learning-hero-v2.mp4` is a 24-second, silent, 1200×800 H.264 edit at 24 fps (3,388,253 bytes). Three approved illustrative stills use gentle eased movement, 1.5-second dissolves and an opening-composition return at the loop seam. CRF 23 replaces the old CRF 30 encoding. This remains animation of still images, not newly filmed or generated live-action footage. The versioned filename avoids serving the old cached edit. The previous file remains for compatibility with older deployed clients.
+
+Validation: seven existing hero tests pass, TypeScript app check passes, production build passes. Browser component review confirmed actual 24-second playback, the Pause control changing to Play, and the 390px mobile layout showing the full still and copy underneath. The full local app enters its existing offline-reader fallback, so browser visual checks used a temporary isolated component harness, removed before commit. These checks do not establish deployment to unipathway.pk.

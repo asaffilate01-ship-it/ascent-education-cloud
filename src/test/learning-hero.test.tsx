@@ -29,7 +29,7 @@ it('does not attach a video source for reduced motion, including preference chan
  preference.matches=true;const {container}=show();
  expect(container.querySelector('video')).toBeNull();
  await act(async()=>{preference.matches=false;preference.dispatchEvent(new Event('change'));});
- expect(container.querySelector('video source')).toHaveAttribute('src','/media/unipathway-learning-hero.mp4');
+ expect(container.querySelector('video source')).toHaveAttribute('src','/media/unipathway-learning-hero-v2.mp4');
  await act(async()=>{preference.matches=true;preference.dispatchEvent(new Event('change'));});
  expect(container.querySelector('video')).toBeNull();
  expect(container.querySelector('img')).toHaveAttribute('fetchpriority','high');
