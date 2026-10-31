@@ -67,6 +67,7 @@ export const workspaceCatalog:Record<string,WorkspaceGroup[]>={
   ['Employers and opportunities','/director/employers','Review employer relationships and published opportunities.'],
   ['Guardian support','/director/guardian-support','Manage authorised guardian communication.'],
   ['Teams setup','/director/microsoft-education','Configure classroom organiser readiness.'],
+  ['Academic operations review','/ai-recommendations','Review centre-scoped attendance, submitted work and teaching cover with human oversight.'],
   ['Reports','/director/reports','Inspect available centre reports.'],
  ])],
  superadmin:[group('Platform operations',[
@@ -78,6 +79,7 @@ export const workspaceCatalog:Record<string,WorkspaceGroup[]>={
   ['Employers','/landlord/employers','Review employer partnerships.'],
   ['Launch readiness','/landlord/readiness','Inspect activation and provider readiness.'],
   ['Education intelligence','/landlord/education-intelligence','Review stored intelligence with human oversight.'],
+  ['Academic operations review','/ai-recommendations','Inspect operational records for the assigned centre; not a student eligibility assessment.'],
   ['Audit','/landlord/audit','Inspect authorised audit records.'],
   ['Attendance reviews','/landlord/attendance-corrections','Review only where explicitly authorised in the centre.'],
  ])],

@@ -39,3 +39,20 @@ it('clears both service filters when the active role changes',()=>{
  expect(screen.queryByRole('link',{name:/Identity and certificates/})).toBeNull();
  expect(screen.getByRole('link',{name:/Results and progress/})).toBeInTheDocument();
 });
+
+it('matches multiple service words in any order without broadening assigned role access',()=>{
+ render(<MemoryRouter><RoleWorkspace/></MemoryRouter>);
+ fireEvent.change(screen.getByLabelText('Find a service'),{target:{value:'recorded materials'}});
+ expect(screen.getByRole('link',{name:/Materials and recorded lessons/})).toHaveAttribute('href','/student/library');
+ expect(screen.queryByRole('link',{name:/Platform accounts/})).toBeNull();
+});
+
+it('focuses service discovery with slash outside editable fields, without interrupting typing',()=>{
+ render(<MemoryRouter><RoleWorkspace/></MemoryRouter>);
+ const input=screen.getByLabelText('Find a service');
+ fireEvent.keyDown(document,{key:'/'});
+ expect(input).toHaveFocus();
+ input.blur();
+ fireEvent.keyDown(input,{key:'/'});
+ expect(input).not.toHaveFocus();
+});
