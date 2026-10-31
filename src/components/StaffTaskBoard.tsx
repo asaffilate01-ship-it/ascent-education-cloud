@@ -3,20 +3,30 @@ import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useAuth} from '@/contexts/AuthContext';
 import {db} from '@/lib/db';
 import {Button} from '@/components/ui/button';
+import {ActionButton} from '@/components/portfolio-ui';
 import {Input} from '@/components/ui/input';
 import {Textarea} from '@/components/ui/textarea';
 import {TASK_ROLES,pakistanDay,sortTasks,taskOverdue,type StaffTask} from '@/lib/staffTasks';
 export default function StaffTaskBoard(){const {user}=useAuth();return user&&TASK_ROLES.includes(user.role)?<Board key={`${user.id}:${user.tenantId}:${user.role}`}/>:null;}
 function Board(){
- const {user}=useAuth(),cache=useQueryClient();const [filter,setFilter]=useState('active'),[editing,setEditing]=useState<StaffTask|null|undefined>(),[error,setError]=useState('');
- const key=['staff-followups',user?.id,user?.tenantId,filter];
+ const {user}=useAuth(),cache=useQueryClient();const [filter,setFilter]=useState('active'),[search,setSearch]=useState(''),[editing,setEditing]=useState<StaffTask|null|undefined>(),[error,setError]=useState('');
+ const key=['staff-followups',user?.id,user?.tenantId,user?.role,filter];
  const tasks=useQuery({queryKey:key,enabled:!!user?.tenantId,queryFn:async()=>{let q=db.from('unipathway_staff_tasks').select('*').eq('tenant_id',user!.tenantId);if(filter==='active')q=q.in('status',['open','in_progress','blocked']);if(filter==='mine')q=q.eq('assigned_to',user!.id);const r=await q.order('due_on').limit(250);if(r.error)throw r.error;return sortTasks(r.data);}});
- const directory=useQuery({queryKey:['task-assignees',user?.id,user?.tenantId],enabled:!!user?.tenantId,queryFn:async()=>{const r=await db.rpc('unipathway_task_assignees');if(r.error)throw r.error;return r.data as {user_id:string;full_name:string}[];}});
+ const directory=useQuery({queryKey:['task-assignees',user?.id,user?.tenantId,user?.role],enabled:!!user?.tenantId,queryFn:async()=>{const r=await db.rpc('unipathway_task_assignees');if(r.error)throw r.error;return r.data as {user_id:string;full_name:string}[];}});
  const people=new Map(directory.data?.map(p=>[p.user_id,p.full_name]));
- const visible=(tasks.data||[]).filter(t=>filter==='all'||filter==='mine'?filter==='all'||t.assigned_to===user?.id:!['done','cancelled'].includes(t.status));
+ // Search is deliberately limited to the centre- and role-scoped rows already returned by the server.
+ // Never imply this client-side search covers records outside the 250-row query window.
+ const term=search.trim().toLocaleLowerCase();
+ const visible=(tasks.isError?[]:tasks.data||[]).filter(t=>{
+  const inView=filter==='all'||(filter==='mine'?t.assigned_to===user?.id:!['done','cancelled'].includes(t.status));
+  const fields=[t.title,t.detail,t.status.replace(/_/g,' '),t.priority,people.get(t.assigned_to)||''];
+  return inView&&(!term||fields.some(value=>value.toLocaleLowerCase().includes(term)));
+ });
  return <section aria-labelledby="followup-title" className="space-y-4"><div className="flex flex-wrap justify-between gap-3"><div><h2 id="followup-title" className="text-xl font-semibold">Follow-up tasks</h2><p className="text-sm text-muted-foreground">Named owners, due dates and clear outcomes. Deadlines use Pakistan dates.</p></div><Button disabled={editing!==undefined} onClick={()=>setEditing(null)}>New task</Button></div>
  {editing!==undefined&&<Editor key={editing?.id||'new'} task={editing} people={directory.data||[]} onClose={()=>setEditing(undefined)} onSaved={()=>{setEditing(undefined);setError('');void cache.invalidateQueries({queryKey:key});}}/>}
- <div className="flex flex-wrap items-center justify-between gap-3"><label className="text-sm">Show <select className="ml-2 min-h-11 rounded-lg border bg-background px-3" value={filter} onChange={e=>setFilter(e.target.value)}><option value="active">Active tasks</option><option value="mine">Assigned to me</option><option value="all">All visible tasks</option></select></label><button className="min-h-11 px-3 text-sm underline" onClick={()=>{void tasks.refetch();void directory.refetch();}}>Refresh</button></div>
+ <div className="flex flex-wrap items-end justify-between gap-3"><label className="text-sm">Show <select className="ml-2 min-h-11 rounded-lg border bg-background px-3" value={filter} onChange={e=>setFilter(e.target.value)}><option value="active">Active tasks</option><option value="mine">Assigned to me</option><option value="all">All visible tasks</option></select></label><ActionButton tone="secondary" density="comfortable" pending={tasks.isFetching||directory.isFetching} pendingLabel="Refreshing…" onClick={()=>{void tasks.refetch();void directory.refetch();}}>Refresh queues</ActionButton></div>
+ <label className="block max-w-xl space-y-1 text-sm font-medium">Search loaded tasks<Input aria-label="Search loaded tasks" type="search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Task, status or owner" className="min-h-11" /></label>
+ {!tasks.isLoading&&!tasks.isError&&<p role="status" className="text-xs text-muted-foreground">{visible.length} of {tasks.data?.length||0} loaded tasks match. Search covers only this loaded view (up to 250 tasks).</p>
  {(tasks.isError||directory.isError||error)&&<p role="alert">{error||'Some task data could not be loaded. Refresh to try again.'}</p>}
  {tasks.isLoading?<p role="status">Loading follow-up tasks…</p>:!tasks.isError&&!visible.length?<p>No tasks match this view.</p>:<ul className="divide-y">{visible.map(t=><li key={t.id} className="flex flex-wrap items-center justify-between gap-3 py-4"><div className="min-w-0"><h3 className="break-words font-semibold">{t.title}</h3><p className="text-sm text-muted-foreground">{people.get(t.assigned_to)||'Assigned staff member'} · Due {t.due_on} · {t.status.replace(/_/g,' ')}</p>{taskOverdue(t)&&<p className="text-sm font-semibold text-destructive">Overdue — follow up with the owner</p>}{t.priority==='high'&&<p className="text-sm">High priority</p>}</div><Button variant="outline" disabled={editing!==undefined} onClick={()=>setEditing(t)}>Review<span className="sr-only"> {t.title}</span></Button></li>)}</ul>}
  {(tasks.data?.length||0)>=250&&<p className="text-sm">Showing the first 250 visible tasks by deadline.</p>}
