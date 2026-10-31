@@ -1,140 +1,132 @@
-import { useState, useMemo } from 'react';
+import {useMemo,useState} from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText, Upload, Eye, Download, Search, History, CheckCircle2, Clock, Pen, Loader2, FolderOpen, Plus } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import {Card,CardContent} from '@/components/ui/card';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {Tabs,TabsContent,TabsList,TabsTrigger} from '@/components/ui/tabs';
+import {FileText,Eye,Search,Clock,CheckCircle2,Pen,FolderOpen} from 'lucide-react';
+import {supabase} from '@/integrations/supabase/client';
+import {useAuth} from '@/contexts/AuthContext';
+import {useSupabaseQuery} from '@/hooks/useSupabaseQuery';
+import {toast} from 'sonner';
 import StatusBadge from '@/components/ui/StatusBadge';
-import EmptyState from '@/components/ui/EmptyState';
-import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 
-export default function DocumentManagement() {
-  const { user } = useAuth();
-  const [search, setSearch] = useState('');
-  const [tab, setTab] = useState('all');
-  const [viewingUrl, setViewingUrl] = useState<string | null>(null);
-
-  const { data: documents, loading, refetch } = useSupabaseQuery('kyc_documents') as { data: any[] | null; loading: boolean; refetch: () => void };
-  const { data: signatures } = useSupabaseQuery('e_signatures') as { data: any[] | null; loading: boolean; refetch: () => void };
-
-  const filtered = useMemo(() => {
-    let docs = (documents || []) as any[];
-    if (search) {
-      const q = search.toLowerCase();
-      docs = docs.filter((d: any) => d.document_type?.toLowerCase().includes(q) || d.file_name?.toLowerCase().includes(q));
-    }
-    if (tab === 'pending') docs = docs.filter((d: any) => d.status === 'pending');
-    if (tab === 'verified') docs = docs.filter((d: any) => d.status === 'verified');
-    if (tab === 'signed') {
-      return ((signatures || []) as any[]).map((s: any) => ({
-        id: s.id,
-        document_type: s.document_type,
-        file_name: `Signed: ${s.document_type}`,
-        status: 'signed',
-        created_at: s.signed_at,
-        user_id: s.user_id,
-        full_name: s.full_name,
-      }));
-    }
-    return docs;
-  }, [documents, signatures, search, tab]);
-
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
-
-    try {
-      const path = `${user.id}/${Date.now()}-${file.name}`;
-      const { error: uploadError } = await supabase.storage.from('kyc-documents').upload(path, file);
-      if (uploadError) throw uploadError;
-
-      const { error: insertError } = await supabase.from('kyc_documents').insert({
-        user_id: user.id,
-        document_type: 'general',
-        file_name: file.name,
-        file_url: path,
-        status: 'pending',
-      });
-      if (insertError) throw insertError;
-
-      toast.success('Document uploaded successfully');
-      refetch();
-    } catch (err: any) {
-      toast.error(err.message || 'Upload failed');
-    }
-  };
-
-  return (
-    <DashboardLayout
-      title="Document Management"
-      subtitle="Upload, manage, and e-sign documents"
-      actions={
-        <label className="cursor-pointer">
-          <input type="file" className="hidden" onChange={handleUpload} accept=".pdf,.doc,.docx,.jpg,.png" />
-          <Button size="sm" className="gap-1.5 text-xs" asChild><span><Upload className="w-3.5 h-3.5" /> Upload</span></Button>
-        </label>
-      }
-    >
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search documents…" className="pl-9" />
-        </div>
-      </div>
-
-      <Tabs value={tab} onValueChange={setTab}>
-        <TabsList className="mb-4">
-          <TabsTrigger value="all" className="text-xs gap-1"><FolderOpen className="w-3.5 h-3.5" /> All</TabsTrigger>
-          <TabsTrigger value="pending" className="text-xs gap-1"><Clock className="w-3.5 h-3.5" /> Pending</TabsTrigger>
-          <TabsTrigger value="verified" className="text-xs gap-1"><CheckCircle2 className="w-3.5 h-3.5" /> Verified</TabsTrigger>
-          <TabsTrigger value="signed" className="text-xs gap-1"><Pen className="w-3.5 h-3.5" /> E-Signed</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value={tab}>
-          {loading ? (
-            <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
-          ) : filtered.length === 0 ? (
-            <EmptyState icon={FileText} title="No documents found" description="Upload documents to get started" />
-          ) : (
-            <div className="grid gap-3">
-              {filtered.map((doc: any) => (
-                <Card key={doc.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="flex items-center gap-4 p-4">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                      <FileText className="w-5 h-5 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{doc.file_name || doc.document_type}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {doc.document_type} · {new Date(doc.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <StatusBadge
-                      status={doc.status}
-                      variant={doc.status === 'verified' || doc.status === 'signed' ? 'success' : doc.status === 'rejected' ? 'danger' : 'warning'}
-                    />
-                    {doc.file_url && (
-                      <Button size="sm" variant="ghost" className="h-8" onClick={async () => {
-                        const { data } = await supabase.storage.from('kyc-documents').createSignedUrl(doc.file_url, 300);
-                        if (data?.signedUrl) window.open(data.signedUrl, '_blank');
-                        else toast.error('Could not generate download link');
-                      }}>
-                        <Eye className="w-3.5 h-3.5" />
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
-    </DashboardLayout>
-  );
+const ALLOWED=['student','admissions_admin','centre_director','superadmin'] as const;
+const EXTENSIONS=['pdf','doc','docx','jpg','jpeg','png'];
+const MAX_BYTES=20*1024*1024;
+type DocumentTab='all'|'pending'|'verified'|'signed';
+export default function DocumentManagement(){
+ const {user}=useAuth();
+ return <ScopedDocuments key={[user?.id,user?.tenantId,user?.role].join(':')}/>;
+}
+function ScopedDocuments(){
+ const {user}=useAuth();
+ const roleAllowed=!!user&&Array.isArray(user.roles)&&user.roles.includes(user.role)&&ALLOWED.some(role=>role===user.role);
+ const isStudent=user?.role==='student';
+ const enabled=roleAllowed&&!!user?.tenantId;
+ const [search,setSearch]=useState('');
+ const [tab,setTab]=useState<DocumentTab>('all');
+ const [uploading,setUploading]=useState(false);
+ const [opening,setOpening]=useState<string|null>(null);
+ const scope=[
+  {column:'tenant_id',operator:'eq' as const,value:user?.tenantId||''},
+  ...(isStudent?[{column:'user_id',operator:'eq' as const,value:user?.id||''}]:[])
+ ];
+ const documents=useSupabaseQuery('kyc_documents',{enabled,filters:scope,orderBy:{column:'created_at',ascending:false}});
+ const signatures=useSupabaseQuery('e_signatures',{enabled,filters:scope,orderBy:{column:'signed_at',ascending:false}});
+ const authorised=(owner:string,tenant:string|null)=>!!enabled&&tenant===user?.tenantId&&(!isStudent||owner===user?.id);
+ const rows=useMemo(()=>{
+  const docs=documents.data.filter(d=>authorised(d.user_id,d.tenant_id));
+  const signed=signatures.data.filter(d=>authorised(d.user_id,d.tenant_id)).map(d=>({
+   id:d.id,document_type:d.document_type,file_name:'Signed: '+d.document_type,
+   status:'signed',created_at:d.signed_at,file_url:null as string|null,
+  }));
+  const available=tab==='signed'?signed:docs.filter(d=>tab==='all'||d.status===tab);
+  const term=search.trim().toLocaleLowerCase();
+  return !term?available:available.filter(d=>
+   [d.file_name||'',d.document_type||''].join(' ').toLocaleLowerCase().includes(term));
+ // Role/account or query results are always a new component instance after a context switch.
+ },[documents.data,signatures.data,tab,search,enabled,isStudent,user?.id,user?.tenantId]);
+ const loading=documents.loading||signatures.loading;
+ const error=documents.error||signatures.error;
+ async function upload(event:React.ChangeEvent<HTMLInputElement>){
+  const file=event.currentTarget.files?.[0];event.currentTarget.value='';
+  if(!file||!enabled||!user?.tenantId||uploading)return;
+  const ext=(file.name.split('.').pop()||'').toLowerCase();
+  if(!EXTENSIONS.includes(ext)||file.size===0||file.size>MAX_BYTES){
+   toast.error('Choose a PDF, Word document or JPG/PNG under 20 MB.');return;
+  }
+  setUploading(true);
+  const path=user.id+'/'+crypto.randomUUID()+'.'+ext;
+  try{
+   const stored=await supabase.storage.from('kyc-documents').upload(path,file,{upsert:false});
+   if(stored.error)throw stored.error;
+   const saved=await supabase.from('kyc_documents').insert({
+    user_id:user.id,tenant_id:user.tenantId,document_type:'general',
+    file_name:file.name.slice(0,255),file_url:path,status:'pending',
+   });
+   if(saved.error){
+    // A failed metadata write must not silently leave a private orphan upload.
+    await supabase.storage.from('kyc-documents').remove([path]).catch(()=>{});
+    throw saved.error;
+   }
+   toast.success('Document received for centre verification.');
+   void documents.refetch();
+  }catch{
+   toast.error('Upload could not be confirmed. Check your permissions and try again.');
+  }finally{setUploading(false);}
+ }
+ async function openPrivate(path:string,id:string){
+  if(opening||!enabled)return;
+  setOpening(id);
+  try{
+   const res=await supabase.storage.from('kyc-documents').createSignedUrl(path,300);
+   if(res.error||!res.data?.signedUrl)throw Error('Private file unavailable');
+   const link=document.createElement('a');link.href=res.data.signedUrl;link.target='_blank';link.rel='noopener noreferrer';link.click();
+  }catch{toast.error('Private file access could not be verified.');}finally{setOpening(null);}
+ }
+ return <DashboardLayout title="Private documents" subtitle="Your centre-controlled identity documents and signed records"
+  actions={enabled?<label className="block max-w-xs text-xs font-semibold">Upload your document
+   <input aria-label="Choose private document" type="file" disabled={uploading}
+    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+    onChange={e=>void upload(e)}
+    className="mt-2 block w-full min-h-11 rounded-lg border bg-card p-2 text-sm font-normal"
+   />
+   <span className="mt-1 block text-xs font-normal text-muted-foreground">{uploading?'Uploading and verifying…':'PDF, Word, JPG or PNG · maximum 20 MB'}</span>
+  </label>:undefined}>
+  {!enabled&&<p role="alert">A verified student, admissions or centre leadership role with an assigned centre is required to open private documents.</p>}
+  {enabled&&<div className="space-y-5">
+   <section className="rounded-lg border bg-card p-4"><p className="text-sm text-muted-foreground">Student records are restricted to their own centre and account. Authorised admissions or centre staff must also have server-side document permissions. Identity files are not publicly shared.</p></section>
+   {loading&&<p role="status">Verifying private documents and signatures…</p>}
+   {error&&<div role="alert" className="space-y-3 rounded-lg border border-destructive p-4"><p>Private document records could not be verified. No documents will be shown until the read succeeds.</p><Button variant="outline" onClick={()=>{void documents.refetch();void signatures.refetch();}}>Retry document verification</Button></div>}
+   {!loading&&!error&&<>
+    <label className="block max-w-lg text-sm font-medium">Search private documents
+     <span className="relative mt-2 block"><Search className="absolute left-3 top-3 size-4 text-muted-foreground"/>
+      <Input type="search" aria-label="Search private documents" maxLength={120} value={search} onChange={e=>setSearch(e.target.value)} placeholder="Document name or type" className="min-h-11 pl-9"/>
+     </span>
+    </label>
+    <Tabs value={tab} onValueChange={value=>setTab(value as DocumentTab)}>
+     <TabsList className="mb-4 flex h-auto flex-wrap justify-start gap-1">
+      <TabsTrigger className="min-h-11" value="all"><FolderOpen className="mr-1 size-4"/>All</TabsTrigger>
+      <TabsTrigger className="min-h-11" value="pending"><Clock className="mr-1 size-4"/>Pending</TabsTrigger>
+      <TabsTrigger className="min-h-11" value="verified"><CheckCircle2 className="mr-1 size-4"/>Verified</TabsTrigger>
+      <TabsTrigger className="min-h-11" value="signed"><Pen className="mr-1 size-4"/>E-signed</TabsTrigger>
+     </TabsList>
+     <TabsContent value={tab} className="space-y-3">
+      <p role="status" className="text-sm text-muted-foreground">{rows.length} authorised records match this view.</p>
+      {!rows.length&&<div className="rounded-lg border p-6 text-sm text-muted-foreground">No verified records match these filters. Try another search, or upload a document if you have permission.</div>}
+      {rows.map(d=><Card key={d.id}><CardContent className="flex min-w-0 flex-wrap items-center gap-3 p-4">
+       <FileText className="size-5 shrink-0 text-primary"/>
+       <div className="min-w-0 flex-1">
+        <p className="break-words text-sm font-semibold">{d.file_name||d.document_type}</p>
+        <p className="text-xs text-muted-foreground">{d.document_type} · {new Date(d.created_at).toLocaleDateString('en-PK',{timeZone:'Asia/Karachi'})}</p>
+       </div>
+       <StatusBadge status={d.status} variant={['verified','signed'].includes(d.status)?'success':d.status==='rejected'?'danger':'warning'}/>
+       {d.file_url&&<Button variant="outline" className="min-h-11" disabled={opening!==null} aria-label={'Open private '+(d.file_name||d.document_type)} onClick={()=>void openPrivate(d.file_url!,d.id)}><Eye className="mr-2 size-4"/>{opening===d.id?'Checking…':'Open'}</Button>}
+      </CardContent></Card>)}
+     </TabsContent>
+    </Tabs>
+   </>}
+  </div>}
+ </DashboardLayout>;
 }

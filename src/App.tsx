@@ -80,6 +80,7 @@ const RoleWorkspace = lazy(() => import("./pages/RoleWorkspace"));
 const AttendanceCorrections = lazy(() => import("./pages/attendance/AttendanceCorrections"));
 const AttendanceDashboard = lazy(() => import("./pages/attendance/AttendanceDashboard"));
 const AnalyticsDashboard = lazy(() => import("./pages/analytics/AnalyticsDashboard"));
+const RoleAnalyticsDashboard = lazy(() => import("./pages/analytics/RoleAnalyticsDashboard"));
 const MarketingDashboard = lazy(() => import("./pages/marketing/MarketingDashboard"));
 const MicrosoftEducationAdmin = lazy(() => import("./pages/settings/MicrosoftEducationAdmin"));
 const TeamsTeachingDesk = lazy(() => import("./pages/classroom/TeamsTeachingDesk"));
@@ -402,7 +403,7 @@ function AppRoutes() {
         <Route path="/director/branding" element={<Director><TenantBranding /></Director>} />
         <Route path="/director/page-builder" element={<Director><TenantPageBuilder /></Director>} />
         <Route path="/director/domains" element={<Director><TenantDomainSettings /></Director>} />
-        <Route path="/director/reports" element={<Director><AnalyticsDashboard /></Director>} />
+        <Route path="/director/reports" element={<Director><RoleAnalyticsDashboard /></Director>} />
         <Route path="/director/settings" element={<Director><SettingsPage /></Director>} />
         <Route path="/director/dashboard" element={<Director><TenantAdminDashboard /></Director>} />
 
@@ -417,7 +418,7 @@ function AppRoutes() {
         <Route path="/admissions/education-partnerships" element={<Admissions><EducationPartnershipReadiness /></Admissions>} />
         <Route path="/admissions/offers" element={<Admissions><AdmissionsCRM /></Admissions>} />
         <Route path="/admissions/counselling" element={<Admissions><MessagingInbox /></Admissions>} />
-        <Route path="/admissions/reports" element={<Admissions><AnalyticsDashboard /></Admissions>} />
+        <Route path="/admissions/reports" element={<Admissions><RoleAnalyticsDashboard /></Admissions>} />
 
         {/* ========== LECTURER ========== */}
         <Route path="/lecturer/managed-labs" element={<LecturerR><LMSVirtualLabs /></LecturerR>} />
@@ -439,7 +440,7 @@ function AppRoutes() {
         <Route path="/lecturer/attendance" element={<LecturerR><LecturerAttendance /></LecturerR>} />
         <Route path="/lecturer/students" element={<LecturerR><StudentManagement /></LecturerR>} />
         <Route path="/lecturer/timeline" element={<LecturerR><AcademicTimeline /></LecturerR>} />
-        <Route path="/lecturer/analytics" element={<LecturerR><AnalyticsDashboard /></LecturerR>} />
+        <Route path="/lecturer/analytics" element={<LecturerR><RoleAnalyticsDashboard /></LecturerR>} />
         <Route path="/lecturer/messages" element={<LecturerR><MessagingInbox /></LecturerR>} />
         <Route path="/lecturer/labs" element={<LecturerR><LabInstructorPlanner /></LecturerR>} />
         <Route path="/lecturer/quizzes" element={<LecturerR><QuizDashboard /></LecturerR>} />
@@ -465,7 +466,7 @@ function AppRoutes() {
         <Route path="/programme/syllabuses" element={<Programme><CentreSyllabusPlanner /></Programme>} />
         <Route path="/programme/schedule" element={<Programme><ScheduleManager /></Programme>} />
         <Route path="/programme/moderation" element={<Programme><QADashboard /></Programme>} />
-        <Route path="/programme/analytics" element={<Programme><AnalyticsDashboard /></Programme>} />
+        <Route path="/programme/analytics" element={<Programme><RoleAnalyticsDashboard /></Programme>} />
 
         {/* ========== QA ========== */}
         <Route path="/qa" element={<QA><QADashboard /></QA>} />
@@ -497,14 +498,14 @@ function AppRoutes() {
         <Route path="/finance/instalments" element={<Finance><FinanceDashboard /></Finance>} />
         <Route path="/finance/commissions" element={<Finance><FinanceDashboard /></Finance>} />
         <Route path="/finance/scholarships" element={<Finance><OpportunityFundDashboard /></Finance>} />
-        <Route path="/finance/reports" element={<Finance><AnalyticsDashboard /></Finance>} />
+        <Route path="/finance/reports" element={<Finance><RoleAnalyticsDashboard /></Finance>} />
 
         {/* ========== MARKETING ========== */}
         <Route path="/marketing" element={<Marketing><MarketingDashboard /></Marketing>} />
         <Route path="/marketing/campaigns" element={<Marketing><MarketingDashboard /></Marketing>} />
         <Route path="/marketing/leads" element={<Marketing><AdmissionsCRM /></Marketing>} />
         <Route path="/marketing/webinars" element={<Marketing><MarketingDashboard /></Marketing>} />
-        <Route path="/marketing/analytics" element={<Marketing><AnalyticsDashboard /></Marketing>} />
+        <Route path="/marketing/analytics" element={<Marketing><RoleAnalyticsDashboard /></Marketing>} />
         <Route path="/marketing/email-campaigns" element={<Marketing><EmailCampaigns /></Marketing>} />
 
         {/* ========== AGENT ========== */}
@@ -556,7 +557,7 @@ function AppRoutes() {
         <Route path="/partner/referrals" element={<PartnerR><UniversityPartnerPortal /></PartnerR>} />
         <Route path="/partner/applications" element={<PartnerR><UniversityPartnerPortal /></PartnerR>} />
         <Route path="/partner/offers" element={<PartnerR><UniversityPartnerPortal /></PartnerR>} />
-        <Route path="/partner/commissions" element={<PartnerR><AnalyticsDashboard /></PartnerR>} />
+        <Route path="/partner/commissions" element={<PartnerR><UniversityPartnerPortal /></PartnerR>} />
         <Route path="/employer" element={<EmployerR><EmployerPortal /></EmployerR>} />
         <Route path="/employer/jobs" element={<EmployerR><EmployerPortal /></EmployerR>} />
         <Route path="/employer/candidates" element={<EmployerR><EmployerPortal /></EmployerR>} />
@@ -583,16 +584,16 @@ function AppRoutes() {
         <Route path="/compliance" element={<QA><ComplianceDashboard /></QA>} />
         <Route path="/calendar" element={<P><AcademicCalendar /></P>} />
         <Route path="/lesson-plans" element={<LecturerR><LessonPlanBuilder /></LecturerR>} />
-        <Route path="/leave" element={<P><LeaveManagement /></P>} />
+        <Route path="/leave" element={<RoleGuard allowed={['superadmin','centre_director','admissions_admin','lecturer','assessor','programme_leader','iqa_officer','welfare_officer','security_officer','exams_officer','finance_officer','marketing_officer']}><LeaveManagement /></RoleGuard>} />
         <Route path="/health" element={<WelfareR><HealthRecords /></WelfareR>} />
-        <Route path="/transport" element={<P><TransportTracking /></P>} />
+        <Route path="/transport" element={<RoleGuard allowed={['student','centre_director','superadmin','security_officer']}><TransportTracking /></RoleGuard>} />
         <Route path="/ai-recommendations" element={<P><AIRecommendations /></P>} />
         <Route path="/ai-course-builder" element={<LecturerR><AICourseBuilder /></LecturerR>} />
         <Route path="/quizzes" element={<P><QuizDashboard /></P>} />
         <Route path="/forums" element={<P><ForumPage /></P>} />
         <Route path="/gradebook" element={<StudentR><StudentReleasedResults /></StudentR>} />
         <Route path="/predictive-analytics" element={<Director><PredictiveAnalytics /></Director>} />
-        <Route path="/documents" element={<P><DocumentManagement /></P>} />
+        <Route path="/documents" element={<RoleGuard allowed={['student','admissions_admin','centre_director','superadmin']}><DocumentManagement /></RoleGuard>} />
         <Route path="/email-campaigns" element={<Marketing><EmailCampaigns /></Marketing>} />
         <Route path="/communications" element={<P><CommunicationsWorkspace /></P>} />
         <Route path="/messaging" element={<P><MessagingInbox /></P>} />

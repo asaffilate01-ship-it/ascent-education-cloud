@@ -23,3 +23,28 @@ it('keeps the editor open when persistence is uncertain',async()=>{
 it('requires a reason when a task is blocked and hides the board from students',async()=>{
  show();fireEvent.click(screen.getByRole('button',{name:'New task'}));fireEvent.change(screen.getByLabelText('Task',{exact:true}),{target:{value:'Review outstanding work'}});fireEvent.change(screen.getByLabelText('Status'),{target:{value:'blocked'}});fireEvent.click(screen.getByRole('button',{name:'Save task'}));await screen.findByText(/Record the outcome or blocker/);expect(state.writes).toEqual([]);cleanup();state.role='student';show();expect(screen.queryByText('Follow-up tasks')).toBeNull();
 });
+
+it('searches only loaded, role-scoped follow-up tasks and explains the result count',async()=>{
+ state.rows=[
+  {id:'a',title:'Review OTHM coursework',detail:'Confirm unit feedback',assigned_to:'teacher',due_on:'2026-11-01',status:'open',priority:'normal'},
+  {id:'b',title:'Check Qualifi moderation',detail:'Request assessor evidence',assigned_to:'colleague',due_on:'2026-11-02',status:'open',priority:'high'},
+ ];
+ show();await screen.findByRole('heading',{name:'Review OTHM coursework'});
+ fireEvent.change(screen.getByRole('searchbox',{name:'Search loaded tasks'}),{target:{value:'Qualifi'}});
+ expect(screen.queryByRole('heading',{name:'Review OTHM coursework'})).toBeNull();
+ expect(screen.getByRole('heading',{name:'Check Qualifi moderation'})).toBeInTheDocument();
+ expect(screen.getByRole('status')).toHaveTextContent('1 of 2 loaded tasks match');
+ expect(screen.getByRole('status')).toHaveTextContent('up to 250 tasks');
+});
+it('does not reuse another active role’s previously cached task list',async()=>{
+ const cache=new QueryClient({defaultOptions:{queries:{retry:false,staleTime:60000}}});
+ state.rows=[{id:'teacher-a',title:'Lecturer-only task',detail:'Prepare lesson',assigned_to:'teacher',due_on:'2026-11-01',status:'open',priority:'normal'}];
+ const view=render(<QueryClientProvider client={cache}><StaffTaskBoard/></QueryClientProvider>);
+ await screen.findByRole('heading',{name:'Lecturer-only task'});
+ state.role='centre_director';
+ state.rows=[{id:'director-a',title:'Director-only task',detail:'Review centre records',assigned_to:'teacher',due_on:'2026-11-02',status:'open',priority:'high'}];
+ view.rerender(<QueryClientProvider client={cache}><StaffTaskBoard/></QueryClientProvider>);
+ expect(screen.queryByRole('heading',{name:'Lecturer-only task'})).toBeNull();
+ await screen.findByRole('heading',{name:'Director-only task'});
+ cache.clear();
+});

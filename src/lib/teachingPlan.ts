@@ -14,3 +14,15 @@ export function planOverlaps(rows:Slot[]){
  }
  return overlaps;
 }
+
+/** Order-independent module search; only applied to an already-authorised module list. */
+export function matchesTeachingModuleSearch(title: string, code: string | null | undefined, search: string) {
+ const terms=search.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
+ const haystack=[title,code||''].join(' ').toLocaleLowerCase();
+ return terms.every(term=>haystack.includes(term));
+}
+/** ISO weekday 1=Monday through 7=Sunday, using the centre's local date. */
+export function pakistanTeachingDayOfWeek(at=new Date()): number {
+ const day=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Karachi',weekday:'long'}).format(at);
+ return ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].indexOf(day)+1;
+}

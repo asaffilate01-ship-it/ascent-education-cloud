@@ -2,7 +2,7 @@ import {cleanup,fireEvent,render,screen} from '@testing-library/react';
 import {MemoryRouter} from 'react-router-dom';
 import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 import LecturerTeaching from '@/pages/lecturer/LecturerTeaching';
-import {teachingHours,planOverlaps} from '@/lib/teachingPlan';
+import {teachingHours,planOverlaps,matchesTeachingModuleSearch,pakistanTeachingDayOfWeek} from '@/lib/teachingPlan';
 const mock=vi.hoisted(()=>({error:null as string|null,refresh:vi.fn(),lectures:[] as Record<string,unknown>[]}));
 vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'teacher',tenantId:'centre',roles:['lecturer']}})}));
 vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:{children:React.ReactNode})=><main>{children}</main>}));
@@ -15,3 +15,31 @@ it('shows an unavailable state and retries instead of displaying unverified plan
 it('calculates actual durations and warns only on overlapping date/time windows',()=>{expect(teachingHours([{start_time:'09:00',end_time:'10:00'},{start_time:'11:15:00',end_time:'13:15:00'},{start_time:'bad',end_time:'12:00'}])).toBe(3);const base={day_of_week:1,start_time:'09:00',end_time:'10:30',effective_from:'2026-01-01',effective_until:'2026-02-01'};expect(planOverlaps([base,{...base,start_time:'10:00',end_time:'11:00'}])).toBe(1);expect(planOverlaps([base,{...base,effective_from:'2026-03-01',effective_until:null}])).toBe(0);expect(planOverlaps([base,{...base,start_time:'10:30',end_time:'12:00'}])).toBe(0);});
 
 it('excludes another lecturer module even if it appears in a returned snapshot',()=>{render(<MemoryRouter><LecturerTeaching/></MemoryRouter>);expect(screen.queryByText('Peer module')).toBeNull();expect(screen.getByText('My modules (1)')).toBeInTheDocument();});
+
+it('switches between a focused day and the complete weekly plan without implying a live Teams session',()=>{
+ render(<MemoryRouter><LecturerTeaching/></MemoryRouter>);
+ fireEvent.click(screen.getByRole('button',{name:/Sunday \(1\)/}));
+ expect(screen.queryByRole('heading',{name:'Monday'})).toBeNull();
+ expect(screen.getByRole('heading',{name:/Sunday/})).toBeInTheDocument();
+ expect(screen.getByText(/Only Sunday shown from your saved weekly plan/)).toBeInTheDocument();
+ expect(screen.getByText('Weekend Maths')).toBeInTheDocument();
+ fireEvent.click(screen.getByRole('button',{name:'Full week (1)'}));
+ expect(screen.getByRole('heading',{name:'Monday'})).toBeInTheDocument();
+ expect(screen.getByText(/All seven days shown from your saved weekly plan/)).toBeInTheDocument();
+});
+it('finds authorised modules using code and title in either order',()=>{
+ render(<MemoryRouter><LecturerTeaching/></MemoryRouter>);
+ fireEvent.change(screen.getByLabelText('Search assigned modules'),{target:{value:'M1 Maths'}});
+ expect(screen.getByRole('link',{name:'Maths'})).toBeInTheDocument();
+ expect(screen.getByText('1 of 1 assigned modules match.')).toBeInTheDocument();
+ fireEvent.change(screen.getByLabelText('Search assigned modules'),{target:{value:'Unknown topic'}});
+ expect(screen.getByText('No modules match your search.')).toBeInTheDocument();
+ fireEvent.click(screen.getByRole('button',{name:'Clear module search'}));
+ expect(screen.getByRole('link',{name:'Maths'})).toBeInTheDocument();
+ expect(screen.getByLabelText('Search assigned modules')).toHaveValue('');
+});
+it('identifies Pakistan-local weekday at a UK night-time boundary',()=>{
+ expect(pakistanTeachingDayOfWeek(new Date('2026-10-31T19:30:00Z'))).toBe(7);
+ expect(matchesTeachingModuleSearch('Business Maths','BM401','BM401 maths')).toBe(true);
+ expect(matchesTeachingModuleSearch('Business Maths','BM401','BM401 physics')).toBe(false);
+});

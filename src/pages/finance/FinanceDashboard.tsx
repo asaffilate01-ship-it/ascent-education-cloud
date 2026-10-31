@@ -38,16 +38,19 @@ export default function FinanceDashboard() {
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [exporting, setExporting] = useState(false);
   const { toast } = useToast();
-  
+  const allowed=!!user?.tenantId&&['finance_officer','centre_director','superadmin'].includes(user.role);
   const { data: invoices, loading, error, refetch } = useSupabaseQuery('invoices', {
+    enabled:allowed,
+    filters:[{column:'tenant_id',operator:'eq',value:user?.tenantId||''}],
     orderBy: { column: 'created_at', ascending: false },
   });
 
   const handleExportCSV = async () => {
+    if(!allowed||!user?.tenantId||exporting)return;
     setExporting(true);
     try {
       const resp = await supabase.functions.invoke('export-report', {
-        body: { reportType: 'invoices', filters: statusFilter !== 'all' ? { status: statusFilter } : undefined },
+        body: { reportType: 'invoices', tenantId:user.tenantId, filters: statusFilter !== 'all' ? { status: statusFilter } : undefined },
       });
       if (resp.error) throw resp.error;
       const csvText = typeof resp.data === 'string' ? resp.data : new TextDecoder().decode(resp.data);
@@ -67,6 +70,7 @@ export default function FinanceDashboard() {
   };
 
   const openPayment = (inv: any) => {
+    if(!allowed||inv.tenant_id!==user?.tenantId){toast({title:'Payment unavailable',description:'Invoice does not belong to the selected centre.'});return;}
     setSelectedInvoice({
       id: inv.id,
       student_name: inv.student_name,
@@ -77,6 +81,7 @@ export default function FinanceDashboard() {
     setPaymentOpen(true);
   };
 
+  if(!allowed)return <DashboardLayout title="Finance"><p role="alert">A verified finance or centre leadership role with an assigned centre is required.</p></DashboardLayout>;
   if (loading) return <DashboardSkeleton />;
   if (error) return <DashboardLayout title="Finance"><p role="alert">Invoice data could not be loaded. Balances are unavailable.</p><Button onClick={() => void refetch()}>Retry invoices</Button></DashboardLayout>;
 
@@ -213,7 +218,7 @@ export default function FinanceDashboard() {
         </TabsContent>
 
         <TabsContent value="expenses">
-          <ExpenseManagement tenantId={invoices?.[0]?.tenant_id || null} totalRevenue={totalCollected} />
+          <ExpenseManagement tenantId={user?.tenantId || null} totalRevenue={totalCollected} />
         </TabsContent>
 
         <TabsContent value="referrals">

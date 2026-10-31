@@ -14,7 +14,7 @@ import {
   Bus, Heart, Sparkles, CalendarDays, Activity, Brain, Mail, Trophy
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface NavItem {
   label: string;
@@ -399,6 +399,7 @@ export default function DashboardSidebar() {
   const [navSearch, setNavSearch] = useState('');
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const asideRef = useRef<HTMLElement>(null);
 
   // Close mobile menu on route change
@@ -514,38 +515,27 @@ export default function DashboardSidebar() {
         ))}
       </nav>
 
-      {/* Role Switcher - Temporarily available until 30 Apr 2026 for live testing */}
-      {!collapsed && (new Date() < new Date('2026-05-01T00:00:00Z') || (import.meta.env.DEV && window.location.hostname === 'localhost')) && (
-        <div className="px-3 py-2 border-t border-sidebar-border">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40 mb-1.5 px-1">
-            Dev: Switch Role
-          </p>
+      {/* Multi-role members may only switch between current, verified roles. */}
+      {!collapsed && (user.roles?.length || 0)>1 && (
+        <div className="px-3 py-3 border-t border-sidebar-border">
+          <label htmlFor="unipathway-active-role" className="block px-1 mb-2 text-xs font-semibold text-sidebar-foreground">
+            Active workspace role
+          </label>
           <select
+            id="unipathway-active-role"
             value={user.role}
-            onChange={(e) => setRole(e.target.value as UserRole)}
-            className="w-full bg-sidebar-accent text-sidebar-foreground text-xs rounded-md px-2 py-1.5 outline-none"
+            onChange={event=>{
+              const next=event.target.value as UserRole;
+              if(!user.roles.includes(next))return;
+              setRole(next);
+              setMobileOpen(false);
+              navigate(ROLE_HOME[next],{replace:true});
+            }}
+            className="w-full min-h-11 rounded-lg border border-sidebar-border bg-sidebar-accent px-3 py-2 text-sm text-sidebar-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-ring"
           >
-            <optgroup label="Landlord (SaaS Owner)">
-              <option value="superadmin">Platform Owner</option>
-            </optgroup>
-            <optgroup label="Tenant (College Staff)">
-              <option value="centre_director">Centre Director</option>
-              <option value="admissions_admin">Admissions Admin</option>
-              <option value="lecturer">Lecturer</option>
-              <option value="programme_leader">Programme Leader</option>
-              <option value="iqa_officer">IQA / QA Officer</option>
-              <option value="exams_officer">Exams Officer</option>
-              <option value="finance_officer">Finance Officer</option>
-              <option value="marketing_officer">Marketing Officer</option>
-            </optgroup>
-            <optgroup label="External">
-              <option value="agent">Agent</option>
-              <option value="student">Student</option>
-              <option value="parent_guardian">Parent / Guardian</option>
-              <option value="university_partner">University Partner</option>
-              <option value="employer_partner">Employer Partner</option>
-            </optgroup>
+            {user.roles.map(role=><option key={role} value={role}>{ROLE_LABELS[role]}</option>)}
           </select>
+          <p className="mt-2 text-xs text-sidebar-foreground/70">Only roles assigned to your account appear here. Switching changes your active workspace, not your database permissions.</p>
         </div>
       )}
 

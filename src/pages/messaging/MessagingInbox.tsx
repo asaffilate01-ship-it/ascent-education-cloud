@@ -30,7 +30,24 @@ interface Message {
   attachment_name?: string | null;
 }
 
+/**
+ * This inbox is feature-gated until UniPathway verifies the private attachment
+ * bucket, conversation creation RPC, message columns and participant RLS.
+ * A browser flag is not an authorisation boundary: backend checks remain mandatory.
+ */
 export default function MessagingInbox() {
+  if (import.meta.env.VITE_UNIPATHWAY_PRIVATE_MESSAGING_ENABLED !== 'true') {
+    return <DashboardLayout title="Private messages" subtitle="Centre messaging activation">
+      <section aria-labelledby="messaging-activation" className="mx-auto max-w-2xl rounded-xl border bg-card p-6">
+        <h2 id="messaging-activation" className="text-lg font-semibold">Private conversations are awaiting secure activation</h2>
+        <p className="mt-3 text-sm text-muted-foreground">Messaging and file attachments are temporarily unavailable here. Your centre must verify conversation membership, storage permissions and private attachment delivery before enabling this workspace.</p>
+        <p className="mt-3 text-sm">For urgent educational or safeguarding matters, use your centre's established contact process rather than uploading personal documents here.</p>
+      </section>
+    </DashboardLayout>;
+  }
+  return <EnabledMessagingInbox/>;
+}
+function EnabledMessagingInbox() {
   const { user } = useAuth();
   const [selectedConvo, setSelectedConvo] = useState<string | null>(null);
   const [message, setMessage] = useState('');
