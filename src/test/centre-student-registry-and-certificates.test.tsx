@@ -74,5 +74,5 @@ it('removes the unverified official certificate issuance endpoint and arbitrary 
  expect(endpoint).not.toContain('Accredited</div>');
  expect(modal).not.toContain('generate-certificate');
  expect(registry).not.toContain('CertificateDownloadModal');
- expect(registry).not.toContain('from(\\'submissions\\')');
+ expect(registry).not.toContain(".from('submissions')");
 });
