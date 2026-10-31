@@ -53,6 +53,12 @@ it('requires a verified student role in the edge function before using Omniqora'
  const {readFileSync}=await import('node:fs');
  const endpoint=readFileSync('supabase/functions/ai-tutor/index.ts','utf8');
  expect(endpoint).toContain(".eq('role','student')");
+ expect(endpoint).toContain(".from('student_enrolments')");
+ expect(endpoint).toContain(".eq('student_id',auth.userId)");
+ expect(endpoint).toContain(".eq('tenant_id',profile.tenant_id)");
+ expect(endpoint).toContain(".eq('status','active')");
+ expect(endpoint.indexOf(".eq('role','student')")).toBeLessThan(endpoint.indexOf(".from('student_enrolments')"));
+ expect(endpoint.indexOf(".eq('status','active')")).toBeLessThan(endpoint.indexOf("consume_study_tutor_quota"));
  expect(endpoint.indexOf(".eq('role','student')")).toBeLessThan(endpoint.indexOf("consume_study_tutor_quota"));
  expect(endpoint.indexOf(".eq('role','student')")).toBeLessThan(endpoint.indexOf("const response=await fetch(url"));
 });
