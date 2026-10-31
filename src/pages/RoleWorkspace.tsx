@@ -61,7 +61,7 @@ function Workspace(){
     </div>
     <div className="flex flex-wrap items-center justify-between gap-3">
      <p role="status" aria-atomic="true" className="text-sm text-muted-foreground">{count} of {total} services shown for your role</p>
-     {search||area!=='all'?<Button variant="outline" className="min-h-11" onClick={clear}>Clear service filters</Button>:
+     {(search||area!=='all')&&count>0?<Button variant="outline" className="min-h-11" onClick={clear}>Clear service filters</Button>:
       <p className="hidden text-xs text-muted-foreground sm:block">Tip: press / to search</p>}
     </div>
    </div>}
