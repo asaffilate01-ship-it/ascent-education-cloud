@@ -2,7 +2,7 @@ import {useQuery} from '@tanstack/react-query';
 import {Link} from 'react-router-dom';
 import {useAuth} from '@/contexts/AuthContext';
 import {db} from '@/lib/db';
-import {Button} from '@/components/ui/button';
+import {ActionButton} from '@/components/portfolio-ui';
 type Action={id:string;title:string;detail:string;to:string;due?:string};
 export default function WorkspaceActions(){
  const {user}=useAuth();
@@ -27,7 +27,7 @@ export default function WorkspaceActions(){
   return {actions:actions.sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999')),errors};
  }});
  if(!supported)return null;
- return <section aria-labelledby="workspace-actions" className="rounded-xl border p-4 sm:p-5"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 id="workspace-actions" className="text-lg font-semibold">Work needing attention</h2><p className="text-sm text-muted-foreground">Review your current queues before opening specialist tools.</p></div><Button variant="outline" disabled={result.isFetching} onClick={()=>result.refetch()}>Refresh</Button></div>
+ return <section aria-labelledby="workspace-actions" className="rounded-xl border p-4 sm:p-5"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 id="workspace-actions" className="text-lg font-semibold">Work needing attention</h2><p className="text-sm text-muted-foreground">Review your current queues before opening specialist tools.</p></div><ActionButton tone="secondary" pending={result.isFetching} pendingLabel="Refreshing…" onClick={()=>{void result.refetch();}}>Refresh</ActionButton></div>
  {result.isLoading&&<p role="status" className="mt-4">Checking your work queues…</p>}
  {result.isError&&<p role="alert">Work queues could not be loaded. Retry with Refresh.</p>}
  {result.data?.errors.map(e=><p role="alert" key={e} className="mt-3 text-sm">{e} could not be checked. Refresh or open that service below.</p>)}
