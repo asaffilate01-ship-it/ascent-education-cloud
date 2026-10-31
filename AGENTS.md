@@ -13,3 +13,9 @@
 - UniPathway enrols students based in Pakistan. Contact/application residence fields should use Pakistan without overseas residence options; overseas countries remain valid study-abroad destinations.
 - Import JSON data without import attributes (`with {type:'json'}`) in app code; the preview dev server serves JSON as JavaScript, so the attribute makes the whole app fail to load. Only fall back to the offline reader when the device is actually offline.
 - Serve the homepage illustration using local responsive WebP derivatives of the approved original and keep PWA PNG dimensions consistent with their manifest declarations, so slower connections avoid oversized image downloads without changing imagery.
+
+## UI / UX design quality
+- For any UI task read root `PRODUCT.md` and `DESIGN.md`; the existing app's tokens, components and product truth remain authoritative.
+- Use Taste Skill for deliberate art direction, Impeccable for targeted critique/audit/hardening and Awesome DESIGN.md as a design-document reference. Do not copy external brands.
+- Preserve existing auth/role policies, routes, production contracts, and Lovable git history; never force push.
+- Run the existing relevant tests/build plus optional `npx --yes impeccable@4.8.0 detect src/`; verify actual mobile/desktop rendered pages and report incomplete acceptance.
