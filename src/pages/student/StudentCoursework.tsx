@@ -11,6 +11,7 @@ import {Button} from '@/components/ui/button';
 import {Textarea} from '@/components/ui/textarea';
 import {toast} from 'sonner';
 import {BookOpen,ClipboardCheck,Clock,ShieldCheck,RotateCcw} from 'lucide-react';
+import {COURSEWORK_STAGES,COURSEWORK_PRIORITY,courseworkQueueState,formatPakistanAcademicDate,type CourseworkView} from '@/lib/assessment/courseworkQueue';
 type Module={id:string;title:string;programme_id:string};
 type Brief={id:string;module_id:string;title:string;assessment_type:string;
  teaching_summary:string;learning_outcomes:string;student_expectations:string;required_evidence:string;
@@ -30,7 +31,7 @@ function CourseworkWorkspace({moduleId}:{moduleId?:string}){
  const [criteria,setCriteria]=useState<Criterion[]>([]);const [attempts,setAttempts]=useState<Attempt[]>([]);
  const [results,setResults]=useState<Released[]>([]),[amendments,setAmendments]=useState<Amendment[]>([]);
  const generation=useRef(0);
- const [search,setSearch]=useState(''),[page,setPage]=useState(0);
+ const [search,setSearch]=useState(''),[view,setView]=useState<CourseworkView>('all'),[page,setPage]=useState(0);
  const [drafts,setDrafts]=useState<Record<string,string>>({});
  const [loading,setLoading]=useState(true);const [busy,setBusy]=useState('');
  const [error,setError]=useState('');
@@ -79,11 +80,21 @@ function CourseworkWorkspace({moduleId}:{moduleId?:string}){
   for(const a of map.values())a.sort((x,y)=>y.attempt_no-x.attempt_no);
   return map;
  },[attempts]);
- const visible=briefs.filter(b=>(!moduleId||b.module_id===moduleId)&&`${b.title} ${modules.find(m=>m.id===b.module_id)?.title||''}`.toLowerCase().includes(search.toLowerCase()));
+ const now=Date.now();
+ const releasedBriefIds=new Set(results.map(r=>r.brief_id));
+ const queue=new Map(briefs.map(b=>[b.id,courseworkQueueState(b,grouped.get(b.id)||[],releasedBriefIds.has(b.id),now)]));
+ const counts:Record<CourseworkView,number>={all:briefs.length,action:0,review:0,released:0,closed:0};
+ for(const item of queue.values())counts[item.stage]++;
+ const term=search.trim().toLowerCase();
+ const visible=briefs.filter(b=>(!moduleId||b.module_id===moduleId)
+   &&(view==='all'||queue.get(b.id)?.stage===view)
+   &&(!term||[b.title,b.assessment_type,modules.find(m=>m.id===b.module_id)?.title||''].join(' ').toLowerCase().includes(term)))
+  .sort((a,b)=>(COURSEWORK_PRIORITY[queue.get(a.id)!.stage]-COURSEWORK_PRIORITY[queue.get(b.id)!.stage])
+    ||a.due_at.localeCompare(b.due_at)||a.id.localeCompare(b.id));
  const submit=async(b:Brief)=>{
   if(busy||fileBusy[b.id]!==false){toast.error('Wait for attachments to load or finish uploading.');return;}
   const list=grouped.get(b.id)||[],latest=list[0];
-  const allowed=(!latest||latest.status==='resubmission_requested')&&list.length<b.max_attempts&&Date.now()<=new Date(b.submission_cutoff).getTime();
+  const allowed=courseworkQueueState(b,list,releasedBriefIds.has(b.id),Date.now()).maySubmit;
   if(!allowed){toast.error('Submission requires an open window and a marker-issued resubmission instruction.');return;}
   const work=(drafts[b.id]||'').trim();
   if(work.length<30||work.length>50000){toast.error('Provide between 30 and 50,000 characters of original evidence.');return;}
@@ -105,22 +116,29 @@ function CourseworkWorkspace({moduleId}:{moduleId?:string}){
   </section>
   {loading&&<p role="status">Checking your active enrolled assignments and released feedback…</p>}
   {error&&<p role="alert" className="rounded-xl border border-destructive p-4">Assignments could not be loaded. Please retry or contact your centre.</p>}
-  <Button className="mb-4" variant="outline" disabled={loading||!!busy} onClick={()=>void load()}>Refresh assignments</Button>
-  <label className="mb-4 block text-sm">Search coursework<input className="mt-1 block rounded border bg-background p-2" value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}} placeholder="Assessment or module title"/></label>
-  {!loading&&!error&&!visible.length&&<p className="rounded-xl border bg-card p-6 text-sm">{search?'No coursework matches your search.':'Your lecturers have not published coursework under your currently enrolled modules yet.'}</p>}
+  <section className="mb-5 space-y-3 rounded-xl border bg-card p-4" aria-label="Coursework work queue">
+   <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-semibold">Your coursework queue</h2><p className="text-sm text-muted-foreground">Find work needing attention, check marking progress and read released feedback.</p></div><Button variant="outline" className="min-h-11" disabled={loading||!!busy} onClick={()=>void load()}>Refresh assignments</Button></div>
+   <div role="group" aria-label="Coursework status" className="flex flex-wrap gap-2">{COURSEWORK_STAGES.map(tab=><button type="button" key={tab.value} aria-pressed={view===tab.value} disabled={loading||!!error} onClick={()=>{setView(tab.value);setPage(0);}} className={'min-h-11 rounded-lg border px-3 py-2 text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring '+(view===tab.value?'bg-primary text-primary-foreground':'bg-background text-foreground hover:bg-accent')}>{tab.label} ({counts[tab.value]})</button>)}</div>
+   <label className="block text-sm font-semibold">Search coursework<input type="search" className="mt-1 min-h-11 w-full max-w-xl rounded-lg border bg-background px-3 py-2 font-normal" maxLength={120} value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}} placeholder="Assessment, module or type"/></label>
+   {!loading&&!error&&<p role="status" aria-live="polite" className="text-sm text-muted-foreground">{visible.length} of {briefs.length} published assignments match. Times below use Pakistan time (PKT).</p>}
+   {(search||view!=='all')&&<Button variant="ghost" className="min-h-11" onClick={()=>{setSearch('');setView('all');setPage(0);}}>Clear coursework filters</Button>}
+  </section>
+  {!loading&&!error&&!visible.length&&<p className="rounded-xl border bg-card p-6 text-sm">{search||view!=='all'?'No coursework matches these filters. Clear the filters to see every published assignment.':'Your lecturers have not published coursework under your currently enrolled modules yet.'}</p>}
   {!loading&&!error&&<div className="space-y-5">{visible.slice(page*10,page*10+10).map(b=>{
    const list=grouped.get(b.id)||[],latest=list[0],released=results.filter(r=>r.brief_id===b.id);
-   const within=Date.now()<=new Date(b.submission_cutoff).getTime();
-   const maySubmit=within&&list.length<b.max_attempts&&(!latest||latest.status==='resubmission_requested');
+   const state=queue.get(b.id)!;
+   const maySubmit=state.maySubmit;
+   const cutoff=Date.parse(b.submission_cutoff);
+   const within=Number.isFinite(cutoff)&&Date.now()<=cutoff;
    const rubric=criteria.filter(c=>c.brief_id===b.id);
    return <article key={b.id} className="rounded-xl border bg-card p-5">
     <div className="flex flex-wrap items-start justify-between gap-2">
-     <div><p className="text-xs font-semibold uppercase text-success">{modules.find(m=>m.id===b.module_id)?.title||'My module'} · {b.assessment_type}</p>
-      <h2 className="mt-2 text-xl font-bold">{b.title}</h2>
-     </div><span className="text-xs font-semibold text-muted-foreground">{latest?.status||'Not submitted'}</span>
+     <div className="min-w-0"><p className="text-xs font-semibold uppercase text-success">{modules.find(m=>m.id===b.module_id)?.title||'My module'} · {b.assessment_type}</p>
+      <h2 className="mt-2 break-words text-xl font-bold">{b.title}</h2>
+     </div><span className="rounded-lg border px-3 py-2 text-xs font-semibold text-foreground">{state.stage==='action'?'Ready for submission':state.stage==='review'?'Awaiting independent review':state.stage==='released'?'Approved feedback available':'Submission window closed'}</span>
     </div>
-    <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted-foreground"><span className="inline-flex items-center gap-1"><Clock className="size-4"/>Due {new Date(b.due_at).toLocaleString()}</span>
-      <span>Final cutoff {new Date(b.submission_cutoff).toLocaleString()}</span><span>Attempts: {list.length}/{b.max_attempts}</span></div>
+    <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted-foreground"><span className="inline-flex items-center gap-1"><Clock className="size-4"/>Due {formatPakistanAcademicDate(b.due_at)}</span>
+      <span>Final cutoff {formatPakistanAcademicDate(b.submission_cutoff)}</span><span>Attempts: {list.length}/{b.max_attempts}</span></div>
     <div className="mt-4 grid gap-3 md:grid-cols-2">
      {([
       ['Lessons covered / lecturer progress',b.teaching_summary],
@@ -132,11 +150,11 @@ function CourseworkWorkspace({moduleId}:{moduleId?:string}){
     <h3 className="mt-5 flex items-center gap-2 font-semibold"><ClipboardCheck className="size-4"/>Published marking criteria ({rubric.length})</h3>
     <div className="mt-2 space-y-2">{rubric.map(c=><div key={c.id} className="rounded-lg border p-3 text-sm"><p className="font-semibold">{c.criterion_code} — {c.max_points} rubric points</p>
      <p className="mt-1">{c.learning_outcome}</p><p className="mt-1 text-muted-foreground">{c.criterion_description}</p><p className="mt-1 text-xs text-muted-foreground">Marker standard: {c.scoring_guidance}</p></div>)}</div>
-    <div className="mt-4 rounded-lg border border-warning/40 p-3 text-sm"><strong>Resubmission rule:</strong> Up to {b.max_attempts} attempt(s); {b.penalty_points_per_resubmission} internal percentage points deducted per permitted resubmission, only where permitted under the published {b.policy_reference} policy. No resubmissions after {new Date(b.submission_cutoff).toLocaleString()}.</div>
+    <div className="mt-4 rounded-lg border border-warning/40 p-3 text-sm"><strong>Resubmission rule:</strong> Up to {b.max_attempts} attempt(s); {b.penalty_points_per_resubmission} internal percentage points deducted per permitted resubmission, only where permitted under the published {b.policy_reference} policy. No resubmissions after {formatPakistanAcademicDate(b.submission_cutoff)}.</div>
     {maySubmit&&<CourseworkFiles key={`${b.id}:${list.length}`} briefId={b.id} disabled={!!busy} onFiles={ids=>setAttachmentIds(old=>({...old,[b.id]:ids}))} onBusy={value=>setFileBusy(old=>({...old,[b.id]:value}))}/>}
     {list.map(a=><section key={a.id} className="mt-3 rounded-lg bg-secondary/30 p-3">
      <p className="font-semibold text-sm">Attempt {a.attempt_no} — {a.status}</p><CourseworkFiles attemptId={a.id}/><SubmittedResponse key={`${uid}:${tenant}:${a.id}`} attempt={a.id} student={uid!} tenant={tenant!}/>
-     <p className="mt-1 text-xs text-muted-foreground">Submitted {new Date(a.submitted_at).toLocaleString()}</p>
+     <p className="mt-1 text-xs text-muted-foreground">Submitted {formatPakistanAcademicDate(a.submitted_at)}</p>
      {a.resubmission_guidance&&<p className="mt-2 whitespace-pre-wrap rounded-lg border border-primary/25 bg-card p-3 text-sm"><RotateCcw className="mr-1 inline size-4"/><strong>Independent marker's improvement plan:</strong> {a.resubmission_guidance}</p>}
      {released.find(r=>r.attempt_id===a.id)&&<ReleasedFeedback result={released.find(r=>r.attempt_id===a.id)!} amendment={amendments.find(r=>r.attempt_id===a.id)}/>}
     </section>)}
@@ -157,6 +175,6 @@ function ReleasedFeedback({result,amendment}:{result:Released;amendment?:Amendme
   <p className="font-bold">Approved score: {amendment?.corrected_final_score??result.final_score}/100{amendment?' — independently amended':''}</p>
   <p className="mt-1 text-xs text-muted-foreground">Human-reviewed raw score: {amendment?.corrected_raw_score??result.raw_score}; permitted resubmission penalty: {result.penalty_points} points.</p>
   <p className="mt-2 whitespace-pre-wrap">{amendment?.corrected_feedback??result.published_feedback}</p>
-  {amendment&&<p className="mt-2 text-xs">Original released score: {amendment.original_final_score}/100. Amended {new Date(amendment.recorded_at).toLocaleString()}. <Link className="underline" to="/student/appeals">Read independent appeal decision</Link></p>}
+  {amendment&&<p className="mt-2 text-xs">Original released score: {amendment.original_final_score}/100. Amended {formatPakistanAcademicDate(amendment.recorded_at)}. <Link className="underline" to="/student/appeals">Read independent appeal decision</Link></p>}
  </div>;
 }
