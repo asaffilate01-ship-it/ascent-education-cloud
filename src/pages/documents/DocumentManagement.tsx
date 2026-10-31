@@ -8,7 +8,6 @@ import {FileText,Eye,Search,Clock,CheckCircle2,Pen,FolderOpen} from 'lucide-reac
 import {supabase} from '@/integrations/supabase/client';
 import {useAuth} from '@/contexts/AuthContext';
 import {useSupabaseQuery} from '@/hooks/useSupabaseQuery';
-import {canUseActiveRole} from '@/lib/roleMembership';
 import {toast} from 'sonner';
 import StatusBadge from '@/components/ui/StatusBadge';
 
@@ -22,7 +21,7 @@ export default function DocumentManagement(){
 }
 function ScopedDocuments(){
  const {user}=useAuth();
- const roleAllowed=!!user&&canUseActiveRole(user,[...ALLOWED]);
+ const roleAllowed=!!user&&Array.isArray(user.roles)&&user.roles.includes(user.role)&&ALLOWED.some(role=>role===user.role);
  const isStudent=user?.role==='student';
  const enabled=roleAllowed&&!!user?.tenantId;
  const [search,setSearch]=useState('');
