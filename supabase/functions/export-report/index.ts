@@ -1,6 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders, rateLimit, rateLimitResponse, getClientIp } from '../_shared/cors.ts'
 import { authenticateRequest } from '../_shared/auth.ts'
+import {safeCsvValue,reportTypeAllowed,type ReportType} from '../_shared/report-authorization.ts'
 
 function toCSV(rows: Record<string, unknown>[]): string {
   if (!rows.length) return ''
@@ -8,16 +9,7 @@ function toCSV(rows: Record<string, unknown>[]): string {
   const lines = [
     headers.join(','),
     ...rows.map(row =>
-      headers.map(h => {
-        const val = row[h]
-        const raw = val === null || val === undefined ? '' : String(val)
-        // Spreadsheet programs can interpret attacker-supplied applicant names as
-        // formulae. Always prefix formula-leading fields with an apostrophe.
-        const str = /^[=+\-@\t\r]/.test(raw) ? "'" + raw : raw
-        return str.includes(',') || str.includes('"') || str.includes('\n')
-          ? `"${str.replace(/"/g, '""')}"`
-          : str
-      }).join(',')
+      headers.map(h => safeCsvValue(row[h])      ).join(',')
     )
   ]
   return lines.join('\n')
@@ -26,12 +18,7 @@ function toCSV(rows: Record<string, unknown>[]): string {
 const VALID_REPORT_TYPES = ['students', 'invoices', 'attendance', 'applications'] as const
 // The old generic submissions export exposed unreleased/provisional marks.
 // Rebuild it only from independently released academic records with board policy.
-const REPORT_ROLES: Record<(typeof VALID_REPORT_TYPES)[number], string[]> = {
- students: ['centre_director','superadmin'],
- invoices: ['finance_officer','centre_director','superadmin'],
- attendance: ['centre_director','superadmin','programme_leader','exams_officer'],
- applications: ['admissions_admin','centre_director','superadmin'],
-}
+
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
@@ -84,9 +71,7 @@ Deno.serve(async (req) => {
       }
       effectiveTenantId=profile.tenant_id
     }
-    const requiredRoles=REPORT_ROLES[reportType as keyof typeof REPORT_ROLES]
-    const authorised=roles.some(r=>requiredRoles.includes(r.role)&&
-      (r.role==='superadmin'||r.tenant_id===effectiveTenantId))
+    const authorised=reportTypeAllowed(reportType as ReportType,roles,effectiveTenantId)
     if (!authorised) {
       return new Response(JSON.stringify({error:'This role cannot export the selected report'}),{
         status:403,headers:{...corsHeaders,'Content-Type':'application/json'}
