@@ -10,10 +10,10 @@ import { db } from '@/lib/db';
 import { useAuth } from '@/contexts/AuthContext';
 import { AlertTriangle, BookOpen, Calendar, ExternalLink, Film, Hand, PenTool, ShieldCheck, Video, Users } from 'lucide-react';
 
-type Session={id:string;title:string;module_id:string|null;starts_at:string;ends_at:string;
+type Session={id:string;tenant_id:string;title:string;module_id:string|null;starts_at:string;ends_at:string;
  class_mode:string;status:string;join_url:string|null;recording_enabled:boolean;capacity:number};
 type Board={id:string;session_id:string;title:string};
-export default function TeamsClassroom(){const {user}=useAuth();return <ClassroomWorkspace key={`${user?.id}:${user?.tenantId}`}/>;}
+export default function TeamsClassroom(){const {user}=useAuth();return <ClassroomWorkspace key={`${user?.id}:${user?.tenantId}:${user?.role}`}/>;}
 function ClassroomWorkspace(){
  const {user}=useAuth();const [params]=useSearchParams();const moduleId=params.get('module');
  const [sessions,setSessions]=useState<Session[]>([]);
@@ -24,28 +24,28 @@ function ClassroomWorkspace(){
  useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),30000);return()=>clearInterval(timer);},[]);
  const [showPast,setShowPast]=useState(false);const [refresh,setRefresh]=useState(0);
  useEffect(()=>{
-  if(!user?.id){setSessions([]);setLoading(false);return;}
+  if(!user?.id||!user.tenantId){setSessions([]);setBoards([]);setError('A verified centre assignment is required to load class invitations.');setLoading(false);return;}
   let live=true;setLoading(true);setError('');setBoardError('');
   void Promise.all([
-   db.from('live_class_sessions').select('id,title,module_id,starts_at,ends_at,class_mode,status,join_url,recording_enabled,capacity')
-    .order('starts_at',{ascending:false}).limit(200),
-   db.from('lesson_whiteboards').select('id,session_id,title').order('created_at',{ascending:false}).limit(200),
+   db.from('live_class_sessions').select('id,tenant_id,title,module_id,starts_at,ends_at,class_mode,status,join_url,recording_enabled,capacity')
+    .eq('tenant_id',user.tenantId).order('starts_at',{ascending:false}).limit(200),
+   db.from('lesson_whiteboards').select('id,session_id,title').eq('tenant_id',user.tenantId).order('created_at',{ascending:false}).limit(200),
   ]).then(([classes,whiteboards])=>{
    if(!live)return;
-   if(classes.error){setError(classes.error.message);setSessions([]);}else setSessions((classes.data||[]) as Session[]);
+   if(classes.error){setError(classes.error.message);setSessions([]);}else setSessions(((classes.data||[]) as Session[]).filter(s=>s.tenant_id===user.tenantId));
    if(whiteboards.error){setBoardError(whiteboards.error.message);setBoards([]);}else setBoards((whiteboards.data||[]) as Board[]);
    setLoading(false);
   }).catch(()=>{if(live){setError('Classroom service unavailable');setLoading(false);}});
   return()=>{live=false};
- },[user?.id,user?.tenantId,refresh]);
+ },[user?.id,user?.tenantId,user?.role,refresh]);
  const upcoming=useMemo(()=>[...sessions].filter(s=>(!moduleId||s.module_id===moduleId)&&s.status!=='cancelled' && (showPast ? classJoinState(s,now)==='ended' : classJoinState(s,now)!=='ended'))
   .sort((a,b)=>(showPast?-1:1)*(new Date(a.starts_at).getTime()-new Date(b.starts_at).getTime())),[sessions,showPast,moduleId,now]);
- const teacher=!!user?.roles.some(r=>['lecturer','programme_leader','centre_director','superadmin'].includes(r));
+ const teacher=!!user&&['lecturer','programme_leader','centre_director','superadmin'].includes(user.role);
  return <DashboardLayout title="UniPathway Live Classroom" subtitle="Private lecture rooms with interactive whiteboard and on-demand materials">
   <ModuleJourney moduleId={moduleId||undefined} teacher={teacher}/>
   <section className="mb-5 rounded-xl border border-primary/25 bg-primary/5 p-4">
    <h2 className="flex items-center gap-2 font-bold"><ShieldCheck className="size-5"/>Invited students and allocated teachers only</h2>
-   <p className="mt-2 text-sm text-muted-foreground">Your invited classes appear below. Join opens 20 minutes before the start. All times are Pakistan Standard Time (PKT). Have your microphone, headphones and course notes ready; your teacher controls access to the live board and released recordings.</p>
+   <p className="mt-2 text-sm text-muted-foreground">Only classes authorised for your signed-in centre and current role should appear below. A valid invitation and permission are still required to join. The Teams link opens 20 minutes before the start. All times are Pakistan Standard Time (PKT). Have your microphone, headphones and course notes ready; your teacher controls access to the live board and released recordings.</p>
    {teacher&&<p className="mt-2 text-xs text-muted-foreground">Microsoft Teams lobby, presenter and recording permissions must be configured separately.</p>}
    {teacher&&<div className="mt-3 flex flex-wrap gap-4">
     <Link className="inline-flex items-center gap-2 text-sm font-bold underline" to="/lecturer/class-scheduler"><Calendar className="size-4"/>Class scheduling and bulk invitations</Link>
