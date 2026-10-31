@@ -592,7 +592,7 @@ function AppRoutes() {
         <Route path="/forums" element={<P><ForumPage /></P>} />
         <Route path="/gradebook" element={<StudentR><StudentReleasedResults /></StudentR>} />
         <Route path="/predictive-analytics" element={<Director><PredictiveAnalytics /></Director>} />
-        <Route path="/documents" element={<P><DocumentManagement /></P>} />
+        <Route path="/documents" element={<RoleGuard allowed={['student','admissions_admin','centre_director','superadmin']}><DocumentManagement /></RoleGuard>} />
         <Route path="/email-campaigns" element={<Marketing><EmailCampaigns /></Marketing>} />
         <Route path="/communications" element={<P><CommunicationsWorkspace /></P>} />
         <Route path="/messaging" element={<P><MessagingInbox /></P>} />
