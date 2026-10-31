@@ -22,9 +22,9 @@ export function verifiedRoleMemberships(rows: unknown): UserRole[] {
 }
 
 export function canUseActiveRole(user: {role:UserRole;roles:readonly UserRole[]}, allowed:readonly UserRole[]): boolean {
- return user.roles.includes(user.role) && allowed.includes(user.role);
+ return Array.isArray(user.roles) && user.roles.includes(user.role) && allowed.includes(user.role);
 }
 
 export function activeRoleVerified(user: {role:UserRole;roles:readonly UserRole[]}):boolean {
- return user.roles.includes(user.role);
+ return Array.isArray(user.roles) && user.roles.includes(user.role);
 }
