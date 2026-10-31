@@ -56,6 +56,7 @@ jobs:
       - run: deno check --config deno.intelligence.json --node-modules-dir=auto supabase/functions/create-checkout/index.ts supabase/functions/webhook-stripe/index.ts
       - run: deno check --config deno.intelligence.json --node-modules-dir=auto supabase/functions/invite-staff/index.ts
       - run: deno check --config deno.intelligence.json --node-modules-dir=auto supabase/functions/ai-assessment-agent/index.ts supabase/functions/omniqora-assessment-advisory/index.ts supabase/functions/ai-study-assistant/index.ts
+      - run: deno check --config deno.intelligence.json --node-modules-dir=auto supabase/functions/unipathway-student-read-tools/index.ts
       - run: npm run check:enquiry
       - run: npm run test:enquiry
   build:
