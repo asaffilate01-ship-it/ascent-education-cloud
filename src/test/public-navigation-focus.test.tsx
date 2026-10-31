@@ -2,6 +2,7 @@ import {cleanup,fireEvent,render,screen,within} from '@testing-library/react';
 import {MemoryRouter} from 'react-router-dom';
 import {afterEach,expect,it} from 'vitest';
 import PublicNav from '@/components/PublicNav';
+import PublicBottomNav from '@/components/PublicBottomNav';
 afterEach(cleanup);
 it('returns keyboard focus to the desktop disclosure trigger on Escape',()=>{
  render(<MemoryRouter><PublicNav/></MemoryRouter>);
@@ -25,4 +26,20 @@ it('lets mobile visitors recover an empty course search and close the menu by ke
  fireEvent.keyDown(document,{key:'Escape'});
  expect(screen.queryByRole('navigation',{name:'Mobile navigation'})).toBeNull();
  expect(screen.getByRole('button',{name:'Open menu'})).toHaveFocus();
+});
+
+it('keeps public mobile tabs keyboard-visible with correct active state and accessible icon labels',()=>{
+ render(<MemoryRouter initialEntries={['/germany']}><PublicBottomNav/></MemoryRouter>);
+ const nav=screen.getByRole('navigation',{name:'Quick navigation'});
+ const abroad=within(nav).getByRole('link',{name:'Abroad'});
+ expect(abroad).toHaveAttribute('aria-current','page');
+ expect(abroad.className).toContain('focus-visible:outline');
+ expect(abroad.className).toContain('motion-reduce:transform-none');
+ abroad.focus();
+ expect(abroad).toHaveFocus();
+ const apply=within(nav).getByRole('link',{name:'Apply'});
+ expect(apply.className).toContain('focus-visible:outline');
+ expect(apply).not.toHaveAttribute('aria-current');
+ expect(within(nav).getAllByRole('link')).toHaveLength(5);
+ expect(nav.querySelectorAll('svg[aria-hidden="true"]')).toHaveLength(5);
 });

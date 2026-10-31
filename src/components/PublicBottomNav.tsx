@@ -21,12 +21,12 @@ export default function PublicBottomNav() {
           return (
             <li key={to} className="flex justify-center">
               {primary ? (
-                <Link to={to} aria-current={active ? 'page' : undefined} className="-mt-6 flex size-14 flex-col items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg ring-4 ring-background active:scale-95 transition-transform">
-                  <Icon className="size-5" /><span className="text-[10px] font-bold">{label}</span>
+                <Link to={to} aria-current={active ? 'page' : undefined} className="-mt-6 flex size-14 flex-col items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg ring-4 ring-background transition-transform active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary motion-reduce:transform-none">
+                  <Icon aria-hidden="true" className="size-5" /><span className="text-[10px] font-bold">{label}</span>
                 </Link>
               ) : (
-                <Link to={to} aria-current={active ? 'page' : undefined} className={`flex min-h-11 min-w-11 flex-col items-center justify-center gap-0.5 px-2 py-1 text-[11px] font-semibold active:scale-95 transition-transform ${active ? 'text-primary' : 'text-muted-foreground'}`}>
-                  <Icon className="size-5" />{label}
+                <Link to={to} aria-current={active ? 'page' : undefined} className={`flex min-h-11 min-w-11 flex-col items-center justify-center gap-0.5 px-2 py-1 text-[11px] font-semibold transition-transform active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:transform-none ${active ? 'text-primary' : 'text-muted-foreground'}`}>
+                  <Icon aria-hidden="true" className="size-5" />{label}
                 </Link>
               )}
             </li>
