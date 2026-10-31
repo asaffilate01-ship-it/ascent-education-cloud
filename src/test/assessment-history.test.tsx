@@ -58,3 +58,19 @@ it('retains unsent coursework text while searching and refreshing',async()=>{
  fireEvent.click(screen.getByText('Refresh assignments'));
  expect(await screen.findByLabelText('Your original submitted evidence')).toHaveValue('My original explanation remains here while I check my other work.');
 });
+
+it('prioritises open submissions and filters independently released feedback without provisional marks',async()=>{
+ mock.tables.unipathway_assessment_attempts=mock.tables.unipathway_assessment_attempts.filter(a=>a.id!=='a000');
+ mock.tables.unipathway_assessment_released_results=mock.tables.unipathway_assessment_released_results.filter(a=>a.attempt_id!=='a000');
+ mount(<StudentCoursework/>);
+ await screen.findByRole('button',{name:'Action needed (1)'});
+ fireEvent.click(screen.getByRole('button',{name:'Action needed (1)'}));
+ expect(screen.getByRole('heading',{name:'Assessment 0'})).toBeInTheDocument();
+ expect(screen.queryByRole('heading',{name:'Assessment 300'})).toBeNull();
+ expect(screen.getByText('1 of 301 published assignments match. Times below use Pakistan time (PKT).')).toBeInTheDocument();
+ fireEvent.click(screen.getByRole('button',{name:'Feedback released (300)'}));
+ expect(screen.queryByRole('heading',{name:'Assessment 0'})).toBeNull();
+ expect(screen.getByRole('heading',{name:'Assessment 1'})).toBeInTheDocument();
+ fireEvent.click(screen.getByRole('button',{name:'Clear coursework filters'}));
+ expect(screen.getByRole('button',{name:'All coursework (301)'})).toHaveAttribute('aria-pressed','true');
+});

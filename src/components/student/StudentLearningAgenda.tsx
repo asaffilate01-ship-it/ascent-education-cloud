@@ -5,7 +5,7 @@ import {rowsByIds} from '@/lib/pagedRows';
 import {Button} from '@/components/ui/button';
 type Brief = {id: string; module_id:string; title: string; due_at: string; submission_cutoff: string};
 type Attempt = {brief_id: string; attempt_no: number; status: string};
-type Session = {id: string; title: string; starts_at: string; ends_at: string};
+type Session = {id: string; module_id: string; title: string; starts_at: string; ends_at: string};
 type Snapshot<T> = {key:string;data:T;error:boolean};
 export default function StudentLearningAgenda({tenant, student, moduleIds}: {tenant: string; student: string; moduleIds: string[]}) {
   const [refresh, setRefresh] = useState(0);
@@ -20,7 +20,10 @@ export default function StudentLearningAgenda({tenant, student, moduleIds}: {ten
       if(active)setWork({key,data:{briefs,attempts},error:false});
     }catch{if(active)setWork({key,data:{briefs:[],attempts:[]},error:true});}})();
     void (async()=>{try{
-      const r=await db.from('live_class_sessions').select('id,title,starts_at,ends_at').eq('tenant_id',tenant).in('status',['scheduled','live'])
+      // A centre-wide scheduled session is not by itself a learner invitation.
+      // Only show RLS-authorised sessions in the learner's active enrolled modules.
+      if(!moduleIds.length){if(active)setClasses({key,data:[],error:false});return;}
+      const r=await db.from('live_class_sessions').select('id,module_id,title,starts_at,ends_at').eq('tenant_id',tenant).in('module_id',moduleIds).in('status',['scheduled','live'])
         .gte('ends_at',new Date().toISOString()).order('starts_at').order('id').limit(5);
       if(r.error||!Array.isArray(r.data))throw Error('Unavailable');
       if(active)setClasses({key,data:r.data,error:false});
@@ -38,10 +41,11 @@ export default function StudentLearningAgenda({tenant, student, moduleIds}: {ten
   const task=(brief:Brief)=><article className="border rounded p-3 space-y-1" key={brief.id}><p>{brief.title}</p><p className="text-sm text-muted-foreground">Due {new Date(brief.due_at).toLocaleString('en-PK',{timeZone:'Asia/Karachi'})} · {Date.parse(brief.submission_cutoff)<now?'Submission window closed—contact your programme team':Date.parse(brief.due_at)<now?'Overdue—check submission rules':'Upcoming'}</p><Link className="text-sm underline" to={`/student/assignments?${new URLSearchParams({module:brief.module_id})}`}>Open module coursework</Link></article>;
   return <section className="surface-card p-5 mb-6 space-y-4" aria-label="Current learning agenda">
     <h3 className="text-lg font-bold">Your next steps</h3>
-    <section className="space-y-3" aria-label="Invited class agenda"><h4 className="text-sm font-semibold">Your next classes · Pakistan time</h4>
-      {!invited?<p role="status">Loading your class invitations…</p>:invited.error?<p role="alert">Your class invitations could not be verified. Refresh to retry.</p>:<>
-        {!invited.data.length&&<p className="text-sm text-muted-foreground">No upcoming class invitations are available.</p>}
-        {invited.data.map(session=><article className="rounded-lg border p-3" key={session.id}><p className="font-medium">{session.title}</p><p className="text-sm text-muted-foreground">{new Date(session.starts_at).toLocaleString('en-PK',{timeZone:'Asia/Karachi'})}</p><Link className="inline-flex min-h-11 items-center text-sm font-semibold underline" to="/student/classroom">Open class invitation →</Link></article>)}
+    <section className="space-y-3" aria-label="Enrolled module class agenda"><h4 className="text-sm font-semibold">Upcoming sessions in your enrolled modules · Pakistan time</h4>
+      <p className="text-xs text-muted-foreground">A separate approved class invitation and classroom permissions are still required to join. These listings do not create Teams meetings.</p>
+      {!invited?<p role="status">Checking enrolled module sessions…</p>:invited.error?<p role="alert">Your enrolled module sessions could not be verified. Refresh to retry.</p>:<>
+        {!invited.data.length&&<p className="text-sm text-muted-foreground">No upcoming sessions are visible for your active enrolled modules.</p>}
+        {invited.data.map(session=><article className="rounded-lg border p-3" key={session.id}><p className="font-medium">{session.title}</p><p className="text-sm text-muted-foreground">{new Date(session.starts_at).toLocaleString('en-PK',{timeZone:'Asia/Karachi'})}</p><Link className="inline-flex min-h-11 items-center text-sm font-semibold underline" to={'/student/classroom?module='+encodeURIComponent(session.module_id)}>Check classroom invitation and access →</Link></article>)}
       </>}
     </section>
 

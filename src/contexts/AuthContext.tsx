@@ -3,6 +3,7 @@ import { disableNativePush } from '@/lib/nativePush';
 import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { UserRole } from '@/types/platform';
+import {verifiedRoleMemberships} from '@/lib/roleMembership';
 import type { User, Session } from '@supabase/supabase-js';
 
 interface AuthUser {
@@ -72,20 +73,21 @@ async function fetchAuthUser(supaUser: User): Promise<AuthUser> {
   // Make sure self-registered users have a UniPathway profile and role
   try { await (supabase.rpc as any)('ensure_my_account'); } catch { /* non-blocking */ }
   // Fetch profile
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('full_name, tenant_id, avatar_url')
     .eq('user_id', supaUser.id)
     .single();
+  if (profileError || !profile) throw Error('Profile could not be verified');
 
-  // Fetch roles
-  const { data: rolesData } = await supabase
+  // A failed user_roles lookup, empty membership or unknown role never becomes student access.
+  const { data: rolesData, error: rolesError } = await supabase
     .from('user_roles')
     .select('role')
     .eq('user_id', supaUser.id);
-
-  const roles = (rolesData || []).map((r: any) => r.role as UserRole);
-  const primaryRole = roles[0] || 'student';
+  if (rolesError) throw Error('Role membership could not be verified');
+  const roles = verifiedRoleMemberships(rolesData);
+  const primaryRole = roles[0];
 
   return {
     id: supaUser.id,
@@ -133,7 +135,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (generation !== authGeneration.current) return;
       await setLearningAccount(authUser.tenantId ? { id: authUser.id, tenantId: authUser.tenantId } : null).catch(() => {});
       if (generation !== authGeneration.current) return;
-      setUser(authUser);
+      setUser(previous=>previous?.id===authUser.id && previous.tenantId===authUser.tenantId
+        &&authUser.roles.includes(previous.role)?{...authUser,role:previous.role}:authUser);
     } catch {
       if (generation !== authGeneration.current) return;
       setUser(null);
@@ -159,7 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setRole = (role: UserRole) => {
-    if (user && user.roles.includes(role)) setUser({ ...user, role });
+    setUser(previous=>previous&&previous.roles.includes(role)?{...previous,role}:previous);
   };
 
   const logout = async () => {
@@ -175,12 +178,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshProfile = async () => {
     const generation = ++authGeneration.current;
-    if (session?.user) {
+    if (!session?.user) { setUser(null); return; }
+    try {
       const authUser = await fetchAuthUser(session.user);
       if (generation !== authGeneration.current) return;
       await setLearningAccount(authUser.tenantId ? { id: authUser.id, tenantId: authUser.tenantId } : null).catch(() => {});
       if (generation !== authGeneration.current) return;
-      setUser(authUser);
+      setUser(previous=>previous?.id===authUser.id && previous.tenantId===authUser.tenantId
+        &&authUser.roles.includes(previous.role)?{...authUser,role:previous.role}:authUser);
+    } catch {
+      // A revoked or unreadable membership must not preserve a privileged stale UI session.
+      if (generation === authGeneration.current) setUser(null);
     }
   };
 
