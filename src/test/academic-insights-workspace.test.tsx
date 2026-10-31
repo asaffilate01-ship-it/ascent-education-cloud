@@ -9,7 +9,7 @@ const state=vi.hoisted(()=>({
  retry:vi.fn(),download:vi.fn()
 }));
 vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'director',name:'Director',role:state.role,roles:state.roles,tenantId:state.tenant}})}));
-vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:{children:React.ReactNode})=><main>{children}</main>}));
+vi.mock('@/components/layout/DashboardLayout',()=>({default:({title,children}:{title:string;children:React.ReactNode})=><main><h1>{title}</h1>{children}</main>}));
 vi.mock('@/lib/downloadText',()=>({downloadText:(...args:unknown[])=>state.download(...args)}));
 vi.mock('@/hooks/useSupabaseQuery',()=>({useSupabaseQuery:(table:string,options:any)=>{
  state.queries.push({table,options});
