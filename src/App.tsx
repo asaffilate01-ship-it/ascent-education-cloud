@@ -587,7 +587,7 @@ function AppRoutes() {
         <Route path="/leave" element={<RoleGuard allowed={['superadmin','centre_director','admissions_admin','lecturer','assessor','programme_leader','iqa_officer','welfare_officer','security_officer','exams_officer','finance_officer','marketing_officer']}><LeaveManagement /></RoleGuard>} />
         <Route path="/health" element={<WelfareR><HealthRecords /></WelfareR>} />
         <Route path="/transport" element={<RoleGuard allowed={['student','centre_director','superadmin','security_officer']}><TransportTracking /></RoleGuard>} />
-        <Route path="/ai-recommendations" element={<P><AIRecommendations /></P>} />
+        <Route path="/ai-recommendations" element={<Director><AIRecommendations /></Director>} />
         <Route path="/ai-course-builder" element={<LecturerR><AICourseBuilder /></LecturerR>} />
         <Route path="/quizzes" element={<P><QuizDashboard /></P>} />
         <Route path="/forums" element={<P><ForumPage /></P>} />

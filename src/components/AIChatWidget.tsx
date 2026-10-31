@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { MessageCircle, X, Send, Sparkles, Loader2, Trash2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import ReactMarkdown from 'react-markdown';
 
@@ -16,6 +16,7 @@ import { forwardRef } from 'react';
 
 const AIChatWidget = forwardRef<HTMLDivElement>(function AIChatWidget(_props, ref) {
   const { user } = useAuth();
+  const reduceMotion=useReducedMotion();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -35,9 +36,9 @@ const AIChatWidget = forwardRef<HTMLDivElement>(function AIChatWidget(_props, re
     activeRequest.current?.abort(); activeRequest.current=null;
     setMessages([]); setInput(''); setOpen(false); setLoading(false); setNotice(''); setRemaining(null);
     return () => { requestVersion.current++; activeRequest.current?.abort(); activeRequest.current=null; };
-  }, [user?.id, user?.tenantId]);
+  }, [user?.id, user?.tenantId, user?.role, user?.roles?.join('|')]);
   const sendMessage = useCallback(async () => {
-    if (!user || !input.trim() || activeRequest.current || input.length>2000) return;
+    if (!user || user.role!=='student' || !user.roles?.includes('student') || !input.trim() || activeRequest.current || input.length>2000) return;
     const version=++requestVersion.current;
     const controller=new AbortController();activeRequest.current=controller;
     const userMsg: Message={role:'user',content:input.trim()};
@@ -59,7 +60,9 @@ const AIChatWidget = forwardRef<HTMLDivElement>(function AIChatWidget(_props, re
     finally {if(current()){setLoading(false);activeRequest.current=null;}}
   },[input,messages,user]);
 
-  if (!user) return null;
+  // An assigned student role and active student workspace are both required.
+  // Other staff roles must never inherit a student's open tutor conversation.
+  if (!user || user.role!=='student' || !user.roles?.includes('student')) return null;
 
   return (
     <>
@@ -67,7 +70,7 @@ const AIChatWidget = forwardRef<HTMLDivElement>(function AIChatWidget(_props, re
       <AnimatePresence>
         {!open && (
           <motion.button
-            initial={{ scale: 0 }}
+            initial={reduceMotion ? false : { scale: 0 }}
             animate={{ scale: 1 }}
             exit={{ scale: 0 }}
             aria-label="Open AI Study Tutor"
@@ -83,10 +86,11 @@ const AIChatWidget = forwardRef<HTMLDivElement>(function AIChatWidget(_props, re
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            initial={reduceMotion ? false : { opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
+            role="dialog" aria-modal="false" aria-label="AI Study Tutor"
             className="fixed bottom-20 lg:bottom-6 right-4 z-50 w-[360px] max-w-[calc(100vw-2rem)] h-[500px] max-h-[70vh] bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden"
           >
             {/* Header */}
@@ -104,30 +108,30 @@ const AIChatWidget = forwardRef<HTMLDivElement>(function AIChatWidget(_props, re
                 </div>
               </div>
               <div className="flex items-center gap-1">
-                <button disabled={loading} onClick={() => {setMessages([]);setNotice('');}} className="p-1.5 rounded-lg hover:bg-accent transition-colors" title="Clear chat">
+                <button disabled={loading} onClick={() => {setMessages([]);setNotice('');}} className="min-h-11 min-w-11 rounded-lg hover:bg-accent transition-colors" title="Clear chat" aria-label="Clear tutor conversation">
                   <Trash2 className="w-3.5 h-3.5 text-muted-foreground" />
                 </button>
-                <button aria-label="Close study tutor" onClick={() => setOpen(false)} className="p-1.5 rounded-lg hover:bg-accent transition-colors">
+                <button aria-label="Close study tutor" onClick={() => setOpen(false)} className="min-h-11 min-w-11 rounded-lg hover:bg-accent transition-colors">
                   <X className="w-4 h-4 text-muted-foreground" />
                 </button>
               </div>
             </div>
 
-            <div className="border-b px-4 py-2 text-[11px] text-muted-foreground">50 questions/day · 5/minute · resets at midnight PKT. {remaining!==null&&`${remaining} remaining today.`} Requests sent to Omniqora count even if interrupted.</div>
+            <div className="border-b px-4 py-2 text-xs text-muted-foreground">Use this for study guidance, not official results. Avoid sharing passwords, medical or financial details. {remaining!==null&&`${remaining} requests remaining today.`} Requests sent to Omniqora may count if interrupted.</div>
             {notice&&<p role="alert" className="px-4 py-2 text-xs text-destructive">{notice}</p>}
             {/* Messages */}
-            <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-3">
+            <div ref={scrollRef} aria-label="Tutor conversation" role="log" aria-live="polite" aria-relevant="additions" className="flex-1 overflow-y-auto p-3 space-y-3">
               {messages.length === 0 && (
                 <div className="text-center py-8">
                   <Sparkles className="w-10 h-10 text-primary/30 mx-auto mb-3" />
                   <p className="text-sm font-semibold text-foreground">Hi {user.name?.split(' ')[0]}! 👋</p>
-                  <p className="text-xs text-muted-foreground mt-1">Ask me anything about your courses, assignments, or exam prep.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Explore concepts, revision and study techniques. Check answers with your lecturer; the tutor does not issue official grades.</p>
                   <div className="flex flex-wrap gap-1.5 justify-center mt-4">
                     {['Explain Harvard referencing', 'Help with essay structure', 'What is critical analysis?'].map(q => (
                       <button
                         key={q}
                         onClick={() => { setInput(q); }}
-                        className="text-[10px] px-2.5 py-1.5 rounded-full bg-accent text-accent-foreground hover:bg-primary/10 transition-colors"
+                        className="min-h-11 px-3 py-2 text-xs rounded-full bg-accent text-accent-foreground hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         {q}
                       </button>
@@ -180,7 +184,7 @@ const AIChatWidget = forwardRef<HTMLDivElement>(function AIChatWidget(_props, re
                 <button
                   aria-label="Send question" type="submit"
                   disabled={!input.trim() || loading}
-                  className="p-2.5 rounded-xl gradient-primary text-gradient-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-md"
+                  className="min-h-11 min-w-11 rounded-xl gradient-primary text-gradient-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                 </button>

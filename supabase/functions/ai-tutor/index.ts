@@ -12,6 +12,21 @@ Deno.serve(async req=>{
   const scoped=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_ANON_KEY')!,{global:{headers:{Authorization:req.headers.get('Authorization')!}}});
   const {data:profile,error}=await scoped.from('profiles').select('tenant_id').eq('user_id',auth.userId).single();
   if(error||!profile?.tenant_id)return json({error:'A centre-linked account is required.'},403);
+  // This tutor is intended for learners, not all signed-in staff or partners.
+  // Authorisation is checked server-side against the caller's authenticated
+  // tenant/role row, never client-supplied user metadata or a request-body role.
+  const {data:studentRoles,error:roleError}=await scoped.from('user_roles')
+   .select('role').eq('user_id',auth.userId).eq('tenant_id',profile.tenant_id)
+   .eq('role','student').limit(1);
+  if(roleError||!Array.isArray(studentRoles)||studentRoles.length!==1)
+   return json({error:'An enrolled student account is required for the study tutor.'},403);
+  // A student role without a current programme enrolment is not yet
+  // entitled to consume paid tutor capacity. Read under the caller's JWT/RLS.
+  const enrolled=await scoped.from('student_enrolments').select('id')
+   .eq('student_id',auth.userId).eq('tenant_id',profile.tenant_id)
+   .eq('status','active').limit(1);
+  if(enrolled.error||!Array.isArray(enrolled.data)||enrolled.data.length!==1)
+   return json({error:'An active centre programme enrolment is required for study tutoring.'},403);
   const raw=await req.text();if(raw.length>50000)return json({error:'Conversation is too long. Start a new chat.'},413);
   let messages;try{messages=tutorMessages(JSON.parse(raw).messages);}catch(e){return json({error:e instanceof Error?e.message:'Invalid request'},400);}
   const endpoint=Deno.env.get('OMNIQORA_TUTOR_URL'),token=Deno.env.get('OMNIQORA_TUTOR_TOKEN'),tenant=Deno.env.get('OMNIQORA_TUTOR_TENANT_ID');
