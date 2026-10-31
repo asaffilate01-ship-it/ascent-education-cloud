@@ -80,20 +80,20 @@ function HealthWorkspace(){
   {ready&&!loading&&!error&&target&&!authorisedTarget&&<p role="alert">The selected student is not in this centre's verified active enrolments.</p>}
   {ready&&!loading&&!error&&authorisedTarget&&<HealthEditor
    key={[user!.id,user!.tenantId,user!.role,target,selectedRecord?.id,selectedRecord?.updated_at].join(':')}
-   studentId={target} tenantId={user!.tenantId!} record={selectedRecord}
+   studentId={target} tenantId={user!.tenantId!} record={selectedRecord} editable={isStudent}
    onSaved={()=>void records.refetch()}
   />}
  </DashboardLayout>;
 }
-function HealthEditor({studentId,tenantId,record,onSaved}:{
- studentId:string;tenantId:string;record:HealthRecord|null;onSaved:()=>void;
+function HealthEditor({studentId,tenantId,record,editable,onSaved}:{
+ studentId:string;tenantId:string;record:HealthRecord|null;editable:boolean;onSaved:()=>void;
 }){
  const [form,setForm]=useState(()=>formFromRecord(record));
  const [saving,setSaving]=useState(false);
  const [message,setMessage]=useState('');
  const split=(s:string)=>s.split(',').map(part=>part.trim()).filter(Boolean);
  const save=async()=>{
-  if(saving)return;
+  if(!editable||saving)return;
   setSaving(true);setMessage('');
   try{
    const payload={
@@ -119,21 +119,22 @@ function HealthEditor({studentId,tenantId,record,onSaved}:{
  };
  return <div className="space-y-5">
   <div className="flex flex-wrap items-center justify-between gap-3">
-   <h2 className="font-semibold">{record?'Update authorised record':'Create an authorised record'}</h2>
-   <Button disabled={saving} className="min-h-11" onClick={()=>void save()}><Save className="mr-2 size-4"/>{saving?'Saving…':'Save health record'}</Button>
+   <h2 className="font-semibold">{!editable?'Verified read-only patient record':record?'Update my authorised record':'Create my authorised record'}</h2>
+   {editable&&<Button disabled={saving} className="min-h-11" onClick={()=>void save()}><Save className="mr-2 size-4"/>{saving?'Saving…':'Save health record'}</Button>}
   </div>
+  {!editable&&<p role="status" className="rounded-lg border bg-card p-3 text-sm">Read-only: centre management and welfare staff cannot edit patient records through this workspace. The current database permits student self-service changes but requires a separately authorised clinical or safeguarding process for staff changes.</p>}
   {message&&<p role="status">{message}</p>}
   <div className="grid gap-5 lg:grid-cols-2">
    <section className="surface-card space-y-4 p-5">
     <h3 className="flex items-center gap-2 font-semibold"><Heart className="size-4"/>Medical information</h3>
     <div className="grid gap-3 sm:grid-cols-2">
-     <div className="space-y-2"><Label>Blood group</Label><Select value={form.blood_group} onValueChange={v=>setForm(prev=>({...prev,blood_group:v}))}><SelectTrigger aria-label="Blood group"><SelectValue placeholder="Select if known"/></SelectTrigger><SelectContent>{BLOOD_GROUPS.map(group=><SelectItem key={group} value={group}>{group}</SelectItem>)}</SelectContent></Select></div>
-     <div className="space-y-2"><Label htmlFor="health-checkup">Last checkup</Label><Input id="health-checkup" type="date" value={form.last_checkup_date} onChange={e=>setForm(prev=>({...prev,last_checkup_date:e.target.value}))}/></div>
+     <div className="space-y-2"><Label>Blood group</Label><Select disabled={!editable} value={form.blood_group} onValueChange={v=>setForm(prev=>({...prev,blood_group:v}))}><SelectTrigger aria-label="Blood group"><SelectValue placeholder="Select if known"/></SelectTrigger><SelectContent>{BLOOD_GROUPS.map(group=><SelectItem key={group} value={group}>{group}</SelectItem>)}</SelectContent></Select></div>
+     <div className="space-y-2"><Label htmlFor="health-checkup">Last checkup</Label><Input readOnly={!editable} id="health-checkup" type="date" value={form.last_checkup_date} onChange={e=>setForm(prev=>({...prev,last_checkup_date:e.target.value}))}/></div>
     </div>
     {([
      ['Allergies','allergies'],['Medical conditions','medical_conditions'],
      ['Current medications','medications'],['Medical notes','notes']
-    ] as const).map(([title,field])=><div key={field} className="space-y-2"><Label htmlFor={'health-'+field}>{title}</Label><Input id={'health-'+field} value={form[field]} onChange={e=>setForm(prev=>({...prev,[field]:e.target.value}))}/></div>)}
+    ] as const).map(([title,field])=><div key={field} className="space-y-2"><Label htmlFor={'health-'+field}>{title}</Label><Input readOnly={!editable} id={'health-'+field} value={form[field]} onChange={e=>setForm(prev=>({...prev,[field]:e.target.value}))}/></div>)}
    </section>
    <div className="space-y-5">
     <section className="surface-card space-y-3 p-5">
@@ -141,14 +142,14 @@ function HealthEditor({studentId,tenantId,record,onSaved}:{
      {([
       ['Contact name','emergency_contact_name'],['Phone','emergency_contact_phone'],
       ['Relationship','emergency_contact_relationship']
-     ] as const).map(([title,field])=><div key={field} className="space-y-2"><Label htmlFor={'health-'+field}>{title}</Label><Input id={'health-'+field} value={form[field]} onChange={e=>setForm(prev=>({...prev,[field]:e.target.value}))}/></div>)}
+     ] as const).map(([title,field])=><div key={field} className="space-y-2"><Label htmlFor={'health-'+field}>{title}</Label><Input readOnly={!editable} id={'health-'+field} value={form[field]} onChange={e=>setForm(prev=>({...prev,[field]:e.target.value}))}/></div>)}
     </section>
     <section className="surface-card space-y-3 p-5">
      <h3 className="flex items-center gap-2 font-semibold"><Stethoscope className="size-4"/>Doctor and insurance</h3>
      {([
       ['Doctor name','doctor_name'],['Doctor phone','doctor_phone'],
       ['Insurance provider','insurance_provider'],['Policy number','insurance_number']
-     ] as const).map(([title,field])=><div key={field} className="space-y-2"><Label htmlFor={'health-'+field}>{title}</Label><Input id={'health-'+field} value={form[field]} onChange={e=>setForm(prev=>({...prev,[field]:e.target.value}))}/></div>)}
+     ] as const).map(([title,field])=><div key={field} className="space-y-2"><Label htmlFor={'health-'+field}>{title}</Label><Input readOnly={!editable} id={'health-'+field} value={form[field]} onChange={e=>setForm(prev=>({...prev,[field]:e.target.value}))}/></div>)}
     </section>
    </div>
   </div>
