@@ -1,231 +1,182 @@
-import { useState, useMemo } from 'react';
+import {useState} from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Bus, MapPin, Plus, Navigation, Users, Phone, Wrench, Edit, Trash2, Route } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
-import { toast } from 'sonner';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {Label} from '@/components/ui/label';
+import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue} from '@/components/ui/select';
+import {Dialog,DialogContent,DialogHeader,DialogTitle,DialogTrigger} from '@/components/ui/dialog';
+import {Bus,MapPin,Route,ShieldCheck,Users} from 'lucide-react';
+import {useAuth} from '@/contexts/AuthContext';
+import {useSupabaseQuery} from '@/hooks/useSupabaseQuery';
+import {supabase} from '@/integrations/supabase/client';
+import {toast} from 'sonner';
 import StatusBadge from '@/components/ui/StatusBadge';
-import StatCard from '@/components/ui/StatCard';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import type {Tables} from '@/integrations/supabase/types';
 
-export default function TransportTracking() {
-  const { user } = useAuth();
-  const isDirector = user?.role === 'centre_director' || user?.role === 'superadmin';
-  const [showVehicle, setShowVehicle] = useState(false);
-  const [showRoute, setShowRoute] = useState(false);
-  const [vehicleForm, setVehicleForm] = useState({ vehicle_number: '', vehicle_type: 'bus', capacity: 40, driver_name: '', driver_phone: '', status: 'active' });
-  const [routeForm, setRouteForm] = useState({ route_name: '', vehicle_id: '', stops: '' });
-
-  const { data: vehicles, refetch: refetchV } = useSupabaseQuery('transport_vehicles' as any);
-  const { data: routes, refetch: refetchR } = useSupabaseQuery('transport_routes' as any);
-  const { data: assignments } = useSupabaseQuery('transport_assignments' as any);
-
-  const vehicleMap = useMemo(() => {
-    const m: Record<string, any> = {};
-    (vehicles as any[])?.forEach(v => { m[v.id] = v; });
-    return m;
-  }, [vehicles]);
-
-  const stats = useMemo(() => ({
-    vehicles: (vehicles as any[])?.length || 0,
-    active: (vehicles as any[])?.filter(v => v.status === 'active').length || 0,
-    routes: (routes as any[])?.length || 0,
-    students: (assignments as any[])?.length || 0,
-  }), [vehicles, routes, assignments]);
-
-  const addVehicle = async () => {
-    if (!vehicleForm.vehicle_number) { toast.error('Vehicle number required'); return; }
-    const profile = await supabase.from('profiles').select('tenant_id').eq('user_id', user!.id).single();
-    const { error } = await supabase.from('transport_vehicles' as any).insert({
-      ...vehicleForm, capacity: Number(vehicleForm.capacity), tenant_id: (profile.data as any)?.tenant_id,
-    } as any);
-    if (error) { toast.error(error.message); return; }
-    toast.success('Vehicle added');
-    setShowVehicle(false);
-    setVehicleForm({ vehicle_number: '', vehicle_type: 'bus', capacity: 40, driver_name: '', driver_phone: '', status: 'active' });
-    refetchV();
-  };
-
-  const addRoute = async () => {
-    if (!routeForm.route_name) { toast.error('Route name required'); return; }
-    const profile = await supabase.from('profiles').select('tenant_id').eq('user_id', user!.id).single();
-    const stops = routeForm.stops ? routeForm.stops.split('\n').filter(Boolean).map((s, i) => ({ name: s.trim(), order: i + 1 })) : [];
-    const { error } = await supabase.from('transport_routes' as any).insert({
-      route_name: routeForm.route_name, vehicle_id: routeForm.vehicle_id || null,
-      stops: JSON.stringify(stops), tenant_id: (profile.data as any)?.tenant_id,
-    } as any);
-    if (error) { toast.error(error.message); return; }
-    toast.success('Route added');
-    setShowRoute(false);
-    setRouteForm({ route_name: '', vehicle_id: '', stops: '' });
-    refetchR();
-  };
-
-  const deleteVehicle = async (id: string) => {
-    await supabase.from('transport_vehicles' as any).delete().eq('id', id);
-    toast.success('Deleted');
-    refetchV();
-  };
-
-  return (
-    <DashboardLayout title="Transport & GPS Tracking" subtitle="Manage vehicles, routes, and live tracking">
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <StatCard label="Vehicles" value={stats.vehicles} icon={Bus} />
-        <StatCard label="Active" value={stats.active} icon={Navigation} change="↑" changeType="positive" />
-        <StatCard label="Routes" value={stats.routes} icon={Route} />
-        <StatCard label="Students" value={stats.students} icon={Users} />
-      </div>
-
-      <Tabs defaultValue="vehicles">
-        <TabsList>
-          <TabsTrigger value="vehicles">Vehicles ({(vehicles as any[])?.length || 0})</TabsTrigger>
-          <TabsTrigger value="routes">Routes ({(routes as any[])?.length || 0})</TabsTrigger>
-          <TabsTrigger value="map">Live Map</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="vehicles">
-          {isDirector && (
-            <div className="mb-4">
-              <Dialog open={showVehicle} onOpenChange={setShowVehicle}>
-                <DialogTrigger asChild><Button size="sm"><Plus className="w-3.5 h-3.5 mr-1" /> Add Vehicle</Button></DialogTrigger>
-                <DialogContent>
-                  <DialogHeader><DialogTitle>Add Vehicle</DialogTitle></DialogHeader>
-                  <div className="space-y-3">
-                    <div><Label>Vehicle Number *</Label><Input value={vehicleForm.vehicle_number} onChange={e => setVehicleForm(f => ({ ...f, vehicle_number: e.target.value }))} placeholder="LHR-1234" /></div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div><Label>Type</Label>
-                        <Select value={vehicleForm.vehicle_type} onValueChange={v => setVehicleForm(f => ({ ...f, vehicle_type: v }))}>
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent><SelectItem value="bus">Bus</SelectItem><SelectItem value="van">Van</SelectItem><SelectItem value="car">Car</SelectItem></SelectContent>
-                        </Select>
-                      </div>
-                      <div><Label>Capacity</Label><Input type="number" value={vehicleForm.capacity} onChange={e => setVehicleForm(f => ({ ...f, capacity: Number(e.target.value) }))} /></div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div><Label>Driver Name</Label><Input value={vehicleForm.driver_name} onChange={e => setVehicleForm(f => ({ ...f, driver_name: e.target.value }))} /></div>
-                      <div><Label>Driver Phone</Label><Input value={vehicleForm.driver_phone} onChange={e => setVehicleForm(f => ({ ...f, driver_phone: e.target.value }))} /></div>
-                    </div>
-                    <Button className="w-full" onClick={addVehicle}>Add Vehicle</Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-          )}
-          {(vehicles as any[])?.length === 0 ? (
-            <div className="surface-card p-12 text-center">
-              <Bus className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-              <p className="text-sm font-semibold mb-1">No vehicles registered</p>
-              <p className="text-xs text-muted-foreground">Add vehicles to start tracking transport.</p>
-            </div>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {(vehicles as any[])?.map((v: any) => (
-                <div key={v.id} className="surface-card p-5 hover:shadow-lg transition-all group">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <Bus className="w-5 h-5 text-primary" />
-                      <span className="font-bold text-sm">{v.vehicle_number}</span>
-                    </div>
-                    <StatusBadge status={v.status} variant={v.status === 'active' ? 'success' : v.status === 'maintenance' ? 'warning' : 'neutral'} />
-                  </div>
-                  <div className="space-y-1 text-xs text-muted-foreground">
-                    <p>Type: <span className="capitalize text-foreground">{v.vehicle_type}</span> · Capacity: <span className="text-foreground">{v.capacity}</span></p>
-                    {isDirector && v.driver_name && <p className="flex items-center gap-1"><Users className="w-3 h-3" /> {v.driver_name}</p>}
-                    {isDirector && v.driver_phone && <p className="flex items-center gap-1"><Phone className="w-3 h-3" /> {v.driver_phone}</p>}
-                    {isDirector && v.current_lat && <p className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {Number(v.current_lat).toFixed(4)}, {Number(v.current_lng).toFixed(4)}</p>}
-                  </div>
-                  {isDirector && (
-                    <div className="flex gap-1 mt-3 opacity-0 group-hover:opacity-100 transition-all">
-                      <Button size="sm" variant="ghost" onClick={() => deleteVehicle(v.id)}><Trash2 className="w-3.5 h-3.5 text-destructive" /></Button>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="routes">
-          {isDirector && (
-            <div className="mb-4">
-              <Dialog open={showRoute} onOpenChange={setShowRoute}>
-                <DialogTrigger asChild><Button size="sm"><Plus className="w-3.5 h-3.5 mr-1" /> Add Route</Button></DialogTrigger>
-                <DialogContent>
-                  <DialogHeader><DialogTitle>Add Route</DialogTitle></DialogHeader>
-                  <div className="space-y-3">
-                    <div><Label>Route Name *</Label><Input value={routeForm.route_name} onChange={e => setRouteForm(f => ({ ...f, route_name: e.target.value }))} placeholder="Route A — Gulberg to Campus" /></div>
-                    <div><Label>Assign Vehicle</Label>
-                      <Select value={routeForm.vehicle_id} onValueChange={v => setRouteForm(f => ({ ...f, vehicle_id: v }))}>
-                        <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-                        <SelectContent>{(vehicles as any[])?.map(v => <SelectItem key={v.id} value={v.id}>{v.vehicle_number}</SelectItem>)}</SelectContent>
-                      </Select>
-                    </div>
-                    <div><Label>Stops (one per line)</Label><Input value={routeForm.stops} onChange={e => setRouteForm(f => ({ ...f, stops: e.target.value }))} placeholder="Gulberg III, Liberty, DHA Phase 5..." /></div>
-                    <Button className="w-full" onClick={addRoute}>Add Route</Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-          )}
-          {(routes as any[])?.length === 0 ? (
-            <div className="surface-card p-12 text-center">
-              <Route className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-              <p className="text-sm font-semibold mb-1">No routes defined</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {(routes as any[])?.map((r: any) => {
-                const vehicle = r.vehicle_id ? vehicleMap[r.vehicle_id] : null;
-                const stops = typeof r.stops === 'string' ? JSON.parse(r.stops) : (r.stops || []);
-                return (
-                  <div key={r.id} className="surface-card p-4 flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                      <Route className="w-5 h-5 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-sm font-bold">{r.route_name}</h3>
-                      {vehicle && <p className="text-xs text-muted-foreground">Vehicle: {vehicle.vehicle_number} · Driver: {vehicle.driver_name || '—'}</p>}
-                      {stops.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 mt-2">
-                          {stops.map((s: any, i: number) => (
-                            <span key={i} className="text-[10px] bg-secondary px-2 py-0.5 rounded flex items-center gap-1">
-                              <MapPin className="w-2.5 h-2.5" /> {s.name || s}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <StatusBadge status={r.status} variant="success" />
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="map">
-          <div className="surface-card p-8 text-center">
-            <Navigation className="w-12 h-12 text-primary mx-auto mb-4 animate-pulse" />
-            <h3 className="text-lg font-bold mb-2">Live GPS Map</h3>
-            <p className="text-sm text-muted-foreground max-w-md mx-auto mb-4">
-              Real-time vehicle tracking requires GPS devices installed in vehicles. Once GPS data is streaming, vehicles will appear on the map with live positions and ETAs.
-            </p>
-            <div className="aspect-video bg-secondary/50 rounded-xl flex items-center justify-center max-w-2xl mx-auto">
-              <div className="text-center">
-                <MapPin className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                <p className="text-xs text-muted-foreground">Map integration requires GPS hardware setup</p>
-                <p className="text-[10px] text-muted-foreground mt-1">Contact support to enable live tracking</p>
-              </div>
-            </div>
-          </div>
-        </TabsContent>
-      </Tabs>
-    </DashboardLayout>
-  );
+const STAFF_ROLES=['centre_director','superadmin','security_officer'] as const;
+type Vehicle=Tables<'transport_vehicles'>;
+type RouteRow=Tables<'transport_routes'>;
+const stopsFor=(value:RouteRow['stops']):string[]=>{
+ let parsed:unknown=value;
+ if(typeof parsed==='string'){try{parsed=JSON.parse(parsed);}catch{return [];}}
+ if(!Array.isArray(parsed))return [];
+ return parsed.slice(0,30).map(x=>typeof x==='string'?x:
+  x&&typeof x==='object'&&'name' in x?String(x.name):'').filter(Boolean);
+};
+export default function TransportTracking(){
+ const {user}=useAuth();
+ return <TransportWorkspace key={[user?.id,user?.tenantId,user?.role].join(':')}/>;
+}
+function TransportWorkspace(){
+ const {user}=useAuth();
+ const student=user?.role==='student';
+ const staff=!!user&&STAFF_ROLES.some(role=>role===user.role);
+ const manager=!!user&&['centre_director','superadmin'].includes(user.role);
+ const ready=!!user?.id&&!!user.tenantId&&(student||staff);
+ const tenant=user?.tenantId||'';
+ const [tab,setTab]=useState<'vehicles'|'routes'>('routes');
+ const [busy,setBusy]=useState(false),[vehicleOpen,setVehicleOpen]=useState(false),[routeOpen,setRouteOpen]=useState(false);
+ const [vehicleForm,setVehicleForm]=useState({vehicle_number:'',vehicle_type:'bus',capacity:15,driver_name:'',driver_phone:''});
+ const [routeForm,setRouteForm]=useState({route_name:'',vehicle_id:'',stops:''});
+ const scope=[{column:'tenant_id',operator:'eq' as const,value:tenant}];
+ const assignments=useSupabaseQuery('transport_assignments',{
+  enabled:ready,filters:[...scope,...(student?[{column:'student_id',operator:'eq' as const,value:user!.id}]:[])]
+ });
+ const routeIds=[...new Set(assignments.data.map(a=>a.route_id))];
+ const routes=useSupabaseQuery('transport_routes',{
+  enabled:ready&&(!student||!assignments.loading&&!assignments.error&&routeIds.length>0),
+  filters:[...scope,...(student?[{column:'id',operator:'in' as const,value:routeIds}]:[])],
+ });
+ const vehicleIds=[...new Set(routes.data.map(r=>r.vehicle_id).filter((id):id is string=>!!id))];
+ const vehicles=useSupabaseQuery('transport_vehicles',{
+  enabled:ready&&(!student||!routes.loading&&!routes.error&&vehicleIds.length>0),
+  filters:[...scope,...(student?[{column:'id',operator:'in' as const,value:vehicleIds}]:[])],
+ });
+ const loading=assignments.loading||routes.loading||vehicles.loading;
+ const error=assignments.error||routes.error||vehicles.error;
+ const ownRoutes=routes.data.filter(r=>r.tenant_id===tenant&&(!student||routeIds.includes(r.id)));
+ const ownVehicles=vehicles.data.filter(v=>v.tenant_id===tenant&&(!student||vehicleIds.includes(v.id)));
+ const ownAssignments=assignments.data.filter(a=>a.tenant_id===tenant&&(!student||a.student_id===user?.id));
+ const vehiclesById=new Map(ownVehicles.map(v=>[v.id,v]));
+ const allowedVehicle=(id:string)=>!!ownVehicles.find(v=>v.id===id&&v.tenant_id===tenant);
+ async function addVehicle(){
+  if(!manager||!user?.tenantId||busy)return;
+  const number=vehicleForm.vehicle_number.trim(),capacity=Number(vehicleForm.capacity);
+  if(number.length<3||number.length>40||!Number.isSafeInteger(capacity)||capacity<1||capacity>100){
+   toast.error('Enter a valid vehicle registration and capacity (1–100).');return;
+  }
+  setBusy(true);
+  try{
+   const response=await supabase.from('transport_vehicles').insert({
+    tenant_id:tenant,vehicle_number:number,vehicle_type:vehicleForm.vehicle_type,capacity,
+    driver_name:vehicleForm.driver_name.trim()||null,driver_phone:vehicleForm.driver_phone.trim()||null,status:'active',
+   });
+   if(response.error)throw response.error;
+   toast.success('Vehicle registration saved at your centre.');
+   setVehicleOpen(false);setVehicleForm({vehicle_number:'',vehicle_type:'bus',capacity:15,driver_name:'',driver_phone:''});
+   void vehicles.refetch();
+  }catch{toast.error('Vehicle registration could not be saved. Check your centre permissions.');}finally{setBusy(false);}
+ }
+ async function addRoute(){
+  if(!manager||!user?.tenantId||busy)return;
+  const name=routeForm.route_name.trim();
+  if(name.length<3||name.length>120||(routeForm.vehicle_id&&!allowedVehicle(routeForm.vehicle_id))){
+   toast.error('Give the route a name and use only vehicles registered at this centre.');return;
+  }
+  const stops=routeForm.stops.split('\n').map(s=>s.trim()).filter(Boolean).slice(0,30).map((s,i)=>({name:s.slice(0,100),order:i+1}));
+  setBusy(true);
+  try{
+   const response=await supabase.from('transport_routes').insert({
+    tenant_id:tenant,route_name:name,vehicle_id:routeForm.vehicle_id||null,stops,status:'active',
+   });
+   if(response.error)throw response.error;
+   toast.success('Centre route saved. No GPS tracking was activated.');
+   setRouteOpen(false);setRouteForm({route_name:'',vehicle_id:'',stops:''});void routes.refetch();
+  }catch{toast.error('Route could not be saved. Check permissions and vehicle assignment.');}finally{setBusy(false);}
+ }
+ async function removeVehicle(record:Vehicle){
+  if(!manager||!user?.tenantId||busy||record.tenant_id!==tenant)return;
+  if(ownRoutes.some(r=>r.vehicle_id===record.id)){
+   toast.error('Remove or change existing route assignments before deleting this vehicle.');return;
+  }
+  if(!window.confirm('Remove this vehicle registration from the selected centre?'))return;
+  setBusy(true);
+  try{
+   const response=await supabase.from('transport_vehicles').delete().eq('id',record.id)
+    .eq('tenant_id',tenant).select('id').maybeSingle();
+   if(response.error||!response.data?.id)throw Error('Deletion unconfirmed');
+   toast.success('Vehicle registration removed.');void vehicles.refetch();
+  }catch{toast.error('Deletion was not confirmed. Refresh and check whether the vehicle is still assigned.');}finally{setBusy(false);}
+ }
+ return <DashboardLayout title="Centre transport" subtitle={student?'Your authorised transport route':'Centre vehicles, routes and transport assignments'}>
+  {!ready?<p role="alert">A verified student or transport-authorised centre staff role and centre assignment are required.</p>:<>
+   <section className="mb-5 rounded-lg border bg-card p-4">
+    <h2 className="flex items-center gap-2 font-semibold"><ShieldCheck className="size-4"/>Authorised transport information</h2>
+    <p className="mt-2 text-sm text-muted-foreground">{student?'Only routes and vehicles linked to your own centre transport assignment are shown.':'Only records in your assigned centre are requested.'} Vehicle registration and saved route information do not mean GPS tracking, live location feeds or ETA services are connected.</p>
+   </section>
+   {loading?<p role="status">Verifying transport assignments and routes…</p>:error?
+    <div role="alert" className="space-y-2 rounded-lg border border-destructive p-4">
+     <p>Your transport records could not be verified. No partial routes or vehicle details are shown.</p>
+     <Button variant="outline" onClick={()=>{void assignments.refetch();void routes.refetch();void vehicles.refetch();}}>Retry transport</Button>
+    </div>:<>
+     <div className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-3">
+      {([
+       ['Authorised routes',ownRoutes.length,Route],
+       ['Registered vehicles',ownVehicles.length,Bus],
+       [student?'My assigned routes':'Passenger assignments',ownAssignments.length,Users],
+      ] as const).map(([label,count,Icon])=><div key={label} className="rounded-xl border bg-card p-4"><p className="flex items-center gap-2 text-sm font-semibold"><Icon className="size-4"/>{label}</p><p className="mt-2 text-2xl font-bold tabular-nums">{count}</p></div>)}
+     </div>
+     <div role="group" aria-label="Transport details" className="mb-4 flex flex-wrap gap-2">
+      <Button variant={tab==='routes'?'default':'outline'} aria-pressed={tab==='routes'} onClick={()=>setTab('routes')}>Routes</Button>
+      <Button variant={tab==='vehicles'?'default':'outline'} aria-pressed={tab==='vehicles'} onClick={()=>setTab('vehicles')}>Vehicles</Button>
+      <Button variant="outline" disabled={busy} onClick={()=>{void assignments.refetch();void routes.refetch();void vehicles.refetch();}}>Refresh</Button>
+     </div>
+     {manager&&<div className="mb-5 flex flex-wrap gap-2">
+      <Dialog open={routeOpen} onOpenChange={setRouteOpen}><DialogTrigger asChild><Button variant="outline">Add centre route</Button></DialogTrigger>
+       <DialogContent><DialogHeader><DialogTitle>Register a centre route</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+         <div><Label htmlFor="route-name">Route name</Label><Input id="route-name" maxLength={120} value={routeForm.route_name} onChange={e=>setRouteForm(prev=>({...prev,route_name:e.target.value}))}/></div>
+         <div><Label htmlFor="route-vehicle">Centre vehicle</Label><Select value={routeForm.vehicle_id} onValueChange={v=>setRouteForm(prev=>({...prev,vehicle_id:v}))}>
+          <SelectTrigger id="route-vehicle" aria-label="Centre vehicle"><SelectValue placeholder="Choose a registered vehicle"/></SelectTrigger>
+          <SelectContent>{ownVehicles.map(v=><SelectItem key={v.id} value={v.id}>{v.vehicle_number}</SelectItem>)}</SelectContent></Select></div>
+         <div><Label htmlFor="route-stops">Stops (one per line)</Label><textarea id="route-stops" className="min-h-24 w-full rounded-lg border bg-background p-3 text-sm" maxLength={3000} value={routeForm.stops} onChange={e=>setRouteForm(prev=>({...prev,stops:e.target.value}))}/></div>
+         <Button disabled={busy} onClick={()=>void addRoute()}>Save route</Button>
+        </div>
+       </DialogContent></Dialog>
+      <Dialog open={vehicleOpen} onOpenChange={setVehicleOpen}><DialogTrigger asChild><Button variant="outline">Register vehicle</Button></DialogTrigger>
+       <DialogContent><DialogHeader><DialogTitle>Register a centre vehicle</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+         <div><Label htmlFor="vehicle-number">Vehicle registration</Label><Input id="vehicle-number" value={vehicleForm.vehicle_number} onChange={e=>setVehicleForm(prev=>({...prev,vehicle_number:e.target.value}))}/></div>
+         <div><Label htmlFor="vehicle-type">Type</Label><Select value={vehicleForm.vehicle_type} onValueChange={v=>setVehicleForm(prev=>({...prev,vehicle_type:v}))}>
+          <SelectTrigger id="vehicle-type" aria-label="Vehicle type"><SelectValue/></SelectTrigger>
+          <SelectContent>{['bus','van','car'].map(v=><SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent></Select></div>
+         <div><Label htmlFor="vehicle-capacity">Capacity</Label><Input id="vehicle-capacity" type="number" min={1} max={100} value={vehicleForm.capacity} onChange={e=>setVehicleForm(prev=>({...prev,capacity:Number(e.target.value)}))}/></div>
+         <div><Label htmlFor="driver-name">Driver name (staff only)</Label><Input id="driver-name" value={vehicleForm.driver_name} onChange={e=>setVehicleForm(prev=>({...prev,driver_name:e.target.value}))}/></div>
+         <div><Label htmlFor="driver-phone">Driver contact (staff only)</Label><Input id="driver-phone" value={vehicleForm.driver_phone} onChange={e=>setVehicleForm(prev=>({...prev,driver_phone:e.target.value}))}/></div>
+         <Button disabled={busy} onClick={()=>void addVehicle()}>Save vehicle</Button>
+        </div>
+       </DialogContent></Dialog>
+     </div>}
+     {tab==='routes'&&<div className="space-y-3">
+      {!ownRoutes.length&&<p className="rounded-lg border p-5 text-sm text-muted-foreground">No authorised route has been assigned or recorded yet.</p>}
+      {ownRoutes.map(r=><article key={r.id} className="rounded-xl border bg-card p-4">
+       <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-semibold">{r.route_name}</h3><StatusBadge status={r.status}/></div>
+       {r.vehicle_id&&<p className="mt-2 text-sm">Vehicle: {vehiclesById.get(r.vehicle_id)?.vehicle_number||'Vehicle details unavailable'}</p>}
+       <p className="mt-2 text-sm text-muted-foreground">{stopsFor(r.stops).join(' · ')||'No published stops on this route'}</p>
+      </article>)}
+     </div>}
+     {tab==='vehicles'&&<div className="grid gap-3 md:grid-cols-2">
+      {!ownVehicles.length&&<p className="rounded-lg border p-5 text-sm text-muted-foreground">No authorised vehicle registration was found.</p>}
+      {ownVehicles.map(v=><article key={v.id} className="rounded-xl border bg-card p-4">
+       <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-semibold">{v.vehicle_number}</h3><StatusBadge status={v.status}/></div>
+       <p className="mt-2 text-sm">{v.vehicle_type} · Capacity {v.capacity}</p>
+       {staff&&<p className="mt-2 text-sm text-muted-foreground">Driver: {v.driver_name||'Not assigned'} · Contact: {v.driver_phone||'Not recorded'}</p>}
+       {manager&&<Button variant="outline" className="mt-3" disabled={busy} onClick={()=>void removeVehicle(v)}>Remove vehicle</Button>}
+      </article>)}
+     </div>}
+     <p className="mt-5 flex items-center gap-2 text-sm text-muted-foreground"><MapPin className="size-4"/>Live GPS tracking is not enabled by these records. A verified GPS provider and appropriate privacy/consent controls are required before location or ETA features appear.</p>
+    </>
+   }
+  </>}
+ </DashboardLayout>;
 }
