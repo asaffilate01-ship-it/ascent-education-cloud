@@ -41,7 +41,8 @@ function Reports(){
  const academic=director||role==='programme_leader';
  const teaching=academic||role==='lecturer';
  const programmesAllowed=academic||role==='admissions_admin';
- const scope=[{column:'tenant_id',operator:'eq' as const,value:user?.tenantId||''}];
+ const activeTenant=user?.tenantId||'';
+ const scope=[{column:'tenant_id',operator:'eq' as const,value:activeTenant}];
  const applications=useSupabaseQuery('applications',{enabled:allowed&&admissions,filters:scope});
  const invoices=useSupabaseQuery('invoices',{enabled:allowed&&finance,filters:scope});
  const attendance=useSupabaseQuery('attendance_records',{enabled:allowed&&academic,filters:scope});
@@ -71,29 +72,29 @@ function Reports(){
 
  const cards:ReportCard[]=[];
  if(admissions){
-  const all=applications.data.filter(x=>x.tenant_id===user.tenantId);
+  const all=applications.data.filter(x=>x.tenant_id===activeTenant);
   const enrolled=all.filter(x=>x.stage==='enrolled').length;
   cards.push({label:'Recorded applications',value:String(all.length),explanation:'Only applications visible to your role at this centre',icon:ClipboardList,href:role==='marketing_officer'?'/marketing':'/admissions/applications'});
   cards.push({label:'Admissions at enrolled stage',value:String(enrolled),explanation:'CRM stage only — not a certified qualification or enrolment guarantee',icon:GraduationCap,href:role==='marketing_officer'?'/marketing':'/admissions/applications'});
  }
  if(finance){
-  const own=invoices.data.filter(x=>x.tenant_id===user.tenantId);
+  const own=invoices.data.filter(x=>x.tenant_id===activeTenant);
   cards.push({label:'Recorded invoices',value:String(own.length),explanation:'Invoice records, not verified bank-settled revenue',icon:CreditCard,href:'/finance/invoices'});
   cards.push({label:'Unpaid invoice balances',value:String(own.filter(x=>Number(x.amount)>Number(x.paid)).length),explanation:'Accounts requiring reconciliation; sponsor agreements may affect liability',icon:CreditCard,href:'/finance/invoices'});
  }
  if(academic){
-  const own=attendance.data.filter(x=>x.tenant_id===user.tenantId);
+  const own=attendance.data.filter(x=>x.tenant_id===activeTenant);
   const knownRows=own.filter(x=>['present','late','absent'].includes(x.status));
   const attended=knownRows.filter(x=>x.status==='present'||x.status==='late').length;
   cards.push({label:'Recorded attendance',value:knownRows.length?Math.round(attended/knownRows.length*100)+'%':'Not available',
-   explanation:'Present and late ÷ present, late and absent; excused records excluded',icon:Calendar,href:role==='programme_leader'?'/programme/attendance':'/director/attendance'});
+   explanation:'Present and late ÷ present, late and absent; excused records excluded',icon:Calendar,href:role==='programme_leader'?'/programme/schedule':'/director/schedule'});
  }
  if(programmesAllowed){
-  const own=programmes.data.filter(x=>x.tenant_id===user.tenantId);
+  const own=programmes.data.filter(x=>x.tenant_id===activeTenant);
   cards.push({label:'Centre programmes recorded',value:String(own.length),explanation:'Catalogue count; not evidence of awarding-body approval',icon:BookOpen,href:role==='admissions_admin'?'/admissions':'/programme/modules'});
  }
  if(teaching){
-  const own=modules.data.filter(x=>x.tenant_id===user.tenantId&&(role!=='lecturer'||x.lecturer_id===user.id));
+  const own=modules.data.filter(x=>x.tenant_id===activeTenant&&(role!=='lecturer'||x.lecturer_id===user?.id));
   cards.push({label:role==='lecturer'?'My assigned modules':'Modules recorded',value:String(own.length),
    explanation:role==='lecturer'?'Only modules explicitly assigned to your lecturer identity':'Centre module inventory; not released student grades',
    icon:Users,href:role==='lecturer'?'/lecturer/teaching':'/programme/modules'});
