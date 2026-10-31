@@ -1,0 +1,52 @@
+{
+  "version": "2026-10-31",
+  "target_protocol": "MCP 2026-07-28",
+  "transport_status": "not deployed; SDK adapter requires separate approval",
+  "tools": [
+    {
+      "name": "list_my_programmes",
+      "description": "Show the authenticated student's recorded active programmes. Catalogue status is not evidence of external accreditation or progression.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "list_my_coursework_deadlines",
+      "description": "Read published coursework deadlines for the authenticated student's currently enrolled programme modules; excludes grade decisions.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "list_my_published_materials",
+      "description": "Read available published course-material metadata for the authenticated student, without file contents or signed URLs.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    }
+  ]
+}
