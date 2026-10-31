@@ -77,4 +77,17 @@ describe('UniPathway read-only student tool allowlist',()=>{
   expect(edge).not.toContain('upload(');
   expect(edge).not.toContain('OMNIQORA_TUTOR_TOKEN');
  });
+
+ it('publishes an SDK-neutral manifest with no parameters or mutating tools',()=>{
+  const manifest=JSON.parse(readFileSync('supabase/functions/_shared/unipathway-student-tool-manifest.json','utf8'));
+  expect(manifest.tools.map((x:{name:string})=>x.name)).toEqual([...STUDENT_READ_TOOLS]);
+  for(const tool of manifest.tools){
+   expect(tool.inputSchema).toEqual({type:'object',properties:{},additionalProperties:false});
+   expect(tool.annotations).toMatchObject({
+    readOnlyHint:true,destructiveHint:false,idempotentHint:true,openWorldHint:false,
+   });
+   expect(tool.name).toMatch(/^list_my_/);
+  }
+  expect(manifest.transport_status).toMatch(/not deployed/);
+ });
 });
