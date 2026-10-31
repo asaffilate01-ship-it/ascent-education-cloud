@@ -17,7 +17,7 @@ export function reportTypeAllowed(
 /** Neutralise spreadsheet formula interpretation in downloaded CSV fields. */
 export function safeCsvValue(value:unknown):string{
  const raw=value===null||value===undefined?'':String(value);
- const safe=/^[=+\-@\t\r]/.test(raw)?"'"+raw:raw;
+ const safe=/^\s*[=+\-@]/.test(raw)||/^[\t\r]/.test(raw)?"'"+raw:raw;
  return safe.includes(',')||safe.includes('"')||safe.includes('\n')
   ?'"'+safe.replace(/"/g,'""')+'"':safe;
 }
