@@ -556,7 +556,7 @@ function AppRoutes() {
         <Route path="/partner/referrals" element={<PartnerR><UniversityPartnerPortal /></PartnerR>} />
         <Route path="/partner/applications" element={<PartnerR><UniversityPartnerPortal /></PartnerR>} />
         <Route path="/partner/offers" element={<PartnerR><UniversityPartnerPortal /></PartnerR>} />
-        <Route path="/partner/commissions" element={<PartnerR><AnalyticsDashboard /></PartnerR>} />
+        <Route path="/partner/commissions" element={<PartnerR><UniversityPartnerPortal /></PartnerR>} />
         <Route path="/employer" element={<EmployerR><EmployerPortal /></EmployerR>} />
         <Route path="/employer/jobs" element={<EmployerR><EmployerPortal /></EmployerR>} />
         <Route path="/employer/candidates" element={<EmployerR><EmployerPortal /></EmployerR>} />
