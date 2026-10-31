@@ -37,7 +37,7 @@ function ScopedStaffDirectory(){
   enabled:allowed&&!profileQuery.loading&&!profileQuery.error&&ids.length>0,
   filters:[{column:'user_id',operator:'in',value:ids}],
  });
- const moduleQuery=useSupabaseQuery('modules',{enabled:allowed,filters:platform&&!user?.tenantId?[]:scope});
+ const moduleQuery=useSupabaseQuery('modules',{enabled:allowed,filters:platform?[]:scope});
  const loading=profileQuery.loading||roleQuery.loading||moduleQuery.loading;
  const error=profileQuery.error||roleQuery.error||moduleQuery.error;
  const staff=useMemo(()=>{
