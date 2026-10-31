@@ -91,7 +91,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Leave', icon: Clock, path: '/leave' },
       { label: 'Transport', icon: Bus, path: '/transport' },
       { label: 'Health Records', icon: Heart, path: '/health' },
-      { label: 'AI Insights', icon: Sparkles, path: '/ai-recommendations' },
+      { label: 'Academic operations review', icon: ClipboardCheck, path: '/ai-recommendations' },
       { label: 'AI Builder', icon: Brain, path: '/ai-course-builder' },
       { label: 'Predictive', icon: BarChart3, path: '/predictive-analytics' },
       { label: 'Documents', icon: FolderOpen, path: '/documents' },
