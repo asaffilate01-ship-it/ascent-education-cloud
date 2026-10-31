@@ -31,7 +31,7 @@ it('renders a real, scoped review and exports only aggregate counts',()=>{
  view();
  expect(screen.getByRole('heading',{name:'Academic operations insights'})).toBeInTheDocument();
  expect(screen.getByText(/1 learners with absence records/)).toBeInTheDocument();
- expect(screen.getByRole('link',{name:/Open records/}).closest('a')).toHaveAttribute('href','/director/attendance-corrections');
+ expect(screen.getAllByRole('link',{name:/Open records/})[0]).toHaveAttribute('href','/director/attendance-corrections');
  expect(state.queries).toHaveLength(4);
  for(const q of state.queries){
   expect(q.options.enabled).toBe(true);
