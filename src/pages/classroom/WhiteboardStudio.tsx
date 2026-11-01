@@ -20,12 +20,12 @@ function Studio(){
  const [selected,setSelected]=useState('');const [title,setTitle]=useState('');
  const [saving,setSaving]=useState(false);
  const [tenant,setTenant]=useState(user?.tenantId||'');
- const manager=!!user?.roles.some(r=>['superadmin','centre_director','programme_leader'].includes(r));
+ const manager=!!user?.role&&user.roles?.includes(user.role)&&['superadmin','centre_director','programme_leader'].includes(user.role);
  useEffect(()=>{
   if(!user?.id)return;
   if(user.tenantId){setTenant(user.tenantId);return;}
-  if(user.roles.includes('superadmin'))void db.from('tenants').select('id').eq('slug','unipathway').maybeSingle()
-    .then(({data})=>setTenant(data?.id||''));
+  // Platform owners must explicitly select a centre; a hidden UniPathway default would disclose the wrong tenant.
+  if(user.role==='superadmin')setTenant('');
  },[user?.id,user?.tenantId]);
  useEffect(()=>{
   if(!tenant||!user?.id){setLoading(false);setError('Your centre could not be verified. Return to your dashboard or contact support.');return;}
