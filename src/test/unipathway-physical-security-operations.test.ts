@@ -37,7 +37,8 @@ describe('UniPathway physical security permissions and operational honesty',()=>
   const hook=readFileSync('src/hooks/useScopedSecurityRows.ts','utf8');
   for(const route of ['/security/operations','/security/centre','/security/visitors','/security/muster'])expect(app).toContain(`path="${route}" element={<RoleGuard allowed={['security_officer','centre_director']}`);
   expect(gate).toContain('PHYSICAL_SECURITY_ENABLED');
-  expect(hook).toContain(".eq('tenant_id',tenant)");
+  expect(hook).toContain(".rpc('get_unipathway_security_operations_rows'");
+  expect(hook).toContain('p_tenant:tenant');
   expect(hook).toContain('requireCentreRows');
   for(const path of ['src/pages/security/CentreSecurity.tsx','src/pages/security/VisitorReception.tsx','src/pages/security/MusterMode.tsx','src/pages/security/SecurityCommandCentre.tsx']){
    const s=readFileSync(path,'utf8');expect(s).not.toContain("select('*')");expect(s).toContain('useScopedSecurityRows');
