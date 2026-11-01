@@ -23,7 +23,7 @@ type Rights={
 };
 type TeachingModule={id:string;title:string;tenant_id:string;lecturer_id:string|null};
 const managers=new Set(['superadmin','centre_director','programme_leader']);
-const enabled=import.meta.env.VITE_UNIPATHWAY_COURSE_REGISTRY_ENABLED==='true';
+
 
 const init=()=>({
  board:'othm',qualificationTitle:'',qualificationCode:'',subject:'',syllabusCode:'',
@@ -35,6 +35,7 @@ export default function CourseSpecifications(){
  return <Registry key={[user?.id,user?.tenantId,user?.role,user?.roles?.join(',')].join(':')}/>;
 }
 function Registry(){
+ const enabled=import.meta.env.VITE_UNIPATHWAY_COURSE_REGISTRY_ENABLED==='true';
  const {user}=useAuth();
  const allowed=Boolean(user?.id&&user.tenantId&&managers.has(user.role)&&user.roles?.includes(user.role));
  const tenant=user?.tenantId||'';
