@@ -43,7 +43,7 @@ function DeliveryWorkspace(){
    make('modules','id',[{field:'lecturer_id',value:uid}],'Assigned modules'),
    make('scheduled_lectures','id',[{field:'lecturer_id',value:uid},{field:'is_active',value:'true'}],'Weekly plan'),
    make('live_class_sessions','id',[{field:'organiser_user_id',value:uid}],'Live Teams/classroom sessions'),
-   read(()=>db.from('lesson_whiteboards').select('id').limit(1),'Whiteboard backend'),
+   make('lesson_whiteboards','id',[],'Whiteboard backend'),
    make('microsoft_education_accounts','id',[{field:'user_id',value:uid}],'Microsoft account'),
    make('lab_sessions','id',[{field:'lecturer_id',value:uid}],'Practical lab sessions'),
   ]);
