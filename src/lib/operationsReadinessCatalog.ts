@@ -27,7 +27,7 @@ const uk=(key:string,label:string,authority:string,url:string):ReadinessTrack=>(
  requirements:[approval(label),spec(),quality(),materials(),safety()]
 });
 const school=(key:string,label:string,authority:string,url:string):ReadinessTrack=>({
- key,label,family:key.startsWith('bise')||key==='fbise'||key==='aku-eb'?'Pakistan boards':'International schools',
+ key,label,family:['BISE','FBISE','AKU_EB'].some(prefix=>key.startsWith(prefix))?'Pakistan boards':'International schools',
  authority,officialUrl:url,workspace:'/director/course-content',
  scope:'Preparation and mock teaching are separate from official exam entry, authorised exam delivery or certificate issuance.',
  requirements:[approval(label+' registration or exam-entry route'),spec(),requirement('assessment','Board-specific paper and practical components','Confirm exact board, syllabus code, annual examination series, paper weightings, practical equipment and supervised mocks.'),materials(),safety()]
