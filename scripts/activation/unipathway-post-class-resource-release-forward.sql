@@ -10,6 +10,11 @@ ALTER TABLE public.live_class_sessions
  ADD COLUMN IF NOT EXISTS end_evidence_reference text;
 ALTER TABLE public.unipathway_module_materials
  ADD COLUMN IF NOT EXISTS class_session_id uuid REFERENCES public.live_class_sessions(id);
+-- Legacy Jitsi room records are NOT evidence of a saved provider recording.
+-- They remain unreadable until explicitly linked to a verified class session.
+ALTER TABLE public.classroom_recordings
+ ADD COLUMN IF NOT EXISTS class_release_session_id uuid
+ REFERENCES public.live_class_sessions(id);
 CREATE INDEX IF NOT EXISTS uni_materials_class_idx
  ON public.unipathway_module_materials(tenant_id,class_session_id);
 
@@ -196,6 +201,7 @@ $fn$;
 ALTER TABLE public.unipathway_module_materials ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.live_class_artifacts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.lesson_ai_packs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.classroom_recordings ENABLE ROW LEVEL SECURITY;
 
 -- These RESTRICTIVE filters apply even if an existing permissive table policy
 -- allows an enrolled learner to list all published files.
@@ -209,6 +215,12 @@ CREATE POLICY "Class recording artifacts have a verified post-class embargo"
 CREATE POLICY "Class AI revision packs have a verified post-class embargo"
  ON public.lesson_ai_packs AS RESTRICTIVE FOR SELECT TO authenticated
  USING(public.can_access_my_unipathway_class_resource(session_id,tenant_id));
+-- A legacy classroom recording without a verified class mapping is always
+-- denied, even if a previous permissive RLS policy returned it as available.
+CREATE POLICY "Legacy classroom recordings require mapped post-class release"
+ ON public.classroom_recordings AS RESTRICTIVE FOR SELECT TO authenticated
+ USING(class_release_session_id IS NOT NULL AND
+  public.can_access_my_unipathway_class_resource(class_release_session_id,tenant_id));
 
 -- Storage signed URLs can bypass row-level checks at download time. Therefore
 -- signing access for BOTH private buckets must be denied before the clock opens.
@@ -274,11 +286,13 @@ $fn$;
 CREATE POLICY "Post-class private storage signature embargo"
  ON storage.objects AS RESTRICTIVE FOR SELECT TO authenticated
  USING(
-  bucket_id NOT IN('unipathway-module-materials','unipathway-class-media')
+  bucket_id NOT IN('unipathway-module-materials','unipathway-class-media','classroom-recordings')
   OR (bucket_id='unipathway-module-materials' AND
    public.can_open_my_unipathway_material(name))
   OR (bucket_id='unipathway-class-media' AND
    public.can_open_my_unipathway_class_media(name))
+  -- Legacy classroom-recordings bucket is intentionally denied until the
+  -- provider asset-to-class mapping and private storage flow are reviewed.
  );
 
 REVOKE ALL ON FUNCTION unipathway_acl.class_access(uuid,uuid),
