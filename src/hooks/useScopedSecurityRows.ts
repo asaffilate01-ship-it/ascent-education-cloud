@@ -26,17 +26,20 @@ export function useScopedSecurityRows<T extends {tenant_id:string}>(
   void (async()=>{
    const results:T[]=[];
    for(let page=0;page<MAX_PAGES;page++){
-    let query=db.from(table).select(fields).eq('tenant_id',tenant).order(orderColumn,{ascending:true});
-    if(extra)query=query.eq(extra.column,extra.value);
-    const {data,error}=await query.range(page*PAGE_SIZE,(page+1)*PAGE_SIZE-1);
+    if(extra&&(table!=='emergency_muster_status'||extra.column!=='muster_event_id'))throw Error('Unsupported secure filter');
+    const {data,error}=await db.rpc('get_unipathway_security_operations_rows',{
+      p_tenant:tenant,p_kind:table,p_offset:page*PAGE_SIZE,p_limit:PAGE_SIZE,
+      p_event_id:extra?.value||null,
+    });
     if(!active)return;
-    if(error||!Array.isArray(data))throw Error('Secure centre query failed');
+    if(error||!Array.isArray(data)||data.length>PAGE_SIZE)throw Error('Secure centre query failed');
     results.push(...requireCentreRows(data as T[],tenant));
     if(data.length<PAGE_SIZE){setState({key,data:results,loading:false,error:null});return;}
    }
    throw Error('Centre record limit reached; a verified server report is required');
   })().catch(()=>{if(active)setState({key,data:[],loading:false,error:'Centre access or completeness could not be verified. No partial records are displayed.'});});
   return()=>{active=false;};
+ // The backend projects fixed columns for each kind and ignores caller-defined field/order metadata.
  // The serialized key captures the full principal, request, permissions and refresh counter.
  // eslint-disable-next-line react-hooks/exhaustive-deps
  },[key]);
