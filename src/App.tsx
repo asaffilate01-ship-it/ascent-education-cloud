@@ -485,7 +485,7 @@ function AppRoutes() {
         <Route path="/programme" element={<Programme><ProgrammeManagement /></Programme>} />
         <Route path="/programme/beauty-accreditation" element={<Programme><BeautyAccreditationDashboard /></Programme>} />
         <Route path="/programme/knowledge" element={<Programme><KnowledgeLibrary /></Programme>} />
-        <Route path="/programme/modules" element={<Programme><LecturerTeaching /></Programme>} />
+        <Route path="/programme/modules" element={<Programme><ProgrammeManagement /></Programme>} />
         <Route path="/programme/lecturers" element={<Programme><StaffManagement /></Programme>} />
         <Route path="/programme/students" element={<Programme><StudentManagement /></Programme>} />
         <Route path="/programme/assessments" element={<Programme><AssessmentManager /></Programme>} />
