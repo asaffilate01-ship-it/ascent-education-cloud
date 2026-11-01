@@ -13,6 +13,25 @@ ALTER TABLE public.unipathway_module_materials
 CREATE INDEX IF NOT EXISTS uni_materials_class_idx
  ON public.unipathway_module_materials(tenant_id,class_session_id);
 
+-- A client must not directly forge the actual class finish time or
+-- change a verified end. Only a reviewed privileged RPC may set this field.
+CREATE OR REPLACE FUNCTION unipathway_acl.prevent_direct_class_end_override()
+RETURNS trigger LANGUAGE plpgsql SET search_path=''
+AS $fn$
+BEGIN
+ IF current_user IN ('authenticated','anon') AND (
+   NEW.actual_ended_at IS DISTINCT FROM OLD.actual_ended_at OR
+   NEW.end_evidence_reference IS DISTINCT FROM OLD.end_evidence_reference)
+ THEN RAISE EXCEPTION 'Class-end evidence must be recorded by authorised RPC'
+ USING ERRCODE='42501';END IF;
+ RETURN NEW;
+END
+$fn$;
+DROP TRIGGER IF EXISTS unipathway_prevent_direct_class_end ON public.live_class_sessions;
+CREATE TRIGGER unipathway_prevent_direct_class_end
+ BEFORE UPDATE ON public.live_class_sessions FOR EACH ROW
+ EXECUTE FUNCTION unipathway_acl.prevent_direct_class_end_override();
+
 CREATE TABLE public.unipathway_class_release_decisions (
  session_id uuid PRIMARY KEY REFERENCES public.live_class_sessions(id),
  tenant_id uuid NOT NULL REFERENCES public.tenants(id),
@@ -187,21 +206,29 @@ BEGIN
  SELECT p.tenant_id INTO v_centre FROM public.profiles p WHERE p.user_id=v_actor;
  IF v_centre IS NULL THEN RETURN false;END IF;
  IF p_bucket='unipathway-module-materials' THEN
-  RETURN EXISTS(SELECT 1 FROM public.unipathway_module_materials m
-   WHERE m.tenant_id=v_centre AND m.object_path=p_path AND
-    (m.publication_status='published' OR EXISTS(
-      SELECT 1 FROM public.user_roles r WHERE r.user_id=v_actor AND
-       r.tenant_id=v_centre AND r.role::text IN('lecturer','programme_leader','centre_director')))
+  RETURN EXISTS(
+   SELECT 1 FROM public.unipathway_module_materials m
+   JOIN public.modules mo ON mo.id=m.module_id AND mo.tenant_id=m.tenant_id
+   WHERE m.tenant_id=v_centre AND m.object_path=p_path
+    AND (
+     -- Authorised teaching/centre staff may open their own drafts.
+     ((EXISTS(SELECT 1 FROM public.user_roles r WHERE r.user_id=v_actor
+       AND r.tenant_id=v_centre AND r.role::text IN('centre_director','programme_leader'))
+      OR (mo.lecturer_id=v_actor AND EXISTS(
+        SELECT 1 FROM public.user_roles r WHERE r.user_id=v_actor
+         AND r.tenant_id=v_centre AND r.role::text='lecturer'))))
+     OR
+     -- Students may sign only published files in active enrolled programmes.
+     (m.publication_status='published' AND EXISTS(
+      SELECT 1 FROM public.user_roles r JOIN public.student_enrolments e
+       ON e.student_id=r.user_id AND e.tenant_id=r.tenant_id
+      WHERE r.user_id=v_actor AND r.tenant_id=v_centre
+       AND r.role::text='student' AND e.status='active'
+       AND e.programme_id=mo.programme_id))
+    )
     AND (m.class_session_id IS NULL OR
-     unipathway_acl.class_access(m.class_session_id,v_centre))
-    AND (m.publication_status<>'published' OR EXISTS(
-     SELECT 1 FROM public.modules mo LEFT JOIN public.student_enrolments e
-      ON e.programme_id=mo.programme_id AND e.student_id=v_actor
-       AND e.tenant_id=mo.tenant_id AND e.status='active'
-     WHERE mo.id=m.module_id AND mo.tenant_id=v_centre AND
-      (e.student_id=v_actor OR mo.lecturer_id=v_actor OR EXISTS(
-       SELECT 1 FROM public.user_roles rr WHERE rr.user_id=v_actor
-        AND rr.tenant_id=v_centre AND rr.role::text IN('centre_director','programme_leader'))))));
+      unipathway_acl.class_access(m.class_session_id,v_centre))
+  );
  ELSIF p_bucket='unipathway-class-media' THEN
   RETURN EXISTS(SELECT 1 FROM public.live_class_artifacts a
    WHERE a.tenant_id=v_centre AND a.storage_reference=p_path
