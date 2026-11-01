@@ -84,12 +84,13 @@ function LMSVirtualLabsContent(){
     db.from('lab_templates').select('id,module_id,provider,title,duration_minutes,active').eq('tenant_id',tenant).limit(250),
     db.from('modules').select('id,programme_id,title,lecturer_id,tenant_id').eq('tenant_id',tenant).limit(300),
     db.from('lab_class_runs').select('id,template_id,cohort_reference,starts_at,ends_at,max_concurrent,status,lead_instructor_id,tenant_id').eq('tenant_id',tenant).limit(300),
-    db.from('lab_sessions').select('id,student_id,template_id,offering_id,class_run_id,launch_mode,status,created_at,expires_at,minutes_used,tenant_id').eq('tenant_id',tenant).order('created_at',{ascending:false}).limit(300),
+    db.from('lab_sessions').select('id,student_id,template_id,offering_id,class_run_id,launch_mode,status,created_at,expires_at,minutes_used,tenant_id').eq('tenant_id',tenant).eq(staff?'tenant_id':'student_id',staff?tenant:user.id).order('created_at',{ascending:false}).limit(300),
     db.from('lab_tasks').select('id,template_id,title,instructions,sequence_no,points').eq('tenant_id',tenant).order('sequence_no').limit(500),
-    db.from('lab_help_requests').select('id,session_id,student_id,message,status,claimed_by').eq('tenant_id',tenant)
+    db.from('lab_help_requests').select('id,session_id,student_id,message,status,claimed_by').eq('tenant_id',tenant).eq(staff?'tenant_id':'student_id',staff?tenant:user.id)
       .in('status',['waiting','claimed','assisting']).limit(200),
     db.from('lab_task_progress').select('id,session_id,task_id,status,verification_result').eq('tenant_id',tenant).limit(400),
-    db.from('lms_lab_class_invitations').select('run_id,student_id,status').eq('tenant_id',tenant).limit(700),
+    db.from('lms_lab_class_invitations').select('run_id,student_id,status').eq('tenant_id',tenant)
+      .eq(staff?'tenant_id':'student_id',staff?tenant:user.id).limit(700),
    ];
    const responses=await Promise.all(req);
    if(!current())return;
@@ -107,7 +108,7 @@ function LMSVirtualLabsContent(){
    setInvites((i.data||[]) as {run_id:string;student_id:string;status:string}[]);
   }catch(e){if(current())setError(e instanceof Error?e.message:'LMS labs could not be loaded');}
   finally{if(current())setLoading(false);}
- },[tenant,user?.id]);
+ },[tenant,user?.id,staff]);
  useEffect(()=>{void reload();},[reload]);
  const checkGateway=useCallback(async()=>{
   const generation=++gatewayGeneration.current;
