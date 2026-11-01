@@ -46,6 +46,10 @@ Deno.serve(async req=>{
    return json({aws_managed_configured:awsReady(),code:awsReady()?'configured':'connector_setup_required',
     note:'This checks configured server credentials, not fleet capacity, billing or a completed AWS lab session.'});
 
+  // A student role and ordinary programme enrolment are not sufficient for a
+  // paid technology lab. The per-student module grants must be deployed first.
+  if(Deno.env.get('UNIPATHWAY_TECH_LAB_ENTITLEMENTS_ENABLED')!=='true')
+   return json({error:'Course-specific technology lab entitlements are not yet activated.'},503);
   const url=Deno.env.get('SUPABASE_URL'),anon=Deno.env.get('SUPABASE_ANON_KEY');
   const serviceKey=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
   if(!url||!anon||!serviceKey)return json({error:'Lab service environment incomplete'},503);
@@ -76,6 +80,10 @@ Deno.serve(async req=>{
    if(offeringError||!offering||offering.tenant_id!==profile.tenant_id
      ||!offering.published||!offering.launch_enabled)
     return json({error:'Lab is not approved for this centre'},403);
+   const {data:moduleApproved,error:entitlementError}=await userClient.rpc(
+    'check_my_unipathway_tech_lab',{p_module:offering.module_id});
+   if(entitlementError||moduleApproved!==true)
+    return json({error:'This learner does not have a current approved technology lab allocation.'},403);
    const {data:template,error:templateError}=await admin.from('lab_templates')
     .select('id,tenant_id,provider,active').eq('id',offering.template_id).maybeSingle();
    if(templateError||!template||template.provider!=='aws_managed'||!template.active)
@@ -114,6 +122,10 @@ Deno.serve(async req=>{
    .select('programme_id,tenant_id').eq('id',offering.module_id).maybeSingle();
   if(moduleError||!module||module.tenant_id!==profile.tenant_id)
    return json({error:'Lab course record unavailable'},403);
+  const {data:labEntitlement,error:labEntitlementError}=await userClient.rpc(
+   'check_my_unipathway_tech_lab',{p_module:offering.module_id});
+  if(labEntitlementError||labEntitlement!==true)
+   return json({error:'Your approved course-specific technology lab access is no longer current.'},403);
   const {data:enrolment,error:enrolError}=await admin.from('student_enrolments')
    .select('id').eq('tenant_id',profile.tenant_id).eq('student_id',actor)
    .eq('programme_id',module.programme_id).eq('status','active').limit(1);
