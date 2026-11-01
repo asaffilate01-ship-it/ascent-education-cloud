@@ -22,7 +22,7 @@ test('assessors can find older private feedback and confirm phrase changes witho
    reads.push({owner:url.searchParams.get('owner_id'),tenant:url.searchParams.get('tenant_id')});
    const offset=Number(url.searchParams.get('offset')||0),limit=Number(url.searchParams.get('limit')||250);data=snippets.slice().sort((a,b)=>a.id.localeCompare(b.id)).slice(offset,offset+limit);
   }
- }else if(name==='profiles')data={full_name:'Synthetic assessor',tenant_id:tenant};else if(name==='user_roles')data=[{role:'assessor'}];else if(url.pathname.endsWith('/auth/v1/user'))data=user;else if(name==='record_unipathway_human_mark'){receipt=r.postDataJSON();data=null;}else if(url.pathname.includes('/rpc/'))data=null;
+ }else if(name==='profiles')data={full_name:'Synthetic assessor',tenant_id:tenant};else if(name==='user_roles')data=[{role:'assessor',tenant_id:tenant}];else if(url.pathname.endsWith('/auth/v1/user'))data=user;else if(name==='record_unipathway_human_mark'){receipt=r.postDataJSON();data=null;}else if(url.pathname.includes('/rpc/'))data=null;
  await route.fulfill({status:200,headers:{'access-control-allow-origin':'*','access-control-allow-headers':'*','content-type':'application/json'},body:JSON.stringify(data)});});
 
  await page.goto('/assessor/queue?attempt=attempt');
