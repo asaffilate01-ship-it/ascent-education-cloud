@@ -52,6 +52,7 @@ const TenantDomainSettings = lazy(() => import("./pages/tenant/TenantDomainSetti
 
 // Landlord / Superadmin
 const LandlordDashboard = lazy(() => import("./pages/landlord/LandlordDashboard"));
+const CentreDirectory = lazy(() => import("./pages/landlord/CentreDirectory"));
 const TenantOnboarding = lazy(() => import("./pages/landlord/TenantOnboarding"));
 const SuperadminPlatform = lazy(() => import("./pages/superadmin/SuperadminPlatform"));
 
@@ -350,13 +351,13 @@ function AppRoutes() {
 
         {/* ========== LANDLORD ========== */}
         <Route path="/landlord" element={<Landlord><LandlordDashboard /></Landlord>} />
-        <Route path="/landlord/centres" element={<Landlord><LandlordDashboard /></Landlord>} />
+        <Route path="/landlord/centres" element={<Landlord><CentreDirectory /></Landlord>} />
         <Route path="/landlord/employers" element={<Landlord><EmployerPartnershipsPage /></Landlord>} />
         <Route path="/landlord/users" element={<Landlord><StaffManagement /></Landlord>} />
         <Route path="/landlord/finance" element={<Landlord><FinanceDashboard /></Landlord>} />
         <Route path="/landlord/subscriptions" element={<Landlord><SuperadminPlatform /></Landlord>} />
         <Route path="/landlord/compliance" element={<Landlord><ComplianceDashboard /></Landlord>} />
-        <Route path="/landlord/onboarding" element={<Landlord><TenantOnboarding /></Landlord>} />
+        <Route path="/landlord/onboarding" element={<Landlord><CentreDirectory /></Landlord>} />
         <Route path="/landlord/knowledge" element={<Landlord><KnowledgeLibrary /></Landlord>} />
         <Route path="/landlord/course-content" element={<Landlord><CourseContentHub /></Landlord>} />
         <Route path="/landlord/education-intelligence" element={<Landlord><EducationIntelligence /></Landlord>} />
