@@ -90,6 +90,7 @@ const AttendanceDashboard = lazy(() => import("./pages/attendance/AttendanceDash
 const AnalyticsDashboard = lazy(() => import("./pages/analytics/AnalyticsDashboard"));
 const RoleAnalyticsDashboard = lazy(() => import("./pages/analytics/RoleAnalyticsDashboard"));
 const MarketingDashboard = lazy(() => import("./pages/marketing/MarketingDashboard"));
+const MarketingLeadInsights = lazy(() => import("./pages/marketing/MarketingLeadInsights"));
 const MicrosoftEducationAdmin = lazy(() => import("./pages/settings/MicrosoftEducationAdmin"));
 const TeamsTeachingDesk = lazy(() => import("./pages/classroom/TeamsTeachingDesk"));
 const LiveClassroom = lazy(() => import("./pages/classroom/TeamsClassroom"));
@@ -530,7 +531,7 @@ function AppRoutes() {
         {/* ========== MARKETING ========== */}
         <Route path="/marketing" element={<Marketing><MarketingDashboard /></Marketing>} />
         <Route path="/marketing/campaigns" element={<Marketing><MarketingDashboard /></Marketing>} />
-        <Route path="/marketing/leads" element={<Marketing><AdmissionsCRM /></Marketing>} />
+        <Route path="/marketing/leads" element={<Marketing><MarketingLeadInsights /></Marketing>} />
         <Route path="/marketing/webinars" element={<Marketing><MarketingDashboard /></Marketing>} />
         <Route path="/marketing/analytics" element={<Marketing><RoleAnalyticsDashboard /></Marketing>} />
         <Route path="/marketing/email-campaigns" element={<Marketing><EmailCampaigns /></Marketing>} />
