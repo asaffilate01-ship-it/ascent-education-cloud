@@ -38,6 +38,7 @@ describe('UniPathway cross-role dashboards protect centre and subject boundaries
   expect(s).toContain("user.roles?.includes(user.role)");
   expect(s).toContain("filters: [{column:'tenant_id',operator:'eq'");
   expect(s).toContain('enabled: scoped');
+  expect(s).toContain("select: 'id,tenant_id,stage,created_at,source'");
  });
  it('only reads employer applicant counts for opportunities of verified organisations',()=>{
   const s=source('src/pages/employer/EmployerPortal.tsx');
