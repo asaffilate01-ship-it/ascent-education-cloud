@@ -31,7 +31,7 @@ function ParentResults(){
    if(active){const list:Student[]=r.data;setStudents(list);setSelected(list.some(s=>s.id===params.get('learner'))?params.get('learner')!:list[0]?.id||'');}
   }catch{if(active)setError('Shared results could not be verified. No results are shown until verification succeeds.');}finally{if(active)setLoading(false);}})();
   return()=>{active=false;};
- },[user?.id,user?.tenantId,user?.role,user?.roles,refresh]);
+ },[user?.id,user?.tenantId,user?.role,user?.roles?.includes('parent_guardian'),refresh]);
  const current=students.find(s=>s.id===selected);
  const results=current?.results.filter(r=>r.title.toLowerCase().includes(search.toLowerCase()))||[];
  return <DashboardLayout title="Parent & Guardian Portal" subtitle="Released coursework results shared by your linked learner">
