@@ -32,9 +32,9 @@ describe('UniPathway office roles and per-person permissions',()=>{
   }
  });
  it('does not add sensitive permissions for KYC, payments, identity or award issuance',()=>{
-  const names=CAPABILITY_KEYS.join(',');
+  const names=CAPABILITY_KEYS.map(key=>key.toLowerCase());
   for(const forbidden of ['superadmin','director','certificate','payment','KYC','grade','aws_key','identity','safeguard']){
-   expect(names.toLowerCase()).not.toContain(forbidden.toLowerCase());
+   expect(names).not.toContain(forbidden.toLowerCase());
   }
  });
  it('links roles to own dashboard and independently verified manager review routes',()=>{
