@@ -1,6 +1,16 @@
 export type WorkspaceGroup={title:string;items:{label:string;to:string;description:string}[]};
 const group=(title:string,items:[string,string,string][]):WorkspaceGroup=>({title,items:items.map(([label,to,description])=>({label,to,description}))});
 export const workspaceCatalog:Record<string,WorkspaceGroup[]>={
+ office_admin:[group('Administration',[
+  ['General staff dashboard','/office','Verified office tasks, permitted staff directory, schedules and invitations.'],
+  ['My capability status','/office/compliance-preparation','Only server-authorised functions may be used.'],
+ ])],
+ hr_officer:[group('HR',[
+  ['HR dashboard','/office','Limited staff directory, aggregate leave status and your assigned tasks.'],
+ ])],
+ secretary:[group('Secretary',[
+  ['Centre secretary dashboard','/office','Assigned tasks, approved schedules and centre support.'],
+ ])],
  security_officer:[group('Security',[['CCTV live and playback','/security','View authorised cameras and request time-limited playback.']])],
  student:[
   group('Study',[
