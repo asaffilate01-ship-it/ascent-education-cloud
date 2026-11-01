@@ -12,10 +12,12 @@ const sidebar=readFileSync('src/components/layout/DashboardSidebar.tsx','utf8');
 describe('UniPathway LMS AWS and coding virtual lab privacy contract',()=>{
  it('adds managed AWS routes while retaining practical hubs, coding and released results',()=>{
   for(const [role,guard] of [['student','StudentR'],['lecturer','LecturerR'],['director','Director'],['programme','Programme']]){
-   expect(app).toContain(`<Route path="/${role}/managed-labs" element={<${guard}><LMSVirtualLabs /></${guard}>} />`);
+   expect(app).toContain(role==='student'
+      ? '<Route path="/student/managed-labs" element={<StudentR><TechLabAccessGate><LMSVirtualLabs /></TechLabAccessGate></StudentR>} />'
+      : `<Route path="/${role}/managed-labs" element={<${guard}><LMSVirtualLabs /></${guard}>} />`);
    expect(sidebar).toContain(`path: '/${role}/managed-labs'`);
   }
-  expect(app).toContain('<StudentR><LabLearningHub /></StudentR>');
+  expect(app).toContain('<StudentR><TechLabAccessGate><LabLearningHub /></TechLabAccessGate></StudentR>');
   expect(app).toContain('<LecturerR><LabInstructorPlanner /></LecturerR>');
   expect(app).toContain('<P><CloudCodingSandbox /></P>');
   expect(courses).not.toContain('sub.grade');
