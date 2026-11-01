@@ -58,7 +58,7 @@ describe('UniPathway invitation-only Teams classrooms and academic materials',()
   expect(classroom).toContain("if(classes.error){setError(classes.error.message)");
   expect(classroom).toContain('Microsoft Teams lobby, presenter and recording permissions must be configured separately.');
   expect(scheduler).toContain('The calendar worker, Graph consent and Teams licences must be connected before delivery.');
-  expect(archive).toContain("a.publication_status==='published'");
+  expect(archive).toContain('publishedArchiveAssetAvailable(a,session)');
   expect(archive).toContain('classMediaUrl(a.storage_reference)');
   expect(media).toContain('createSignedUrl(path,120)');
   expect(materials).toContain("createSignedUrl(m.object_path,120)");
