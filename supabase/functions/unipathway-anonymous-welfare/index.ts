@@ -55,6 +55,9 @@ Deno.serve(async request=>{
   // NEVER use user sessions or inferred auth.uid() on this path.
   // A verified service key inserts only an anonymous record, with NULL student_id.
   const db=createClient(url,service,{auth:{persistSession:false}});
+  const verifiedCentre=await db.from('tenants').select('id,slug,status').eq('id',centre).single();
+  if(verifiedCentre.error||verifiedCentre.data?.slug!=='unipathway'||verifiedCentre.data?.status!=='active')
+   return respond({error:'The approved UniPathway centre is unavailable.'},503);
   const result=await db.from('unipathway_welfare_requests').insert({
    tenant_id:centre,student_id:null,anonymous:true,
    category:body.category,urgency:body.urgency,message:body.message.trim(),status:'new',
