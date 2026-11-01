@@ -92,18 +92,18 @@ await db.exec(`
  ('74000000-0000-4000-8000-000000000001','unipathway-module-materials','${t.a}/slides.pdf'),
  ('74000000-0000-4000-8000-000000000002','unipathway-class-media','${t.a}/recording.mp4');
 `);
-await check(t.student,`SELECT unipathway_acl.class_access('${t.session}','${t.a}') AS ok`,[{ok:false}]);
+await check(t.student,`SELECT public.can_access_my_unipathway_class_resource('${t.session}','${t.a}') AS ok`,[{ok:false}]);
 await check(t.student,'SELECT id FROM public.unipathway_module_materials',[]);
 await check(t.student,'SELECT id FROM public.live_class_artifacts',[]);
 await check(t.student,'SELECT id FROM public.lesson_ai_packs',[]);
 await check(t.student,'SELECT name FROM storage.objects',[]);
-await check(t.studentB,`SELECT unipathway_acl.class_access('${t.session}','${t.a}') AS ok`,[{ok:false}]);
-await check(t.lecturer,`SELECT unipathway_acl.class_access('${t.session}','${t.a}') AS ok`,[{ok:true}]);
+await check(t.studentB,`SELECT public.can_access_my_unipathway_class_resource('${t.session}','${t.a}') AS ok`,[{ok:false}]);
+await check(t.lecturer,`SELECT public.can_access_my_unipathway_class_resource('${t.session}','${t.a}') AS ok`,[{ok:true}]);
 await deny(t.student,`SELECT public.approve_unipathway_urgent_class_release('${t.session}','Exceptionally urgent teaching need documented for this centre')`);
 await deny(t.director,`SELECT public.approve_unipathway_urgent_class_release('${t.pending}','Exceptionally urgent teaching need documented for this centre')`);
 const approval=await as(t.director,`SELECT public.approve_unipathway_urgent_class_release('${t.session}','Verified exceptional need for student practical revision access') AS data`);
 assert.equal(approval.rows[0].data.hours,12);checks++;
-await check(t.student,`SELECT unipathway_acl.class_access('${t.session}','${t.a}') AS ok`,[{ok:true}]);
+await check(t.student,`SELECT public.can_access_my_unipathway_class_resource('${t.session}','${t.a}') AS ok`,[{ok:true}]);
 await check(t.student,'SELECT id FROM public.unipathway_module_materials',[{id:t.material}]);
 await check(t.student,'SELECT id FROM public.live_class_artifacts',[{id:t.artifact}]);
 await check(t.student,`SELECT public.can_open_my_unipathway_class_media('${t.a}/recording.mp4') AS ok`,[{ok:true}]);
