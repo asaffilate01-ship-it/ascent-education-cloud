@@ -52,7 +52,7 @@ Deno.serve(async request=>{
   const proof=await check.json().catch(()=>null);
   if(!check.ok||proof?.success!==true||proof.hostname!==new URL(origin).hostname)
    return respond({error:'Human verification failed. Please retry.'},403);
-  // NEVER use user sessions or inferred auth.uid() on this path.
+  // Never inspect a user session or attach an account identifier on this path.
   // A verified service key inserts only an anonymous record, with NULL student_id.
   const db=createClient(url,service,{auth:{persistSession:false}});
   const verifiedCentre=await db.from('tenants').select('id,slug,status').eq('id',centre).single();
