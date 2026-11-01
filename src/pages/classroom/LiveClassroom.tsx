@@ -154,7 +154,7 @@ export default function LiveClassroom() {
   };
 
   const persistSession = async (sessionRoomName: string, moduleId?: string) => {
-    if (!user) return null;
+    if (!user?.id||!user.tenantId||!user.roles?.includes(user.role)||!isLecturer) return null;
     try {
       const profile = await supabase.from('profiles').select('tenant_id').eq('user_id', user.id).single();
       if(profile.error||!user.tenantId||profile.data?.tenant_id!==user.tenantId)throw new Error('Class session centre not verified.');
@@ -177,12 +177,12 @@ export default function LiveClassroom() {
   };
 
   const abandonSession = async (id: string | null) => {
-    if (!id) return;
+    if (!id||!user?.id||!user.tenantId||!user.roles?.includes(user.role)) return;
     try {
       await supabase
         .from('classroom_sessions' as any)
         .update({ status: 'ended', ended_at: new Date().toISOString(), participant_count: 0 } as any)
-        .eq('id', id);
+        .eq('id', id).eq('tenant_id',user.tenantId).eq('host_id',user.id);
     } catch (err) {
       console.error('Session cleanup error:', err);
     }
@@ -191,11 +191,11 @@ export default function LiveClassroom() {
   const endPersistedSession = async () => {
     if (!sessionId) return;
     try {
-      if(!user?.tenantId)throw new Error('Centre assignment is required to finish a session.');
+      if(!user?.id||!user.tenantId||!user.roles?.includes(user.role))throw new Error('Verified lecturer and centre assignment are required to finish a session.');
       const saved=await supabase
         .from('classroom_sessions' as any)
         .update({ status: 'ended', ended_at: new Date().toISOString(), participant_count: participantCount } as any)
-        .eq('id', sessionId).eq('tenant_id',user.tenantId).select('id').single();
+        .eq('id', sessionId).eq('tenant_id',user.tenantId).eq('host_id',user.id).select('id').single();
       if(saved.error||!(saved.data as {id?:string}|null)?.id)throw new Error('Classroom session end was not confirmed.');
       // A completed call is NOT evidence that a recording exists.
       // Provider storage, written consent, class session mapping, processing and
