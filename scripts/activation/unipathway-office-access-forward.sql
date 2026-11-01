@@ -190,6 +190,27 @@ BEGIN
 END
 $fn$;
 
+CREATE FUNCTION public.get_unipathway_staff_directory_for_manager(p_tenant uuid)
+RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path=''
+AS $fn$
+DECLARE v_rows jsonb:='[]'::jsonb;
+BEGIN
+ IF NOT unipathway_acl.staff_manager(p_tenant)
+ THEN RAISE EXCEPTION 'Verified centre manager required' USING ERRCODE='42501';END IF;
+ SELECT coalesce(jsonb_agg(jsonb_build_object('id',q.user_id,
+  'name',q.full_name,'email',q.email,'role',q.role)
+  ORDER BY q.full_name),'[]'::jsonb) INTO v_rows
+ FROM (
+  SELECT p.user_id,p.full_name,p.email,r.role::text AS role
+  FROM public.user_roles r JOIN public.profiles p ON p.user_id=r.user_id
+  WHERE r.tenant_id=p_tenant AND p.tenant_id=p_tenant
+   AND r.role::text IN ('office_admin','hr_officer','secretary')
+  ORDER BY p.full_name,r.role LIMIT 150
+ ) q;
+ RETURN v_rows;
+END
+$fn$;
+
 -- Public functions are deliberately not callable by anon/PUBLIC. No arbitrary
 -- role assignment, payroll, student records, KYC or superadmin permissions.
 REVOKE ALL ON FUNCTION unipathway_acl.verified_office_role(uuid,uuid,text),
@@ -197,9 +218,11 @@ REVOKE ALL ON FUNCTION unipathway_acl.verified_office_role(uuid,uuid,text),
  unipathway_acl.staff_capability_allowed(text,text) FROM PUBLIC,anon;
 REVOKE ALL ON FUNCTION public.get_my_unipathway_office_workspace(text),
  public.get_unipathway_staff_access(uuid,text),
+ public.get_unipathway_staff_directory_for_manager(uuid),
  public.set_unipathway_staff_access(uuid,text,integer,jsonb) FROM PUBLIC,anon;
 GRANT EXECUTE ON FUNCTION public.get_my_unipathway_office_workspace(text),
  public.get_unipathway_staff_access(uuid,text),
+ public.get_unipathway_staff_directory_for_manager(uuid),
  public.set_unipathway_staff_access(uuid,text,integer,jsonb) TO authenticated;
 -- Backend-only permission functions remain in a non-exposed schema.
 COMMIT;
