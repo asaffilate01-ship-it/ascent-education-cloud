@@ -47,7 +47,7 @@ export const BOTTOM_NAV: Record<UserRole, BottomNavItem[]> = {
     { label: 'Courses', icon: BookOpen, path: '/student/courses' },
     { label: 'Tasks', icon: ClipboardList, path: '/student/assignments' },
     { label: 'Grades', icon: BarChart3, path: '/student/grades' },
-    { label: 'Chat', icon: MessageSquare, path: '/messaging' },
+    { label: 'Help', icon: HeartHandshake, path: '/student/wellbeing' },
   ],
   lecturer: [
     { label: 'Home', icon: Home, path: '/lecturer' },
@@ -148,6 +148,7 @@ export const BOTTOM_NAV: Record<UserRole, BottomNavItem[]> = {
   ],
   welfare_officer: [
     { label: 'Welfare', icon: HeartHandshake, path: '/health' },
+    { label: 'Requests', icon: ClipboardList, path: '/welfare/support' },
     { label: 'Residential', icon: Building2, path: '/residential' },
     { label: 'Chat', icon: MessageSquare, path: '/messaging' },
   ],
