@@ -8,7 +8,7 @@ import {supabase} from '@/integrations/supabase/client';
 import {CRISIS_NOTICE,WELLBEING_CATEGORIES,WELLBEING_ENABLED} from '@/lib/wellbeingRequests';
 
 type CaseRow={id:string;category:string;urgency:string;status:string;message:string;anonymous:boolean;
- student_id:string|null;created_at:string;updated_at:string;reviewed_by:string|null};
+ student_id:string|null;created_at:string;updated_at:string;reviewed_by:string|null;revision:number};
 const statuses=['new','reviewing','follow_up','closed'] as const;
 export default function WelfareSupportDesk(){
  const {user}=useAuth();
@@ -42,7 +42,7 @@ function WelfareQueue(){
   setBusy(true);setError('');setNotice('');
   try{
    const {data,error:e}=await (supabase.rpc as any)('review_unipathway_welfare_request',{
-    p_request:record.id,p_status:action,p_internal_note:note.trim(),
+    p_request:record.id,p_status:action,p_internal_note:note.trim(),p_expected_revision:record.revision,
    });
    if(e||!data||data.id!==record.id||data.status!==action)throw Error('The Welfare team could not confirm that review. No change can be assumed.');
    setNotice('The private case status and staff review were recorded.');
