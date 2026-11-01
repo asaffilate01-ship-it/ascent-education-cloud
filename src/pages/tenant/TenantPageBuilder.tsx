@@ -135,7 +135,7 @@ export default function TenantPageBuilder() {
                 <div className="w-2.5 h-2.5 rounded-full bg-success/40" />
               </div>
               <p className="text-xs text-muted-foreground ml-2 font-mono flex-1">
-                {tenantSlug ? `/tenant/${tenantSlug}` : 'your-college.educloud.pk'}
+                {tenantSlug ? `/tenant/${tenantSlug}` : 'https://unipathway.pk/tenant/your-college'}
               </p>
               <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={() => window.open(`/tenant/${tenantSlug}`, '_blank')}>
                 <ExternalLink className="w-3 h-3 mr-1" /> Open
