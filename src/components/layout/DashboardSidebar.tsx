@@ -52,7 +52,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Subscriptions', icon: PieChart, path: '/landlord/subscriptions' },
     ]},
     { title: 'Operations', items: [
-      { label: 'Compliance', icon: Shield, path: '/compliance' },
+      { label: 'Compliance', icon: Shield, path: '/landlord/compliance' },
       { label: 'Onboarding', icon: UserPlus, path: '/landlord/onboarding' },
       { label: 'Audit Logs', icon: FileText, path: '/audit' },
       { label: 'Attendance corrections', icon: Calendar, path: '/landlord/attendance-corrections' },
@@ -85,7 +85,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
     { title: 'Operations', items: [
       { label: 'Quality', icon: FileCheck, path: '/director/quality' },
       { label: 'Attendance corrections', icon: Calendar, path: '/director/attendance-corrections' },
-      { label: 'Compliance', icon: Shield, path: '/compliance' },
+      { label: 'Compliance', icon: Shield, path: '/director/compliance' },
       { label: 'Finance', icon: CreditCard, path: '/director/finance' },
       { label: 'Calendar', icon: CalendarDays, path: '/calendar' },
       { label: 'Schedule', icon: Calendar, path: '/director/schedule' },
@@ -128,6 +128,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Employer Partnerships', icon: Briefcase, path: '/admissions/employers' },
       { label: 'Documents', icon: FileText, path: '/admissions/documents' },
       { label: 'Eligibility', icon: UserCheck, path: '/admissions/eligibility' },
+      { label: 'Enrolment, modules & dates', icon: Calendar, path: '/admissions/allocations' }
       { label: 'Global Partners', icon: Globe, path: '/admissions/global-partners' },
       { label: 'Partner Applications', icon: GraduationCap, path: '/admissions/education-partnerships' },
       { label: 'Application Support', icon: ClipboardList, path: '/admissions/application-support' },
@@ -146,6 +147,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Dashboard', icon: LayoutDashboard, path: '/lecturer' },
       { label: 'Managed AWS Labs', icon: Cloud, path: '/lecturer/managed-labs' },
       { label: 'Teaching', icon: BookOpen, path: '/lecturer/teaching' },
+      { label: 'Teams, labs & teaching readiness', icon: Shield, path: '/lecturer/delivery-readiness' }
       { label: 'Tuition Learning Plans', icon: ClipboardCheck, path: '/lecturer/learning-plans' },
       { label: 'Coursework Briefs & Rubrics', icon: ClipboardCheck, path: '/lecturer/assessments' },
       { label: 'IELTS Academy', icon: GraduationCap, path: '/lecturer/ielts' },
