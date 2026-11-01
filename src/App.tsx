@@ -358,6 +358,7 @@ function AppRoutes() {
         <Route path="/landlord/compliance" element={<Landlord><ComplianceDashboard /></Landlord>} />
         <Route path="/landlord/onboarding" element={<Landlord><TenantOnboarding /></Landlord>} />
         <Route path="/landlord/knowledge" element={<Landlord><KnowledgeLibrary /></Landlord>} />
+        <Route path="/landlord/course-content" element={<Landlord><CourseContentHub /></Landlord>} />
         <Route path="/landlord/education-intelligence" element={<Landlord><EducationIntelligence /></Landlord>} />
         <Route path="/landlord/readiness" element={<Landlord><ProductionReadiness /></Landlord>} />
         <Route path="/landlord/opportunity-fund" element={<Landlord><OpportunityFundDashboard /></Landlord>} />
