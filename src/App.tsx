@@ -60,6 +60,8 @@ const SuperadminPlatform = lazy(() => import("./pages/superadmin/SuperadminPlatf
 const CentreDirectorDashboard = lazy(() => import("./pages/director/CentreDirectorDashboard"));
 const ProgrammeManagement = lazy(() => import("./pages/director/ProgrammeManagement"));
 const StaffManagement = lazy(() => import("./pages/director/StaffManagement"));
+const StaffAccessManager = lazy(() => import("./pages/office/StaffAccessManager"));
+const OfficeStaffDashboard = lazy(() => import("./pages/office/OfficeStaffDashboard"));
 const StudentManagement = lazy(() => import("./pages/director/StudentManagement"));
 
 // Ops portals
@@ -210,6 +212,9 @@ const Director = ({ children }: { children: React.ReactNode }) => (
 const Admissions = ({ children }: { children: React.ReactNode }) => (
   <RoleGuard allowed={['admissions_admin', 'centre_director', 'superadmin']}>{children}</RoleGuard>
 );
+const Office = ({children}:{children:React.ReactNode})=>(
+  <RoleGuard allowed={['office_admin','hr_officer','secretary']}>{children}</RoleGuard>
+);
 const LecturerR = ({ children }: { children: React.ReactNode }) => (
   <RoleGuard allowed={['lecturer', 'programme_leader', 'centre_director', 'superadmin']}>{children}</RoleGuard>
 );
@@ -357,6 +362,7 @@ function AppRoutes() {
         <Route path="/landlord/centres" element={<Landlord><CentreDirectory /></Landlord>} />
         <Route path="/landlord/employers" element={<Landlord><EmployerPartnershipsPage /></Landlord>} />
         <Route path="/landlord/users" element={<Landlord><StaffManagement /></Landlord>} />
+        <Route path="/landlord/staff-access" element={<Landlord><StaffAccessManager /></Landlord>} />
         <Route path="/landlord/finance" element={<Landlord><FinanceDashboard /></Landlord>} />
         <Route path="/landlord/subscriptions" element={<Landlord><SuperadminPlatform /></Landlord>} />
         <Route path="/landlord/compliance" element={<Landlord><CentreComplianceReadiness /></Landlord>} />
@@ -393,6 +399,7 @@ function AppRoutes() {
         <Route path="/director/beauty-accreditation" element={<Director><BeautyAccreditationDashboard /></Director>} />
         <Route path="/director/ielts" element={<Director><IELTSAcademy /></Director>} />
         <Route path="/director/staff" element={<Director><StaffManagement /></Director>} />
+        <Route path="/director/staff-access" element={<Director><StaffAccessManager /></Director>} />
         <Route path="/director/students" element={<Director><StudentManagement /></Director>} />
         <Route path="/director/employers" element={<Director><EmployerPartnershipsPage /></Director>} />
         <Route path="/director/quality" element={<Director><QADashboard /></Director>} />
@@ -417,6 +424,8 @@ function AppRoutes() {
         <Route path="/director/dashboard" element={<Director><TenantAdminDashboard /></Director>} />
 
         {/* ========== ADMISSIONS ========== */}
+        <Route path="/office" element={<Office><OfficeStaffDashboard /></Office>} />
+        <Route path="/office/compliance-preparation" element={<Office><OfficeStaffDashboard /></Office>} />
         <Route path="/admissions" element={<Admissions><AdmissionsCRM /></Admissions>} />
         <Route path="/admissions/applications" element={<Admissions><AdmissionsCRM /></Admissions>} />
         <Route path="/admissions/employers" element={<Admissions><EmployerPartnershipsPage /></Admissions>} />
