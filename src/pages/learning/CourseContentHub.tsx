@@ -72,6 +72,7 @@ function ContentWorkspace(){
  const unmatched=programmes.filter(p=>!catalogueBoardFor(p));
  const programmePath=user?.role==='programme_leader'?'/programme/modules':'/director/programmes';
  const syllabusPath=user?.role==='programme_leader'?'/programme/syllabuses':'/director/syllabuses';
+ const registryPath=user?.role==='programme_leader'?'/programme/specifications':user?.role==='superadmin'?'/landlord/specifications':'/director/specifications';
  return <DashboardLayout title="Course content library" subtitle="Organise qualified teaching resources by board, programme and module">
   <div className="space-y-6">
    {!permitted?<section role="alert" className="rounded-xl border p-5">A verified centre assignment and an active teaching or curriculum-management role are required.</section>:<>
@@ -92,7 +93,7 @@ function ContentWorkspace(){
     <section className="rounded-xl border bg-card p-5" aria-labelledby="content-workflow">
      <h2 id="content-workflow" className="flex items-center gap-2 font-semibold"><ClipboardCheck className="size-4"/>Before uploading any board material</h2>
      <p className="mt-2 text-sm text-muted-foreground">Record the exact qualification and syllabus/unit code, edition or examination series, source/rights, intended audience and release decision. Upload centre-authored or properly licensed copies only. Link to an official publisher portal when redistribution is not authorised; do not copy its protected question bank into the LMS.</p>
-     <p className="mt-2 text-xs text-muted-foreground">The existing database supports modules and private draft/published files. Board-version and licence metadata will require a separate audited schema activation before they can be treated as permanent compliance records.</p>
+     <p className="mt-2 text-xs text-muted-foreground">The qualification-version and redistribution-rights registry is built but remains inactive until an independently verified UniPathway schema rollout. These are not yet permanent records of copyright permission or external awarding-body approval.</p>
     </section>
     <section className="rounded-xl border bg-card p-5 space-y-3" aria-label="Filter learning bodies">
      <div className="grid gap-3 sm:grid-cols-2">
@@ -150,6 +151,7 @@ function ContentWorkspace(){
     </section>}
     <section className="flex flex-wrap gap-3 rounded-xl border bg-card p-5">
      {manager&&<Link to={programmePath} className="inline-flex min-h-11 items-center rounded-lg border px-4 text-sm font-semibold hover:bg-accent"><FileText className="mr-2 size-4"/>Manage programme records</Link>}
+     {manager&&<Link to={registryPath} className="inline-flex min-h-11 items-center rounded-lg border px-4 text-sm font-semibold hover:bg-accent"><ClipboardCheck className="mr-2 size-4"/>Review specification versions &amp; rights</Link>}
      {manager&&<p className="w-full text-sm text-muted-foreground">A separate syllabus planner exists at <code>{syllabusPath}</code>, but its database tables are not yet activated in this UniPathway backend. Do not mark a board specification as approved there until deployment is verified.</p>}
      {!manager&&<p className="text-sm text-muted-foreground">Need a new programme or board? Ask the centre director or programme leader to verify the qualification and configure its modules.</p>}
      <p className="w-full text-xs text-muted-foreground"><ShieldCheck className="mr-1 inline size-3.5"/>Students can only view their own released learning resources through enrolled modules, independently enforced by database permissions.</p>
