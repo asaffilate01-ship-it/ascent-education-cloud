@@ -141,7 +141,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Employer Partnerships', icon: Briefcase, path: '/admissions/employers' },
       { label: 'Documents', icon: FileText, path: '/admissions/documents' },
       { label: 'Eligibility', icon: UserCheck, path: '/admissions/eligibility' },
-      { label: 'Enrolment, modules & dates', icon: Calendar, path: '/admissions/allocations' }
+      { label: 'Enrolment, modules & dates', icon: Calendar, path: '/admissions/allocations' },
       { label: 'Global Partners', icon: Globe, path: '/admissions/global-partners' },
       { label: 'Partner Applications', icon: GraduationCap, path: '/admissions/education-partnerships' },
       { label: 'Application Support', icon: ClipboardList, path: '/admissions/application-support' },
@@ -160,7 +160,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Dashboard', icon: LayoutDashboard, path: '/lecturer' },
       { label: 'Managed AWS Labs', icon: Cloud, path: '/lecturer/managed-labs' },
       { label: 'Teaching', icon: BookOpen, path: '/lecturer/teaching' },
-      { label: 'Teams, labs & teaching readiness', icon: Shield, path: '/lecturer/delivery-readiness' }
+      { label: 'Teams, labs & teaching readiness', icon: Shield, path: '/lecturer/delivery-readiness' },
       { label: 'Tuition Learning Plans', icon: ClipboardCheck, path: '/lecturer/learning-plans' },
       { label: 'Coursework Briefs & Rubrics', icon: ClipboardCheck, path: '/lecturer/assessments' },
       { label: 'IELTS Academy', icon: GraduationCap, path: '/lecturer/ielts' },
