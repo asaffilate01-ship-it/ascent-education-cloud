@@ -1,5 +1,6 @@
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import {Link,useSearchParams} from 'react-router-dom';
+import {useTechLabModuleIds} from '@/components/labs/TechLabAccessGate';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {useAuth} from '@/contexts/AuthContext';
 import {db} from '@/lib/db';
@@ -39,6 +40,7 @@ export default function LMSVirtualLabs(){
 }
 function LMSVirtualLabsContent(){
  const {user}=useAuth();const [params]=useSearchParams();
+ const techModuleIds=useTechLabModuleIds();
  const readGeneration=useRef(0),gatewayGeneration=useRef(0);
  useEffect(()=>()=>{readGeneration.current++;gatewayGeneration.current++;},[]);
  const staff=!!user?.role&&user.roles?.includes(user.role)&&['lecturer','programme_leader','centre_director','superadmin'].includes(user.role);
@@ -121,7 +123,7 @@ function LMSVirtualLabsContent(){
  useEffect(()=>{void checkGateway();},[checkGateway]);
  const refreshLabs=()=>{void reload();void checkGateway();};
  const eligibleModules=useMemo(()=>staff&&!centreManager&&user?.role!=='programme_leader'?
-  modules.filter(m=>m.lecturer_id===user?.id):modules,[staff,centreManager,modules,user?.id,user?.roles]);
+  modules.filter(m=>m.lecturer_id===user?.id):staff?modules:modules.filter(m=>techModuleIds.includes(m.id)),[staff,centreManager,modules,user?.id,user?.role,techModuleIds.join(',')]);
  const allowedModules=useMemo(()=>new Set(eligibleModules.map(m=>m.id)),[eligibleModules]);
  const visibleOfferings=useMemo(()=>offerings.filter(o=>allowedModules.has(o.module_id)&&
   (staff||o.published)&&(!params.get('module')||params.get('module')===o.module_id)),[offerings,staff,params,allowedModules]);
