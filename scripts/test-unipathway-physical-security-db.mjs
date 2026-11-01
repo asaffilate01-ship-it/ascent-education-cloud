@@ -74,6 +74,17 @@ const read=(tenant,kind,event=null)=>`SELECT public.get_unipathway_security_oper
 const checkout=(tenant,visitor,request=id.checkout)=>`SELECT public.unipathway_checkout_centre_visitor(
  ${uuid(tenant)},${uuid(visitor)},'Reception',${uuid(request)}) AS receipt`;
 const body=r=>typeof r.rows[0].receipt==='string'?JSON.parse(r.rows[0].receipt):r.rows[0].receipt;
+// The forward patch does not activate physical reads or visitor writes by itself.
+await deny(id.guardA,read(id.a,'centre_visitors'));
+await deny(id.guardA,register(id.a));
+const disabled=(await q('SELECT physical_reads_enabled,visitor_writes_enabled FROM unipathway_security.activation_gate')).rows[0];
+assert.deepEqual(disabled,{physical_reads_enabled:false,visitor_writes_enabled:false});checks++;
+await q('UPDATE unipathway_security.activation_gate SET physical_reads_enabled=true');
+const readOnly=body(await as(id.guardA,read(id.a,'centre_visitors')));
+assert.deepEqual(readOnly,[]);checks++;
+await deny(id.guardA,register(id.a));
+await q('UPDATE unipathway_security.activation_gate SET visitor_writes_enabled=true');
+
 await deny(id.student,register(id.a));
 await deny(id.guardB,register(id.a));
 await deny(id.director,register(id.a));
@@ -111,6 +122,9 @@ assert.equal((await q('SELECT count(*)::int AS n FROM public.centre_access_event
 assert.equal((await q('SELECT in_building FROM public.centre_occupancy')).rows[0].in_building,false);checks++;
 await deny(id.guardA,checkout(id.a,first.id,'30000000-0000-4000-8000-000000000003'));
 await deny(id.guardA,checkout(id.a,'30000000-0000-4000-8000-000000000003'));
+await q('UPDATE unipathway_security.activation_gate SET visitor_writes_enabled=false');
+await deny(id.guardA,register(id.a,'30000000-0000-4000-8000-000000000005'));
+await q('UPDATE unipathway_security.activation_gate SET visitor_writes_enabled=true');
 await q(`UPDATE public.tenants SET status='suspended' WHERE id=${uuid(id.a)}`);
 await deny(id.guardA,register(id.a,'30000000-0000-4000-8000-000000000004'));
 await deny(id.guardA,read(id.a,'centre_visitors'));
