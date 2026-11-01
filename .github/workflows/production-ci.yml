@@ -40,6 +40,8 @@ jobs:
         with: {node-version: 24, cache: npm}
       - run: npm ci --ignore-scripts
       - run: npm run test:db
+      - name: Cross-centre office role, invitation and tech lab RLS rehearsal
+        run: node scripts/test-unipathway-office-and-tech-db.mjs
       - name: Fresh schema and access checks (hosted extensions deferred)
         run: npm run test:fresh-schema
   edge-tests:
