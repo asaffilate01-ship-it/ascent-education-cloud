@@ -36,7 +36,8 @@ it('never manufactures a student role when memberships are missing or invalid',(
   expect(()=>verifiedRoleMemberships(input)).toThrow();
  }
  expect(verifiedRoleMemberships([{role:'lecturer'},{role:'lecturer'},{role:'assessor'}])).toEqual(['lecturer','assessor']);
- expect(new Set(KNOWN_UNIPATHWAY_ROLES).size).toBe(18);
+ expect(new Set(KNOWN_UNIPATHWAY_ROLES).size).toBe(KNOWN_UNIPATHWAY_ROLES.length);
+  for(const role of ['office_admin','hr_officer','secretary'])expect(KNOWN_UNIPATHWAY_ROLES).toContain(role);
  expect(activeRoleVerified({role:'student',roles:[]})).toBe(false);
  expect(canUseActiveRole({role:'lecturer',roles:['lecturer','assessor']},['assessor'])).toBe(false);
 });
