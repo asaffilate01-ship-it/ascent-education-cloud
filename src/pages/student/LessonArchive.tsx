@@ -6,6 +6,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import {db} from '@/lib/db';
 import {pagedRows,rowsByIds} from '@/lib/pagedRows';
 import {classMediaUrl} from '@/lib/learning/classMedia';
+import {archiveAudience,archiveMinimumEmbargoElapsed,publishedArchiveAssetAvailable} from '@/lib/learning/archiveAccess';
 import {useAuth} from '@/contexts/AuthContext';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
@@ -15,8 +16,9 @@ import {toast} from 'sonner';
 type Session={module_id:string;id:string;title:string;starts_at:string;ends_at:string;status:string;actual_ended_at:string|null};
 const postClassEnabled=import.meta.env.VITE_UNIPATHWAY_CLASS_RELEASE_ENABLED==='true';
 type Artifact={id:string;session_id:string;artifact_type:string;publication_status:string;storage_reference:string|null;available_at:string|null};
+type CourseModule={id:string;programme_id:string};
 type Pack={id:string;session_id:string;summary:string|null;status:string};
-const released=(a:Artifact)=>postClassEnabled&&a.publication_status==='published'&&(!a.available_at||Date.parse(a.available_at)<=Date.now());
+const released=(a:Artifact,session:Session)=>postClassEnabled&&publishedArchiveAssetAvailable(a,session);
 export default function LessonArchive(){const {user}=useAuth();const [params]=useSearchParams();const filter=params.get('module')||'';return <ArchiveWorkspace key={`${user?.id}:${user?.tenantId}:${user?.role}:${user?.roles.join(',')}:${filter}`} moduleFilter={filter}/>;}
 function ArchiveWorkspace({moduleFilter}:{moduleFilter:string}){
  const {user}=useAuth();
@@ -27,21 +29,48 @@ function ArchiveWorkspace({moduleFilter}:{moduleFilter:string}){
  useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;popup.current?.close();};},[]);
  useEffect(()=>{let active=true;generation.current++;setLoading(true);setError('');setSessions([]);setArtifacts([]);setPacks([]);setPlaying('');setPage(0);
   void (async()=>{try{
-   if(!user?.id||!user.tenantId)throw Error('A signed-in account and centre assignment are required.');
+   const tenant=user?.tenantId,uid=user?.id,audience=archiveAudience(user);
+   if(!uid||!tenant||audience==='blocked')throw Error('An active student or lecturer membership and centre are required.');
    if(!postClassEnabled)throw Error('Post-class recording and revision-pack release is awaiting verified backend activation.');
-   const classes=await pagedRows<Session>(()=>{let q=db.from('live_class_sessions').select('id,title,module_id,starts_at,ends_at,status,actual_ended_at').eq('tenant_id',user.tenantId);if(moduleFilter)q=q.eq('module_id',moduleFilter);return q;},()=>active);
+   // Restrict the initial read to active enrolled programmes or the lecturer's
+   // allocated modules. A centre-wide session query would expose unrelated
+   // class metadata even if the media storage policy correctly denies files.
+   let allowedModules:CourseModule[]=[];
+   if(audience==='student'){
+    const enrolments=await pagedRows<{id:string;programme_id:string}>(()=>db.from('student_enrolments')
+     .select('id,programme_id').eq('tenant_id',tenant).eq('student_id',uid).eq('status','active'),()=>active);
+    allowedModules=await rowsByIds<CourseModule>(enrolments.map(e=>e.programme_id),batch=>()=>db.from('modules')
+     .select('id,programme_id').eq('tenant_id',tenant).in('programme_id',batch),()=>active);
+   }else{
+    allowedModules=await pagedRows<CourseModule>(()=>db.from('modules').select('id,programme_id')
+     .eq('tenant_id',tenant).eq('lecturer_id',uid),()=>active);
+   }
+   const moduleIds=allowedModules.filter(m=>!moduleFilter||m.id===moduleFilter).map(m=>m.id);
+   const classes=await rowsByIds<Session>(moduleIds,batch=>()=>db.from('live_class_sessions')
+    .select('id,title,module_id,starts_at,ends_at,status,actual_ended_at')
+    .eq('tenant_id',tenant).in('module_id',batch),()=>active);
    const ids=classes.map(s=>s.id);
    const [assets,summaries]=await Promise.all([
-    rowsByIds<Artifact>(ids,batch=>()=>db.from('live_class_artifacts').select('id,session_id,artifact_type,publication_status,storage_reference,available_at').eq('tenant_id',user.tenantId).in('session_id',batch).eq('publication_status','published'),()=>active),
-    rowsByIds<Pack>(ids,batch=>()=>db.from('lesson_ai_packs').select('id,session_id,summary,status').eq('tenant_id',user.tenantId).in('session_id',batch).eq('status','published'),()=>active)
+    rowsByIds<Artifact>(ids,batch=>()=>db.from('live_class_artifacts')
+     .select('id,session_id,artifact_type,publication_status,storage_reference,available_at')
+     .eq('tenant_id',tenant).in('session_id',batch).eq('publication_status','published'),()=>active),
+    rowsByIds<Pack>(ids,batch=>()=>db.from('lesson_ai_packs')
+     .select('id,session_id,summary,status').eq('tenant_id',tenant).in('session_id',batch).eq('status','published'),()=>active)
    ]);
    if(!active)return;
-   setSessions(classes.sort((a,b)=>b.starts_at.localeCompare(a.starts_at)||a.id.localeCompare(b.id)));setArtifacts(assets.filter(released));setPacks(postClassEnabled?summaries:[]);
+   const bySession=new Map(classes.map(s=>[s.id,s] as const));
+   setSessions(classes.sort((a,b)=>b.starts_at.localeCompare(a.starts_at)||a.id.localeCompare(b.id)));
+   setArtifacts(assets.filter(a=>{const session=bySession.get(a.session_id);return !!session&&released(a,session);}));
+   // The server decides ordinary 24h versus approved exceptional 12h. The
+   // client additionally blocks even a returned pack during its first 12h.
+   setPacks(summaries.filter(p=>{const session=bySession.get(p.session_id);return !!session&&archiveMinimumEmbargoElapsed(session);}));
+
   }catch{if(active)setError('Your lesson archive could not be verified. Refresh to retry, or ask your centre to check your class invitations.');}finally{if(active)setLoading(false);}})();
   return()=>{active=false;generation.current++;};
  },[user?.id,user?.tenantId,moduleFilter,refresh]);
  const openAsset=async(a:Artifact)=>{
-  if(operation.current||!a.storage_reference||!released(a))return;
+  const session=sessions.find(s=>s.id===a.session_id);
+  if(operation.current||!a.storage_reference||!session||!released(a,session))return;
   operation.current=true;setDownloading(a.id);const request=generation.current;
   const target=window.open('about:blank','_blank');popup.current=target;if(target)target.opener=null;
   try{if(!target)throw Error('Allow pop-ups to open the private file, then retry.');const url=await classMediaUrl(a.storage_reference);
