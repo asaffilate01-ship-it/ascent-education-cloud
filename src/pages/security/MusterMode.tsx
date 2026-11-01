@@ -8,7 +8,7 @@ import {Button} from '@/components/ui/button';
 export default function MusterMode(){const {user}=useAuth();return <ReadMuster key={`${user?.id}:${user?.tenantId}:${user?.role}:${user?.roles?.join(',')}`}/>;}
 function ReadMuster(){
  const {user}=useAuth(),permitted=!!physicalSecurityScope(user)&&PHYSICAL_SECURITY_ENABLED;
- const events=useScopedSecurityRows<MusterEvent>(user,'emergency_muster_events','id,tenant_id,status,started_at,ended_at','id','__placeholder__' as never);
+ const events=useScopedSecurityRows<MusterEvent>(user,'emergency_muster_events','id,tenant_id,status,started_at,ended_at','id');
  const active=events.data.filter(e=>e.status==='active');
  const current=active.length===1?active[0]:null;
  const rows=useScopedSecurityRows<MusterRow>(user,'emergency_muster_status','id,tenant_id,muster_event_id,person_key,person_type,expected_inside,status,muster_point','id',current?{column:'muster_event_id',value:current.id}:{column:'muster_event_id',value:'00000000-0000-0000-0000-000000000000'});

@@ -41,7 +41,12 @@ export const BOTTOM_NAV: Record<UserRole, BottomNavItem[]> = {
     {label:'Guidance',icon:ClipboardCheck,path:'/office/compliance-preparation'},
     {label:'Workspace',icon:BookOpen,path:'/workspace'},
   ],
-  security_officer: [{label:'CCTV',icon:ShieldCheck,path:'/security'},{label:'Alerts',icon:Bell,path:'/notifications'},{label:'Workspace',icon:Home,path:'/workspace'}],
+  security_officer: [
+    {label:'Operations',icon:Home,path:'/security/operations'},
+    {label:'Visitors',icon:Users,path:'/security/visitors'},
+    {label:'Muster',icon:ShieldCheck,path:'/security/muster'},
+    {label:'CCTV',icon:Video,path:'/security'},
+  ],
   student: [
     { label: 'Home', icon: Home, path: '/student' },
     { label: 'Courses', icon: BookOpen, path: '/student/courses' },
