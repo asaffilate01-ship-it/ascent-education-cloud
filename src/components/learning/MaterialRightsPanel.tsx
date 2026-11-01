@@ -75,7 +75,7 @@ export default function MaterialRightsPanel({materialId,moduleId,tenantId}:{
   <p className="text-sm text-muted-foreground">Private access is not permission to copy a publisher's textbook, question bank, past paper or marking guide. Record the authority and approved source. This claim must be reviewed by a different centre manager before publishing.</p>
   {rights&&rights.review_status!=='withdrawn'?<div className="rounded-lg border p-3 text-sm">
    <p className="font-medium">Current rights proposal: {rights.review_status}</p>
-   <p className="mt-1 text-muted-foreground">{rights.rights_holder} · {rights.rights_basis.replaceAll('_',' ')}</p>
+   <p className="mt-1 text-muted-foreground">{rights.rights_holder} · {rights.rights_basis.replace(/_/g,' ')}</p>
    {rights.expires_at&&<p className="mt-1 text-muted-foreground">Recorded licence expiry: {new Date(rights.expires_at).toLocaleDateString()}</p>}
    {rights.review_status==='approved'&&<p className="mt-1">Only the live backend can finally confirm that the source review and rights are still current.</p>}
    {rights.review_status==='pending'&&<p className="mt-1 text-muted-foreground">Awaiting independent centre manager approval. Do not publish yet.</p>}
