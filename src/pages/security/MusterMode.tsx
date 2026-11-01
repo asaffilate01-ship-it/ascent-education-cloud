@@ -11,7 +11,7 @@ function ReadMuster(){
  const events=useScopedSecurityRows<MusterEvent>(user,'emergency_muster_events','id,tenant_id,status,started_at,ended_at','id');
  const active=events.data.filter(e=>e.status==='active');
  const current=active.length===1?active[0]:null;
- const rows=useScopedSecurityRows<MusterRow>(user,'emergency_muster_status','id,tenant_id,muster_event_id,person_key,person_type,expected_inside,status,muster_point','id',current?{column:'muster_event_id',value:current.id}:{column:'muster_event_id',value:'00000000-0000-0000-0000-000000000000'});
+ const rows=useScopedSecurityRows<MusterRow>(user,'emergency_muster_status','id,tenant_id,muster_event_id,person_key,person_type,expected_inside,status,muster_point','id',current?{column:'muster_event_id',value:current.id}:undefined,!!current);
  const loading=events.loading||(!!current&&rows.loading),failed=events.error||(!!current&&rows.error);
  const expected=rows.data.filter(r=>r.muster_event_id===current?.id&&r.expected_inside);
  const accounted=expected.filter(r=>r.status==='safe').length;

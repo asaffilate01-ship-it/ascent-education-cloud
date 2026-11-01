@@ -12,11 +12,12 @@ const MAX_PAGES=5;
 export function useScopedSecurityRows<T extends {tenant_id:string}>(
  user:Principal,table:PhysicalTable,fields:string,orderColumn:string,
  extra?:{column:string;value:string},
+ run=true,
 ){
  const tenant=physicalSecurityScope(user);
- const enabled=PHYSICAL_SECURITY_ENABLED&&!!tenant;
+ const enabled=PHYSICAL_SECURITY_ENABLED&&!!tenant&&run;
  const [revision,setRevision]=useState(0);
- const key=JSON.stringify([user?.id,user?.role,user?.roles,tenant,enabled,table,fields,orderColumn,extra,revision]);
+ const key=JSON.stringify([user?.id,user?.role,user?.roles,tenant,enabled,table,fields,orderColumn,extra,run,revision]);
  const [state,setState]=useState<ScopedResult<T>>({key,data:[],loading:enabled,error:null});
  useEffect(()=>{
   let active=true;

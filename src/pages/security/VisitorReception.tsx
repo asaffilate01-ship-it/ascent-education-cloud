@@ -39,6 +39,7 @@ function VisitorDesk(){
    visitors.refresh();
   }catch{
    setActionError('Check-in could not be verified. It may have reached the centre database. Review the register before starting a new check-in; retrying this same request is idempotent.');
+   visitors.refresh();
   }finally{setInFlight(false);}
  }
  async function checkOut(visitor:CentreVisitor){
