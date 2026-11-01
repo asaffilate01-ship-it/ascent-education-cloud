@@ -196,7 +196,7 @@ export default function LiveClassroom() {
         .from('classroom_sessions' as any)
         .update({ status: 'ended', ended_at: new Date().toISOString(), participant_count: participantCount } as any)
         .eq('id', sessionId).eq('tenant_id',user.tenantId).select('id').single();
-      if(saved.error||!saved.data?.id)throw new Error('Classroom session end was not confirmed.');
+      if(saved.error||!(saved.data as {id?:string}|null)?.id)throw new Error('Classroom session end was not confirmed.');
       // A completed call is NOT evidence that a recording exists.
       // Provider storage, written consent, class session mapping, processing and
       // the protected 24/12-hour release are independent requirements.
