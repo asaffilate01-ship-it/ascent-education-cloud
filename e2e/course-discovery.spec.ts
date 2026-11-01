@@ -55,7 +55,7 @@ test('students search and page enrolled modules, retain module links and recover
  const tables:Record<string,any[]>={student_enrolments:programmes.map(p=>({id:`enrol-${p.id}`,tenant_id:tenant,student_id:user.id,programme_id:p.id,status:'active'})),programmes,modules};const reads:{name:string;params:URLSearchParams}[]=[];let failModules=false;
  await context.route('https://unipathway-browser-ci.invalid/**',async route=>{
   const r=route.request(),url=new URL(r.url()),name=url.pathname.split('/').at(-1)||'';let data:any=tables[name]||[];
-  if(name==='profiles')data={full_name:'Synthetic learner',tenant_id:tenant};else if(name==='user_roles')data=[{role:'student'}];else if(url.pathname.endsWith('/auth/v1/user'))data=user;
+  if(name==='profiles')data={full_name:'Synthetic learner',tenant_id:tenant};else if(name==='user_roles')data=[{role:'student',tenant_id:tenant}];else if(url.pathname.endsWith('/auth/v1/user'))data=user;
   if(tables[name]){
    reads.push({name,params:url.searchParams});if(name==='modules'&&failModules)return route.fulfill({status:503,headers:{'access-control-allow-origin':'*','content-type':'application/json'},body:JSON.stringify({message:'Synthetic unavailable modules'})});
    for(const [key,value] of url.searchParams){if(value.startsWith('eq.'))data=data.filter((row:any)=>String(row[key])===value.slice(3));if(value.startsWith('in.(')){const ids=value.slice(4,-1).split(',');data=data.filter((row:any)=>ids.includes(String(row[key])));}}
@@ -154,7 +154,7 @@ test('career shortcuts activate tabs and failed reads offer explicit retry',asyn
  let fail=true;
  await context.route('https://unipathway-browser-ci.invalid/**',route=>{
   const url=new URL(route.request().url()),name=url.pathname.split('/').at(-1);let data:unknown=[];
-  if(name==='profiles')data={full_name:'Synthetic learner',tenant_id:tenant};else if(name==='user_roles')data=[{role:'student'}];else if(url.pathname.endsWith('/auth/v1/user'))data=user;
+  if(name==='profiles')data={full_name:'Synthetic learner',tenant_id:tenant};else if(name==='user_roles')data=[{role:'student',tenant_id:tenant}];else if(url.pathname.endsWith('/auth/v1/user'))data=user;
   if(fail&&(name==='partner_universities'||name==='job_listings'))return route.fulfill({status:503,headers:{'access-control-allow-origin':'*','content-type':'application/json'},body:JSON.stringify({message:'Synthetic unavailable'})});
   return route.fulfill({status:200,headers:{'access-control-allow-origin':'*','content-type':'application/json'},body:JSON.stringify(data)});
  });
@@ -187,7 +187,7 @@ test('unavailable whiteboard setup provides recovery without exposing schema err
  let missing=true;
  await context.route('https://unipathway-browser-ci.invalid/**',route=>{
   const url=new URL(route.request().url()),name=url.pathname.split('/').at(-1);let data:unknown=[];
-  if(name==='profiles')data={full_name:'Synthetic teacher',tenant_id:tenant};else if(name==='user_roles')data=[{role:'lecturer'}];else if(url.pathname.endsWith('/auth/v1/user'))data=user;
+  if(name==='profiles')data={full_name:'Synthetic teacher',tenant_id:tenant};else if(name==='user_roles')data=[{role:'lecturer',tenant_id:tenant}];else if(url.pathname.endsWith('/auth/v1/user'))data=user;
   if(name==='lesson_whiteboards'&&missing)return route.fulfill({status:404,headers:{'access-control-allow-origin':'*','content-type':'application/json'},body:JSON.stringify({code:'PGRST205',message:"Could not find the table 'public.lesson_whiteboards' in the schema cache"})});
   return route.fulfill({status:200,headers:{'access-control-allow-origin':'*','content-type':'application/json'},body:JSON.stringify(data)});
  });
