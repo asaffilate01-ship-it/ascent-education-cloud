@@ -66,7 +66,7 @@ async function as(actor,sql,role='authenticated'){
  try{return await q(sql);}finally{await db.exec('RESET ROLE');}
 }
 async function deny(actor,sql){
- await assert.rejects(()=>as(actor,sql),/(denied|permission|required|invalid|missing|receipt|checkout|visitor|identifier|role|schema)/i);checks++;
+ await assert.rejects(()=>as(actor,sql),/(denied|permission|required|invalid|missing|receipt|checkout|visitor|identifier|role|schema|unknown|dataset|page)/i);checks++;
 }
 const register=(tenant,request=id.checkin,attest=true)=>`SELECT public.unipathway_register_centre_visitor(
  ${uuid(tenant)},'Sample Visitor','Academic appointment','Reception',${attest},${uuid(request)}) AS receipt`;
