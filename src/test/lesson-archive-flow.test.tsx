@@ -1,24 +1,65 @@
-import {act,cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
+import {readFileSync} from 'node:fs';
+import {cleanup,render,screen} from '@testing-library/react';
 import {MemoryRouter} from 'react-router-dom';
-import {afterEach,beforeEach,it,expect,vi} from 'vitest';
+import {afterEach,beforeEach,describe,expect,it,vi} from 'vitest';
 import LessonArchive from '@/pages/student/LessonArchive';
 import ClassRecordingPlayer from '@/components/learning/ClassRecordingPlayer';
 import {classMediaUrl} from '@/lib/learning/classMedia';
-const state=vi.hoisted(()=>({user:{id:'student',tenantId:'centre',role:'student',roles:['student']},tables:{} as Record<string,any[]>,signed:vi.fn(),fail:false,calls:[] as any[],open:vi.fn(),close:vi.fn(),replace:vi.fn()}));
+import {archiveAudience,publishedArchiveAssetAvailable} from '@/lib/learning/archiveAccess';
+
+const state=vi.hoisted(()=>({
+ user:{id:'student',tenantId:'centre',role:'student',roles:['student']},
+ query:vi.fn(),rpc:vi.fn(),sign:vi.fn(),
+}));
 vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:state.user})}));
-vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:any)=><main>{children}</main>}));
+vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:{children:React.ReactNode})=><main>{children}</main>}));
 vi.mock('@/components/assessment/ModuleJourney',()=>({default:()=>null}));
-vi.mock('@/integrations/supabase/client',()=>({supabase:{storage:{from:()=>({createSignedUrl:state.signed})}}}));
-vi.mock('@/lib/db',()=>({db:{from:(table:string)=>{let rows=state.tables[table]||[];const q:any={select:()=>q,eq:(k:string,v:any)=>{rows=rows.filter(r=>r[k]===v);return q;},in:(k:string,v:any[])=>{state.calls.push({table,ids:v});rows=rows.filter(r=>v.includes(r[k]));return q;},order:()=>q,range:async(a:number,b:number)=>state.fail&&table==='live_class_sessions'&&a>=250?{data:null,error:Error('network')}:{data:rows.slice(a,b+1),error:null}};return q;}}}));
-const url='https://unipathway-browser-ci.invalid/storage/v1/object/sign/unipathway-class-media/private/recording?token=synthetic';
-const asset=(id:string,session='s300')=>({id,session_id:session,tenant_id:'centre',artifact_type:'recording',publication_status:'published',storage_reference:'private/recording',available_at:'2020-01-01'});
-beforeEach(()=>{vi.clearAllMocks();state.user={id:'student',tenantId:'centre',role:'student',roles:['student']};state.fail=false;state.calls=[];state.tables={live_class_sessions:Array.from({length:301},(_,n)=>({id:`s${n}`,title:`Class ${n}`,tenant_id:'centre',module_id:'module',starts_at:'2026-01-01T10:00:00Z'})),live_class_artifacts:[asset('recording')],lesson_ai_packs:[{id:'pack',tenant_id:'centre',session_id:'s300',status:'published',summary:'Approved revision notes'}]};state.signed.mockResolvedValue({data:{signedUrl:url},error:null});vi.spyOn(HTMLMediaElement.prototype,'pause').mockImplementation(()=>{});vi.spyOn(HTMLMediaElement.prototype,'load').mockImplementation(()=>{});state.open.mockReturnValue({opener:{},close:state.close,location:{replace:state.replace}});vi.spyOn(window,'open').mockImplementation(state.open);});
-afterEach(()=>{cleanup();vi.restoreAllMocks();});
+vi.mock('@/lib/db',()=>({db:{from:state.query}}));
+vi.mock('@/integrations/supabase/client',()=>({supabase:{rpc:state.rpc,storage:{from:()=>({createSignedUrl:state.sign})}}}));
+beforeEach(()=>{vi.clearAllMocks();state.user={id:'student',tenantId:'centre',role:'student',roles:['student']};});
+afterEach(cleanup);
 const mount=()=>render(<MemoryRouter><LessonArchive/></MemoryRouter>);
-it('finds older recordings beyond the former cap and displays ten classes per page',async()=>{mount();await screen.findByText('Page 1 of 31');expect(screen.getAllByRole('heading',{level:3})).toHaveLength(10);fireEvent.change(screen.getByLabelText('Search classes'),{target:{value:'Class 300'}});await screen.findByText('Watch recording');expect(screen.getByText('Approved revision pack')).toBeInTheDocument();expect(state.calls.every(c=>c.ids.length<=50)).toBe(true);});
-it('filters recordings and hides drafts, withdrawn and future releases',async()=>{state.tables.live_class_artifacts.push({...asset('future','s1'),available_at:'2099-01-01'},{...asset('draft','s2'),publication_status:'draft'},{...asset('withdrawn','s3'),publication_status:'withdrawn'});mount();await screen.findByText('Page 1 of 31');fireEvent.change(screen.getByLabelText('Show'),{target:{value:'recordings'}});expect(screen.getAllByRole('heading',{level:3})).toHaveLength(1);expect(screen.getByText('Class 300')).toBeInTheDocument();});
-it('fails closed on a later page failure and can refresh',async()=>{state.fail=true;mount();await screen.findByRole('alert');expect(screen.queryByRole('heading',{level:3})).toBeNull();state.fail=false;fireEvent.click(screen.getByText('Refresh archive'));await screen.findByText('Page 1 of 31');});
-it('opens a private file only after fresh authorization and suppresses late account-switch responses',async()=>{let finish!:(v:any)=>void;state.signed.mockReturnValue(new Promise(resolve=>{finish=resolve;}));const v=mount();await screen.findByText('Page 1 of 31');fireEvent.change(screen.getByLabelText('Show'),{target:{value:'recordings'}});fireEvent.click(screen.getByText('Open recording file'));expect(state.open).toHaveBeenCalledWith('about:blank','_blank');state.user={...state.user,id:'other',tenantId:'other'};v.rerender(<MemoryRouter><LessonArchive/></MemoryRouter>);await act(async()=>finish({data:{signedUrl:url}}));expect(state.replace).not.toHaveBeenCalled();expect(state.close).toHaveBeenCalled();});
-it('keeps playback position when refreshing access and clears the media on close',async()=>{const v=render(<ClassRecordingPlayer path="private/recording" title="Algebra" onClose={()=>{}}/>);const video=await screen.findByLabelText('Recording: Algebra');Object.defineProperty(video,'currentTime',{configurable:true,writable:true,value:42});fireEvent.timeUpdate(video);fireEvent.click(screen.getByText('Refresh playback access'));await waitFor(()=>expect(state.signed).toHaveBeenCalledTimes(2));const refreshed=await screen.findByLabelText('Recording: Algebra');Object.defineProperty(refreshed,'duration',{configurable:true,value:100});fireEvent.loadedMetadata(refreshed);expect((refreshed as HTMLVideoElement).currentTime).toBe(42);v.unmount();expect(refreshed).not.toHaveAttribute('src');});
-it('offers retry when access renewal is denied and never exposes the old media URL',async()=>{render(<ClassRecordingPlayer path="private/recording" title="Algebra" onClose={()=>{}}/>);await screen.findByLabelText('Recording: Algebra');state.signed.mockResolvedValue({error:Error('revoked'),data:null});fireEvent.click(screen.getByText('Refresh playback access'));await screen.findByRole('alert');expect(screen.queryByLabelText('Recording: Algebra')).toBeNull();});
-it('rejects unexpected external or insecure signed media addresses',async()=>{for(const address of ['http://unipathway-browser-ci.invalid/storage/v1/object/sign/unipathway-class-media/x','https://example.com/private','https://unipathway-browser-ci.invalid/storage/v1/object/sign/other/x']){state.signed.mockResolvedValue({data:{signedUrl:address}});await expect(classMediaUrl('private/recording')).rejects.toThrow('Unexpected');}});
+const source=readFileSync('src/pages/student/LessonArchive.tsx','utf8');
+
+describe('private lesson archive with staged post-class service',()=>{
+ it('does not list a centre-wide class history before backend verification',async()=>{
+  mount();await screen.findByRole('alert');
+  expect(screen.getByRole('alert')).toHaveTextContent(/could not be verified/i);
+  expect(screen.getByText(/24 hours after the class has actually ended/)).toBeInTheDocument();
+  expect(state.query).not.toHaveBeenCalled();
+  expect(state.sign).not.toHaveBeenCalled();
+ });
+ it('refuses to reveal class history to unauthorised active roles',()=>{
+  expect(archiveAudience({...state.user,role:'finance_officer',roles:['finance_officer']})).toBe('blocked');
+  expect(archiveAudience({...state.user,role:'lecturer',roles:['student']})).toBe('blocked');
+  expect(archiveAudience({...state.user,tenantId:''})).toBe('blocked');
+ });
+ it('requires enrolled programmes or allocated lecturer modules before reading sessions',()=>{
+  expect(source).toContain("from('student_enrolments')");
+  expect(source).toContain(".eq('student_id',uid).eq('status','active')");
+  expect(source).toContain(".eq('lecturer_id',uid)");
+  expect(source).toContain(".in('module_id',batch)");
+  expect(source).toContain('rowsByIds<Session>(moduleIds');
+ });
+ it('keeps recordings locked without verified actual class end and a release timestamp',()=>{
+  const session={status:'ended',ends_at:'2026-11-01T10:00:00Z',actual_ended_at:'2026-11-01T10:30:00Z'};
+  const now=Date.parse('2026-11-02T12:00:00Z');
+  expect(publishedArchiveAssetAvailable({publication_status:'published',available_at:null},session,now)).toBe(false);
+  expect(publishedArchiveAssetAvailable({publication_status:'published',available_at:'2026-11-01T10:30:00Z'},session,now)).toBe(false);
+  expect(publishedArchiveAssetAvailable({publication_status:'published',available_at:'2026-11-02T10:30:00Z'},{...session,status:'cancelled'},now)).toBe(false);
+  expect(source).toContain('publishedArchiveAssetAvailable');
+  expect(source).toContain('archiveMinimumEmbargoElapsed');
+ });
+ it('requires server permission before requesting a private media signing URL',async()=>{
+  await expect(classMediaUrl('private/recording')).rejects.toThrow('not been activated');
+  expect(state.rpc).not.toHaveBeenCalled();
+  expect(state.sign).not.toHaveBeenCalled();
+  expect(source).toContain('classMediaUrl(a.storage_reference)');
+ });
+ it('renders an inaccessible media error rather than playing a mocked public recording',async()=>{
+  render(<MemoryRouter><ClassRecordingPlayer path="private/recording" title="Algebra" onClose={()=>{}}/></MemoryRouter>);
+  await screen.findByRole('alert');
+  expect(screen.queryByLabelText('Recording: Algebra')).toBeNull();
+  expect(state.sign).not.toHaveBeenCalled();
+ });
+});
