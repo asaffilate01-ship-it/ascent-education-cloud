@@ -100,7 +100,7 @@ CREATE POLICY "registry centre leaders or assigned lecturer read"
    unipathway_acl.course_registry_manager(tenant_id)
    OR (module_id IS NOT NULL AND EXISTS (
     SELECT 1 FROM public.modules m
-     WHERE m.id=module_id AND m.tenant_id=tenant_id AND m.lecturer_id=auth.uid()
+     WHERE m.id=unipathway_course_specifications.module_id AND m.tenant_id=unipathway_course_specifications.tenant_id AND m.lecturer_id=auth.uid()
    ))
   )
  );
@@ -135,10 +135,10 @@ CREATE POLICY "rights allocated teachers propose evidence only"
    SELECT 1 FROM public.unipathway_module_materials m
    JOIN public.unipathway_course_specifications s
      ON s.id=specification_id
-   WHERE m.id=material_id
-    AND m.tenant_id=tenant_id AND m.module_id=module_id
+   WHERE m.id=unipathway_material_rights.material_id
+    AND m.tenant_id=unipathway_material_rights.tenant_id AND m.module_id=unipathway_material_rights.module_id
     AND m.publication_status='draft'
-    AND s.tenant_id=tenant_id AND s.module_id=m.module_id
+    AND s.tenant_id=unipathway_material_rights.tenant_id AND s.module_id=m.module_id
   )
  );
 
