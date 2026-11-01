@@ -62,6 +62,7 @@ const ProgrammeManagement = lazy(() => import("./pages/director/ProgrammeManagem
 const StaffManagement = lazy(() => import("./pages/director/StaffManagement"));
 const StaffAccessManager = lazy(() => import("./pages/office/StaffAccessManager"));
 const OfficeStaffDashboard = lazy(() => import("./pages/office/OfficeStaffDashboard"));
+const TechLabAccessGate = lazy(() => import("./components/labs/TechLabAccessGate"));
 const StudentManagement = lazy(() => import("./pages/director/StudentManagement"));
 
 // Ops portals
@@ -540,7 +541,7 @@ function AppRoutes() {
         <Route path="/agent/messages" element={<AgentR><MessagingInbox /></AgentR>} />
 
         {/* ========== STUDENT ========== */}
-        <Route path="/student/managed-labs" element={<StudentR><LMSVirtualLabs /></StudentR>} />
+        <Route path="/student/managed-labs" element={<StudentR><TechLabAccessGate><LMSVirtualLabs /></TechLabAccessGate></StudentR>} />
         <Route path="/student" element={<StudentR><StudentDashboard /></StudentR>} />
         <Route path="/student/downloads" element={<StudentR><LearningDownloads /></StudentR>} />
         <Route path="/student/lessons" element={<StudentR><LessonWorkspace /></StudentR>} />
@@ -569,7 +570,7 @@ function AppRoutes() {
         <Route path="/student/career" element={<StudentR><StudentCareer /></StudentR>} />
         <Route path="/student/opportunities" element={<StudentR><CareerMarketplace /></StudentR>} />
         <Route path="/student/support" element={<StudentR><MessagingInbox /></StudentR>} />
-        <Route path="/student/labs" element={<StudentR><LabLearningHub /></StudentR>} />
+        <Route path="/student/labs" element={<StudentR><TechLabAccessGate><LabLearningHub /></TechLabAccessGate></StudentR>} />
         <Route path="/student/quizzes" element={<StudentR><QuizDashboard /></StudentR>} />
         <Route path="/student/forums" element={<StudentR><ForumPage /></StudentR>} />
         <Route path="/student/gradebook" element={<StudentR><StudentReleasedResults /></StudentR>} />
