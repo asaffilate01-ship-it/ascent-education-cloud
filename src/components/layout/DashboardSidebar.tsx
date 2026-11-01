@@ -28,6 +28,16 @@ interface NavSection {
 }
 
 const NAV_CONFIG: Record<UserRole, NavSection[]> = {
+  office_admin: [{title:'Office administration',items:[
+    {label:'Office dashboard',icon:LayoutDashboard,path:'/office'},
+    {label:'My approved capabilities',icon:Shield,path:'/office/compliance-preparation'},
+  ]}],
+  hr_officer: [{title:'People & HR',items:[
+    {label:'HR dashboard',icon:Users,path:'/office'},
+  ]}],
+  secretary: [{title:'Centre secretary',items:[
+    {label:'Secretary dashboard',icon:Calendar,path:'/office'},
+  ]}],
   security_officer: [{title: 'Security', items: [{label: 'Communications', icon: Mail, path: '/communications'},{label: 'CCTV live & playback', icon: Shield, path: '/security'}]}],
   superadmin: [
     { title: 'Platform', items: [
@@ -46,6 +56,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'UniPathway Opportunity Fund', icon: Award, path: '/landlord/opportunity-fund' },
       { label: 'CIBTAC / CPD Accreditation', icon: Award, path: '/landlord/beauty-accreditation' },
       { label: 'Platform Users', icon: Users, path: '/landlord/users' },
+      { label: 'Staff role and permission approvals', icon: Shield, path: '/landlord/staff-access' },
     ]},
     { title: 'Revenue', items: [
       { label: 'Finance', icon: CreditCard, path: '/landlord/finance' },
@@ -79,6 +90,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'CCTV live & playback', icon: Shield, path: '/security' },
       { label: 'Sponsor funding', icon: Handshake, path: '/director/funding' },
       { label: 'Staff', icon: Users, path: '/director/staff' },
+      { label: 'Office & HR permissions', icon: Shield, path: '/director/staff-access' },
       { label: 'Students', icon: GraduationCap, path: '/director/students' },
       { label: 'Employer Partnerships', icon: Briefcase, path: '/director/employers' },
     ]},
