@@ -1,3 +1,32 @@
-import { db } from '@/lib/db';
-import DashboardLayout from '@/components/layout/DashboardLayout'; import StatCard from '@/components/ui/StatCard'; import StatusBadge from '@/components/ui/StatusBadge'; import {useEffect,useState} from 'react'; import {supabase} from '@/integrations/supabase/client'; import {Users,UserCheck,ShieldCheck,DoorOpen} from 'lucide-react';
-export default function CentreSecurity(){const [occ,setOcc]=useState<any[]>([]),[events,setEvents]=useState<any[]>([]);useEffect(()=>{Promise.all([db.from('centre_occupancy').select('*').eq('in_building',true),db.from('centre_access_events').select('*').order('occurred_at',{ascending:false}).limit(100)]).then(([a,b])=>{setOcc(a.data||[]);setEvents(b.data||[])})},[]);return <DashboardLayout title="Centre Security" subtitle="Live occupancy, access events and emergency muster"><div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5"><StatCard label="In Building" value={occ.length} icon={Users}/><StatCard label="Students/Staff" value={occ.filter(x=>x.person_type!=='visitor').length} icon={UserCheck}/><StatCard label="Visitors" value={occ.filter(x=>x.person_type==='visitor').length} icon={DoorOpen}/><StatCard label="Denied Today" value={events.filter(x=>x.decision==='denied'&&new Date(x.occurred_at).toDateString()===new Date().toDateString()).length} icon={ShieldCheck}/></div><div className="surface-card overflow-hidden"><div className="p-4 border-b"><h3 className="font-semibold">Recent gate activity</h3></div>{events.map(e=><div key={e.id} className="p-4 border-b last:border-0 flex gap-3"><div className="flex-1"><p className="text-sm font-semibold">{e.direction==='in'?'Entry':'Exit'} · {e.gate_id}</p><p className="text-xs text-muted-foreground">{new Date(e.occurred_at).toLocaleString()}</p></div><StatusBadge status={e.decision} variant={e.decision==='allowed'?'success':e.decision==='denied'?'danger':'warning'}/></div>)}</div></DashboardLayout>}
+
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import {useAuth} from '@/contexts/AuthContext';
+import {useScopedSecurityRows} from '@/hooks/useScopedSecurityRows';
+import PhysicalSecurityReadiness from '@/components/security/PhysicalSecurityReadiness';
+import {physicalSecurityScope,PHYSICAL_SECURITY_ENABLED,occupancyStats,displayTime,type CentreAccessEvent,type CentreOccupant} from '@/lib/physicalSecurity';
+import {Button} from '@/components/ui/button';
+export default function CentreSecurity(){const {user}=useAuth();return <GateActivity key={`${user?.id}:${user?.tenantId}:${user?.role}:${user?.roles?.join(',')}`}/>;}
+function GateActivity(){
+ const {user}=useAuth(),permitted=!!physicalSecurityScope(user)&&PHYSICAL_SECURITY_ENABLED;
+ const occupancy=useScopedSecurityRows<CentreOccupant>(user,'centre_occupancy','tenant_id,person_key,person_type,in_building,last_event_at,last_gate_id','person_key');
+ const events=useScopedSecurityRows<CentreAccessEvent>(user,'centre_access_events','id,tenant_id,gate_id,direction,decision,occurred_at','id');
+ const loading=occupancy.loading||events.loading,failed=occupancy.error||events.error;
+ const inside=occupancyStats(occupancy.data);
+ return <DashboardLayout title="Gate activity and occupancy" subtitle="Centre-authorised, recorded entries and exits">
+  <PhysicalSecurityReadiness/>
+  {permitted&&loading&&<p role="status">Loading the recorded access log…</p>}
+  {permitted&&failed&&<div role="alert" className="rounded-xl border p-5"><p>Access events and occupancy could not both be verified. No partial counts are displayed.</p><Button onClick={()=>{occupancy.refresh();events.refresh();}}>Retry</Button></div>}
+  {permitted&&!loading&&!failed&&<>
+   <section className="grid gap-3 sm:grid-cols-3">
+    {([['Recorded inside',inside.inside],['Learners and staff',inside.learnersAndStaff],['Visitors',inside.visitors]] as const).map(([label,value])=><article key={label} className="rounded-xl border bg-card p-5"><p className="text-sm text-muted-foreground">{label}</p><p className="mt-2 text-2xl font-bold">{value}</p></article>)}
+   </section>
+   <p className="my-4 text-sm text-muted-foreground">Gate events and occupancy may lag hardware; do not treat this as an emergency muster count. No credential hashes or personal access tokens are read.</p>
+   <section className="rounded-xl border bg-card p-5"><h2 className="font-semibold">Recorded access decisions</h2>
+    {events.data.length===0&&<p className="mt-3 text-sm">No access events recorded.</p>}
+    <div className="mt-3 divide-y">{[...events.data].sort((a,b)=>Date.parse(b.occurred_at)-Date.parse(a.occurred_at)).slice(0,100).map(event=><article key={event.id} className="flex flex-wrap justify-between gap-3 py-3 text-sm">
+      <div><p className="font-medium">{event.gate_id} · {event.direction==='in'?'Entry':'Exit'}</p><p className="text-muted-foreground">{displayTime(event.occurred_at)} PKT</p></div><p className={event.decision==='denied'?'text-destructive':'text-muted-foreground'}>{event.decision}</p>
+    </article>)}</div>{events.data.length>100&&<p className="text-xs">Showing the latest 100 of {events.data.length} returned events, not a full audit export.</p>}
+   </section>
+  </>}
+ </DashboardLayout>;
+}
