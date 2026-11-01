@@ -40,7 +40,7 @@ export default function AdmissionHandover({applications,onRefetch}:{applications
  const current=eligible.find(a=>a.id===selected);
  return <section className="surface-card mb-6 p-5" aria-labelledby="admission-handover-title">
   <h2 id="admission-handover-title" className="font-semibold">Academic enrolment review</h2>
-  <p className="mt-2 text-sm text-muted-foreground">Review approved offers before enabling learning access. Finance approval and classroom invitations remain separate steps.</p>
+  <p className="mt-2 text-sm text-muted-foreground">The existing server transaction confirms a matching student, an active programme and the application stage, but does not itself verify every KYC, signed offer, funding decision or class allocation. Require those independent records before accepting an enrolment decision; finance and classroom invitations remain separate steps.</p>
   {success&&<p role="status" className="mt-3 text-sm">{success}</p>}
   {!eligible.length&&<p className="mt-3 text-sm text-muted-foreground">No unconditional offers or recorded-deposit applications awaiting enrolment.</p>}
   <div className="mt-3 max-h-72 space-y-2 overflow-y-auto">{eligible.map(a=><div key={a.id} className="flex flex-wrap items-center justify-between gap-2 border-t py-2"><div><p className="text-sm font-medium">{a.student_name}</p><p className="text-xs text-muted-foreground">{a.programme_name||'Programme review required'}</p></div><Button size="sm" variant="outline" disabled={!!current} onClick={()=>{setSelected(a.id);setSuccess('');}}>Review enrolment<span className="sr-only"> for {a.student_name}</span></Button></div>)}</div>
