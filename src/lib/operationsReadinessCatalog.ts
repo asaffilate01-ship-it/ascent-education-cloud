@@ -52,7 +52,7 @@ export const READINESS_TRACKS:readonly ReadinessTrack[]=[
   requirements:[approval('NAVTTC institute registration'),requirement('centre_approval','NAC-TVS / QAB affiliation evidence','Check relevant approval and named qualification awarding/assessment body; registration alone does not confer accredited vocational awards.','critical'),spec(),requirement('assessment','Practical labs and CBT&A assessor readiness','Record approved trade standards, equipment, learner safety, certified assessors and practical assessment controls.','critical'),safety()]
  },
  {
-  key:'PSDF',label:'Punjab Skills Development Fund opportunities',family:'Vocational Pakistan',authority:'PSDF',
+  key:'PSDF',label:'PSDF — Punjab Skills Development Fund opportunities',family:'Vocational Pakistan',authority:'PSDF',
   officialUrl:'https://www.psdf.org.pk/',workspace:'/director/funding',
   scope:'Funding calls and contract eligibility must be checked against the latest published PSDF requirements.',
   requirements:[requirement('centre_approval','Current PSDF tender and eligibility','Keep the actual programme notice, delivery location, legal capacity and signed award/contract evidence.','critical'),requirement('policies','Attendance, disbursement and audit controls','Validate cohort attendance, learner identity, completion evidence, monitoring and permitted funding reconciliation.'),safety()]
