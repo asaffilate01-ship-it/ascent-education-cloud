@@ -1,4 +1,5 @@
 import {useState} from 'react';
+import {Link} from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
@@ -61,6 +62,8 @@ function HealthWorkspace(){
  const error=records.error||(isStaff&&(enrolments.error||profiles.error));
  const selectedRecord=records.data.find(r=>r.student_id===target&&r.tenant_id===user?.tenantId)||null;
  return <DashboardLayout title="Health Records" subtitle="Private medical information and emergency contacts">
+  {user?.role==='welfare_officer'&&<Link className="mb-5 inline-flex min-h-11 items-center rounded-lg border bg-card px-4 text-sm font-medium hover:bg-accent" to="/welfare/support">Review confidential and anonymous wellbeing requests</Link>}
+  {user?.role==='student'&&<Link className="mb-5 inline-flex min-h-11 items-center rounded-lg border bg-card px-4 text-sm font-medium hover:bg-accent" to="/student/wellbeing">Get mental health or counselling support</Link>}
   <section className="mb-5 rounded-xl border bg-card p-4">
    <h2 className="flex items-center gap-2 font-semibold"><Shield className="size-4"/>Private health record access</h2>
    <p className="mt-2 text-sm text-muted-foreground">Students can view and update their own centre record. Welfare staff and centre leaders may work only with enrolled learners at their assigned centre, subject to server permissions. Do not share confidential health details in general messages.</p>
