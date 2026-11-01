@@ -37,6 +37,13 @@ describe('UniPathway lesson archive source and access boundaries',()=>{
   expect(publishedArchiveAssetAvailable({...available,available_at:'2026-11-01T23:00:00Z'},short,Date.parse('2026-11-01T23:00:00Z'))).toBe(true);
   expect(publishedArchiveAssetAvailable(available,completed,Date.parse('2026-11-02T00:00:00Z'))).toBe(true);
  });
+ it('never performs a centre-agnostic whiteboard readiness probe',()=>{
+  const source=readFileSync('src/pages/lecturer/LecturerDeliveryReadiness.tsx','utf8');
+  expect(source).toContain("make('lesson_whiteboards','id',[],'Whiteboard backend')");
+  expect(source).not.toContain("db.from('lesson_whiteboards').select('id').limit(1)");
+  // The shared make() helper applies the signed-in teacher's tenant_id.
+  expect(source).toContain(".eq('tenant_id',tenant)");
+ });
  it('reads only authorised study scope before sessions or published packs',()=>{
   const source=readFileSync('src/pages/student/LessonArchive.tsx','utf8');
   expect(source).toContain('archiveAudience(user)');
