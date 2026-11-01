@@ -110,7 +110,8 @@ BEGIN
  SELECT * INTO v_class FROM public.live_class_sessions
  WHERE id=p_session AND tenant_id=v_centre FOR UPDATE;
  IF v_actor IS NULL OR v_centre IS NULL OR NOT FOUND
- OR v_class.status='cancelled'
+ OR v_class.status='cancelled' OR v_class.starts_at IS NULL
+ OR v_class.ends_at IS NULL OR now()<v_class.ends_at
  OR p_evidence IS NULL OR length(btrim(p_evidence)) NOT BETWEEN 12 AND 500
  OR NOT (
   EXISTS(SELECT 1 FROM public.user_roles r WHERE r.user_id=v_actor
