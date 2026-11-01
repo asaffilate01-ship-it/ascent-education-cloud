@@ -43,6 +43,7 @@ export const workspaceCatalog:Record<string,WorkspaceGroup[]>={
   group('Fees and support',[
    ['Fees, paid and outstanding','/student/finance','Recorded invoices and balances; unbilled course fees require finance confirmation.'],
    ['Student support','/student/support','Contact your centre about study, documents or arrangements.'],
+   ['Confidential wellbeing and counselling','/student/wellbeing','Mental health, academic, personal or other support, with a separate anonymous option.'],
    ['Microsoft account','/student/microsoft','Account provisioning and classroom handoff status.'],
   ]),
  ],
