@@ -56,6 +56,13 @@ describe('private lesson archive with staged post-class service',()=>{
   expect(state.sign).not.toHaveBeenCalled();
   expect(source).toContain('classMediaUrl(a.storage_reference)');
  });
+ it('rekeys the recording player for the active principal and denies inactive roles',()=>{
+  const player=readFileSync('src/components/learning/ClassRecordingPlayer.tsx','utf8');
+  expect(player).toContain('user.roles?.includes(user.role)');
+  expect(player).toContain('key={principal}');
+  expect(player).toContain("if(!account){setError('A verified account and active role are required to view recordings.");
+  expect(player).toContain('account?.tenantId,path,refresh');
+ });
  it('renders an inaccessible media error rather than playing a mocked public recording',async()=>{
   render(<MemoryRouter><ClassRecordingPlayer path="private/recording" title="Algebra" onClose={()=>{}}/></MemoryRouter>);
   await screen.findByRole('alert');
