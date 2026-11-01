@@ -5,10 +5,25 @@ CREATE SCHEMA IF NOT EXISTS unipathway_security;
 REVOKE ALL ON SCHEMA unipathway_security FROM PUBLIC, anon;
 GRANT USAGE ON SCHEMA unipathway_security TO authenticated;
 
+-- Backend activation is independent of browser VITE_* flags. Both gates remain
+-- OFF after the forward patch is applied. A reviewed privileged operator must
+-- enable reads first and visitor commands only after real two-centre acceptance.
+CREATE TABLE unipathway_security.activation_gate(
+ singleton boolean PRIMARY KEY DEFAULT true CHECK(singleton),
+ physical_reads_enabled boolean NOT NULL DEFAULT false,
+ visitor_writes_enabled boolean NOT NULL DEFAULT false,
+ updated_at timestamptz NOT NULL DEFAULT now()
+);
+INSERT INTO unipathway_security.activation_gate(singleton) VALUES (true);
+ALTER TABLE unipathway_security.activation_gate ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON unipathway_security.activation_gate FROM PUBLIC,anon,authenticated;
+
 CREATE OR REPLACE FUNCTION unipathway_security.verified_officer(p_tenant uuid)
 RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=''
 AS $fn$
  SELECT (SELECT auth.uid()) IS NOT NULL AND p_tenant IS NOT NULL
+ AND EXISTS(SELECT 1 FROM unipathway_security.activation_gate a
+  WHERE a.singleton AND a.physical_reads_enabled AND a.visitor_writes_enabled)
  AND EXISTS(SELECT 1 FROM public.tenants t WHERE t.id=p_tenant AND t.status='active')
  AND EXISTS(SELECT 1 FROM public.profiles p WHERE p.user_id=(SELECT auth.uid()) AND p.tenant_id=p_tenant)
  AND EXISTS(SELECT 1 FROM public.user_roles r
@@ -25,6 +40,8 @@ CREATE OR REPLACE FUNCTION unipathway_security.verified_reader(p_tenant uuid)
 RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=''
 AS $fn$
  SELECT (SELECT auth.uid()) IS NOT NULL AND p_tenant IS NOT NULL
+ AND EXISTS(SELECT 1 FROM unipathway_security.activation_gate a
+  WHERE a.singleton AND a.physical_reads_enabled)
  AND EXISTS(SELECT 1 FROM public.tenants t WHERE t.id=p_tenant AND t.status='active')
  AND EXISTS(SELECT 1 FROM public.profiles p WHERE p.user_id=(SELECT auth.uid()) AND p.tenant_id=p_tenant)
  AND EXISTS(SELECT 1 FROM public.user_roles r
