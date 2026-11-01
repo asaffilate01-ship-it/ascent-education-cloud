@@ -23,15 +23,16 @@ const fadeUp = {
 
 export default function StudentDashboard() {
   const {user} = useAuth();
-  return <StudentDashboardContent key={`${user?.id}:${user?.tenantId}:${user?.role}`} />;
+  return <StudentDashboardContent key={`${user?.id}:${user?.tenantId}:${user?.role}:${user?.roles?.join(',')}`} />;
 }
 function StudentDashboardContent() {
   const { user } = useAuth();
+  const verified=!!user?.id&&!!user.tenantId&&user.role==='student'&&user.roles?.includes('student');
   const scope = [{column: 'tenant_id', operator: 'eq' as const, value: user?.tenantId}];
-  const enrolmentsQuery = useSupabaseQuery('student_enrolments', {enabled: !!user?.tenantId, filters: [...scope, {column: 'student_id', operator: 'eq', value: user?.id}, {column: 'status', operator: 'eq', value: 'active'}]});
+  const enrolmentsQuery = useSupabaseQuery('student_enrolments', {enabled: verified, filters: [...scope, {column: 'student_id', operator: 'eq', value: user?.id}, {column: 'status', operator: 'eq', value: 'active'}]});
   const programmeIds = [...new Set(enrolmentsQuery.data.map(row => row.programme_id))];
-  const programmesQuery = useSupabaseQuery('programmes', {enabled: programmeIds.length > 0, filters: [...scope, {column: 'id', operator: 'in', value: programmeIds}]});
-  const modulesQuery = useSupabaseQuery('modules', {enabled: programmeIds.length > 0, filters: [...scope, {column: 'programme_id', operator: 'in', value: programmeIds}]});
+  const programmesQuery = useSupabaseQuery('programmes', {enabled: verified && programmeIds.length > 0, filters: [...scope, {column: 'id', operator: 'in', value: programmeIds}]});
+  const modulesQuery = useSupabaseQuery('modules', {enabled: verified && programmeIds.length > 0, filters: [...scope, {column: 'programme_id', operator: 'in', value: programmeIds}]});
   const moduleIds = modulesQuery.data.map(row => row.id);
   type Approved={attempt_id:string;brief_id:string;final_score:number;released_at:string};
   type Amendment={attempt_id:string;corrected_final_score:number};
@@ -41,7 +42,7 @@ function StudentDashboardContent() {
   const [gradeError,setGradeError]=useState('');
   const [gradeLoading,setGradeLoading]=useState(true);
   useEffect(()=>{
-   if(!user?.id||!user.tenantId){setGradeLoading(false);setApproved([]);return;}
+   if(!verified){setGradeLoading(false);setApproved([]);setCorrections([]);setGradeError('');return;}
    let live=true;setGradeLoading(true);setGradeError('');
    void (async()=>{
     const a=await db.from('unipathway_assessment_released_results')
@@ -60,7 +61,7 @@ function StudentDashboardContent() {
     setGradeLoading(false);
    })().catch(()=>{if(live){setApproved([]);setCorrections([]);setGradeError('Secure approved grades are unavailable.');setGradeLoading(false);}});
    return()=>{live=false;};
-  },[user?.id,user?.tenantId,gradeRefresh]);
+  },[verified,user?.id,user?.tenantId,gradeRefresh]);
   const {data: modules} = modulesQuery;
   const {data: programmes} = programmesQuery;
   const queries = [enrolmentsQuery, programmesQuery, modulesQuery];
@@ -70,7 +71,7 @@ function StudentDashboardContent() {
     ? Math.round(approved.reduce((sum,g)=>sum+Number(corrections.find(x=>x.attempt_id===g.attempt_id)?.corrected_final_score??g.final_score),0)/approved.length)
     : null;
 
-  if (!user?.tenantId) return <DashboardLayout title="Today"><p role="alert">A centre assignment is required.</p></DashboardLayout>;
+  if (!verified) return <DashboardLayout title="Today"><p role="alert">An active, verified Student role and assigned centre are required. No learning data is loaded.</p></DashboardLayout>;
   if (loading) return <DashboardSkeleton />;
   if (queries.some(query => query.error)) return <DashboardLayout title="Today"><p role="alert">Your learning records could not be loaded completely.</p><Button onClick={() => queries.forEach(query => void query.refetch())}>Retry learning records</Button></DashboardLayout>;
 

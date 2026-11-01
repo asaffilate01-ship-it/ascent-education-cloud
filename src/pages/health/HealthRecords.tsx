@@ -37,13 +37,13 @@ function formFromRecord(record:HealthRecord|null){
 export default function HealthRecords(){
  const {user}=useAuth();
  // Remount all patient selections and unsaved form values when account, centre or role changes.
- return <HealthWorkspace key={[user?.id,user?.tenantId,user?.role].join(':')}/>;
+ return <HealthWorkspace key={[user?.id,user?.tenantId,user?.role,user?.roles?.join(',')].join(':')}/>;
 }
 function HealthWorkspace(){
  const {user}=useAuth();
  const isStudent=user?.role==='student';
  const isStaff=!!user&&STAFF_ROLES.some(role=>role===user.role);
- const ready=!!user?.id&&!!user.tenantId&&(isStudent||isStaff);
+ const ready=!!user?.id&&!!user.tenantId&&user.roles?.includes(user.role)&&(isStudent||isStaff);
  const [selectedStudent,setSelectedStudent]=useState('');
  const scope=[{column:'tenant_id',operator:'eq' as const,value:user?.tenantId||''}];
  const enrolments=useSupabaseQuery('student_enrolments',{
@@ -111,9 +111,9 @@ function HealthEditor({studentId,tenantId,record,editable,onSaved}:{
     insurance_provider:form.insurance_provider||null,insurance_number:form.insurance_number||null,
     notes:form.notes||null,last_checkup_date:form.last_checkup_date||null,
    };
-   const result=await supabase.from('health_records').upsert(payload,{onConflict:'student_id'});
-   if(result.error)throw result.error;
-   setMessage('Save accepted by the centre database. Refreshing your authorised record.');
+   const result=await supabase.from('health_records').upsert(payload,{onConflict:'student_id'}).select('id,student_id,tenant_id').single();
+   if(result.error||result.data?.student_id!==studentId||result.data?.tenant_id!==tenantId)throw Error('Record save receipt could not be verified');
+   setMessage('The centre database confirmed your authorised record. Refreshing the latest version.');
    onSaved();
   }catch{
    toast.error('Record could not be saved. Check your permissions and try again.');

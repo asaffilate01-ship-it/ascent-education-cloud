@@ -12,18 +12,19 @@ import type { Tables } from '@/integrations/supabase/types';
 
 export default function ProgrammeManagement() {
   const {user}=useAuth();
-  const filters=user?.tenantId?[{column:'tenant_id',operator:'eq' as const,value:user.tenantId}]:[];
+  const verified=!!user?.id&&!!user.tenantId&&user.roles?.includes(user.role)&&['centre_director','programme_leader'].includes(user.role);
+  const filters=verified?[{column:'tenant_id',operator:'eq' as const,value:user!.tenantId!}]:[];
   const [selectedProgramme, setSelectedProgramme] = useState<string | null>(null);
   const { data: programmes, loading, error: programmeError, refetch: refreshProgrammes } = useSupabaseQuery('programmes', {
-    enabled:!!user?.tenantId, filters, orderBy: { column: 'title', ascending: true },
+    enabled:verified, filters, orderBy: { column: 'title', ascending: true },
   });
-  const { data: modules, error: moduleError, refetch: refreshModules } = useSupabaseQuery('modules', {
-    enabled:!!user?.tenantId, filters, orderBy: { column: 'title', ascending: true },
+  const { data: modules, loading: modulesLoading, error: moduleError, refetch: refreshModules } = useSupabaseQuery('modules', {
+    enabled:verified, filters, orderBy: { column: 'title', ascending: true },
   });
 
-  if (!user?.tenantId) return <DashboardLayout title="Programme Management"><p role="alert">A centre assignment is required.</p></DashboardLayout>;
+  if (!verified) return <DashboardLayout title="Programme Management"><p role="alert">An active Programme Leader or Centre Director role and verified centre membership are required.</p></DashboardLayout>;
   if (programmeError || moduleError) return <DashboardLayout title="Programme Management"><p role="alert">Courses or modules could not be loaded.</p><Button onClick={()=>{void refreshProgrammes();void refreshModules();}}>Retry</Button></DashboardLayout>;
-  if (loading) return <DashboardSkeleton />;
+  if (loading || modulesLoading) return <DashboardSkeleton />;
 
   const selected = programmes.find((p) => p.id === selectedProgramme);
   const selectedModules = modules.filter((m) => m.programme_id === selectedProgramme);
@@ -41,7 +42,7 @@ export default function ProgrammeManagement() {
         </div>
         <div className="surface-card p-4 text-center">
           <p className="text-2xl font-bold">{programmes.reduce((s, p) => s + (p.enrolled || 0), 0)}</p>
-          <p className="text-xs text-muted-foreground mt-1">Total Enrolled</p>
+          <p className="text-xs text-muted-foreground mt-1">Recorded enrolled counters (not independently reconciled)</p>
         </div>
         <div className="surface-card p-4 text-center">
           <p className="text-2xl font-bold">{new Set(programmes.map((p) => p.awarding_body)).size}</p>

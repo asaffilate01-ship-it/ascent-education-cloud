@@ -2,7 +2,7 @@ import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 import {cleanup,render,screen} from '@testing-library/react';
 import {MemoryRouter} from 'react-router-dom';
 const mock=vi.hoisted(()=>({
- user:{id:'student-a',tenantId:'centre-a',role:'student'} as {id:string;tenantId:string;role:string},
+ user:{id:'student-a',tenantId:'centre-a',role:'student',roles:['student']} as {id:string;tenantId:string;role:string;roles:string[]},
  queries:[] as {table:string;options:any}[],
  records:[
   {id:'h1',student_id:'student-a',tenant_id:'centre-a',allergies:['Own allergy'],updated_at:'2026-01-01'},
@@ -27,7 +27,7 @@ vi.mock('@/hooks/useSupabaseQuery',()=>({useSupabaseQuery:(table:string,options:
 }}));
 vi.mock('@/integrations/supabase/client',()=>({supabase:{from:()=>({upsert:async()=>({error:null})})}}));
 import HealthRecords from '@/pages/health/HealthRecords';
-beforeEach(()=>{mock.queries=[];mock.user={id:'student-a',tenantId:'centre-a',role:'student'};});
+beforeEach(()=>{mock.queries=[];mock.user={id:'student-a',tenantId:'centre-a',role:'student',roles:['student']};});
 afterEach(cleanup);
 const show=()=>render(<MemoryRouter><HealthRecords/></MemoryRouter>);
 it('student records query explicitly requires their own ID and centre and does not list other patients',()=>{
@@ -43,7 +43,7 @@ it('student records query explicitly requires their own ID and centre and does n
  expect(screen.queryByText(/Other-centre record/)).toBeNull();
 });
 it('welfare role sees only a scoped enrolled-student selector and never preloads every health record',()=>{
- mock.user={id:'welfare',tenantId:'centre-a',role:'welfare_officer'};
+ mock.user={id:'welfare',tenantId:'centre-a',role:'welfare_officer',roles:['welfare_officer']};
  show();
  const q=mock.queries.find(q=>q.table==='health_records')!;
  expect(q.options.enabled).toBe(false);
@@ -51,7 +51,7 @@ it('welfare role sees only a scoped enrolled-student selector and never preloads
  expect(screen.getByRole('combobox',{name:'Select enrolled student at this centre'})).toBeInTheDocument();
 });
 it('unsupported active role cannot retrieve health or create a patient record',()=>{
- mock.user={id:'agent',tenantId:'centre-a',role:'agent'};
+ mock.user={id:'agent',tenantId:'centre-a',role:'agent',roles:['agent']};
  show();
  expect(screen.getByRole('alert')).toHaveTextContent('verified student or welfare/centre leadership role');
  expect(mock.queries.find(q=>q.table==='health_records')!.options.enabled).toBe(false);
