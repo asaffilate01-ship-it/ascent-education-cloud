@@ -28,7 +28,7 @@ const as=async(user,sql)=>{
  try{return await q(sql);}finally{await db.exec('RESET ROLE');}
 };
 const deny=async(user,sql)=>{
- await assert.rejects(()=>as(user,sql),/(denied|role|required|permission|access|centre|available|review|revision|closed|case|invalid|completed class)/i);checks++;
+ await assert.rejects(()=>as(user,sql),/(denied|role|required|permission|access|centre|available|review|revision|closed|case|invalid|completed class|contactable active student)/i);checks++;
 };
 const check=async(user,sql,expected)=>{
  const r=await as(user,sql);assert.deepEqual(r.rows,expected);checks++;
