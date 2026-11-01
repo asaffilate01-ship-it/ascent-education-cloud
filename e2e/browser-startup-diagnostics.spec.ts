@@ -10,5 +10,17 @@ test('public page boots in a clean synthetic CI browser',async({page})=>{
  console.log('[startup http status]',response?.status()||'no response');
  await expect.poll(async()=>{const content=await page.locator('body').innerText().catch(()=>null);return content?.trim().length||0;},{timeout:45_000}).toBeGreaterThan(80);
  console.log('[startup page body]',(await page.locator('body').innerText()).slice(0,500));
+ await expect.poll(async()=>page.locator('a[href="/study"]').count(),{timeout:25_000}).toBeGreaterThan(0);
+ await expect(page.getByText('Return to online learning')).toHaveCount(0);
  expect(errors,'An uncaught JavaScript startup error prevented app initialization').toEqual([]);
+});
+
+test('a false-negative navigator.onLine still loads the reachable first-party app',async({page})=>{
+ test.setTimeout(65_000);
+ await page.addInitScript(()=>{
+  Object.defineProperty(navigator,'onLine',{configurable:true,get:()=>false});
+ });
+ await page.goto('/',{waitUntil:'domcontentloaded',timeout:20_000});
+ await expect.poll(async()=>page.locator('a[href="/study"]').count(),{timeout:45_000}).toBeGreaterThan(0);
+ await expect(page.getByText('Return to online learning')).toHaveCount(0);
 });
