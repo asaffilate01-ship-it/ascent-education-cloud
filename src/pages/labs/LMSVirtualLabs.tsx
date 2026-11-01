@@ -41,8 +41,8 @@ function LMSVirtualLabsContent(){
  const {user}=useAuth();const [params]=useSearchParams();
  const readGeneration=useRef(0),gatewayGeneration=useRef(0);
  useEffect(()=>()=>{readGeneration.current++;gatewayGeneration.current++;},[]);
- const staff=!!user?.roles.some(r=>['lecturer','programme_leader','centre_director','superadmin'].includes(r));
- const centreManager=!!user?.roles.some(r=>['centre_director','superadmin'].includes(r));
+ const staff=!!user?.role&&user.roles?.includes(user.role)&&['lecturer','programme_leader','centre_director','superadmin'].includes(user.role);
+ const centreManager=!!user?.role&&user.roles?.includes(user.role)&&['centre_director','superadmin'].includes(user.role);
  const [tenant,setTenant]=useState(user?.tenantId||'');
  const [loading,setLoading]=useState(true);const [error,setError]=useState('');
  const [awsReady,setAwsReady]=useState(false);const [gatewayNote,setGatewayNote]=useState('');
@@ -64,7 +64,7 @@ function LMSVirtualLabsContent(){
  useEffect(()=>{
   if(user?.tenantId){setTenant(user.tenantId);return;}
   let active=true;
-  if(user?.roles.includes('superadmin'))void db.from('tenants').select('id')
+  if(user?.role==='superadmin'&&user.roles.includes('superadmin'))void db.from('tenants').select('id')
    .eq('slug','unipathway').maybeSingle().then(({data,error:e})=>{
     if(active&&!e&&data?.id)setTenant(data.id);
    });
@@ -120,7 +120,7 @@ function LMSVirtualLabsContent(){
  },[user?.id]);
  useEffect(()=>{void checkGateway();},[checkGateway]);
  const refreshLabs=()=>{void reload();void checkGateway();};
- const eligibleModules=useMemo(()=>staff&&!centreManager&&!user?.roles.includes('programme_leader')?
+ const eligibleModules=useMemo(()=>staff&&!centreManager&&user?.role!=='programme_leader'?
   modules.filter(m=>m.lecturer_id===user?.id):modules,[staff,centreManager,modules,user?.id,user?.roles]);
  const allowedModules=useMemo(()=>new Set(eligibleModules.map(m=>m.id)),[eligibleModules]);
  const visibleOfferings=useMemo(()=>offerings.filter(o=>allowedModules.has(o.module_id)&&
