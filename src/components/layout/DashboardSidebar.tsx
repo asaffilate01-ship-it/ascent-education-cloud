@@ -79,6 +79,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Guardian support', icon: MessageSquare, path: '/director/guardian-support' },
       { label: 'Dashboard', icon: LayoutDashboard, path: '/director' },
       { label: 'Managed AWS Labs', icon: Cloud, path: '/director/managed-labs' },
+      { label: 'Tech course lab permissions', icon: Shield, path: '/director/tech-lab-access' },
       { label: 'Admissions', icon: UserPlus, path: '/director/admissions' },
       { label: 'Programmes', icon: BookOpen, path: '/director/programmes' },
       { label: 'Course Content Library', icon: BookOpen, path: '/director/course-content' },
