@@ -59,7 +59,8 @@ CREATE TABLE public.unipathway_material_rights (
  created_at timestamptz NOT NULL DEFAULT now(),
  CHECK (review_status <> 'approved' OR (reviewed_by IS NOT NULL AND reviewed_at IS NOT NULL)),
  CHECK (review_status <> 'approved' OR rights_basis <> 'official_link_only'),
- CHECK (review_status <> 'approved' OR expires_at IS NULL OR expires_at > created_at)
+ CHECK (review_status <> 'approved' OR expires_at IS NULL OR expires_at > created_at),
+ CHECK (rights_basis <> 'licensed_redistribution' OR expires_at IS NOT NULL)
 );
 CREATE UNIQUE INDEX course_active_rights_one_per_material
  ON public.unipathway_material_rights(material_id)
@@ -234,8 +235,8 @@ BEGIN
  THEN RAISE EXCEPTION 'Independent centre management review required' USING ERRCODE='42501';END IF;
  SELECT * INTO s FROM public.unipathway_course_specifications WHERE id=r.specification_id;
  SELECT * INTO m FROM public.unipathway_module_materials WHERE id=r.material_id FOR UPDATE;
- IF NOT FOUND OR s.id IS NULL OR s.tenant_id<>r.tenant_id OR s.module_id<>r.module_id
- OR m.tenant_id<>r.tenant_id OR m.module_id<>r.module_id
+ IF NOT FOUND OR s.id IS NULL OR s.tenant_id IS DISTINCT FROM r.tenant_id OR s.module_id IS DISTINCT FROM r.module_id
+ OR m.tenant_id IS DISTINCT FROM r.tenant_id OR m.module_id IS DISTINCT FROM r.module_id
  THEN RAISE EXCEPTION 'Rights evidence does not match an authorised source and module' USING ERRCODE='42501';END IF;
  IF p_decision='approved' AND (
   r.review_status<>'pending' OR r.created_by=auth.uid()
