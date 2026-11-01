@@ -1,0 +1,21 @@
+.employer-logo-window { overflow: hidden; }
+.employer-logo-track { display: flex; width: max-content; animation: employer-logo-scroll 75s linear infinite; }
+.employer-logo-set { display: flex; flex-shrink: 0; gap: 1rem; padding: 0 1rem 0 0; margin: 0; list-style: none; }
+.employer-logo-card { width: 200px; display: flex; flex-direction: column; align-items: center; gap: .6rem; }
+.employer-logo-art { display: flex; align-items: center; justify-content: center; width: 100%; height: 104px; padding: 14px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; }
+.employer-logo-art-dark { background: #10233d; border-color: #10233d; }
+.employer-logo-art img { width: 100%; height: 100%; object-fit: contain; }
+.employer-banner[data-paused='true'] .employer-logo-track,
+.employer-banner:hover .employer-logo-track,
+.employer-banner:focus-within .employer-logo-track { animation-play-state: paused; }
+@keyframes employer-logo-scroll { to { transform: translateX(-50%); } }
+.employer-banner[data-expanded='true'] .employer-logo-track { animation: none; width: 100%; }
+.employer-banner[data-expanded='true'] .employer-logo-set { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); width: 100%; padding: 0 1.25rem; }
+.employer-banner[data-expanded='true'] .employer-logo-copy { display: none; }
+.employer-banner[data-expanded='true'] .employer-logo-card { width: 100%; }
+@media (prefers-reduced-motion: reduce) {
+  .employer-logo-track { animation: none; width: 100%; }
+  .employer-logo-set { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); width: 100%; padding: 0 1.25rem; }
+  .employer-logo-copy, .employer-motion-control { display: none; }
+  .employer-logo-card { width: 100%; }
+}
