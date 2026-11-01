@@ -16,6 +16,8 @@ export default function MarketingDashboard() {
   const scoped=!!user?.id&&!!user.tenantId&&
    ['marketing_officer','centre_director','superadmin'].includes(user.role)&&user.roles?.includes(user.role);
   const { data: applications, loading, error, refetch } = useSupabaseQuery('applications', {
+    // Only aggregate-safe columns are needed; never fetch applicant contact details for this chart.
+    select: 'id,tenant_id,stage,created_at,source',
     orderBy: { column: 'created_at', ascending: false },
     enabled: scoped,
     filters: [{column:'tenant_id',operator:'eq',value:user?.tenantId||''}],
