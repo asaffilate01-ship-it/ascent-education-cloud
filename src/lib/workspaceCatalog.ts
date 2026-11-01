@@ -50,6 +50,7 @@ export const workspaceCatalog:Record<string,WorkspaceGroup[]>={
  lecturer:[group('Teaching and learners',[
   ['Modules and subjects','/lecturer/teaching','Assigned teaching, learning journeys and saved weekly plans.'],
   ['Schedule classes','/lecturer/class-scheduler','Prepare class invitations and delivery times.'],
+  ['Confirm class end and release','/lecturer/class-release','Record actual delivery and apply post-class embargo.'],
   ['Classroom','/lecturer/classroom','Manage invited in-class and remote sessions.'],
   ['Attendance and registers','/lecturer/attendance','Record daily marks and inspect attendance.'],
   ['Attendance corrections','/lecturer/attendance-corrections','Follow correction requests and administrator decisions.'],
@@ -79,6 +80,7 @@ export const workspaceCatalog:Record<string,WorkspaceGroup[]>={
   ['Supervised placements','/director/placements','Allocate students, supervisors and placement requirements.'],
   ['Employers and opportunities','/director/employers','Review employer relationships and published opportunities.'],
   ['Guardian support','/director/guardian-support','Manage authorised guardian communication.'],
+  ['Class resource release approvals','/director/class-release','Review actual delivery and documented urgent 12-hour exceptions.'],
   ['Teams setup','/director/microsoft-education','Configure classroom organiser readiness.'],
   ['Academic operations review','/ai-recommendations','Review centre-scoped attendance, submitted work and teaching cover with human oversight.'],
   ['Reports','/director/reports','Inspect available centre reports.'],
