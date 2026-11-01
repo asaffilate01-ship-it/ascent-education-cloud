@@ -40,6 +40,8 @@ jobs:
         with: {node-version: 24, cache: npm}
       - run: npm ci --ignore-scripts
       - run: npm run test:db
+      - name: Verify course specification and material rights RLS in two test centres
+        run: node scripts/test-unipathway-course-specification-rights-db.mjs
       - name: Fresh schema and access checks (hosted extensions deferred)
         run: npm run test:fresh-schema
   edge-tests:
