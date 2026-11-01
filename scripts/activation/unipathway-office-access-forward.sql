@@ -156,7 +156,7 @@ DECLARE v_tenant uuid; v_revision integer; v_key text; v_value text;
 BEGIN
  IF auth.uid() IS NULL OR p_target IS NULL OR p_target=auth.uid()
  OR p_overrides IS NULL OR jsonb_typeof(p_overrides)<>'object'
- OR jsonb_object_length(p_overrides)>7 OR p_expected_revision<0
+ OR (SELECT count(*) FROM jsonb_object_keys(p_overrides))>7 OR p_expected_revision<0
  THEN RAISE EXCEPTION 'Invalid capability profile' USING ERRCODE='42501';END IF;
  SELECT p.tenant_id INTO v_tenant FROM public.profiles p WHERE p.user_id=p_target;
  IF NOT unipathway_acl.staff_manager(v_tenant)
