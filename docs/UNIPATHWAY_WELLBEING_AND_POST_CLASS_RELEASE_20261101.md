@@ -44,3 +44,10 @@ The student can select mental-health/emotional wellbeing, study or examination p
 6. Run final exact-head CI (TypeScript, build, lint, unit tests, synthetic PostgreSQL, Edge, Playwright and native), manual accessibility and mobile tests, and independent provider verification. Only then consider merging, backend deployment and controlled feature-flag activation.
 
 **Status:** GitHub implementation and staging scripts committed. Hosted functionality and real counselling response service remain **unverified**, with flags off by default.
+
+## Next-phase archive scope and fail-closed release display (1 November 2026)
+- The `/student/lesson-archive` reader now derives allowed class modules **from the currently signed-in student's active programme enrolments** before fetching sessions. A signed-in student cannot list an entire centre's class metadata just because the centre matches.
+- The lecturer's archive derives classes from **their own `lecturer_id` module assignments**. Non-student/non-lecturer active roles are denied in this archive workflow; management uses its separate authorised release workspace.
+- Archived recordings/assets require a published record, a **valid non-null `available_at` timestamp**, verified `status='ended'`, independently confirmed actual class end and the minimum possible 12-hour embargo. Missing dates, legacy unclassified rows and early release metadata fail closed.
+- AI revision packs are withheld by the UI before the minimum 12-hour embargo. **Normal 24-hour and exceptional 12-hour approvals remain backend-owned**, enforced by restrictive class-resource RLS and private storage-signing checks; this frontend guard cannot grant access.
+- Unit regression coverage: `src/test/unipathway-archive-access.test.ts`. Production run must pass at the exact final branch SHA. All related staged features remain OFF until a verified UniPathway staging and live environment exists.
