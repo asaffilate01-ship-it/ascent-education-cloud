@@ -157,6 +157,7 @@ export default function LiveClassroom() {
     if (!user) return null;
     try {
       const profile = await supabase.from('profiles').select('tenant_id').eq('user_id', user.id).single();
+      if(profile.error||!user.tenantId||profile.data?.tenant_id!==user.tenantId)throw new Error('Class session centre not verified.');
       const { data, error } = await supabase
         .from('classroom_sessions' as any)
         .insert({
@@ -190,10 +191,12 @@ export default function LiveClassroom() {
   const endPersistedSession = async () => {
     if (!sessionId) return;
     try {
-      await supabase
+      if(!user?.tenantId)throw new Error('Centre assignment is required to finish a session.');
+      const saved=await supabase
         .from('classroom_sessions' as any)
         .update({ status: 'ended', ended_at: new Date().toISOString(), participant_count: participantCount } as any)
-        .eq('id', sessionId);
+        .eq('id', sessionId).eq('tenant_id',user.tenantId).select('id').single();
+      if(saved.error||!saved.data?.id)throw new Error('Classroom session end was not confirmed.');
       // A completed call is NOT evidence that a recording exists.
       // Provider storage, written consent, class session mapping, processing and
       // the protected 24/12-hour release are independent requirements.
