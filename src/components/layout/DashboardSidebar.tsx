@@ -208,6 +208,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
   welfare_officer: [
     { items: [
       { label: 'Welfare & Health', icon: Heart, path: '/health' },
+      { label: 'Counselling & wellbeing requests', icon: Heart, path: '/welfare/support' },
       { label: 'Residential', icon: Building2, path: '/residential' },
       { label: 'Communications', icon: Mail, path: '/communications' },
       { label: 'Messages', icon: MessageSquare, path: '/messaging' },
@@ -343,6 +344,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Verified Opportunities', icon: Briefcase, path: '/student/opportunities' },
       { label: 'Universities Abroad', icon: GraduationCap, path: '/student/global-progression' },
       { label: 'Health', icon: Heart, path: '/health' },
+      { label: 'Mental health & counselling help', icon: Heart, path: '/student/wellbeing' },
       { label: 'Transport', icon: Bus, path: '/transport' },
       { label: 'Residential', icon: Building2, path: '/residential' },
       { label: 'Onboarding', icon: UserCheck, path: '/onboarding' },
