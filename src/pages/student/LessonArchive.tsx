@@ -28,7 +28,7 @@ function ArchiveWorkspace({moduleFilter}:{moduleFilter:string}){
  useEffect(()=>{let active=true;generation.current++;setLoading(true);setError('');setSessions([]);setArtifacts([]);setPacks([]);setPlaying('');setPage(0);
   void (async()=>{try{
    if(!user?.id||!user.tenantId)throw Error('A signed-in account and centre assignment are required.');
-   if(user.role==='student'&&!postClassEnabled)throw Error('Post-class recording and revision-pack release is not yet activated.');
+   if(!postClassEnabled)throw Error('Post-class recording and revision-pack release is awaiting verified backend activation.');
    const classes=await pagedRows<Session>(()=>{let q=db.from('live_class_sessions').select('id,title,module_id,starts_at,ends_at,status,actual_ended_at').eq('tenant_id',user.tenantId);if(moduleFilter)q=q.eq('module_id',moduleFilter);return q;},()=>active);
    const ids=classes.map(s=>s.id);
    const [assets,summaries]=await Promise.all([
