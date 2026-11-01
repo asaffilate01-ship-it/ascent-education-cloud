@@ -14,6 +14,16 @@ describe('UniPathway director and office workflow separation',()=>{
   expect(director).toContain("user.roles?.includes(user.role)");
   expect(director).toContain("Review applicant pipeline");
  });
+ it('keeps marketing analytics separate from private admissions CRM actions',()=>{
+  const app=src('src/App.tsx');
+  expect(app).toContain('<Route path="/marketing/leads" element={<Marketing><MarketingLeadInsights /></Marketing>} />');
+  expect(app).not.toContain('<Marketing><AdmissionsCRM /></Marketing>');
+  const insights=src('src/pages/marketing/MarketingLeadInsights.tsx');
+  expect(insights).toContain("select:'id,tenant_id,stage,source,created_at,programme_name'");
+  expect(insights).toContain("filters:[{column:'tenant_id',operator:'eq'");
+  expect(insights).toContain('enabled:permitted');
+  expect(insights).not.toMatch(/student_name|email:|phone:|kyc_documents|invoices|\.insert\(/);
+ });
  it('checks personal office compliance permission with a real backend response',()=>{
   const app=src('src/App.tsx');
   expect(app).toContain('<Route path="/office/compliance-preparation" element={<Office><OfficeCompliancePreparation /></Office>} />');
