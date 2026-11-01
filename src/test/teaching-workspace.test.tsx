@@ -24,7 +24,7 @@ it('switches between a focused day and the complete weekly plan without implying
  expect(screen.getByText(/Only Sunday shown from your saved weekly plan/)).toBeInTheDocument();
  expect(screen.getByText('Weekend Maths')).toBeInTheDocument();
  fireEvent.click(screen.getByRole('button',{name:'Full week (1)'}));
- expect(screen.getByRole('heading',{name:'Monday'})).toBeInTheDocument();
+ expect(screen.getByRole('heading',{name:/^Monday(?: \\(Pakistan today\\))?$/})).toBeInTheDocument();
  expect(screen.getByText(/All seven days shown from your saved weekly plan/)).toBeInTheDocument();
 });
 it('finds authorised modules using code and title in either order',()=>{
