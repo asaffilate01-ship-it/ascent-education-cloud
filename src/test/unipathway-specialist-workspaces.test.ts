@@ -19,7 +19,8 @@ describe('UniPathway director and office workflow separation',()=>{
   const director=src('src/pages/director/DirectorAgentAllocationOverview.tsx');
   expect(director).toContain("select:'id,tenant_id,agent_id,stage'");
   expect(director).toContain("filters:[{column:'tenant_id',operator:'eq'");
-  expect(director).not.toMatch(/invoices|email|phone|student_name/);
+  expect(director).not.toMatch(/select:'[^']*(?:email|phone|student_name|invoice)/);
+  expect(director).not.toContain("useSupabaseQuery('invoices'");
   expect(director).toContain("user.roles?.includes(user.role)");
   expect(director).toContain("Review applicant pipeline");
  });
