@@ -5,7 +5,7 @@ const mock=vi.hoisted(()=>({listener:null as any,profile:vi.fn(),account:vi.fn()
 vi.mock('@/lib/nativePush',()=>({disableNativePush:async()=>{}}));
 vi.mock('@/lib/learning/offlineLessons',()=>({setLearningAccount:async(a:any)=>mock.account(a),clearCourseworkResumeHints:()=>mock.clear()}));
 vi.mock('@/integrations/supabase/client',()=>({supabase:{rpc:async()=>({}),auth:{onAuthStateChange:(callback:any)=>{mock.listener=callback;return {data:{subscription:{unsubscribe:()=>{}}}};},getSession:async()=>({data:{session:null}})},from:()=>{
- const q:any={select:()=>q,eq:()=>q,single:()=>mock.profile(),then:(resolve:any)=>Promise.resolve({data:[{role:'student'}]}).then(resolve)};return q;
+ const q:any={select:()=>q,eq:()=>q,single:()=>mock.profile(),then:(resolve:any)=>Promise.resolve({data:[{role:'student',tenant_id:'centre'}]}).then(resolve)};return q;
 }}}));
 function Probe(){const {user,loading}=useAuth();return <p>{loading?'Loading':user?.email||'Signed out'}</p>;}
 afterEach(()=>{cleanup();vi.clearAllMocks();vi.restoreAllMocks();});
