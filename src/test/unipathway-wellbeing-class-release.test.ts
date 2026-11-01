@@ -81,6 +81,8 @@ describe('Post-class embargo for learning materials and recordings',()=>{
   expect(sql).toContain('AS RESTRICTIVE FOR SELECT TO authenticated');
   expect(sql).toContain('ON storage.objects AS RESTRICTIVE FOR SELECT TO authenticated');
   expect(sql).toContain('public.can_open_my_unipathway_class_media');
+  expect(sql).toContain('Legacy classroom recordings require mapped post-class release');
+  expect(sql).toContain('class_release_session_id IS NOT NULL');
   expect(sql).toContain('public.can_open_my_unipathway_material');
   expect(sql).toContain('publish_unipathway_course_material');
   expect(sql).toContain('p_reason IS NULL OR length(btrim(p_reason)) NOT BETWEEN 20 AND 500');
