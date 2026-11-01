@@ -12,6 +12,7 @@ import {
 } from '@/lib/wellbeingRequests';
 
 type MyRequest={id:string;category:string;status:string;created_at:string};
+type WelfareReply={id:string;message:string;created_at:string};
 // Reuse the existing global TurnstileAPI contract shared with the platform.
 
 const categoryLabel=(value:string)=>WELLBEING_CATEGORIES.find(c=>c.value===value)?.label||'Wellbeing support';
@@ -26,6 +27,7 @@ function WellbeingWorkspace({anonymousOnly}:{anonymousOnly:boolean}){
  const [category,setCategory]=useState(''),[urgency,setUrgency]=useState('routine'),[details,setDetails]=useState('');
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[success,setSuccess]=useState('');
  const [records,setRecords]=useState<MyRequest[]>([]),[loadError,setLoadError]=useState(''),[refresh,setRefresh]=useState(0);
+ const [selected,setSelected]=useState(''),[replies,setReplies]=useState<WelfareReply[]>([]),[replyError,setReplyError]=useState('');
  const [captcha,setCaptcha]=useState(''),[captchaError,setCaptchaError]=useState('');
  const captchaNode=useRef<HTMLDivElement>(null);
  const anonActive=WELLBEING_ANONYMOUS_ENABLED&&!!import.meta.env.VITE_UNIPATHWAY_TURNSTILE_SITE_KEY;
@@ -42,6 +44,18 @@ function WellbeingWorkspace({anonymousOnly}:{anonymousOnly:boolean}){
   })();
   return()=>{active=false;};
  },[student,anonymousOnly,refresh]);
+ useEffect(()=>{
+  let active=true;setReplies([]);setReplyError('');
+  if(!selected||!student||!WELLBEING_ENABLED)return()=>{active=false;};
+  void(async()=>{
+   try{
+    const r=await (supabase.rpc as any)('my_unipathway_welfare_replies',{p_request:selected});
+    if(r.error||!Array.isArray(r.data))throw Error('Private replies unavailable');
+    if(active)setReplies(r.data.filter((x:WelfareReply)=>typeof x.id==='string'&&typeof x.message==='string'));
+   }catch{if(active)setReplyError('Your private replies cannot be verified. Retry or contact the Welfare team directly.');}
+  })();
+  return()=>{active=false;};
+ },[selected,student,refresh]);
  useEffect(()=>{
   if(privacy!=='anonymous'||!anonActive||!captchaNode.current)return;
   let active=true;let widget:string|undefined;const target=captchaNode.current;
@@ -141,9 +155,19 @@ function WellbeingWorkspace({anonymousOnly}:{anonymousOnly:boolean}){
     <Button size="sm" variant="outline" onClick={()=>setRefresh(x=>x+1)} disabled={!WELLBEING_ENABLED}>Refresh private requests</Button>
     {loadError&&<p role="alert">{loadError}</p>}
     {!loadError&&!records.length&&<p className="text-sm text-muted-foreground">No confidential requests have been returned for your account.</p>}
-    {records.map(record=><article key={record.id} className="rounded-lg border p-3">
+    {records.map(record=><article key={record.id} className="rounded-lg border p-3 space-y-2">
      <p className="font-medium text-sm">{categoryLabel(record.category)}</p>
      <p className="text-xs text-muted-foreground">Status: {record.status} · Received {new Date(record.created_at).toLocaleDateString()}</p>
+     <Button size="sm" variant="outline" aria-pressed={selected===record.id} onClick={()=>setSelected(prev=>prev===record.id?'':record.id)}>{selected===record.id?'Hide private responses':'Read private Welfare responses'}</Button>
+     {selected===record.id&&<div className="rounded-lg border p-3 space-y-2">
+      <h3 className="text-sm font-semibold">Messages from your authorised Welfare team</h3>
+      {replyError&&<p role="alert">{replyError}</p>}
+      {!replyError&&!replies.length&&<p className="text-sm text-muted-foreground">No private responses have been recorded yet. This is not an urgent chat service.</p>}
+      {replies.map(reply=><article key={reply.id} className="rounded-md bg-secondary/30 p-3">
+       <p className="whitespace-pre-wrap break-words text-sm">{reply.message}</p>
+       <p className="mt-2 text-xs text-muted-foreground">{new Date(reply.created_at).toLocaleString()}</p>
+      </article>)}
+     </div>}
     </article>)}
    </section>}
    <nav className="flex flex-wrap gap-3">
