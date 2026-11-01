@@ -58,7 +58,7 @@ function FinanceWorkspace() {
       });
       if (resp.error) throw resp.error;
       const csvText = typeof resp.data==='string'?resp.data:resp.data instanceof Blob?await resp.data.text():resp.data instanceof ArrayBuffer?new TextDecoder().decode(resp.data):typeof resp.data?.csv==='string'?resp.data.csv:'';
-      if(!csvText.includes(',')||!csvText.includes('\n')||/^\s*[\{\[]/.test(csvText))throw Error('The report service did not return a verified CSV document.');
+      if(!csvText.includes(',')||!csvText.includes('\n')||csvText.trimStart().startsWith('{')||csvText.trimStart().startsWith('['))throw Error('The report service did not return a verified CSV document.');
       const blob = new Blob([csvText], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
