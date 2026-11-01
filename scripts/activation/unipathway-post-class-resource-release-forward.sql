@@ -85,6 +85,15 @@ BEGIN
 END
 $fn$;
 
+-- Public entrypoint lets policy evaluation remain in the exposed schema.
+-- Private ACL helpers do NOT require direct authenticated schema USAGE.
+CREATE OR REPLACE FUNCTION public.can_access_my_unipathway_class_resource(
+ p_session uuid,p_tenant uuid
+) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=''
+AS $fn$
+ SELECT unipathway_acl.class_access(p_session,p_tenant)
+$fn$;
+
 CREATE OR REPLACE FUNCTION public.confirm_unipathway_actual_class_end(
  p_session uuid,p_evidence text
 ) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
@@ -193,13 +202,13 @@ ALTER TABLE public.lesson_ai_packs ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Class-linked materials have a verified post-class embargo"
  ON public.unipathway_module_materials AS RESTRICTIVE FOR SELECT TO authenticated
  USING(class_session_id IS NULL OR
-  unipathway_acl.class_access(class_session_id,tenant_id));
+  public.can_access_my_unipathway_class_resource(class_session_id,tenant_id));
 CREATE POLICY "Class recording artifacts have a verified post-class embargo"
  ON public.live_class_artifacts AS RESTRICTIVE FOR SELECT TO authenticated
- USING(unipathway_acl.class_access(session_id,tenant_id));
+ USING(public.can_access_my_unipathway_class_resource(session_id,tenant_id));
 CREATE POLICY "Class AI revision packs have a verified post-class embargo"
  ON public.lesson_ai_packs AS RESTRICTIVE FOR SELECT TO authenticated
- USING(unipathway_acl.class_access(session_id,tenant_id));
+ USING(public.can_access_my_unipathway_class_resource(session_id,tenant_id));
 
 -- Storage signed URLs can bypass row-level checks at download time. Therefore
 -- signing access for BOTH private buckets must be denied before the clock opens.
@@ -247,11 +256,6 @@ BEGIN
 END
 $fn$;
 
-CREATE POLICY "Post-class private storage signature embargo"
- ON storage.objects AS RESTRICTIVE FOR SELECT TO authenticated
- USING(bucket_id NOT IN('unipathway-module-materials','unipathway-class-media')
-  OR unipathway_acl.media_path_allowed(bucket_id,name));
-
 CREATE OR REPLACE FUNCTION public.can_open_my_unipathway_class_media(p_path text)
 RETURNS boolean LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path=''
 AS $fn$
@@ -267,16 +271,28 @@ BEGIN
 END
 $fn$;
 
+CREATE POLICY "Post-class private storage signature embargo"
+ ON storage.objects AS RESTRICTIVE FOR SELECT TO authenticated
+ USING(
+  bucket_id NOT IN('unipathway-module-materials','unipathway-class-media')
+  OR (bucket_id='unipathway-module-materials' AND
+   public.can_open_my_unipathway_material(name))
+  OR (bucket_id='unipathway-class-media' AND
+   public.can_open_my_unipathway_class_media(name))
+ );
+
 REVOKE ALL ON FUNCTION unipathway_acl.class_access(uuid,uuid),
  unipathway_acl.media_path_allowed(text,text) FROM PUBLIC,anon;
 GRANT EXECUTE ON FUNCTION unipathway_acl.class_access(uuid,uuid),
  unipathway_acl.media_path_allowed(text,text) TO authenticated;
-REVOKE ALL ON FUNCTION public.confirm_unipathway_actual_class_end(uuid,text),
+REVOKE ALL ON FUNCTION public.can_access_my_unipathway_class_resource(uuid,uuid),
+ public.confirm_unipathway_actual_class_end(uuid,text),
  public.approve_unipathway_urgent_class_release(uuid,text),
  public.publish_unipathway_course_material(uuid),
  public.can_open_my_unipathway_class_media(text),
  public.can_open_my_unipathway_material(text) FROM PUBLIC,anon;
-GRANT EXECUTE ON FUNCTION public.confirm_unipathway_actual_class_end(uuid,text),
+GRANT EXECUTE ON FUNCTION public.can_access_my_unipathway_class_resource(uuid,uuid),
+ public.confirm_unipathway_actual_class_end(uuid,text),
  public.approve_unipathway_urgent_class_release(uuid,text),
  public.publish_unipathway_course_material(uuid),
  public.can_open_my_unipathway_class_media(text),
