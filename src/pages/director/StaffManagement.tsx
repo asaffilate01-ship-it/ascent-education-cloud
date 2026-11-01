@@ -14,6 +14,7 @@ type StaffMember={id:string;name:string;email:string;roleLabels:string;roles:Use
 const staffRoles=new Set<UserRole>([
  'centre_director','admissions_admin','lecturer','assessor','programme_leader','iqa_officer',
  'welfare_officer','security_officer','exams_officer','finance_officer','marketing_officer',
+ 'office_admin','hr_officer','secretary',
  'superadmin',
 ]);
 export default function StaffManagement(){
@@ -25,7 +26,7 @@ function ScopedStaffDirectory(){
  const platform=user?.role==='superadmin';
  const scoped=!!user?.tenantId&&['centre_director','programme_leader'].includes(user.role);
  const allowed=!!user&&(platform||scoped);
- const canInvite=!!user&&['superadmin','centre_director'].includes(user.role);
+ const canInvite=!!user&&['superadmin','centre_director'].includes(user.role)&&user.roles?.includes(user.role);
  const [search,setSearch]=useState(''),[page,setPage]=useState(0),[addOpen,setAddOpen]=useState(false);
  const scope=user?.tenantId?[{column:'tenant_id',operator:'eq' as const,value:user.tenantId}]:[];
  // Platform-wide enumeration is only used for an active, verified superadmin.
