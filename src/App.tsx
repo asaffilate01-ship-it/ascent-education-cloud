@@ -188,6 +188,8 @@ const AcademicCalendar = lazy(() => import("./pages/calendar/AcademicCalendar"))
 const LessonPlanBuilder = lazy(() => import("./pages/lessons/LessonPlanBuilder"));
 const LeaveManagement = lazy(() => import("./pages/leave/LeaveManagement"));
 const HealthRecords = lazy(() => import("./pages/health/HealthRecords"));
+const StudentWellbeing = lazy(() => import("./pages/student/StudentWellbeing"));
+const WelfareSupportDesk = lazy(() => import("./pages/health/WelfareSupportDesk"));
 const TransportTracking = lazy(() => import("./pages/transport/TransportTracking"));
 const AIRecommendations = lazy(() => import("./pages/ai/AIRecommendations"));
 const AICourseBuilder = lazy(() => import("./pages/ai/AICourseBuilder"));
@@ -325,6 +327,7 @@ function AppRoutes() {
         <Route path="/funded-courses" element={<FundedCourses />} />
         <Route path="/careers" element={<Careers />} />
         <Route path="/student-support" element={<StudentSupport />} />
+        <Route path="/wellbeing/anonymous" element={<StudentWellbeing anonymousOnly />} />
         <Route path="/courses" element={<RedirectToTenant suffix="/courses" />} />
         <Route path="/tuition" element={<LearningOverview kind="tuition" />} />
         <Route path="/employer-learning" element={<LearningOverview kind="employer" />} />
@@ -575,6 +578,7 @@ function AppRoutes() {
         <Route path="/student/career" element={<StudentR><StudentCareer /></StudentR>} />
         <Route path="/student/opportunities" element={<StudentR><CareerMarketplace /></StudentR>} />
         <Route path="/student/support" element={<StudentR><MessagingInbox /></StudentR>} />
+        <Route path="/student/wellbeing" element={<RoleGuard allowed={['student']}><StudentWellbeing /></RoleGuard>} />
         <Route path="/student/labs" element={<StudentR><TechLabAccessGate><LabLearningHub /></TechLabAccessGate></StudentR>} />
         <Route path="/student/quizzes" element={<StudentR><QuizDashboard /></StudentR>} />
         <Route path="/student/forums" element={<StudentR><ForumPage /></StudentR>} />
@@ -614,6 +618,7 @@ function AppRoutes() {
         <Route path="/lesson-plans" element={<LecturerR><LessonPlanBuilder /></LecturerR>} />
         <Route path="/leave" element={<RoleGuard allowed={['superadmin','centre_director','admissions_admin','lecturer','assessor','programme_leader','iqa_officer','welfare_officer','security_officer','exams_officer','finance_officer','marketing_officer']}><LeaveManagement /></RoleGuard>} />
         <Route path="/health" element={<WelfareR><HealthRecords /></WelfareR>} />
+        <Route path="/welfare/support" element={<RoleGuard allowed={['welfare_officer']}><WelfareSupportDesk /></RoleGuard>} />
         <Route path="/transport" element={<RoleGuard allowed={['student','centre_director','superadmin','security_officer']}><TransportTracking /></RoleGuard>} />
         <Route path="/ai-recommendations" element={<Director><AIRecommendations /></Director>} />
         <Route path="/ai-course-builder" element={<LecturerR><AICourseBuilder /></LecturerR>} />
