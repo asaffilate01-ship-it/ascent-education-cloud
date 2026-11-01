@@ -57,7 +57,7 @@ it('shows actual course and resource coverage with direct authorised upload link
  await screen.findByText('Business Diploma');
  expect(screen.getByRole('heading',{name:'Cambridge International'})).toBeInTheDocument();
  expect(screen.getByText('Business Foundations')).toBeInTheDocument();
- expect(screen.getAllByRole('link',{name:'Materials',exact:true}).some(x=>x.getAttribute('href')==='/lecturer/materials?module=m1')).toBe(true);
+ expect(screen.getAllByRole('link',{name:/^Materials$/}).some(x=>x.getAttribute('href')==='/lecturer/materials?module=m1')).toBe(true);
  expect(screen.getByText('1 published resources')).toBeInTheDocument();
  expect(screen.queryByText('Outside programme')).toBeNull();
  expect(state.queries.filter(q=>q.table==='programmes').every(q=>q.filters.some(f=>f.column==='tenant_id'&&f.value==='centre-a'))).toBe(true);
@@ -83,7 +83,7 @@ it('avoids partial counts or material links on an inventory error',async()=>{
  state.fail=true;page();
  await screen.findByRole('alert');
  expect(screen.queryByText('Business Diploma')).toBeNull();
- expect(screen.queryByRole('link',{name:'Materials',exact:true})).toBeNull();
+ expect(screen.queryByRole('link',{name:/^Materials$/})).toBeNull();
  state.fail=false;fireEvent.click(screen.getByRole('button',{name:'Retry'}));
  await waitFor(()=>expect(screen.queryByRole('alert')).toBeNull());
 });
