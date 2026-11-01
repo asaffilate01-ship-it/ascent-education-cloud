@@ -182,7 +182,7 @@ function Registry(){
        <h2 className="flex items-center gap-2 font-semibold"><FileCheck2 className="size-4"/>Review material distribution rights</h2>
        {!rights.length?<p className="text-sm text-muted-foreground">No rights-evidence proposals have been recorded.</p>:
        rights.map(r=><article key={r.id} className="rounded-lg border p-4 space-y-2">
-        <h3 className="font-semibold">{r.rights_holder} · {r.rights_basis.replaceAll('_',' ')}</h3>
+        <h3 className="font-semibold">{r.rights_holder} · {r.rights_basis.replace(/_/g,' ')}</h3>
         <p className="text-sm text-muted-foreground">Evidence reference: {r.evidence_reference}</p>
         <p className="text-xs text-muted-foreground">Status: {r.review_status} · {r.expires_at?'Expires '+new Date(r.expires_at).toLocaleDateString():'No recorded expiry'} · Module {modules.find(m=>m.id===r.module_id)?.title||r.module_id.slice(0,8)}</p>
         <div className="flex flex-wrap gap-2">
