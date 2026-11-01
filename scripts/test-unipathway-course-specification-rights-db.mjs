@@ -33,7 +33,7 @@ const equals=async(uid,tenant,statement,wanted)=>{
 await db.exec(`
  CREATE ROLE authenticated; CREATE ROLE anon;
  CREATE SCHEMA auth; CREATE SCHEMA unipathway_acl; CREATE SCHEMA storage;
- GRANT USAGE ON SCHEMA public,auth TO authenticated;
+ GRANT USAGE ON SCHEMA public,auth,storage TO authenticated;
  CREATE TYPE public.app_role AS ENUM ('student','lecturer','centre_director','programme_leader','superadmin');
  CREATE TABLE public.profiles(user_id uuid PRIMARY KEY,tenant_id uuid);
  CREATE TABLE public.user_roles(user_id uuid,tenant_id uuid,role public.app_role);
