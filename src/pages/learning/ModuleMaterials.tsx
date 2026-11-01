@@ -1,6 +1,7 @@
 import {downloadPrivateMaterial} from '@/lib/learning/offlineSync';
 import {Link,useSearchParams} from 'react-router-dom';
 import ModuleJourney from '@/components/assessment/ModuleJourney';
+import MaterialRightsPanel from '@/components/learning/MaterialRightsPanel';
 import { useEffect, useRef, useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
@@ -25,13 +26,15 @@ function MaterialsWorkspace({moduleFilter,materialFilter}:{moduleFilter:string;m
  const [error,setError]=useState(''),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false);
  const [moduleId,setModuleId]=useState(moduleFilter),[kind,setKind]=useState<(typeof kinds)[number]>('reading');
  const [title,setTitle]=useState(''),[file,setFile]=useState<File|null>(null),[rightsAcknowledged,setRightsAcknowledged]=useState(false);
+ const [rightsDraftId,setRightsDraftId]=useState<string|null>(null);
  const [refresh,setRefresh]=useState(0),[search,setSearch]=useState(''),[page,setPage]=useState(0);
  const mounted=useRef(true),operation=useRef(false);
  useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;};},[]);
  const staff=!!user?.role&&!!user.roles?.includes(user.role)&&['lecturer','programme_leader','centre_director','superadmin'].includes(user.role);
  const manager=!!user?.role&&!!user.roles?.includes(user.role)&&['centre_director','programme_leader','superadmin'].includes(user.role);
+ const rightsGateEnabled=import.meta.env.VITE_UNIPATHWAY_COURSE_REGISTRY_ENABLED==='true';
  const uid=user?.id;
- const reload=()=>{setItems([]);setModules([]);setLoading(true);setError('');setPage(0);setRefresh(x=>x+1);};
+ const reload=()=>{setItems([]);setModules([]);setLoading(true);setError('');setRightsDraftId(null);setPage(0);setRefresh(x=>x+1);};
  useEffect(()=>{
   let active=true;setItems([]);setModules([]);setLoading(true);setError('');setPage(0);
   void (async()=>{try{
@@ -94,8 +97,14 @@ function MaterialsWorkspace({moduleFilter,materialFilter}:{moduleFilter:string;m
   finally{operation.current=false;if(mounted.current)setBusy(false);}
  };
  const publish=async(m:Material)=>{
-  if(!staff||operation.current||loading||error)return;operation.current=true;setBusy(true);
+  if(!staff||operation.current||loading||error)return;
+  if(!rightsGateEnabled){toast.error('Publishing is paused until the independent source and rights registry is activated.');return;}
+  operation.current=true;setBusy(true);
   try{
+   const evidence=await db.from('unipathway_material_rights').select('review_status,expires_at')
+    .eq('tenant_id',tenant).eq('material_id',m.id).eq('review_status','approved').maybeSingle();
+   if(evidence.error||!evidence.data||evidence.data.expires_at&&Date.parse(evidence.data.expires_at)<=Date.now())
+    throw Error('Rights approval is missing, expired or cannot be verified');
    const r=await db.from('unipathway_module_materials').update({publication_status:'published',available_at:new Date().toISOString()}).eq('id',m.id).eq('tenant_id',tenant).eq('publication_status','draft').select('id').single();
    if(!mounted.current)return;if(r.error||r.data?.id!==m.id)throw Error('Release unconfirmed');
    toast.success('Material released to enrolled learners.');reload();
@@ -107,6 +116,7 @@ function MaterialsWorkspace({moduleFilter,materialFilter}:{moduleFilter:string;m
    <div className="mb-5 rounded-xl border bg-primary/5 p-4"><h2 className="flex gap-2 font-semibold"><ShieldCheck className="size-5"/>Protected academic materials</h2>
     <p className="mt-2 text-sm text-muted-foreground">Unpublished resources are visible only to authorised teaching staff. Released material appears only for students actively enrolled in the module's programme. Lessons, reading notes, slides and homework are grouped by your enrolled module. PDFs, images and supported videos can open in the browser; Office files may download for opening locally. Files are private with expiring access links.</p></div>
    {staff&&<section className="mb-6 space-y-3 rounded-xl border p-5"><h2 className="font-semibold"><Upload className="mr-2 inline size-4"/>Upload teaching material</h2>
+    <p className="text-sm text-muted-foreground">Uploads remain private drafts. Publication requires a reviewed specification and independently approved, current redistribution evidence. Until that registry is activated, publishing is disabled.</p>
     <div className="grid gap-3 sm:grid-cols-2">
      <label className="text-sm font-medium">Your module<select disabled={busy||loading||!!error} value={moduleId} onChange={e=>setModuleId(e.target.value)} className="mt-1 w-full rounded-md border bg-background p-2"><option value="">Choose module</option>{modules.map(m=><option key={m.id} value={m.id}>{m.title}</option>)}</select></label>
      <label className="text-sm font-medium">Material type<select disabled={busy||loading||!!error} value={kind} onChange={e=>setKind(e.target.value as (typeof kinds)[number])} className="mt-1 w-full rounded-md border bg-background p-2">{kinds.map(k=><option key={k}>{k}</option>)}</select></label>
@@ -129,7 +139,9 @@ function MaterialsWorkspace({moduleFilter,materialFilter}:{moduleFilter:string;m
      <p className="mt-1 text-xs text-muted-foreground">{modules.find(x=>x.id===m.module_id)?.title||'Module'} · {m.kind} · {m.publication_status}</p></div>
     <div className="flex flex-wrap gap-2"><Button size="sm" variant="outline" disabled={busy} onClick={()=>download(m)}><Download className="mr-1 size-4"/>Open</Button>
       {!staff&&m.publication_status==='published'&&<Button size="sm" variant="outline" disabled={busy} onClick={()=>void saveOffline(m)}>Save offline</Button>}
-      {staff&&m.publication_status==='draft'&&<Button size="sm" disabled={busy} onClick={()=>publish(m)}>Publish</Button>}</div>
+      {staff&&m.publication_status==='draft'&&<Button size="sm" variant="outline" disabled={busy||!rightsGateEnabled} onClick={()=>setRightsDraftId(rightsDraftId===m.id?null:m.id)}>Rights evidence</Button>}
+      {staff&&m.publication_status==='draft'&&<Button size="sm" disabled={busy||!rightsGateEnabled} onClick={()=>publish(m)}>Publish</Button>}</div>
+    {staff&&rightsGateEnabled&&m.publication_status==='draft'&&rightsDraftId===m.id&&tenant&&<div className="w-full"><MaterialRightsPanel materialId={m.id} moduleId={m.module_id} tenantId={tenant}/></div>}
    </article>)}</div>}
    {!loading&&!error&&filtered.length>20&&<nav aria-label="Material pages" className="mt-4 flex items-center gap-3"><Button variant="outline" disabled={page===0} onClick={()=>setPage(p=>p-1)}>Previous materials</Button><span>Page {page+1} of {Math.ceil(filtered.length/20)}</span><Button variant="outline" disabled={(page+1)*20>=filtered.length} onClick={()=>setPage(p=>p+1)}>Next materials</Button></nav>}
  </DashboardLayout>;
