@@ -34,6 +34,7 @@ export const BOTTOM_NAV: Record<UserRole, BottomNavItem[]> = {
   hr_officer: [
     {label:'HR',icon:Home,path:'/office'},
     {label:'Workspace',icon:BookOpen,path:'/workspace'},
+    {label:'Alerts',icon:Bell,path:'/notifications'},
   ],
   secretary: [
     {label:'Office',icon:Home,path:'/office'},
