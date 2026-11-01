@@ -2,7 +2,7 @@ import type {UserRole} from '@/types/platform';
 
 /** Current UI role is a selected, verified membership, not any role the user ever held. */
 export const KNOWN_UNIPATHWAY_ROLES: readonly UserRole[] = [
- 'superadmin','centre_director','admissions_admin','lecturer','assessor','programme_leader',
+ 'superadmin','centre_director','admissions_admin','office_admin','hr_officer','secretary','lecturer','assessor','programme_leader',
  'iqa_officer','awarding_body_eqa','welfare_officer','security_officer','exams_officer',
  'finance_officer','marketing_officer','agent','student','parent_guardian',
  'university_partner','employer_partner',
