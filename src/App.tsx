@@ -58,6 +58,7 @@ const SuperadminPlatform = lazy(() => import("./pages/superadmin/SuperadminPlatf
 
 // Director
 const CentreDirectorDashboard = lazy(() => import("./pages/director/CentreDirectorDashboard"));
+const TechLabAssignments = lazy(() => import("./pages/director/TechLabAssignments"));
 const ProgrammeManagement = lazy(() => import("./pages/director/ProgrammeManagement"));
 const StaffManagement = lazy(() => import("./pages/director/StaffManagement"));
 const StaffAccessManager = lazy(() => import("./pages/office/StaffAccessManager"));
@@ -387,6 +388,7 @@ function AppRoutes() {
         {/* ========== CENTRE DIRECTOR ========== */}
         <Route path="/director/microsoft-education" element={<Director><MicrosoftEducationAdmin /></Director>} />
         <Route path="/director/managed-labs" element={<Director><LMSVirtualLabs /></Director>} />
+        <Route path="/director/tech-lab-access" element={<Director><TechLabAssignments /></Director>} />
         <Route path="/director/guardian-support" element={<Director><GuardianStaffDesk /></Director>} />
         <Route path="/lecturer/guardian-support" element={<LecturerR><GuardianStaffDesk /></LecturerR>} />
         <Route path="/admissions/guardian-support" element={<Admissions><GuardianStaffDesk /></Admissions>} />
