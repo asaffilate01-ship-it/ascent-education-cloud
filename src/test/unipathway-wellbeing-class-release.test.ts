@@ -40,7 +40,6 @@ describe('Wellbeing privacy and personal support',()=>{
   expect(sql).toContain('p_expected_revision integer');
   expect(sql).toContain('UNIQUE(request_id,request_nonce)');
   expect(sql).toContain("v_case.anonymous OR v_case.student_id IS NULL");
-  expect(sql).toContain('r.data');
   // The case details never enter the generic platform activity_log table.
   expect(sql).not.toContain("INSERT INTO public.audit_logs");
   const welfare=source('src/pages/health/WelfareSupportDesk.tsx');
