@@ -29,6 +29,8 @@ if (root) {
   });
  };
  window.addEventListener('online',()=>{if(showingOffline)loadApp();});
- if(!navigator.onLine)showOffline();
- else loadApp();
+ // A loaded first-party app entry proves the origin can serve modules even when
+ // navigator.onLine is a false negative (restricted networks, CI or captive portals).
+ // Attempt the app first; show the saved-learning reader only if loading fails.
+ loadApp();
 }
