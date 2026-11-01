@@ -151,6 +151,8 @@ AS $fn$
    JOIN public.unipathway_course_specifications s ON s.id=r.specification_id
    JOIN public.unipathway_module_materials m ON m.id=r.material_id
   WHERE r.material_id=p_material
+   AND auth.uid() IS NOT NULL
+   AND m.tenant_id=public.get_user_tenant_id(auth.uid())
    AND r.review_status='approved'
    AND r.rights_basis IN ('original_work','licensed_redistribution')
    AND (r.expires_at IS NULL OR r.expires_at>now())
