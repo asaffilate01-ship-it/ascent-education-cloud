@@ -73,7 +73,7 @@ export const BOTTOM_NAV: Record<UserRole, BottomNavItem[]> = {
     { label: 'Pipeline', icon: Home, path: '/agent' },
     { label: 'Leads', icon: UserPlus, path: '/agent/leads' },
     { label: 'Resources', icon: BookOpen, path: '/agent/resources' },
-    { label: 'Commission', icon: CreditCard, path: '/agent/commissions' },
+    { label: 'Commission status', icon: CreditCard, path: '/agent/commissions' },
     { label: 'Chat', icon: MessageSquare, path: '/messaging' },
   ],
   parent_guardian: [
@@ -105,7 +105,7 @@ export const BOTTOM_NAV: Record<UserRole, BottomNavItem[]> = {
   iqa_officer: [
     { label: 'Home', icon: Home, path: '/qa' },
     { label: 'Compliance', icon: ShieldCheck, path: '/compliance' },
-    { label: 'Audit', icon: FileText, path: '/audit' },
+    { label: 'Review status', icon: FileText, path: '/qa/audit' },
     { label: 'Alerts', icon: Bell, path: '/notifications' },
     { label: 'Chat', icon: MessageSquare, path: '/messaging' },
   ],
