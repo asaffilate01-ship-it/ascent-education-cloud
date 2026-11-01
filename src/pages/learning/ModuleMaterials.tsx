@@ -17,29 +17,25 @@ type Module={id:string;title:string;lecturer_id:string|null;tenant_id:string;pro
 const safeName=(value:string)=>value.replace(/[^a-zA-Z0-9._-]/g,'_').slice(-100);
 const kinds=['slide','worksheet','reading','homework','video','whiteboard'] as const;
 const accepted=['application/pdf','application/vnd.openxmlformats-officedocument.presentationml.presentation','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','image/jpeg','image/png','video/mp4','text/plain'];
-export default function ModuleMaterials(){const {user}=useAuth();const [params]=useSearchParams();const filter=params.get('module')||'',material=params.get('material')||'';return <MaterialsWorkspace key={`${user?.id}:${user?.tenantId}:${user?.roles.join(',')}:${filter}:${material}`} moduleFilter={filter} materialFilter={material}/>;}
+export default function ModuleMaterials(){const {user}=useAuth();const [params]=useSearchParams();const filter=params.get('module')||'',material=params.get('material')||'';return <MaterialsWorkspace key={`${user?.id}:${user?.tenantId}:${user?.role}:${user?.roles?.join(',')}:${filter}:${material}`} moduleFilter={filter} materialFilter={material}/>;}
 function MaterialsWorkspace({moduleFilter,materialFilter}:{moduleFilter:string;materialFilter:string}){
  const {user}=useAuth();
  const [tenant,setTenant]=useState<string|null>(user?.tenantId||null);
  const [modules,setModules]=useState<Module[]>([]),[items,setItems]=useState<Material[]>([]);
  const [error,setError]=useState(''),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false);
  const [moduleId,setModuleId]=useState(moduleFilter),[kind,setKind]=useState<(typeof kinds)[number]>('reading');
- const [title,setTitle]=useState(''),[file,setFile]=useState<File|null>(null);
+ const [title,setTitle]=useState(''),[file,setFile]=useState<File|null>(null),[rightsAcknowledged,setRightsAcknowledged]=useState(false);
  const [refresh,setRefresh]=useState(0),[search,setSearch]=useState(''),[page,setPage]=useState(0);
  const mounted=useRef(true),operation=useRef(false);
  useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;};},[]);
- const staff=!!user?.roles.some(x=>['lecturer','programme_leader','centre_director','superadmin'].includes(x));
- const manager=!!user?.roles.some(x=>['centre_director','programme_leader','superadmin'].includes(x));
+ const staff=!!user?.role&&!!user.roles?.includes(user.role)&&['lecturer','programme_leader','centre_director','superadmin'].includes(user.role);
+ const manager=!!user?.role&&!!user.roles?.includes(user.role)&&['centre_director','programme_leader','superadmin'].includes(user.role);
  const uid=user?.id;
  const reload=()=>{setItems([]);setModules([]);setLoading(true);setError('');setPage(0);setRefresh(x=>x+1);};
  useEffect(()=>{
   let active=true;setItems([]);setModules([]);setLoading(true);setError('');setPage(0);
   void (async()=>{try{
-   let centre=user?.tenantId;
-   if(!centre&&user?.roles.includes('superadmin')){
-    const r=await db.from('tenants').select('id').eq('slug','unipathway').maybeSingle();
-    if(r.error)throw Error('Centre could not be verified.');centre=r.data?.id;
-   }
+   const centre=user?.tenantId;
    if(!active)return;
    if(!uid||!centre)throw Error('An authorised centre and account are required.');
    setTenant(centre);
@@ -82,17 +78,18 @@ function MaterialsWorkspace({moduleFilter,materialFilter}:{moduleFilter:string;m
  const upload=async()=>{
   if(operation.current||loading||error)return;
   const module=modules.find(m=>m.id===moduleId);
-  if(!staff||!tenant||!user||!module||!file||!title.trim()){toast.error('Choose an assigned module, title and file.');return;}
+  if(!staff||!tenant||!user||!module||!file||!title.trim()||!rightsAcknowledged){toast.error('Choose an assigned module, title and file, then confirm you have distribution rights.');return;}
   if(!file.size||file.size>25*1024*1024||!accepted.includes(file.type)){toast.error('Choose a supported, non-empty file up to 25 MB.');return;}
   const path=`${tenant}/${module.id}/${crypto.randomUUID()}-${safeName(file.name)}`;
   operation.current=true;setBusy(true);
   try{
    const result=await supabase.storage.from('unipathway-module-materials').upload(path,file,{contentType:file.type,upsert:false});
-   if(!mounted.current)return;if(result.error)throw result.error;
+   if(result.error)throw result.error;
+   if(!mounted.current){await supabase.storage.from('unipathway-module-materials').remove([path]);return;}
    const saved=await db.from('unipathway_module_materials').insert({tenant_id:tenant,module_id:module.id,created_by:user.id,title:title.trim(),kind,object_path:path,publication_status:'draft'}).select('id').single();
+   if(saved.error||!saved.data?.id){await supabase.storage.from('unipathway-module-materials').remove([path]);throw Error('Save unconfirmed');}
    if(!mounted.current)return;
-   if(saved.error||!saved.data?.id)throw Error('Save unconfirmed');
-   setFile(null);setTitle('');toast.success('Private draft saved. Publish it for enrolled learners.');reload();
+   setFile(null);setTitle('');setRightsAcknowledged(false);toast.success('Private draft saved. Publish it for enrolled learners.');reload();
   }catch{if(mounted.current){toast.error('Draft save could not be confirmed. Refresh and check your drafts before retrying.');reload();}}
   finally{operation.current=false;if(mounted.current)setBusy(false);}
  };
@@ -115,7 +112,12 @@ function MaterialsWorkspace({moduleFilter,materialFilter}:{moduleFilter:string;m
      <label className="text-sm font-medium">Material type<select disabled={busy||loading||!!error} value={kind} onChange={e=>setKind(e.target.value as (typeof kinds)[number])} className="mt-1 w-full rounded-md border bg-background p-2">{kinds.map(k=><option key={k}>{k}</option>)}</select></label>
      <label className="text-sm font-medium">Title<Input disabled={busy||loading||!!error} className="mt-1" value={title} onChange={e=>setTitle(e.target.value)} maxLength={160}/></label>
      <label className="text-sm font-medium">Private file (25 MB maximum)<Input disabled={busy||loading||!!error} className="mt-1" type="file" accept=".pdf,.pptx,.docx,.xlsx,.jpg,.png,.mp4,.txt" onChange={e=>setFile(e.target.files?.[0]||null)}/></label>
-    </div><Button disabled={busy||loading||!!error||!tenant||!modules.length} onClick={upload}>Save secure draft</Button>
+    </div>
+    <label className="flex items-start gap-3 rounded-lg border bg-secondary/30 p-3 text-sm">
+     <input className="mt-1 size-4 shrink-0" type="checkbox" checked={rightsAcknowledged} disabled={busy||loading} onChange={e=>setRightsAcknowledged(e.target.checked)} aria-label="Confirm teaching material distribution rights"/>
+     <span>I confirm this is original UniPathway teaching content or material I am permitted to distribute privately to enrolled students. Official question papers, mark schemes, publisher textbooks or licensed materials require the rights holder's terms to permit this upload. This acknowledgement is not a recorded licence or an approval by the awarding body.</span>
+    </label>
+    <Button disabled={busy||loading||!!error||!tenant||!modules.length||!rightsAcknowledged} onClick={upload}>Save secure draft</Button>
    </section>}
    {materialFilter&&<div className="mb-4 rounded-lg border p-3 text-sm"><p>Showing the material selected in search.</p><Link className="underline" to={`?${new URLSearchParams(moduleFilter?{module:moduleFilter}:{})}`}>Show all module materials</Link>{!loading&&!error&&!items.some(m=>m.id===materialFilter)&&<p role="status">This material is no longer available to your account. It may have been withdrawn or your assignment may have changed.</p>}</div>}
    <div className="mb-4 flex flex-wrap items-end gap-3"><label className="text-sm font-medium">Search materials<Input value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}} placeholder="Title, module, type or status"/></label><Button variant="outline" disabled={busy||loading} onClick={reload}>Refresh materials</Button></div>
