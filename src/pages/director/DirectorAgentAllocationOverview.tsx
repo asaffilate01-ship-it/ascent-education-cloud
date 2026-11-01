@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import {Link} from 'react-router-dom';
-import {BriefcaseBusiness,ClipboardList,ShieldCheck,Users} from 'lucide-react';
+import {BriefcaseBusiness,ClipboardList,ShieldCheck,Users,type LucideIcon} from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
@@ -37,6 +37,12 @@ function Overview(){
   if(row.stage!=='enrolled'&&row.stage!=='lost')previous.open++;
   counts.set(id,previous);
  }
+ const metrics:{label:string;value:number;Icon:LucideIcon}[]=[
+  {label:'Recorded agents',value:counts.size,Icon:Users},
+  {label:'Assigned applications',value:assigned.length,Icon:ClipboardList},
+  {label:'Unassigned applications',value:rows.length-assigned.length,Icon:BriefcaseBusiness},
+  {label:'Recorded enrolments',value:assigned.filter(a=>a.stage==='enrolled').length,Icon:ShieldCheck},
+ ];
  const list=[...counts.entries()].sort((a,b)=>b[1].total-a[1].total||a[0].localeCompare(b[0]))
   .filter(([id])=>id.toLowerCase().includes(search.trim().toLowerCase()));
  return <DashboardLayout title="Centre agent allocation" subtitle="Recruitment workload overview, without impersonating an agent">
@@ -44,14 +50,9 @@ function Overview(){
    loading?<p role="status">Checking centre-assigned agent workloads…</p>:
    error?<section role="alert" className="rounded-xl border p-5 space-y-3"><p>Agent allocations could not be verified. No totals are available.</p><Button variant="outline" onClick={()=>void refetch()}>Retry centre allocations</Button></section>:<div className="space-y-5">
     <section className="grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="Centre recruitment allocation">
-     {[
-      ['Recorded agents',counts.size,Users],
-      ['Assigned applications',assigned.length,ClipboardList],
-      ['Unassigned applications',rows.length-assigned.length,BriefcaseBusiness],
-      ['Recorded enrolments',assigned.filter(a=>a.stage==='enrolled').length,ShieldCheck],
-     ].map(([label,value,Icon])=><article key={label as string} className="rounded-xl border bg-card p-4">
-      <div className="flex items-center gap-2 text-muted-foreground"><Icon className="size-4"/><p className="text-sm">{label as string}</p></div>
-      <p className="mt-2 text-2xl font-semibold">{value as number}</p>
+     {metrics.map(({label,value,Icon})=><article key={label} className="rounded-xl border bg-card p-4">
+      <div className="flex items-center gap-2 text-muted-foreground"><Icon className="size-4"/><p className="text-sm">{label}</p></div>
+      <p className="mt-2 text-2xl font-semibold">{value}</p>
      </article>)}
     </section>
     <section className="rounded-xl border bg-card p-5 space-y-3">
