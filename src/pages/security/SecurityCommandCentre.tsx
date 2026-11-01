@@ -10,7 +10,7 @@ import {Button} from '@/components/ui/button';
 export default function SecurityCommandCentre(){const {user}=useAuth();return <Desk key={`${user?.id}:${user?.tenantId}:${user?.role}:${user?.roles?.join(',')}`}/>;}
 function Desk(){
  const {user}=useAuth();const permitted=!!physicalSecurityScope(user)&&PHYSICAL_SECURITY_ENABLED;
- const occ=useScopedSecurityRows<CentreOccupant>(user,'centre_occupancy','tenant_id,person_key,person_type,in_building,last_event_at,last_gate_id','person_key');
+ const occ=useScopedSecurityRows<CentreOccupant>(user,'centre_occupancy','tenant_id,person_type,in_building,last_event_at,last_gate_id','person_key');
  const cams=useScopedSecurityRows<CentreCamera>(user,'cctv_cameras','id,tenant_id,camera_code,display_name,status,last_health_at','id');
  const devices=useScopedSecurityRows<CentreDevice>(user,'security_devices','id,tenant_id,device_code,device_type,status,last_health_at','id');
  const muster=useScopedSecurityRows<MusterEvent>(user,'emergency_muster_events','id,tenant_id,status,started_at,ended_at','id');

@@ -1,11 +1,11 @@
 
-export type CentreOccupant={tenant_id:string;person_key:string;person_type:string;in_building:boolean;last_event_at:string|null;last_gate_id:string|null};
+export type CentreOccupant={tenant_id:string;person_key?:string;person_type:string;in_building:boolean;last_event_at:string|null;last_gate_id:string|null};
 export type CentreAccessEvent={id:string;tenant_id:string;gate_id:string;direction:string;decision:string;occurred_at:string};
 export type CentreVisitor={id:string;tenant_id:string;full_name:string;pass_number:string;purpose:string|null;status:string;checked_in_at:string|null;checked_out_at:string|null;created_at:string};
 export type CentreCamera={id:string;tenant_id:string;camera_code:string;display_name:string;status:string;last_health_at:string|null};
 export type CentreDevice={id:string;tenant_id:string;device_code:string;device_type:string;status:string;last_health_at:string|null};
 export type MusterEvent={id:string;tenant_id:string;status:string;started_at:string;ended_at:string|null};
-export type MusterRow={id:string;tenant_id:string;muster_event_id:string;person_key:string;person_type:string;expected_inside:boolean;status:string;muster_point:string|null};
+export type MusterRow={id:string;tenant_id:string;muster_event_id:string;person_key?:string;person_type:string;expected_inside:boolean;status:string;muster_point:string|null};
 
 export const PHYSICAL_SECURITY_ENABLED=import.meta.env.VITE_UNIPATHWAY_PHYSICAL_SECURITY_ENABLED==='true';
 export const VISITOR_WRITES_ENABLED=PHYSICAL_SECURITY_ENABLED && import.meta.env.VITE_UNIPATHWAY_PHYSICAL_VISITOR_WRITES_ENABLED==='true';

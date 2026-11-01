@@ -8,7 +8,7 @@ import {Button} from '@/components/ui/button';
 export default function CentreSecurity(){const {user}=useAuth();return <GateActivity key={`${user?.id}:${user?.tenantId}:${user?.role}:${user?.roles?.join(',')}`}/>;}
 function GateActivity(){
  const {user}=useAuth(),permitted=!!physicalSecurityScope(user)&&PHYSICAL_SECURITY_ENABLED;
- const occupancy=useScopedSecurityRows<CentreOccupant>(user,'centre_occupancy','tenant_id,person_key,person_type,in_building,last_event_at,last_gate_id','person_key');
+ const occupancy=useScopedSecurityRows<CentreOccupant>(user,'centre_occupancy','tenant_id,person_type,in_building,last_event_at,last_gate_id','person_key');
  const events=useScopedSecurityRows<CentreAccessEvent>(user,'centre_access_events','id,tenant_id,gate_id,direction,decision,occurred_at','id');
  const loading=occupancy.loading||events.loading,failed=occupancy.error||events.error;
  const inside=occupancyStats(occupancy.data);

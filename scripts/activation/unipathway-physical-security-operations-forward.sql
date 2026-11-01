@@ -53,7 +53,7 @@ BEGIN
   ) r;
  ELSIF p_kind='centre_occupancy' THEN
   SELECT coalesce(jsonb_agg(to_jsonb(r)),'[]'::jsonb) INTO v_rows FROM (
-   SELECT tenant_id,person_key,person_type,in_building,last_event_at,last_gate_id
+   SELECT tenant_id,person_type,in_building,last_event_at,last_gate_id
    FROM public.centre_occupancy WHERE tenant_id=p_tenant ORDER BY person_key LIMIT p_limit OFFSET p_offset
   ) r;
  ELSIF p_kind='centre_access_events' THEN
@@ -79,7 +79,7 @@ BEGIN
  ELSIF p_kind='emergency_muster_status' THEN
   IF p_event_id IS NULL THEN RAISE EXCEPTION 'An approved muster event is required';END IF;
   SELECT coalesce(jsonb_agg(to_jsonb(r)),'[]'::jsonb) INTO v_rows FROM (
-   SELECT id,tenant_id,muster_event_id,person_key,person_type,expected_inside,status,muster_point
+   SELECT id,tenant_id,muster_event_id,person_type,expected_inside,status,muster_point
    FROM public.emergency_muster_status WHERE tenant_id=p_tenant AND muster_event_id=p_event_id
    ORDER BY id LIMIT p_limit OFFSET p_offset
   ) r;
@@ -135,7 +135,7 @@ BEGIN
   SELECT * INTO v_record FROM public.centre_visitors WHERE tenant_id=p_tenant AND id=v_old.visitor_id;
   IF NOT FOUND THEN RAISE EXCEPTION 'Visitor receipt incomplete';END IF;
  ELSE
-  v_pass:='UP-'||upper(substr(replace(v_id::text,'-',''),1,12));
+  v_pass:='UP-'||upper(replace(v_id::text,'-',''));
   INSERT INTO public.centre_visitors(
     id,tenant_id,full_name,id_type,purpose,pass_number,checked_in_at,status
   ) VALUES(v_id,p_tenant,btrim(p_name),'in_person_attested',btrim(p_purpose),v_pass,now(),'in_building')
