@@ -63,6 +63,8 @@ const ProgrammeManagement = lazy(() => import("./pages/director/ProgrammeManagem
 const StaffManagement = lazy(() => import("./pages/director/StaffManagement"));
 const StaffAccessManager = lazy(() => import("./pages/office/StaffAccessManager"));
 const OfficeStaffDashboard = lazy(() => import("./pages/office/OfficeStaffDashboard"));
+const OfficeCompliancePreparation = lazy(() => import("./pages/office/OfficeCompliancePreparation"));
+const DirectorAgentAllocationOverview = lazy(() => import("./pages/director/DirectorAgentAllocationOverview"));
 const TechLabAccessGate = lazy(() => import("./components/labs/TechLabAccessGate"));
 const StudentManagement = lazy(() => import("./pages/director/StudentManagement"));
 
@@ -409,7 +411,7 @@ function AppRoutes() {
         <Route path="/director/compliance" element={<Director><CentreComplianceReadiness /></Director>} />
         <Route path="/director/allocations" element={<Director><AdmissionsReviewDesk /></Director>} />
         <Route path="/director/finance" element={<Director><FinanceDashboard /></Director>} />
-        <Route path="/director/agents" element={<Director><AgentDashboard /></Director>} />
+        <Route path="/director/agents" element={<Director><DirectorAgentAllocationOverview /></Director>} />
         <Route path="/director/knowledge" element={<Director><KnowledgeLibrary /></Director>} />
         <Route path="/director/education-intelligence" element={<Director><EducationIntelligence /></Director>} />
         <Route path="/director/readiness" element={<Director><ProductionReadiness /></Director>} />
@@ -428,7 +430,7 @@ function AppRoutes() {
 
         {/* ========== ADMISSIONS ========== */}
         <Route path="/office" element={<Office><OfficeStaffDashboard /></Office>} />
-        <Route path="/office/compliance-preparation" element={<Office><OfficeStaffDashboard /></Office>} />
+        <Route path="/office/compliance-preparation" element={<Office><OfficeCompliancePreparation /></Office>} />
         <Route path="/admissions" element={<Admissions><AdmissionsCRM /></Admissions>} />
         <Route path="/admissions/applications" element={<Admissions><AdmissionsCRM /></Admissions>} />
         <Route path="/admissions/employers" element={<Admissions><EmployerPartnershipsPage /></Admissions>} />
