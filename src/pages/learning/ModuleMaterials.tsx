@@ -42,7 +42,7 @@ function MaterialsWorkspace({moduleFilter,materialFilter}:{moduleFilter:string;m
    const centre=user?.tenantId;
    if(!active)return;
    if(!uid||!centre)throw Error('An authorised centre and account are required.');
-   if(!classReleaseEnabled&&!staff)throw Error('Post-class materials protection is not yet activated.');
+   if(!classReleaseEnabled)throw Error('Post-class material release is awaiting verified backend activation. Existing resources remain protected.');
    setTenant(centre);
    const queryModules=()=>{let q=db.from('modules').select('id,title,lecturer_id,tenant_id,programme_id').eq('tenant_id',centre);if(moduleFilter)q=q.eq('id',moduleFilter);if(staff&&!manager)q=q.eq('lecturer_id',uid);return q;};
    const [all,enrolments]=await Promise.all([
