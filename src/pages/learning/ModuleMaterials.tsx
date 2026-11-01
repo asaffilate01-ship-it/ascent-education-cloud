@@ -77,7 +77,11 @@ function MaterialsWorkspace({moduleFilter,materialFilter}:{moduleFilter:string;m
    if(approval.error||approval.data!==true)throw Error('Private material access has not been approved.');
    const {data,error:e}=await supabase.storage.from('unipathway-module-materials').createSignedUrl(m.object_path,120);
    if(!mounted.current){preview?.close();return;}if(e||!data?.signedUrl)throw Error('Unavailable');
-   if(preview)preview.location.replace(data.signedUrl);
+   const signed=new URL(data.signedUrl),origin=new URL(import.meta.env.VITE_SUPABASE_URL).origin;
+   if(signed.protocol!=='https:'||signed.origin!==origin||signed.username||signed.password||
+    !signed.pathname.startsWith('/storage/v1/object/sign/unipathway-module-materials/'))
+    throw Error('Unrecognised private material address.');
+   if(preview)preview.location.replace(signed.href);
    else {toast.error('Allow pop-ups to open this private file, then try again.');}
   }catch{preview?.close();if(mounted.current)toast.error('File not available to this account. Refresh materials and retry.');}
   finally{operation.current=false;if(mounted.current)setBusy(false);}
