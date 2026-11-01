@@ -85,7 +85,7 @@ export default function CentreDirectorDashboard() {
       <section aria-label="Academic quality and delivery readiness" className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{[
        ['Qualification and board compliance','/director/compliance','OTHM, Qualifi, ATHE, Pearson, Cambridge, Pakistan and vocational approval evidence.'],
        ['Course and language content','/director/course-content','Verify real programme/module coverage and IELTS, languages, teaching sources and licences.'],
-       ['Teams and cloud lab readiness','/director/microsoft-education','Microsoft Graph and cloud lab providers must be independently activated and verified.'],
+       ['Teams and cloud lab readiness','/director/tech-lab-access','Approve technology modules and learner-specific grants; Microsoft Graph and cloud lab providers need separate activation.'],
        ['Admission allocations','/director/allocations','Check KYC, offers, funding, correct modules, schedules and physical identity cards.']
       ].map(([title,to,description])=><Link key={to} to={to} className="rounded-xl border bg-card p-4 hover:bg-accent"><h2 className="font-semibold">{title}</h2><p className="mt-2 text-sm text-muted-foreground">{description}</p></Link>)}</section>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
