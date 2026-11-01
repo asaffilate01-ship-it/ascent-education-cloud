@@ -26,6 +26,20 @@ export const PUBLIC_BOTTOM_NAV: BottomNavItem[] = [
 ];
 
 export const BOTTOM_NAV: Record<UserRole, BottomNavItem[]> = {
+  office_admin: [
+    {label:'Office',icon:Home,path:'/office'},
+    {label:'Guidance',icon:ClipboardCheck,path:'/office/compliance-preparation'},
+    {label:'Workspace',icon:BookOpen,path:'/workspace'},
+  ],
+  hr_officer: [
+    {label:'HR',icon:Home,path:'/office'},
+    {label:'Workspace',icon:BookOpen,path:'/workspace'},
+  ],
+  secretary: [
+    {label:'Office',icon:Home,path:'/office'},
+    {label:'Guidance',icon:ClipboardCheck,path:'/office/compliance-preparation'},
+    {label:'Workspace',icon:BookOpen,path:'/workspace'},
+  ],
   security_officer: [{label:'CCTV',icon:ShieldCheck,path:'/security'},{label:'Alerts',icon:Bell,path:'/notifications'},{label:'Workspace',icon:Home,path:'/workspace'}],
   student: [
     { label: 'Home', icon: Home, path: '/student' },
@@ -97,7 +111,7 @@ export const BOTTOM_NAV: Record<UserRole, BottomNavItem[]> = {
   ],
   exams_officer: [
     { label: 'Home', icon: Home, path: '/exams' },
-    { label: 'Gradebook', icon: BarChart3, path: '/gradebook' },
+    { label: 'Results status', icon: BarChart3, path: '/exams/results' },
     { label: 'Schedule', icon: ClipboardList, path: '/exams/schedule' },
     { label: 'Alerts', icon: Bell, path: '/notifications' },
     { label: 'Chat', icon: MessageSquare, path: '/messaging' },
