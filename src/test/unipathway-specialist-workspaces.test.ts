@@ -3,6 +3,13 @@ import {describe,expect,it} from 'vitest';
 const src=(path:string)=>readFileSync(path,'utf8');
 
 describe('UniPathway director and office workflow separation',()=>{
+ it('gives programme leaders their own management modules, not the lecturer-only screen',()=>{
+  const app=src('src/App.tsx');
+  expect(app).toContain('<Route path="/programme/modules" element={<Programme><ProgrammeManagement /></Programme>} />');
+  expect(app).not.toContain('<Programme><LecturerTeaching /></Programme>');
+  const programme=src('src/pages/director/ProgrammeManagement.tsx');
+  expect(programme).toContain("user.role==='programme_leader'");
+ });
  it('does not allow old management memberships to bypass CCTV centre isolation',()=>{
   const camera=src('src/pages/security/SecurityWorkspace.tsx');
   expect(camera).toContain('user.roles?.includes(user.role)');
