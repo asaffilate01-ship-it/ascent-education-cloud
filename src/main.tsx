@@ -21,7 +21,8 @@ if (root) {
  // module load while online (e.g. preview/dev server restarting or a new
  // deploy) must retry instead of trapping the visitor on the offline page.
  const loadApp=(attempt=0):void=>{
-  import('./App.tsx').then(({default:App})=>{showingOffline=false;sessionStorage.removeItem(RELOAD_KEY);renderer.render(<App/>);}).catch(()=>{
+  import('./App.tsx').then(({default:App})=>{showingOffline=false;sessionStorage.removeItem(RELOAD_KEY);renderer.render(<App/>);}).catch((error)=>{
+   if(import.meta.env.DEV)console.error('UniPathway app module load failed:',error);
    if(!navigator.onLine){showOffline();return;}
    if(attempt<3){setTimeout(()=>loadApp(attempt+1),1000*(attempt+1));return;}
    if(!sessionStorage.getItem(RELOAD_KEY)){sessionStorage.setItem(RELOAD_KEY,'1');window.location.reload();return;}
