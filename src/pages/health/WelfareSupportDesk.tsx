@@ -20,6 +20,7 @@ function WelfareQueue(){
  const [cases,setCases]=useState<CaseRow[]>([]),[loading,setLoading]=useState(false),[error,setError]=useState('');
  const [filter,setFilter]=useState('open'),[selected,setSelected]=useState(''),[refresh,setRefresh]=useState(0);
  const [action,setAction]=useState('reviewing'),[note,setNote]=useState(''),[busy,setBusy]=useState(false),[notice,setNotice]=useState('');
+ const [reply,setReply]=useState(''),[replyNonce,setReplyNonce]=useState(()=>crypto.randomUUID());
  useEffect(()=>{
   let active=true;setCases([]);setSelected('');setError('');setNotice('');
   if(!authorised||!WELLBEING_ENABLED)return()=>{active=false;};
@@ -50,6 +51,20 @@ function WelfareQueue(){
   }catch{setError('Case review was not confirmed. Reload the queue and check the current status before retrying.');}
   finally{setBusy(false);}
  }
+ async function sendPrivateReply(){
+  if(!record||record.anonymous||!record.student_id||busy||reply.trim().length<15||!authorised)return;
+  setBusy(true);setError('');setNotice('');
+  try{
+   const {data,error:e}=await (supabase.rpc as any)('respond_to_unipathway_welfare_request',{
+    p_request:record.id,p_message:reply.trim(),p_nonce:replyNonce,
+   });
+   if(e||!data||data.requestId!==record.id||data.status!=='recorded')
+    throw Error('The response was not confirmed.');
+   setNotice('A private reply was saved for the linked student portal. No email delivery or emergency notification is implied.');
+   setReply('');setReplyNonce(crypto.randomUUID());setRefresh(v=>v+1);
+  }catch{setError('The private response was not confirmed. Use the same request to retry, or refresh the case.');}
+  finally{setBusy(false);}
+ }
  return <DashboardLayout title="Student wellbeing & counselling" subtitle="Restricted welfare triage — confidential cases and unidentifiable reports">
   <div className="space-y-5">
    <section className="rounded-xl border bg-card p-5 space-y-2">
@@ -78,7 +93,7 @@ function WelfareQueue(){
      {notice&&<p role="status">{notice}</p>}
      {!loading&&!error&&!visible.length&&<p className="text-sm text-muted-foreground">No verified cases match this view.</p>}
      {!loading&&!error&&<div className="grid gap-3 lg:grid-cols-2">{visible.slice(0,100).map(c=><button type="button" key={c.id}
-      aria-pressed={selected===c.id} onClick={()=>{setSelected(c.id);setNote('');setAction('reviewing');}}
+      aria-pressed={selected===c.id} onClick={()=>{setSelected(c.id);setNote('');setReply('');setReplyNonce(crypto.randomUUID());setAction('reviewing');}}
       className="rounded-lg border p-4 text-left hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
       <span className="font-semibold text-sm">{WELLBEING_CATEGORIES.find(x=>x.value===c.category)?.label||'Other support'}</span>
       <span className="block mt-2 text-xs text-muted-foreground">{c.anonymous?'Anonymous — no student identity':'Confidential student request'} · {c.urgency==='soon'?'Prompt review requested':'Routine'} · {c.status}</span>
@@ -100,6 +115,16 @@ function WelfareQueue(){
       <Textarea rows={4} maxLength={2000} value={note} onChange={e=>setNote(e.target.value)} className="mt-2" placeholder="Record who will review, the agreed support next step and the evidence reference. Do not include irrelevant clinical details."/>
      </label>
      <Button disabled={busy||note.trim().length<12} onClick={()=>void update()}>{busy?'Saving review…':'Record staff review'}</Button>
+     {!record.anonymous&&!!record.student_id&&record.status!=='closed'&&<div className="space-y-3 border-t pt-4">
+      <h3 className="font-semibold">Send a confidential student-portal response</h3>
+      <p className="text-sm text-muted-foreground">Only the original student can read this response after authenticating. This does not send email, SMS or an emergency alert. Do not include unnecessary medical details.</p>
+      <label className="block text-sm font-medium">Support guidance, agreed next step or counselling referral
+       <Textarea rows={4} maxLength={2500} className="mt-2" value={reply} onChange={e=>setReply(e.target.value)}
+        placeholder="Explain the support available and how the student can arrange a private appointment or further help."/>
+      </label>
+      <Button disabled={busy||reply.trim().length<15} onClick={()=>void sendPrivateReply()}>Save confidential reply for student</Button>
+     </div>}
+     {record.anonymous&&<p role="status" className="rounded-md border p-3 text-sm">One-way anonymous report: no linked student ID, inbox or reply channel exists. Follow the appropriate safeguarding process without trying to infer the sender's identity.</p>}
     </section>}
    </>}
    <Link className="inline-flex min-h-11 items-center rounded-lg border px-4 text-sm" to="/health">Return to health records</Link>
