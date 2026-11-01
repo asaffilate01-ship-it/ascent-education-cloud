@@ -8,6 +8,7 @@ test('public page boots in a clean synthetic CI browser',async({page})=>{
  page.on('response',response=>{if(response.status()>=500)console.error('[startup http]',response.status(),response.url());});
  const response=await page.goto('/',{waitUntil:'domcontentloaded',timeout:20_000});
  console.log('[startup http status]',response?.status()||'no response');
+ console.log('[startup document]',JSON.stringify({url:page.url(),title:await page.title(),entry:await page.locator('script[type="module"]').first().getAttribute('src').catch(()=>null),online:await page.evaluate(()=>navigator.onLine)}));
  await expect.poll(async()=>{const content=await page.locator('body').innerText().catch(()=>null);return content?.trim().length||0;},{timeout:45_000}).toBeGreaterThan(80);
  console.log('[startup page body]',(await page.locator('body').innerText()).slice(0,500));
  await expect.poll(async()=>page.locator('a[href="/study"]').count(),{timeout:25_000}).toBeGreaterThan(0);
