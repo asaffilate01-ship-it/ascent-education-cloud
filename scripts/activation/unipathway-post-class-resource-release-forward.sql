@@ -182,6 +182,12 @@ BEGIN
 END
 $fn$;
 
+-- Ensure every resource table has RLS active before installing restrictive
+-- access conditions; otherwise policies would exist but not protect reads.
+ALTER TABLE public.unipathway_module_materials ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.live_class_artifacts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.lesson_ai_packs ENABLE ROW LEVEL SECURITY;
+
 -- These RESTRICTIVE filters apply even if an existing permissive table policy
 -- allows an enrolled learner to list all published files.
 CREATE POLICY "Class-linked materials have a verified post-class embargo"
