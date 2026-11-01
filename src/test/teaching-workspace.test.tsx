@@ -4,7 +4,7 @@ import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 import LecturerTeaching from '@/pages/lecturer/LecturerTeaching';
 import {teachingHours,planOverlaps,matchesTeachingModuleSearch,pakistanTeachingDayOfWeek} from '@/lib/teachingPlan';
 const mock=vi.hoisted(()=>({error:null as string|null,refresh:vi.fn(),lectures:[] as Record<string,unknown>[]}));
-vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'teacher',tenantId:'centre',roles:['lecturer']}})}));
+vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'teacher',tenantId:'centre',role:'lecturer',roles:['lecturer']}})}));
 vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:{children:React.ReactNode})=><main>{children}</main>}));
 vi.mock('@/hooks/useSupabaseQuery',()=>({useSupabaseQuery:()=>({data:[{id:'module',title:'Maths',status:'active',code:'M1',lecturer_id:'teacher',tenant_id:'centre'},{id:'other',title:'Peer module',lecturer_id:'other',tenant_id:'centre'}],loading:false,error:mock.error,refetch:mock.refresh})}));
 vi.mock('@/hooks/useScheduledLectures',()=>({DAY_NAMES:['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],useScheduledLectures:()=>({myLectures:mock.lectures,loading:false,error:null,refetch:mock.refresh})}));
@@ -24,7 +24,7 @@ it('switches between a focused day and the complete weekly plan without implying
  expect(screen.getByText(/Only Sunday shown from your saved weekly plan/)).toBeInTheDocument();
  expect(screen.getByText('Weekend Maths')).toBeInTheDocument();
  fireEvent.click(screen.getByRole('button',{name:'Full week (1)'}));
- expect(screen.getByRole('heading',{name:'Monday'})).toBeInTheDocument();
+ expect(screen.getByRole('heading',{name:/^Monday/})).toBeInTheDocument();
  expect(screen.getByText(/All seven days shown from your saved weekly plan/)).toBeInTheDocument();
 });
 it('finds authorised modules using code and title in either order',()=>{

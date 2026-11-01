@@ -1,140 +1,98 @@
+import {useState} from 'react';
+import {Link} from 'react-router-dom';
+import {Search,Users,UserCheck,ShieldCheck,ClipboardList} from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
-import { UserPlus, CreditCard, Users, TrendingUp, Phone, Search } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useState } from 'react';
-import AddLeadModal from '@/components/modals/AddLeadModal';
-import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
-import { useAuth } from '@/contexts/AuthContext';
-import { DashboardSkeleton } from '@/components/ui/Skeletons';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {DashboardSkeleton} from '@/components/ui/Skeletons';
+import {useSupabaseQuery} from '@/hooks/useSupabaseQuery';
+import {useAuth} from '@/contexts/AuthContext';
 
-const PIPELINE_STAGES = [
-  { key: 'lead', label: 'New Leads', color: 'bg-muted' },
-  { key: 'contacted', label: 'Contacted', color: 'bg-primary/20' },
-  { key: 'qualified', label: 'Qualified', color: 'bg-warning/20' },
-  { key: 'applied', label: 'Applied', color: 'bg-primary/40' },
-  { key: 'enrolled', label: 'Enrolled', color: 'bg-success/20' },
+const stages=[
+ {key:'lead',label:'New leads'},
+ {key:'contacted',label:'Contacted'},
+ {key:'qualified',label:'Qualified'},
+ {key:'applied',label:'Applied'},
+ {key:'under_review',label:'Under review'},
+ {key:'enrolled',label:'Enrolled'},
 ] as const;
 
-export default function AgentDashboard() {
-  const { user } = useAuth();
-  const [addLeadOpen, setAddLeadOpen] = useState(false);
-  const [search, setSearch] = useState('');
-  const { data: applications, loading, error, refetch } = useSupabaseQuery('applications', {
-    orderBy: { column: 'updated_at', ascending: false },
-    filters: [{column:'agent_id',operator:'eq',value:user?.id}], enabled:!!user?.id,
-  });
-  const { data: invoices } = useSupabaseQuery('invoices');
-
-  if (loading) return <DashboardLayout title="Agent dashboard"><DashboardSkeleton /></DashboardLayout>;
-  if (error) return <DashboardLayout title="Agent dashboard"><div role="alert" className="rounded-xl border p-5"><p>Applications could not be loaded. Your records have not been changed.</p><Button className="mt-3" onClick={()=>void refetch()}>Try again</Button></div></DashboardLayout>;
-
-  const myApps = user?.id
-    ? applications.filter(a => a.agent_id === user.id)
-    : applications;
-
-  const filtered = search
-    ? myApps.filter(a =>
-        a.student_name.toLowerCase().includes(search.toLowerCase()) ||
-        a.email.toLowerCase().includes(search.toLowerCase()) ||
-        (a.programme_name || '').toLowerCase().includes(search.toLowerCase())
-      )
-    : myApps;
-
-  const enrolledCount = myApps.filter(a => a.stage === 'enrolled').length;
-  const commissionInvoices = invoices.filter(i => i.type === 'commission');
-  const totalEarned = commissionInvoices.filter(i => i.status === 'paid').reduce((s, i) => s + Number(i.paid), 0);
-  const pipelineValue = commissionInvoices.reduce((s, i) => s + Number(i.amount), 0);
-
-  return (
-    <DashboardLayout
-      title="Agent Pipeline"
-      subtitle="Your recruitment dashboard"
-      actions={
-        <Button size="sm" onClick={() => setAddLeadOpen(true)}>
-          <UserPlus className="w-3.5 h-3.5 mr-1.5" /> Add Lead
-        </Button>
-      }
-    >
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard label="Pipeline Value" value={`Rs.${pipelineValue.toLocaleString()}`} icon={TrendingUp} />
-        <StatCard label="Active Leads" value={myApps.filter(a => a.stage !== 'enrolled' && a.stage !== 'lost').length} icon={Users} />
-        <StatCard label="Enrolled" value={enrolledCount} change="confirmed" changeType="positive" icon={UserPlus} />
-        <StatCard label="Earned Commission" value={`Rs.${totalEarned.toLocaleString()}`} change="Paid" changeType="positive" icon={CreditCard} />
-      </div>
-
-      {/* Search */}
-      <div className="mb-4">
-        <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-          <Input
-            placeholder="Search leads..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-8 text-sm"
-          />
-        </div>
-      </div>
-
-      {/* Pipeline Kanban */}
-      <div className="mb-4">
-        <h2 className="text-sm font-semibold mb-3">Sales Pipeline</h2>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          {PIPELINE_STAGES.map((stage) => {
-            const leads = filtered.filter(a => a.stage === stage.key);
-            return (
-              <div key={stage.key} className="surface-data rounded-lg p-3">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{stage.label}</p>
-                  <span className="text-xs font-bold text-foreground bg-background rounded-full w-5 h-5 flex items-center justify-center shadow-surface-sm">{leads.length}</span>
-                </div>
-                <div className="space-y-2">
-                  {leads.map((lead) => (
-                    <div key={lead.id} className="surface-card p-3 cursor-pointer hover:shadow-lg transition-default">
-                      <p className="text-sm font-medium">{lead.student_name}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{lead.programme_name || 'No programme'}</p>
-                      <div className="flex items-center justify-between mt-2">
-                        <span className="text-xs text-muted-foreground">{lead.phone || lead.email}</span>
-                      </div>
-                    </div>
-                  ))}
-                  {leads.length === 0 && (
-                    <p className="text-[10px] text-muted-foreground text-center py-4">No leads</p>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Payments to Chase */}
-      <div className="surface-card p-5 mt-6">
-        <h3 className="text-sm font-semibold mb-3">Outstanding Commission Payments</h3>
-        <div className="space-y-2">
-          {commissionInvoices.filter(i => i.status !== 'paid').map((inv) => (
-            <div key={inv.id} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
-              <div>
-                <p className="text-sm font-medium">{inv.student_name}</p>
-                <p className="text-xs text-muted-foreground">Rs.{Number(inv.amount).toLocaleString()}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <StatusBadge status={inv.status} variant={inv.status === 'overdue' ? 'danger' : 'warning'} />
-                <Button variant="outline" size="sm" className="text-xs">
-                  <Phone className="w-3 h-3 mr-1" /> Chase
-                </Button>
-              </div>
-            </div>
-          ))}
-          {commissionInvoices.filter(i => i.status !== 'paid').length === 0 && (
-            <p className="text-xs text-muted-foreground text-center py-4">No outstanding commissions</p>
-          )}
-        </div>
-      </div>
-
-      <AddLeadModal open={addLeadOpen} onOpenChange={setAddLeadOpen} onCreated={refetch} />
-    </DashboardLayout>
-  );
+export default function AgentDashboard(){
+ const {user}=useAuth();
+ return <AgentWorkspace key={[user?.id,user?.tenantId,user?.role].join(':')}/>;
+}
+function AgentWorkspace(){
+ const {user}=useAuth();
+ const verified=!!user?.id&&!!user.tenantId&&user.role==='agent'&&user.roles?.includes('agent');
+ const [query,setQuery]=useState(''),[selected,setSelected]=useState('');
+ // An agent must never read an entire centre's applications or invoices.
+ // Both identity/centre and agent ownership require independent database RLS.
+ const {data:applications,loading,error,refetch}=useSupabaseQuery('applications',{
+  enabled:verified,
+  filters:[
+   {column:'tenant_id',operator:'eq',value:user?.tenantId||''},
+   {column:'agent_id',operator:'eq',value:user?.id||''},
+  ],
+  orderBy:{column:'updated_at',ascending:false},
+ });
+ const mine=verified?applications.filter(a=>a.tenant_id===user!.tenantId&&a.agent_id===user!.id):[];
+ const normalise=(value:string|null|undefined)=>(value||'').toLowerCase();
+ const filtered=mine.filter(a=>[a.student_name,a.email,a.programme_name,a.phone].some(value=>normalise(value).includes(query.toLowerCase().trim())));
+ const current=filtered.find(a=>a.id===selected);
+ const enrolled=mine.filter(a=>a.stage==='enrolled').length;
+ const pending=mine.filter(a=>a.stage!=='enrolled'&&a.stage!=='lost').length;
+ return <DashboardLayout title="Agent recruitment" subtitle="Only applications explicitly assigned to you within your verified centre"
+  actions={verified?<Button asChild variant="outline"><Link to="/agent/resources">Agent guidance</Link></Button>:undefined}>
+  {!verified?<p role="alert" className="rounded-xl border bg-card p-5">Select an active, verified Agent role with a centre assignment. Director or platform access alone cannot impersonate an agent.</p>:
+   loading?<DashboardSkeleton/>:
+   error?<section role="alert" className="rounded-xl border bg-card p-5 space-y-3">
+    <p>The server could not confirm your assigned applications. No partial pipeline or financial totals are shown.</p>
+    <Button variant="outline" onClick={()=>void refetch()}>Retry secure pipeline</Button>
+   </section>:<div className="space-y-5">
+    <section className="grid grid-cols-2 gap-3 lg:grid-cols-3" aria-label="Assigned application summary">
+     <StatCard label="Assigned enquiries" value={mine.length} icon={Users}/>
+     <StatCard label="Open cases" value={pending} icon={ClipboardList}/>
+     <StatCard label="Recorded enrolments" value={enrolled} icon={UserCheck}/>
+    </section>
+    <section className="rounded-xl border bg-card p-4 space-y-3">
+     <h2 className="font-semibold">Find an assigned learner</h2>
+     <div className="relative max-w-lg"><Search className="absolute left-3 top-3 size-4 text-muted-foreground"/>
+      <Input aria-label="Search your assigned applications" className="pl-9" type="search" value={query} onChange={e=>{setQuery(e.target.value);setSelected('');}} placeholder="Name, programme, email or telephone"/>
+     </div>
+     <p className="text-sm text-muted-foreground">{filtered.length} assigned applications match. New referrals must be entered through an independently authorised admissions workflow; the agent account cannot issue an offer, change enrolment or invent a payment.</p>
+    </section>
+    <section aria-label="Agent application pipeline">
+     <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{stages.map(stage=>{
+      const rows=filtered.filter(a=>a.stage===stage.key);
+      return <article key={stage.key} className="rounded-xl border bg-card p-4">
+       <h3 className="flex justify-between gap-2 font-semibold text-sm"><span>{stage.label}</span><span>{rows.length}</span></h3>
+       <div className="mt-3 space-y-2">{rows.slice(0,25).map(a=><button key={a.id} type="button" aria-pressed={selected===a.id}
+        className="w-full rounded-lg border p-3 text-left hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        onClick={()=>setSelected(prev=>prev===a.id?'':a.id)}>
+        <span className="block font-medium text-sm">{a.student_name}</span>
+        <span className="block text-xs text-muted-foreground">{a.programme_name||'Programme to be confirmed'}</span>
+       </button>)}
+       {!rows.length&&<p className="text-xs text-muted-foreground">No assigned enquiries at this stage.</p>}
+       {rows.length>25&&<p className="text-xs text-muted-foreground">Showing first 25 of {rows.length} matching cases. Narrow your search to find another learner.</p>}
+       </div>
+      </article>;
+     })}</div>
+     {filtered.some(a=>!stages.some(stage=>stage.key===a.stage))&&<p className="mt-3 rounded-lg border p-3 text-sm">Some applications are deferred, lost or in a specialist review state. Search by the learner name to locate them in the full centre admissions process.</p>}
+    </section>
+    {current&&<section aria-label="Selected assigned application" className="rounded-xl border bg-card p-5 space-y-2">
+     <h2 className="font-semibold">{current.student_name}</h2>
+     <p className="text-sm">Programme: {current.programme_name||'Not confirmed'}</p>
+     <p className="text-sm">Stage: <StatusBadge status={current.stage}/></p>
+     {current.email&&<p className="text-sm">Email: <a className="underline break-all" href={`mailto:${current.email}`}>{current.email}</a></p>}
+     {current.phone&&<p className="text-sm">Telephone: {current.phone}</p>}
+     <p className="text-xs text-muted-foreground">Read-only assigned contact. Academic offer, KYC, fees and enrolment are handled through approved centre workflows.</p>
+    </section>}
+    <section className="rounded-xl border bg-card p-5 space-y-2">
+     <h2 className="flex items-center gap-2 font-semibold"><ShieldCheck className="size-4"/>Commission reconciliation not activated</h2>
+     <p className="text-sm text-muted-foreground">Agent-specific approved agreements, earned commissions, outstanding claims and paid settlements require a separate verified agent-to-payment ledger. They cannot be calculated from centre-wide invoice records. No commission amounts are displayed until that server-authorised service is available.</p>
+    </section>
+   </div>}
+ </DashboardLayout>;
 }

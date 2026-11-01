@@ -3,19 +3,31 @@ import {Button} from '@/components/ui/button';
 import {useAuth} from '@/contexts/AuthContext';
 import {recordingPosition,saveRecordingPosition} from '@/lib/learning/recordingProgress';
 import {classMediaUrl} from '@/lib/learning/classMedia';
-export default function ClassRecordingPlayer({path,title,onClose,recordingId}:{path:string;title:string;onClose:()=>void;recordingId?:string}){
- const [url,setUrl]=useState(''),[error,setError]=useState(''),[loading,setLoading]=useState(true),[refresh,setRefresh]=useState(0);
+export default function ClassRecordingPlayer(props:{path:string;title:string;onClose:()=>void;recordingId?:string}){
  const {user}=useAuth();
- const account=user?.tenantId?{id:user.id,tenantId:user.tenantId}:null;
+ const account=user?.id&&user?.tenantId&&user?.role&&user.roles?.includes(user.role)
+  ?{id:user.id,tenantId:user.tenantId}:null;
+ // Remount account-local refs and private video state whenever an identity or
+ // currently active role changes. A signed URL from the previous principal
+ // must never remain in a player owned by the next principal.
+ const principal=account?`${account.tenantId}:${account.id}:${user!.role}`:'not-authorised';
+ return <ScopedClassRecordingPlayer key={principal} {...props} account={account}/>;
+}
+function ScopedClassRecordingPlayer({path,title,onClose,recordingId,account}:{
+ path:string;title:string;onClose:()=>void;recordingId?:string;
+ account:{id:string;tenantId:string}|null;
+}){
+ const [url,setUrl]=useState(''),[error,setError]=useState(''),[loading,setLoading]=useState(true),[refresh,setRefresh]=useState(0);
  const [saveStatus,setSaveStatus]=useState('');
  const position=useRef(account&&recordingId?recordingPosition(account,recordingId):0),video=useRef<HTMLVideoElement>(null),lastSave=useRef(0);
  const persist=(notify=true)=>{if(!account||!recordingId)return;try{saveRecordingPosition(account,recordingId,position.current);lastSave.current=Date.now();if(notify)setSaveStatus('Your place is saved on this device.');}catch{if(notify)setSaveStatus('Your place could not be saved on this device. Playback is still available.');}};
  const latestPersist=useRef(persist);latestPersist.current=persist;
  useEffect(()=>{const save=()=>latestPersist.current();window.addEventListener('pagehide',save);return()=>{window.removeEventListener('pagehide',save);latestPersist.current(false);};},[]);
  useEffect(()=>{let current=true;setUrl('');setError('');setLoading(true);
+  if(!account){setError('A verified account and active role are required to view recordings.');setLoading(false);return()=>{current=false;};}
   void classMediaUrl(path).then(value=>{if(current)setUrl(value);}).catch(e=>{if(current)setError(e instanceof Error?e.message:'Recording unavailable.');}).finally(()=>{if(current)setLoading(false);});
   return()=>{current=false;};
- },[path,refresh]);
+ },[account?.id,account?.tenantId,path,refresh]);
  useEffect(()=>{const element=video.current;return()=>{if(element){element.pause();element.removeAttribute('src');element.load();}};},[url]);
  return <section aria-label="Class recording player" className="my-5 space-y-3 rounded-xl border bg-card p-4">
   <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="min-w-0 break-words font-semibold">{title}</h2><Button variant="outline" onClick={onClose}>Close recording</Button></div>

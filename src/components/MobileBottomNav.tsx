@@ -26,13 +26,28 @@ export const PUBLIC_BOTTOM_NAV: BottomNavItem[] = [
 ];
 
 export const BOTTOM_NAV: Record<UserRole, BottomNavItem[]> = {
+  office_admin: [
+    {label:'Office',icon:Home,path:'/office'},
+    {label:'Guidance',icon:ClipboardCheck,path:'/office/compliance-preparation'},
+    {label:'Workspace',icon:BookOpen,path:'/workspace'},
+  ],
+  hr_officer: [
+    {label:'HR',icon:Home,path:'/office'},
+    {label:'Workspace',icon:BookOpen,path:'/workspace'},
+    {label:'Alerts',icon:Bell,path:'/notifications'},
+  ],
+  secretary: [
+    {label:'Office',icon:Home,path:'/office'},
+    {label:'Guidance',icon:ClipboardCheck,path:'/office/compliance-preparation'},
+    {label:'Workspace',icon:BookOpen,path:'/workspace'},
+  ],
   security_officer: [{label:'CCTV',icon:ShieldCheck,path:'/security'},{label:'Alerts',icon:Bell,path:'/notifications'},{label:'Workspace',icon:Home,path:'/workspace'}],
   student: [
     { label: 'Home', icon: Home, path: '/student' },
     { label: 'Courses', icon: BookOpen, path: '/student/courses' },
     { label: 'Tasks', icon: ClipboardList, path: '/student/assignments' },
     { label: 'Grades', icon: BarChart3, path: '/student/grades' },
-    { label: 'Chat', icon: MessageSquare, path: '/messaging' },
+    { label: 'Help', icon: HeartHandshake, path: '/student/wellbeing' },
   ],
   lecturer: [
     { label: 'Home', icon: Home, path: '/lecturer' },
@@ -59,7 +74,7 @@ export const BOTTOM_NAV: Record<UserRole, BottomNavItem[]> = {
     { label: 'Pipeline', icon: Home, path: '/agent' },
     { label: 'Leads', icon: UserPlus, path: '/agent/leads' },
     { label: 'Resources', icon: BookOpen, path: '/agent/resources' },
-    { label: 'Commission', icon: CreditCard, path: '/agent/commissions' },
+    { label: 'Commission status', icon: CreditCard, path: '/agent/commissions' },
     { label: 'Chat', icon: MessageSquare, path: '/messaging' },
   ],
   parent_guardian: [
@@ -91,13 +106,13 @@ export const BOTTOM_NAV: Record<UserRole, BottomNavItem[]> = {
   iqa_officer: [
     { label: 'Home', icon: Home, path: '/qa' },
     { label: 'Compliance', icon: ShieldCheck, path: '/compliance' },
-    { label: 'Audit', icon: FileText, path: '/audit' },
+    { label: 'Review status', icon: FileText, path: '/qa/audit' },
     { label: 'Alerts', icon: Bell, path: '/notifications' },
     { label: 'Chat', icon: MessageSquare, path: '/messaging' },
   ],
   exams_officer: [
     { label: 'Home', icon: Home, path: '/exams' },
-    { label: 'Gradebook', icon: BarChart3, path: '/gradebook' },
+    { label: 'Results status', icon: BarChart3, path: '/exams/results' },
     { label: 'Schedule', icon: ClipboardList, path: '/exams/schedule' },
     { label: 'Alerts', icon: Bell, path: '/notifications' },
     { label: 'Chat', icon: MessageSquare, path: '/messaging' },
@@ -133,6 +148,7 @@ export const BOTTOM_NAV: Record<UserRole, BottomNavItem[]> = {
   ],
   welfare_officer: [
     { label: 'Welfare', icon: HeartHandshake, path: '/health' },
+    { label: 'Requests', icon: ClipboardList, path: '/welfare/support' },
     { label: 'Residential', icon: Building2, path: '/residential' },
     { label: 'Chat', icon: MessageSquare, path: '/messaging' },
   ],

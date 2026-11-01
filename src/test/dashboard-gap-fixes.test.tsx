@@ -1,7 +1,7 @@
 import {cleanup,render,screen} from '@testing-library/react';
 import {MemoryRouter} from 'react-router-dom';
 import {afterEach,beforeEach,expect,it,vi} from 'vitest';
-const mocks=vi.hoisted(()=>({query:vi.fn(),user:{id:'teacher',tenantId:'centre',role:'lecturer',name:'Tutor'}}));
+const mocks=vi.hoisted(()=>({query:vi.fn(),user:{id:'teacher',tenantId:'centre',role:'lecturer',roles:['lecturer'],name:'Tutor'}}));
 vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:mocks.user})}));
 vi.mock('@/hooks/useSupabaseQuery',()=>({useSupabaseQuery:(...args:unknown[])=>mocks.query(...args)}));
 vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:{children:React.ReactNode})=><main>{children}</main>}));

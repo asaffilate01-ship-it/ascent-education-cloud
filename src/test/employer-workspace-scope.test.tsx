@@ -1,6 +1,6 @@
 import {cleanup,fireEvent,render,screen,waitFor,act} from '@testing-library/react';
 import {afterEach,beforeEach,expect,it,vi} from 'vitest';
-const state=vi.hoisted(()=>({user:{id:'employer-a',tenantId:'centre-a',role:'employer_partner'},query:vi.fn()}));
+const state=vi.hoisted(()=>({user:{id:'employer-a',tenantId:'centre-a',role:'employer_partner',roles:['employer_partner']},query:vi.fn()}));
 vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:state.user})}));
 vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:{children:React.ReactNode})=><main>{children}</main>}));
 vi.mock('@/lib/db',()=>({db:{from:(table:string)=>{
@@ -10,7 +10,7 @@ vi.mock('@/lib/db',()=>({db:{from:(table:string)=>{
 import EmployerPortal from '@/pages/employer/EmployerPortal';
 function deferred(){let resolve!:(value:unknown)=>void;const promise=new Promise(r=>{resolve=r;});return {promise,resolve};}
 const verified={data:[{organisation_id:'old-org',unipathway_employer_organisations:{name:'Old employer',sector:'Technology',status:'verified'}}],error:null};
-beforeEach(()=>{state.user={id:'employer-a',tenantId:'centre-a',role:'employer_partner'};state.query.mockReset().mockResolvedValue({data:[],error:null});});
+beforeEach(()=>{state.user={id:'employer-a',tenantId:'centre-a',role:'employer_partner',roles:['employer_partner']};state.query.mockReset().mockResolvedValue({data:[],error:null});});
 afterEach(cleanup);
 it('keeps a query failure distinct from pending organisation approval and allows retry',async()=>{
  state.query.mockResolvedValueOnce({data:null,error:{message:'offline'}});
@@ -23,7 +23,7 @@ it('keeps a query failure distinct from pending organisation approval and allows
 it('discards late verification from the previous account and does not query its opportunities',async()=>{
  const old=deferred();state.query.mockReturnValueOnce(old.promise);
  const view=render(<EmployerPortal/>);
- state.user={id:'employer-b',tenantId:'centre-b',role:'employer_partner'};
+ state.user={id:'employer-b',tenantId:'centre-b',role:'employer_partner',roles:['employer_partner']};
  view.rerender(<EmployerPortal/>);
  await screen.findByText('Organisation approval pending');
  await act(async()=>old.resolve(verified));

@@ -1,5 +1,6 @@
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import {Link,useSearchParams} from 'react-router-dom';
+import {useTechLabModuleIds} from '@/components/labs/TechLabAccessGate';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {useAuth} from '@/contexts/AuthContext';
 import {db} from '@/lib/db';
@@ -39,10 +40,11 @@ export default function LMSVirtualLabs(){
 }
 function LMSVirtualLabsContent(){
  const {user}=useAuth();const [params]=useSearchParams();
+ const techModuleIds=useTechLabModuleIds();
  const readGeneration=useRef(0),gatewayGeneration=useRef(0);
  useEffect(()=>()=>{readGeneration.current++;gatewayGeneration.current++;},[]);
- const staff=!!user?.roles.some(r=>['lecturer','programme_leader','centre_director','superadmin'].includes(r));
- const centreManager=!!user?.roles.some(r=>['centre_director','superadmin'].includes(r));
+ const staff=!!user?.role&&user.roles?.includes(user.role)&&['lecturer','programme_leader','centre_director','superadmin'].includes(user.role);
+ const centreManager=!!user?.role&&user.roles?.includes(user.role)&&['centre_director','superadmin'].includes(user.role);
  const [tenant,setTenant]=useState(user?.tenantId||'');
  const [loading,setLoading]=useState(true);const [error,setError]=useState('');
  const [awsReady,setAwsReady]=useState(false);const [gatewayNote,setGatewayNote]=useState('');
@@ -64,7 +66,7 @@ function LMSVirtualLabsContent(){
  useEffect(()=>{
   if(user?.tenantId){setTenant(user.tenantId);return;}
   let active=true;
-  if(user?.roles.includes('superadmin'))void db.from('tenants').select('id')
+  if(user?.role==='superadmin'&&user.roles.includes('superadmin'))void db.from('tenants').select('id')
    .eq('slug','unipathway').maybeSingle().then(({data,error:e})=>{
     if(active&&!e&&data?.id)setTenant(data.id);
    });
@@ -82,12 +84,13 @@ function LMSVirtualLabsContent(){
     db.from('lab_templates').select('id,module_id,provider,title,duration_minutes,active').eq('tenant_id',tenant).limit(250),
     db.from('modules').select('id,programme_id,title,lecturer_id,tenant_id').eq('tenant_id',tenant).limit(300),
     db.from('lab_class_runs').select('id,template_id,cohort_reference,starts_at,ends_at,max_concurrent,status,lead_instructor_id,tenant_id').eq('tenant_id',tenant).limit(300),
-    db.from('lab_sessions').select('id,student_id,template_id,offering_id,class_run_id,launch_mode,status,created_at,expires_at,minutes_used,tenant_id').eq('tenant_id',tenant).order('created_at',{ascending:false}).limit(300),
+    db.from('lab_sessions').select('id,student_id,template_id,offering_id,class_run_id,launch_mode,status,created_at,expires_at,minutes_used,tenant_id').eq('tenant_id',tenant).eq(staff?'tenant_id':'student_id',staff?tenant:user.id).order('created_at',{ascending:false}).limit(300),
     db.from('lab_tasks').select('id,template_id,title,instructions,sequence_no,points').eq('tenant_id',tenant).order('sequence_no').limit(500),
-    db.from('lab_help_requests').select('id,session_id,student_id,message,status,claimed_by').eq('tenant_id',tenant)
+    db.from('lab_help_requests').select('id,session_id,student_id,message,status,claimed_by').eq('tenant_id',tenant).eq(staff?'tenant_id':'student_id',staff?tenant:user.id)
       .in('status',['waiting','claimed','assisting']).limit(200),
-    db.from('lab_task_progress').select('id,session_id,task_id,status,verification_result').eq('tenant_id',tenant).limit(400),
-    db.from('lms_lab_class_invitations').select('run_id,student_id,status').eq('tenant_id',tenant).limit(700),
+    staff?db.from('lab_task_progress').select('id,session_id,task_id,status,verification_result').eq('tenant_id',tenant).limit(400):Promise.resolve({data:[] as TaskProgress[],error:null}),
+    db.from('lms_lab_class_invitations').select('run_id,student_id,status').eq('tenant_id',tenant)
+      .eq(staff?'tenant_id':'student_id',staff?tenant:user.id).limit(700),
    ];
    const responses=await Promise.all(req);
    if(!current())return;
@@ -101,11 +104,23 @@ function LMSVirtualLabsContent(){
    setSessions((s.data||[]) as Session[]);
    setTasks((ta.data||[]) as Task[]);
    setHelpRequests((h.data||[]) as Help[]);
-   setProgress((p.data||[]) as TaskProgress[]);
+   if(staff)setProgress((p.data||[]) as TaskProgress[]);
+   else {
+    // Never request another learner's evidence, even inside the same centre.
+    const sessionIds=((s.data||[]) as Session[]).filter(row=>row.student_id===user.id).map(row=>row.id);
+    if(sessionIds.length){
+     const ownProgress=await db.from('lab_task_progress')
+      .select('id,session_id,task_id,status,verification_result')
+      .eq('tenant_id',tenant).in('session_id',sessionIds).limit(400);
+     if(!current())return;
+     if(ownProgress.error)throw Error('Your own lab evidence could not be verified.');
+     setProgress((ownProgress.data||[]) as TaskProgress[]);
+    } else setProgress([]);
+   }
    setInvites((i.data||[]) as {run_id:string;student_id:string;status:string}[]);
   }catch(e){if(current())setError(e instanceof Error?e.message:'LMS labs could not be loaded');}
   finally{if(current())setLoading(false);}
- },[tenant,user?.id]);
+ },[tenant,user?.id,staff]);
  useEffect(()=>{void reload();},[reload]);
  const checkGateway=useCallback(async()=>{
   const generation=++gatewayGeneration.current;
@@ -120,8 +135,8 @@ function LMSVirtualLabsContent(){
  },[user?.id]);
  useEffect(()=>{void checkGateway();},[checkGateway]);
  const refreshLabs=()=>{void reload();void checkGateway();};
- const eligibleModules=useMemo(()=>staff&&!centreManager&&!user?.roles.includes('programme_leader')?
-  modules.filter(m=>m.lecturer_id===user?.id):modules,[staff,centreManager,modules,user?.id,user?.roles]);
+ const eligibleModules=useMemo(()=>staff&&!centreManager&&user?.role!=='programme_leader'?
+  modules.filter(m=>m.lecturer_id===user?.id):staff?modules:modules.filter(m=>techModuleIds.includes(m.id)),[staff,centreManager,modules,user?.id,user?.role,techModuleIds.join(',')]);
  const allowedModules=useMemo(()=>new Set(eligibleModules.map(m=>m.id)),[eligibleModules]);
  const visibleOfferings=useMemo(()=>offerings.filter(o=>allowedModules.has(o.module_id)&&
   (staff||o.published)&&(!params.get('module')||params.get('module')===o.module_id)),[offerings,staff,params,allowedModules]);

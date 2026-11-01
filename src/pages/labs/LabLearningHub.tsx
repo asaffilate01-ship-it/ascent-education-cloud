@@ -1,5 +1,6 @@
 import {useCallback,useEffect,useMemo,useState} from 'react';
 import {Link,useSearchParams} from 'react-router-dom';
+import {useTechLabModuleIds} from '@/components/labs/TechLabAccessGate';
 import ModuleJourney from '@/components/assessment/ModuleJourney';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {useAuth} from '@/contexts/AuthContext';
@@ -30,6 +31,7 @@ const providers:Record<string,string>={
 const blockedStates=new Set(['awaiting_provider','provisioning','ready','active','paused']);
 export default function LabLearningHub(){
  const {user}=useAuth();
+ const approvedTechModules=useTechLabModuleIds();
  const [params,setParams]=useSearchParams();
  const selectedModule=params.get('module')||'';
  const [modules,setModules]=useState<Module[]>([]);
@@ -61,7 +63,7 @@ export default function LabLearningHub(){
    }
    const mod=await db.from('modules').select('id,title,programme_id').eq('tenant_id',tenant).in('programme_id',programmes);
    if(mod.error)throw new Error(mod.error.message);
-   const m=(mod.data||[]) as Module[],ids=m.map(x=>x.id);
+   const m=((mod.data||[]) as Module[]).filter(x=>approvedTechModules.includes(x.id)),ids=m.map(x=>x.id);
    if(!ids.length){setModules(m);setTemplates([]);setLoading(false);return;}
    const [t,request,inv]=await Promise.all([
     db.from('lab_templates').select('id,module_id,tenant_id,title,provider,duration_minutes,max_attempts,access_mode,learning_outcomes,preparation_notes,estimated_cost_gbp,published')
@@ -90,7 +92,7 @@ export default function LabLearningHub(){
    setSupport((helpRows.data||[]) as HelpReply[]);
   }catch(e){setError(e instanceof Error?e.message:'Unable to load lab catalogue or permissions');setTemplates([]);}
   finally{setLoading(false);}
- },[userId,tenant]);
+ },[userId,tenant,approvedTechModules.join(',')]);
  useEffect(()=>{void load();},[load]);
  const canRequest=useCallback((template:Template,mode:'class'|'self_study',runId:string|null)=>{
   const active=requests.some(r=>r.template_id===template.id&&blockedStates.has(r.status));

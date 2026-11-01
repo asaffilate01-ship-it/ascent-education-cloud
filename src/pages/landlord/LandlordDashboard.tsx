@@ -11,7 +11,7 @@ import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useMemo } from 'react';
-import OnboardTenantModal from '@/components/modals/OnboardTenantModal';
+
 
 const statusVariant = (s: string) => {
   if (s === 'active') return 'success' as const;
@@ -72,17 +72,17 @@ export default function LandlordDashboard() {
 
   return (
     <DashboardLayout
-      title="UniPathway — Landlord Dashboard"
-      subtitle="Platform owner view — All centres, revenue, and operations"
+      title="UniPathway — Platform Owner"
+      subtitle="All centres, recorded operations and verified platform controls"
       actions={
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => downloadText('platform-invoice-summary.csv', directorReport(invoices), 'text/csv;charset=utf-8')}><FileText className="w-3.5 h-3.5 mr-1.5" />Export invoice summary</Button>
-          <OnboardTenantModal onSuccess={refetch} />
+          <Button asChild size="sm"><Link to="/landlord/centres">Manage centres</Link></Button>
         </div>
       }
     >
       <section aria-label="Next actions" className="mb-6 grid gap-3 sm:grid-cols-3">
-        <Link to="/landlord/centres" className="rounded-xl border bg-card p-5 hover:bg-accent"><h2 className="font-semibold">Review centre onboarding</h2><p className="mt-2 text-sm text-muted-foreground">{tenants.filter(t=>t.status==='onboarding').length} centre(s) recorded as onboarding.</p></Link>
+        <Link to="/landlord/centres" className="rounded-xl border bg-card p-5 hover:bg-accent"><h2 className="font-semibold">Review centre onboarding</h2><p className="mt-2 text-sm text-muted-foreground">{tenants.filter(t=>t.status==='onboarding').length} centre(s) recorded as onboarding. Create or update centre records in the dedicated management view.</p></Link>
         <Link to="/landlord/readiness" className="rounded-xl border bg-card p-5 hover:bg-accent"><h2 className="font-semibold">Check launch readiness</h2><p className="mt-2 text-sm text-muted-foreground">Review evidence and outstanding setup before launching a centre.</p></Link>
         <Link to="/landlord/infrastructure" className="rounded-xl border bg-card p-5 hover:bg-accent"><h2 className="font-semibold">Review integrations</h2><p className="mt-2 text-sm text-muted-foreground">Inspect provider configuration. Live monitoring is not connected.</p></Link>
       </section>
@@ -186,7 +186,7 @@ export default function LandlordDashboard() {
       </div>
 
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-base font-semibold">All Centres</h2>
+        <h2 className="text-base font-semibold">All Centres · <Link className="underline" to="/landlord/centres">Manage</Link></h2>
         <p className="text-xs text-muted-foreground">{tenants.length} registered</p>
       </div>
       <DataTable columns={columns} data={tenants} />

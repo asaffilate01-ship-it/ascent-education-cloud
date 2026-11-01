@@ -18,3 +18,7 @@ verify_jwt = false
 # Stripe authenticates raw requests using STRIPE_WEBHOOK_SECRET.
 [functions.webhook-stripe]
 verify_jwt = false
+
+# Explicitly no user JWT: Turnstile and Edge service verify anonymous wellbeing intake.
+[functions.unipathway-anonymous-welfare]
+verify_jwt = false

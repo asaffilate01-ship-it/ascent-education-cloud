@@ -16,15 +16,18 @@ const DEFAULT_THEME: TenantTheme = {
   faviconUrl: '',
   fontFamily: 'Inter',
   heroTitle: 'Your Gateway to UK Qualifications',
-  heroSubtitle: 'Study OTHM & QUALIFI accredited courses from Pakistan. 80% online, globally recognised.',
+  heroSubtitle: 'Explore course preparation, tuition and qualification pathways with UniPathway. External awarding-body approval is confirmed separately for each programme.',
   heroImageUrl: '',
   customDomain: '',
-  brandName: 'Lahore College of Business',
+  brandName: 'UniPathway',
 };
 
 export default function TenantBranding() {
   const { user } = useAuth();
   const tenantId = user?.tenantId;
+  const authorised=!!user?.id&&!!tenantId&&user.role==='centre_director'&&user.roles?.includes('centre_director');
+  const brandingRpcEnabled=import.meta.env.VITE_UNIPATHWAY_BRANDING_RPC_ENABLED==='true';
+  const [loadError,setLoadError]=useState('');
   const [theme, setTheme] = useState<TenantTheme>(DEFAULT_THEME);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -35,12 +38,14 @@ export default function TenantBranding() {
   useEffect(() => {
     let active = true;
     async function load() {
-      if (!tenantId) { setLoading(false); return; }
-      const { data } = await supabase
+      if (!authorised) { setLoading(false); return; }
+      setLoading(true);setLoadError('');setTheme(DEFAULT_THEME);
+      const { data,error } = await supabase
         .from('tenants')
         .select('name, brand_name, custom_domain, logo_url, primary_color, accent_color')
         .eq('id', tenantId)
         .maybeSingle();
+      if(active&&(error||!data)){setLoadError('Centre branding could not be verified. Refresh before editing any fields.');setLoading(false);return;}
       if (active && data) {
         setTheme((t) => ({
           ...t,
@@ -55,28 +60,36 @@ export default function TenantBranding() {
     }
     load();
     return () => { active = false; };
-  }, [tenantId]);
+  }, [tenantId,authorised]);
 
   const handleSave = async () => {
-    if (!tenantId) { toast.error('No centre linked to your account.'); return; }
+    if (!authorised || !tenantId || !brandingRpcEnabled || loadError || loading) {
+      toast.error('Centre branding changes need an authorised director and a deployed, verified UniPathway branding service.');return;
+    }
+    if(!/^#[0-9A-Fa-f]{6}$/.test(theme.primaryColor)||!/^#[0-9A-Fa-f]{6}$/.test(theme.accentColor)){
+      toast.error('Choose valid six-digit brand colours.');return;
+    }
     setSaving(true);
-    const { error } = await supabase
-      .from('tenants')
-      .update({
-        brand_name: theme.brandName,
-        custom_domain: theme.customDomain || null,
-        logo_url: theme.logoUrl || null,
-        primary_color: theme.primaryColor,
-        accent_color: theme.accentColor,
-      })
-      .eq('id', tenantId);
-    setSaving(false);
-    if (error) toast.error(error.message);
-    else toast.success('Theme saved and published.');
+    try{
+      const {data,error}=await (supabase.rpc as any)('update_unipathway_centre_branding',{
+        p_tenant:tenantId,p_brand:theme.brandName.trim(),p_logo:theme.logoUrl.trim()||null,
+        p_primary:theme.primaryColor,p_accent:theme.accentColor,
+      });
+      if(error||data?.id!==tenantId)throw Error(error?.message||'The server did not confirm updated branding.');
+      toast.success('Centre name and colours confirmed in the database. Website deployment and DNS remain separate.');
+    }catch(e){toast.error(e instanceof Error?e.message:'Centre branding could not be verified.');}
+    finally{setSaving(false);}
   };
 
   return (
-    <DashboardLayout title="Branding & Theme" subtitle="Customise your tenant landing page with live preview">
+    <DashboardLayout title="Centre Branding" subtitle="Centre-owned identity — custom domain and publication remain platform managed">
+      <section className="mb-5 rounded-xl border p-4 space-y-2" aria-label="Branding capability">
+       <h2 className="font-semibold">Change permissions and publication status</h2>
+       {!authorised?<p role="alert">A verified active Centre Director account is required.</p>:
+        !brandingRpcEnabled?<p role="status">Branding updates are paused until the reviewed UniPathway centre-branding database function is deployed. The current screen is a read-only preview; use the Platform Owner centre directory for edits.</p>:
+        <p className="text-sm text-muted-foreground">Only display name, logo URL and colours are saved by this function. Hero copy, typography, DNS and publication must use their separately verified workflows.</p>}
+       {loadError&&<p role="alert">{loadError}</p>}
+      </section>
       <div className="grid lg:grid-cols-2 gap-6 h-[calc(100vh-8rem)]">
         {/* Controls */}
         <div className="surface-card p-5 overflow-y-auto space-y-5">
@@ -89,7 +102,7 @@ export default function TenantBranding() {
               </div>
               <div>
                 <Label className="text-xs">Custom Domain</Label>
-                <Input value={theme.customDomain} onChange={(e) => update('customDomain', e.target.value)} placeholder="college.example.com" className="mt-1" />
+                <Input value={theme.customDomain} disabled placeholder="Domain verification is managed separately" className="mt-1" />
               </div>
               <div>
                 <Label className="text-xs">Logo URL</Label>
@@ -148,9 +161,9 @@ export default function TenantBranding() {
             </div>
           </div>
 
-          <Button className="w-full" onClick={handleSave} disabled={saving || loading}>
+          <Button className="w-full" onClick={handleSave} disabled={saving || loading || !authorised || !brandingRpcEnabled || !!loadError}>
             {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            {saving ? 'Saving…' : 'Save & Publish Theme'}
+            {saving ? 'Saving…' : 'Save verified brand fields'}
           </Button>
         </div>
 

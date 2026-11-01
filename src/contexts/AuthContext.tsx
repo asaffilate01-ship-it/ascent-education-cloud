@@ -31,6 +31,9 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   superadmin: 'Super Admin',
   centre_director: 'Centre Director',
   admissions_admin: 'Admissions Admin',
+  office_admin: 'Office Administrator',
+  hr_officer: 'HR Officer',
+  secretary: 'Secretary',
   lecturer: 'Lecturer',
   assessor: 'Assessor',
   programme_leader: 'Programme Leader',
@@ -52,6 +55,9 @@ export const ROLE_HOME: Record<UserRole, string> = {
   superadmin: '/landlord',
   centre_director: '/director',
   admissions_admin: '/admissions',
+  office_admin: '/office',
+  hr_officer: '/office',
+  secretary: '/office',
   lecturer: '/lecturer',
   assessor: '/assessor',
   programme_leader: '/programme',
@@ -83,10 +89,10 @@ async function fetchAuthUser(supaUser: User): Promise<AuthUser> {
   // A failed user_roles lookup, empty membership or unknown role never becomes student access.
   const { data: rolesData, error: rolesError } = await supabase
     .from('user_roles')
-    .select('role')
+    .select('role,tenant_id')
     .eq('user_id', supaUser.id);
   if (rolesError) throw Error('Role membership could not be verified');
-  const roles = verifiedRoleMemberships(rolesData);
+  const roles = verifiedRoleMemberships(rolesData, profile.tenant_id);
   const primaryRole = roles[0];
 
   return {

@@ -28,6 +28,16 @@ interface NavSection {
 }
 
 const NAV_CONFIG: Record<UserRole, NavSection[]> = {
+  office_admin: [{title:'Office administration',items:[
+    {label:'Office dashboard',icon:LayoutDashboard,path:'/office'},
+    {label:'My approved capabilities',icon:Shield,path:'/office/compliance-preparation'},
+  ]}],
+  hr_officer: [{title:'People & HR',items:[
+    {label:'HR dashboard',icon:Users,path:'/office'},
+  ]}],
+  secretary: [{title:'Centre secretary',items:[
+    {label:'Secretary dashboard',icon:Calendar,path:'/office'},
+  ]}],
   security_officer: [{title: 'Security', items: [{label: 'Communications', icon: Mail, path: '/communications'},{label: 'CCTV live & playback', icon: Shield, path: '/security'}]}],
   superadmin: [
     { title: 'Platform', items: [
@@ -46,13 +56,14 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'UniPathway Opportunity Fund', icon: Award, path: '/landlord/opportunity-fund' },
       { label: 'CIBTAC / CPD Accreditation', icon: Award, path: '/landlord/beauty-accreditation' },
       { label: 'Platform Users', icon: Users, path: '/landlord/users' },
+      { label: 'Staff role and permission approvals', icon: Shield, path: '/landlord/staff-access' },
     ]},
     { title: 'Revenue', items: [
       { label: 'Finance', icon: CreditCard, path: '/landlord/finance' },
       { label: 'Subscriptions', icon: PieChart, path: '/landlord/subscriptions' },
     ]},
     { title: 'Operations', items: [
-      { label: 'Compliance', icon: Shield, path: '/compliance' },
+      { label: 'Compliance', icon: Shield, path: '/landlord/compliance' },
       { label: 'Onboarding', icon: UserPlus, path: '/landlord/onboarding' },
       { label: 'Audit Logs', icon: FileText, path: '/audit' },
       { label: 'Attendance corrections', icon: Calendar, path: '/landlord/attendance-corrections' },
@@ -68,6 +79,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Guardian support', icon: MessageSquare, path: '/director/guardian-support' },
       { label: 'Dashboard', icon: LayoutDashboard, path: '/director' },
       { label: 'Managed AWS Labs', icon: Cloud, path: '/director/managed-labs' },
+      { label: 'Tech course lab permissions', icon: Shield, path: '/director/tech-lab-access' },
       { label: 'Admissions', icon: UserPlus, path: '/director/admissions' },
       { label: 'Programmes', icon: BookOpen, path: '/director/programmes' },
       { label: 'Course Content Library', icon: BookOpen, path: '/director/course-content' },
@@ -79,13 +91,14 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'CCTV live & playback', icon: Shield, path: '/security' },
       { label: 'Sponsor funding', icon: Handshake, path: '/director/funding' },
       { label: 'Staff', icon: Users, path: '/director/staff' },
+      { label: 'Office & HR permissions', icon: Shield, path: '/director/staff-access' },
       { label: 'Students', icon: GraduationCap, path: '/director/students' },
       { label: 'Employer Partnerships', icon: Briefcase, path: '/director/employers' },
     ]},
     { title: 'Operations', items: [
       { label: 'Quality', icon: FileCheck, path: '/director/quality' },
       { label: 'Attendance corrections', icon: Calendar, path: '/director/attendance-corrections' },
-      { label: 'Compliance', icon: Shield, path: '/compliance' },
+      { label: 'Compliance', icon: Shield, path: '/director/compliance' },
       { label: 'Finance', icon: CreditCard, path: '/director/finance' },
       { label: 'Calendar', icon: CalendarDays, path: '/calendar' },
       { label: 'Schedule', icon: Calendar, path: '/director/schedule' },
@@ -114,7 +127,8 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Communications', icon: Mail, path: '/communications' },
       { label: 'Messages', icon: MessageSquare, path: '/messaging' },
       { label: 'Branding', icon: Palette, path: '/director/branding' },
-      { label: 'Teams setup', icon: Video, path: '/director/microsoft-education' },
+      { label: 'Class resource release approvals', icon: Clock, path: '/director/class-release' },
+       { label: 'Teams setup', icon: Video, path: '/director/microsoft-education' },
       { label: 'Page Builder', icon: Monitor, path: '/director/page-builder' },
       { label: 'Domains & Email', icon: Globe, path: '/director/domains' },
       { label: 'Settings', icon: Settings, path: '/director/settings' },
@@ -128,6 +142,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Employer Partnerships', icon: Briefcase, path: '/admissions/employers' },
       { label: 'Documents', icon: FileText, path: '/admissions/documents' },
       { label: 'Eligibility', icon: UserCheck, path: '/admissions/eligibility' },
+      { label: 'Enrolment, modules & dates', icon: Calendar, path: '/admissions/allocations' },
       { label: 'Global Partners', icon: Globe, path: '/admissions/global-partners' },
       { label: 'Partner Applications', icon: GraduationCap, path: '/admissions/education-partnerships' },
       { label: 'Application Support', icon: ClipboardList, path: '/admissions/application-support' },
@@ -146,6 +161,8 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Dashboard', icon: LayoutDashboard, path: '/lecturer' },
       { label: 'Managed AWS Labs', icon: Cloud, path: '/lecturer/managed-labs' },
       { label: 'Teaching', icon: BookOpen, path: '/lecturer/teaching' },
+      { label: 'Teams, labs & teaching readiness', icon: Shield, path: '/lecturer/delivery-readiness' },
+       { label: 'Confirm class end & resource release', icon: Clock, path: '/lecturer/class-release' },
       { label: 'Tuition Learning Plans', icon: ClipboardCheck, path: '/lecturer/learning-plans' },
       { label: 'Coursework Briefs & Rubrics', icon: ClipboardCheck, path: '/lecturer/assessments' },
       { label: 'IELTS Academy', icon: GraduationCap, path: '/lecturer/ielts' },
@@ -193,6 +210,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
   welfare_officer: [
     { items: [
       { label: 'Welfare & Health', icon: Heart, path: '/health' },
+      { label: 'Counselling & wellbeing requests', icon: Heart, path: '/welfare/support' },
       { label: 'Residential', icon: Building2, path: '/residential' },
       { label: 'Communications', icon: Mail, path: '/communications' },
       { label: 'Messages', icon: MessageSquare, path: '/messaging' },
@@ -204,6 +222,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Dashboard', icon: LayoutDashboard, path: '/programme' },
       { label: 'Managed AWS Labs', icon: Cloud, path: '/programme/managed-labs' },
       { label: 'Modules', icon: BookOpen, path: '/programme/modules' },
+       { label: 'Class resource release', icon: Clock, path: '/programme/class-release' },
       { label: 'Curriculum & Accreditation', icon: Award, path: '/programme/beauty-accreditation' },
       { label: 'Knowledge Library', icon: BookOpen, path: '/programme/knowledge' },
       { label: 'Course Content Library', icon: BookOpen, path: '/programme/course-content' },
@@ -328,6 +347,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Verified Opportunities', icon: Briefcase, path: '/student/opportunities' },
       { label: 'Universities Abroad', icon: GraduationCap, path: '/student/global-progression' },
       { label: 'Health', icon: Heart, path: '/health' },
+      { label: 'Mental health & counselling help', icon: Heart, path: '/student/wellbeing' },
       { label: 'Transport', icon: Bus, path: '/transport' },
       { label: 'Residential', icon: Building2, path: '/residential' },
       { label: 'Onboarding', icon: UserCheck, path: '/onboarding' },

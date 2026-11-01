@@ -32,7 +32,7 @@ test('reviewers can search original evidence and private PDF and DOCX text at mo
  const receipts:unknown[]=[];
  await context.route('https://unipathway-browser-ci.invalid/**',async route=>{const r=route.request(),url=new URL(r.url()),name=url.pathname.split('/').at(-1);let data=tables[name]||[];
  if(url.pathname.includes('/storage/v1/object/'))return route.fulfill({status:200,headers:{'access-control-allow-origin':'*','content-type':url.pathname.endsWith('/docx')?docxMime:'application/pdf'},body:url.pathname.endsWith('/docx')?docx:pdf});
- if(name==='profiles')data={full_name:'Synthetic reviewer',tenant_id:tenant};else if(name==='user_roles')data=[{role:'iqa_officer'}];else if(url.pathname.endsWith('/auth/v1/user'))data=user;
+ if(name==='profiles')data={full_name:'Synthetic reviewer',tenant_id:tenant};else if(name==='user_roles')data=[{role:'iqa_officer',tenant_id:tenant}];else if(url.pathname.endsWith('/auth/v1/user'))data=user;
  else if(name==='review_uni_mark_revision'){const input=r.postDataJSON();receipts.push(input);if(input.p_action==='approve'){tables.unipathway_assessment_attempts[0].status='qa_approved';tables.unipathway_assessment_quality_decisions=[{attempt_id:'attempt',mark_revision:2,decision:'approved',rationale:input.p_rationale}];}else {tables.unipathway_assessment_attempts[0].status='released';tables.unipathway_assessment_released_results=[{attempt_id:'attempt',released_at:new Date().toISOString()}];}data=null;}
  else if(url.pathname.includes('/rpc/'))data=null;
  await route.fulfill({status:200,headers:{'access-control-allow-origin':'*','access-control-allow-headers':'*','content-type':'application/json'},body:JSON.stringify(data)});});

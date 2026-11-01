@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState } from 'react';
+import {useAuth} from '@/contexts/AuthContext';
+import {Link} from 'react-router-dom';
 import AddLeadModal from '@/components/modals/AddLeadModal';
 import KanbanBoard from '@/components/admissions/KanbanBoard';
 import AdmissionHandover from '@/components/admissions/AdmissionHandover';
@@ -35,6 +37,9 @@ const stageVariant = (s: string): 'success' | 'warning' | 'danger' | 'info' | 'n
 };
 
 export default function AdmissionsCRM() {
+  const {user}=useAuth();
+  const tenant=user?.tenantId||'';
+  const canWork=!!user?.id&&!!tenant&&!!user.role&&['admissions_admin','centre_director'].includes(user.role)&&user.roles?.includes(user.role);
   const [addLeadOpen, setAddLeadOpen] = useState(false);
   const [view, setView] = useState<'kanban' | 'table'>('table');
   const [search, setSearch] = useState('');
@@ -42,13 +47,16 @@ export default function AdmissionsCRM() {
   const [destFilter, setDestFilter] = useState<string>('all');
   const [sourceFilter, setSourceFilter] = useState<string>('all');
   const { data: applications, loading, error, refetch } = useSupabaseQuery('applications', {
+    enabled:canWork,filters:[{column:'tenant_id',operator:'eq',value:tenant}],
     orderBy: { column: 'updated_at', ascending: false },
   });
 
+  if(!canWork)return <DashboardLayout title="Admissions Pipeline"><p role="alert">A verified Admissions Admin or Centre Director role and a centre assignment are required.</p></DashboardLayout>;
   if (loading) return <DashboardSkeleton />;
   if(error)return <DashboardLayout title="Admissions Pipeline"><div role="alert" className="rounded border border-destructive p-4">Applications could not be loaded. <Button onClick={()=>void refetch()}>Retry</Button></div></DashboardLayout>;
 
-  const filtered = applications.filter((app) => {
+  const scoped=applications.filter(app=>app.tenant_id===tenant);
+  const filtered = scoped.filter((app) => {
     if (stageFilter !== 'all' && app.stage !== stageFilter) return false;
     const source = (app.source || '').toLowerCase();
     if (sourceFilter === 'ielts' && source !== 'ielts_preparation') return false;
@@ -70,10 +78,10 @@ export default function AdmissionsCRM() {
     return true;
   });
 
-  const totalLeads = applications.length;
-  const applied = applications.filter((a) => !['lead', 'contacted', 'qualified', 'lost'].includes(a.stage)).length;
-  const offers = applications.filter((a) => ['conditional_offer', 'unconditional_offer'].includes(a.stage)).length;
-  const enrolled = applications.filter((a) => a.stage === 'enrolled').length;
+  const totalLeads = scoped.length;
+  const applied = scoped.filter((a) => !['lead', 'contacted', 'qualified', 'lost'].includes(a.stage)).length;
+  const offers = scoped.filter((a) => ['conditional_offer', 'unconditional_offer'].includes(a.stage)).length;
+  const enrolled = scoped.filter((a) => a.stage === 'enrolled').length;
 
   return (
     <DashboardLayout
@@ -101,7 +109,14 @@ export default function AdmissionsCRM() {
         </div>
       }
     >
-      <AdmissionHandover applications={applications} onRefetch={()=>void refetch()}/>
+      <section className="mb-5 rounded-xl border bg-card p-4" aria-label="Admissions review tasks">
+       <h2 className="font-semibold">Application checks and handover</h2>
+       <p className="mt-1 text-sm text-muted-foreground">Review identity, eligibility, finance, accepted offers, correct programme and module access before enrolment. No stage drag proves identity or payment.</p>
+       <div className="mt-3 flex flex-wrap gap-2">{[
+        ['Identity documents','/admissions/documents'],['Eligibility','/admissions/eligibility'],['Offers & acceptance','/admissions/offers'],['Module allocation','/admissions/allocations']
+       ].map(([name,to])=><Link key={to} to={to} className="inline-flex min-h-11 items-center rounded-lg border px-3 text-sm font-medium hover:bg-accent">{name}</Link>)}</div>
+      </section>
+      <AdmissionHandover applications={scoped} onRefetch={()=>void refetch()}/>
       <details className="surface-card p-5 mb-6"><summary className="cursor-pointer font-semibold">IELTS and consultancy service activation</summary><div className="mt-4"><ServiceActivationQueue /></div></details>
       <details className="mb-6"><summary className="cursor-pointer text-sm font-medium">Pipeline totals · {totalLeads} applications</summary><div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
         <StatCard label="Total Leads" value={String(totalLeads)} icon={UserPlus} />

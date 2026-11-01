@@ -5,19 +5,27 @@ import type {Lesson} from '@/lib/structuredLessons';
 import {acknowledgeProgress,getLessonPack,isLearningAccount,listLessonPacks,reconcileLessonPack,type LearningAccount} from './offlineLessons';
 import {MATERIAL_BYTES,OFFLINE_MIME_TYPES,listOfflineMaterials,removeOfflineMaterial,saveOfflineMaterial} from './offlineMaterials';
 import {persistLessonProgress} from './lessonProgress';
-export type DownloadMaterial={id:string;tenant_id:string;module_id:string;title:string;object_path:string;publication_status:string;available_at:string|null};
-const released=(m:DownloadMaterial)=>m.publication_status==='published'&&(!m.available_at||Date.parse(m.available_at)<=Date.now());
+export type DownloadMaterial={id:string;tenant_id:string;module_id:string;title:string;object_path:string;publication_status:string;available_at:string|null;class_session_id:string|null};
+const classReleaseEnabled=import.meta.env.VITE_UNIPATHWAY_CLASS_RELEASE_ENABLED==='true';
+const released=(m:DownloadMaterial)=>m.publication_status==='published'&&(
+ m.class_session_id?classReleaseEnabled:(!m.available_at||Date.parse(m.available_at)<=Date.now()));
 export async function downloadPrivateMaterial(account:LearningAccount,id:string){
  if(!isLearningAccount(account)||!navigator.onLine)throw Error('Connect and sign in before downloading.');
+ if(!classReleaseEnabled)throw Error('Post-class resource access is not yet activated for offline downloads.');
  const r=await db.from('unipathway_module_materials').select('*').eq('id',id).eq('tenant_id',account.tenantId).maybeSingle();
  const item=r.data as DownloadMaterial|null;
  if(r.error||!item||!released(item))throw Error('This material is not available for offline study. Refresh your materials.');
- // Storage RLS checks current access again. No signed URL or access token is persisted.
+ // Both class release RPC and private Storage RLS must confirm access now.
+ const verified=await (supabase.rpc as any)('can_open_my_unipathway_material',{p_path:item.object_path});
+ if(verified.error||verified.data!==true)throw Error('Material is not authorised for this student or release time.');
+ // No signed URL or access token is persisted.
  const signed=await supabase.storage.from('unipathway-module-materials').createSignedUrl(item.object_path,120);
  if(signed.error||!signed.data?.signedUrl||!isLearningAccount(account))throw Error('Download was not completed. Reconnect and retry.');
  const blob=await readBoundedPrivateFile(signed.data.signedUrl,()=>isLearningAccount(account));
  const current=await db.from('unipathway_module_materials').select('*').eq('id',id).eq('tenant_id',account.tenantId).maybeSingle();
  if(current.error||!current.data||!released(current.data)||current.data.object_path!==item.object_path||!isLearningAccount(account))throw Error('The material changed during download. Refresh and retry.');
+ const recheck=await (supabase.rpc as any)('can_open_my_unipathway_material',{p_path:item.object_path});
+ if(recheck.error||recheck.data!==true)throw Error('Material access changed during download. Nothing was saved.');
  await saveOfflineMaterial(account,{id:item.id,module_id:item.module_id,title:item.title,object_path:item.object_path},blob);
 }
 export type SyncReport={synced:number;discarded:number;removedFiles:number;failures:string[]};
@@ -48,7 +56,13 @@ async function sync(account:LearningAccount):Promise<SyncReport>{
   try{
    const r=await db.from('unipathway_module_materials').select('*').eq('id',file.id).eq('tenant_id',account.tenantId).maybeSingle();
    if(r.error)throw r.error;
-   if(!r.data||!released(r.data)||r.data.object_path!==file.object_path){await removeOfflineMaterial(account,file.id);report.removedFiles++;}
+   if(!r.data||!released(r.data)||r.data.object_path!==file.object_path){
+    await removeOfflineMaterial(account,file.id);report.removedFiles++;continue;
+   }
+   if(classReleaseEnabled){
+    const check=await (supabase.rpc as any)('can_open_my_unipathway_material',{p_path:file.object_path});
+    if(check.error||check.data!==true){await removeOfflineMaterial(account,file.id);report.removedFiles++;}
+   }else{await removeOfflineMaterial(account,file.id);report.removedFiles++;}
   }catch{report.failures.push(`Access to ${file.title} could not be checked. Retry when connected.`);}
  }
  return report;

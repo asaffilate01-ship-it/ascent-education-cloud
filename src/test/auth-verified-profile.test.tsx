@@ -3,7 +3,7 @@ import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 
 const auth=vi.hoisted(()=>({
  listener:null as null|((event:string,session:any)=>void),
- roles:[{role:'lecturer'},{role:'assessor'}] as {role:string}[],
+ roles:[{role:'lecturer',tenant_id:'centre'},{role:'assessor',tenant_id:'centre'}] as {role:string;tenant_id:string}[],
  rolesError:false,profileError:false,reads:0
 }));
 vi.mock('@/lib/nativePush',()=>({disableNativePush:async()=>{}}));
@@ -36,7 +36,7 @@ const signIn=async()=>{
  act(()=>auth.listener?.('SIGNED_IN',{user:{id:'lecturer-1',email:'lecturer@example.test'}}));
  await screen.findByText(/lecturer \/ lecturer,assessor/);
 };
-beforeEach(()=>{auth.listener=null;auth.roles=[{role:'lecturer'},{role:'assessor'}];auth.rolesError=false;auth.profileError=false;auth.reads=0;});
+beforeEach(()=>{auth.listener=null;auth.roles=[{role:'lecturer',tenant_id:'centre'},{role:'assessor',tenant_id:'centre'}];auth.rolesError=false;auth.profileError=false;auth.reads=0;});
 afterEach(()=>{cleanup();vi.clearAllMocks();});
 it('keeps selected verified multi-role view after refreshing membership',async()=>{
  render(<AuthProvider><Account/></AuthProvider>);await screen.findByText('No verified role');await signIn();
@@ -49,7 +49,7 @@ it('keeps selected verified multi-role view after refreshing membership',async()
 it('withdraws revoked roles instead of retaining an old selected privilege',async()=>{
  render(<AuthProvider><Account/></AuthProvider>);await screen.findByText('No verified role');await signIn();
  fireEvent.click(screen.getByRole('button',{name:'Select assessor'}));
- auth.roles=[{role:'lecturer'}];
+ auth.roles=[{role:'lecturer',tenant_id:'centre'}];
  fireEvent.click(screen.getByRole('button',{name:'Verify access again'}));
  await screen.findByText('lecturer / lecturer');
 });

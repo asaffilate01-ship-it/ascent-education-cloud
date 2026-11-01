@@ -1,6 +1,16 @@
 export type WorkspaceGroup={title:string;items:{label:string;to:string;description:string}[]};
 const group=(title:string,items:[string,string,string][]):WorkspaceGroup=>({title,items:items.map(([label,to,description])=>({label,to,description}))});
 export const workspaceCatalog:Record<string,WorkspaceGroup[]>={
+ office_admin:[group('Administration',[
+  ['General staff dashboard','/office','Verified office tasks, permitted staff directory, schedules and invitations.'],
+  ['My capability status','/office/compliance-preparation','Only server-authorised functions may be used.'],
+ ])],
+ hr_officer:[group('HR',[
+  ['HR dashboard','/office','Limited staff directory, aggregate leave status and your assigned tasks.'],
+ ])],
+ secretary:[group('Secretary',[
+  ['Centre secretary dashboard','/office','Assigned tasks, approved schedules and centre support.'],
+ ])],
  security_officer:[group('Security',[['CCTV live and playback','/security','View authorised cameras and request time-limited playback.']])],
  student:[
   group('Study',[
@@ -33,12 +43,14 @@ export const workspaceCatalog:Record<string,WorkspaceGroup[]>={
   group('Fees and support',[
    ['Fees, paid and outstanding','/student/finance','Recorded invoices and balances; unbilled course fees require finance confirmation.'],
    ['Student support','/student/support','Contact your centre about study, documents or arrangements.'],
+   ['Confidential wellbeing and counselling','/student/wellbeing','Mental health, academic, personal or other support, with a separate anonymous option.'],
    ['Microsoft account','/student/microsoft','Account provisioning and classroom handoff status.'],
   ]),
  ],
  lecturer:[group('Teaching and learners',[
   ['Modules and subjects','/lecturer/teaching','Assigned teaching, learning journeys and saved weekly plans.'],
   ['Schedule classes','/lecturer/class-scheduler','Prepare class invitations and delivery times.'],
+  ['Confirm class end and release','/lecturer/class-release','Record actual delivery and apply post-class embargo.'],
   ['Classroom','/lecturer/classroom','Manage invited in-class and remote sessions.'],
   ['Attendance and registers','/lecturer/attendance','Record daily marks and inspect attendance.'],
   ['Attendance corrections','/lecturer/attendance-corrections','Follow correction requests and administrator decisions.'],
@@ -68,6 +80,7 @@ export const workspaceCatalog:Record<string,WorkspaceGroup[]>={
   ['Supervised placements','/director/placements','Allocate students, supervisors and placement requirements.'],
   ['Employers and opportunities','/director/employers','Review employer relationships and published opportunities.'],
   ['Guardian support','/director/guardian-support','Manage authorised guardian communication.'],
+  ['Class resource release approvals','/director/class-release','Review actual delivery and documented urgent 12-hour exceptions.'],
   ['Teams setup','/director/microsoft-education','Configure classroom organiser readiness.'],
   ['Academic operations review','/ai-recommendations','Review centre-scoped attendance, submitted work and teaching cover with human oversight.'],
   ['Reports','/director/reports','Inspect available centre reports.'],

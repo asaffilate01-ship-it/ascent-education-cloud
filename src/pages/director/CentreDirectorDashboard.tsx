@@ -14,7 +14,8 @@ import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, R
 
 export default function CentreDirectorDashboard() {
   const {user} = useAuth();
-  const scope = {enabled: !!user?.tenantId, filters: [{column: 'tenant_id', operator: 'eq' as const, value: user?.tenantId}]};
+  const verified=!!user?.id&&!!user?.tenantId&&user.role==='centre_director'&&user.roles?.includes('centre_director');
+  const scope = {enabled: verified, filters: [{column: 'tenant_id', operator: 'eq' as const, value: user?.tenantId}]};
   const [addStudentOpen, setAddStudentOpen] = useState(false);
 
 
@@ -35,7 +36,7 @@ export default function CentreDirectorDashboard() {
   };
 
   const loading = enrolments.loading || progLoading || appLoading || invLoading || attLoading;
-  if (!user?.tenantId) return <DashboardLayout title="Centre Director"><p role="alert">A centre assignment is required.</p></DashboardLayout>;
+  if (!verified) return <DashboardLayout title="Centre Director"><p role="alert">An active Centre Director role and a verified centre assignment are required.</p></DashboardLayout>;
   if (loading) return <DashboardSkeleton />;
   if (enrolments.error || progError || appError || invError || attError) return <DashboardLayout title="Centre Director"><p role="alert">Dashboard data could not be loaded completely.</p><Button onClick={() => {void enrolments.refetch(); void progRefresh(); void appRefresh(); void invRefresh(); void attRefresh();}}>Retry dashboard</Button></DashboardLayout>;
 
@@ -81,6 +82,12 @@ export default function CentreDirectorDashboard() {
         <Link to="/director/schedule" className="rounded-xl border bg-card p-5 hover:bg-accent"><h2 className="font-semibold">Check teaching cover</h2><p className="mt-2 text-sm text-muted-foreground">Review the timetable and assigned teaching staff.</p></Link>
         <Link to="/director/assessment-management" className="rounded-xl border bg-card p-5 hover:bg-accent"><h2 className="font-semibold">Review marking allocations</h2><p className="mt-2 text-sm text-muted-foreground">Check submitted work, marker assignments and independent quality approval.</p></Link>
       </section>
+      <section aria-label="Academic quality and delivery readiness" className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{[
+       ['Qualification and board compliance','/director/compliance','OTHM, Qualifi, ATHE, Pearson, Cambridge, Pakistan and vocational approval evidence.'],
+       ['Course and language content','/director/course-content','Verify real programme/module coverage and IELTS, languages, teaching sources and licences.'],
+       ['Teams and cloud lab readiness','/director/tech-lab-access','Approve technology modules and learner-specific grants; Microsoft Graph and cloud lab providers need separate activation.'],
+       ['Admission allocations','/director/allocations','Check KYC, offers, funding, correct modules, schedules and physical identity cards.']
+      ].map(([title,to,description])=><Link key={to} to={to} className="rounded-xl border bg-card p-4 hover:bg-accent"><h2 className="font-semibold">{title}</h2><p className="mt-2 text-sm text-muted-foreground">{description}</p></Link>)}</section>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Total Students" value={String(totalStudents)} icon={GraduationCap} />
         <StatCard label="Active Programmes" value={String(activeProgrammes.length)} icon={BookOpen} />

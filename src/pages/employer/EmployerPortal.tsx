@@ -16,6 +16,7 @@ export default function EmployerPortal(){
 }
 function EmployerWorkspace(){
  const {user}=useAuth();const tenant=user?.tenantId;
+ const verifiedRole=!!user&&user.role==='employer_partner'&&user.roles?.includes('employer_partner');
  const generation=useRef(0);
  const [members,setMembers]=useState<Membership[]>([]),[opps,setOpps]=useState<Opportunity[]>([]),[applications,setApplications]=useState<Application[]>([]);
  const [loading,setLoading]=useState(true),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[refresh,setRefresh]=useState(0);
@@ -24,7 +25,7 @@ function EmployerWorkspace(){
   const request=++generation.current;
   const current=()=>request===generation.current;
   setError('');setLoading(true);setMembers([]);setOpps([]);setApplications([]);
-  if(!user || !tenant){setError('A verified centre assignment is required. No student records are available.');setLoading(false);return;}
+  if(!user || !tenant||!verifiedRole){setError('An active verified Employer Partner role and centre assignment are required. No applicant records are available.');setLoading(false);return;}
   try{
    const m=await db.from('unipathway_employer_memberships').select('organisation_id,unipathway_employer_organisations(name,sector,status)').eq('tenant_id',tenant).eq('user_id',user.id).eq('status','verified');
    if(!current())return;
@@ -33,21 +34,34 @@ function EmployerWorkspace(){
    setMembers(verified);
    if(!verified.length){setLoading(false);return;}
    const orgs=verified.map(x=>x.organisation_id);
-   const [jobs,apps]=await Promise.all([
-    db.from('unipathway_employer_opportunities').select('id,organisation_id,title,status,opportunity_type,city,role_description,created_at').eq('tenant_id',tenant).in('organisation_id',orgs).order('created_at',{ascending:false}),
-    db.from('unipathway_employer_applications').select('opportunity_id,status').eq('tenant_id',tenant)
-   ]);
+   const jobs=await db.from('unipathway_employer_opportunities')
+    .select('id,organisation_id,title,status,opportunity_type,city,role_description,created_at')
+    .eq('tenant_id',tenant).in('organisation_id',orgs).order('created_at',{ascending:false});
    if(!current())return;
-   if(jobs.error||apps.error)throw new Error('Employer vacancies or consent-scoped applicant workflow is not available. Ask the centre to verify RLS and migrations.');
-   setOpps((jobs.data||[]) as Opportunity[]);setApplications((apps.data||[]) as Application[]);
+   if(jobs.error)throw new Error('Verified organisation opportunities are unavailable. Ask the centre to check employer RLS.');
+   const ownJobs=(jobs.data||[]) as Opportunity[];
+   // Never fetch applicant rows for every opportunity in a centre.
+   // Query only IDs obtained through this user's verified organisation memberships.
+   const opportunityIds=ownJobs.map(job=>job.id);
+   let ownApplications:Application[]=[];
+   if(opportunityIds.length){
+    const apps=await db.from('unipathway_employer_applications')
+     .select('opportunity_id,status')
+     .eq('tenant_id',tenant).in('opportunity_id',opportunityIds);
+    if(!current())return;
+    if(apps.error)throw new Error('Consented applications cannot be verified for your own opportunities. Ask the centre to check applicant RLS.');
+    ownApplications=(apps.data||[]) as Application[];
+   }
+   if(!current())return;
+   setOpps(ownJobs);setApplications(ownApplications);
    setOrganisation(v=>orgs.includes(v)?v:orgs[0]);
   }catch(e){if(current())setError(e instanceof Error?e.message:'Employer account unavailable.');}
   finally{if(current())setLoading(false);}
- },[user,tenant]);
+ },[user,tenant,verifiedRole]);
  useEffect(()=>{const requests=generation;void load();return()=>{requests.current++;};},[load,refresh]);
  const counts=useMemo(()=>new Map(opps.map(o=>[o.id,applications.filter(x=>x.opportunity_id===o.id).length])),[opps,applications]);
  async function submit(){
-  if(!tenant||!user||!organisation||title.trim().length<5||summary.trim().length<25){
+  if(!verifiedRole||!tenant||!user||!members.some(member=>member.organisation_id===organisation)||title.trim().length<5||summary.trim().length<25){
    setError('Choose a verified employer and enter a specific role title and description (at least 25 characters).');return;
   }
   setBusy(true);setError('');setNotice('');

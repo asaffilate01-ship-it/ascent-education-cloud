@@ -8,10 +8,11 @@ import {useSupabaseQuery} from '@/hooks/useSupabaseQuery';
 import {useScheduledLectures,DAY_NAMES} from '@/hooks/useScheduledLectures';
 import {useAuth} from '@/contexts/AuthContext';
 import {teachingHours,planOverlaps,matchesTeachingModuleSearch,pakistanTeachingDayOfWeek} from '@/lib/teachingPlan';
-export default function LecturerTeaching(){const {user}=useAuth();return <TeachingWorkspace key={`${user?.id}:${user?.tenantId}:${user?.roles?.join(',')}`}/>;}
+export default function LecturerTeaching(){const {user}=useAuth();return <TeachingWorkspace key={`${user?.id}:${user?.tenantId}:${user?.role}:${user?.roles?.join(',')}`}/>;}
 function TeachingWorkspace(){
  const {user}=useAuth();
- const modulesQuery=useSupabaseQuery('modules',{enabled:!!user?.id&&!!user?.tenantId,filters:[{column:'tenant_id',operator:'eq',value:user?.tenantId},{column:'lecturer_id',operator:'eq',value:user?.id}],orderBy:{column:'title',ascending:true}});
+ const active=!!user?.id&&!!user?.tenantId&&user.role==='lecturer'&&user.roles?.includes('lecturer');
+ const modulesQuery=useSupabaseQuery('modules',{enabled:active,filters:[{column:'tenant_id',operator:'eq',value:user?.tenantId},{column:'lecturer_id',operator:'eq',value:user?.id}],orderBy:{column:'title',ascending:true}});
  const schedule=useScheduledLectures();
  const [search,setSearch]=useState(''),[page,setPage]=useState(0),[dayFilter,setDayFilter]=useState<number|null>(null);
  const modules=modulesQuery.data.filter(m=>m.lecturer_id===user?.id&&m.tenant_id===user?.tenantId);
@@ -27,8 +28,8 @@ function TeachingWorkspace(){
  const hours=(id:string)=>teachingHours(lectures.filter(l=>l.module_id===id));
  async function refresh(){setPage(0);await Promise.all([modulesQuery.refetch(),schedule.refetch()]);}
  return <DashboardLayout title="Teaching" subtitle="Assigned modules and saved weekly teaching plans">
-  <div className="mb-4 flex flex-wrap gap-3"><Button asChild><Link to="/lecturer/materials">Upload material</Link></Button><Button asChild variant="outline"><Link to="/lecturer/class-scheduler">Schedule invited classes</Link></Button><Button asChild variant="outline"><Link to="/lecturer/classroom">View class invitations</Link></Button><Button variant="outline" disabled={loading} onClick={()=>void refresh()}>Refresh teaching</Button></div>
-  {!user?.tenantId?<p role="alert">A centre assignment is required.</p>:loading?<p role="status">Checking modules and weekly plans…</p>:error?<p role="alert">Your teaching plan could not be verified. Refresh to retry.</p>:<>
+  <div className="mb-4 flex flex-wrap gap-3"><Button asChild><Link to="/lecturer/materials">Upload material</Link></Button><Button asChild variant="outline"><Link to="/lecturer/class-scheduler">Schedule invited classes</Link></Button><Button asChild variant="outline"><Link to="/lecturer/classroom">View class invitations</Link></Button><Button asChild variant="outline"><Link to="/lecturer/class-release">Confirm class end / release timing</Link></Button><Button variant="outline" disabled={loading} onClick={()=>void refresh()}>Refresh teaching</Button></div>
+  {!active?<p role="alert">An active lecturer role and centre assignment are required.</p>:loading?<p role="status">Checking modules and weekly plans…</p>:error?<p role="alert">Your teaching plan could not be verified. Refresh to retry.</p>:<>
    <section className="mb-5 space-y-3 rounded-xl border p-4"><h2 className="font-semibold">Plan and deliver classes</h2><p className="text-sm">Use the class scheduler to review dates, modules and invitations. Saved weekly plans do not create Teams meetings or invitations. Review effective dates and recurrence before delivery.</p>{overlapCount>0&&<p role="status">{overlapCount} possible overlaps in your saved plan. Review the times, effective dates and recurrence with your programme leader.</p>}</section>
    <div className="mb-4 flex flex-wrap items-end gap-3"><label className="block min-w-0 flex-1 text-sm font-medium">Search assigned modules<Input type="search" className="mt-2 min-h-11" value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}} placeholder="Title or module code, in any order"/></label>{search&&<Button variant="outline" className="min-h-11" onClick={()=>{setSearch('');setPage(0);}}>Clear module search</Button>}</div>
    <p role="status" className="mb-3 text-sm text-muted-foreground">{filtered.length} of {modules.length} assigned modules match.</p>

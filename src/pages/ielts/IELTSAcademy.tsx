@@ -37,7 +37,7 @@ export default function IELTSAcademy() {
   const { user } = useAuth();
   const tenant = user?.tenantId;
   const student = user?.id;
-  const teacher = user?.roles.some(role=>teachingRoles.includes(role)) ?? false;
+  const teacher = Boolean(user?.role&&teachingRoles.includes(user.role)&&user.roles?.includes(user.role));
   const [plans,setPlans] = useState<Plan[]>([]);
   const [completions,setCompletions] = useState<Completion[]>([]);
   const [submissions,setSubmissions] = useState<Submission[]>([]);

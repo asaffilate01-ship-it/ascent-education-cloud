@@ -2,6 +2,8 @@ import {act,cleanup,fireEvent,render,screen,waitFor} from '@testing-library/reac
 import {MemoryRouter} from 'react-router-dom';
 import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 import LMSVirtualLabs from '@/pages/labs/LMSVirtualLabs';
+// Fixture models already authorised module entitlements; no production lab gate is relaxed.
+vi.mock('@/components/labs/TechLabAccessGate',()=>({useTechLabModuleIds:()=>['m1','m2']}));
 const state=vi.hoisted(()=>({user:{id:'learner',tenantId:'centre',role:'student',roles:['student']},rows:{} as Record<string,unknown[]>,error:'',reads:[] as Promise<unknown>[],rpc:vi.fn(),invoke:vi.fn()}));
 vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:state.user})}));
 vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:{children:React.ReactNode})=><main>{children}</main>}));
