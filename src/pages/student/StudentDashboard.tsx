@@ -83,6 +83,14 @@ function StudentDashboardContent() {
   return (
     <DashboardLayout title="Today" subtitle={`Welcome back, ${user?.name || 'Student'}`}>
       <StudentLearningAgenda tenant={user.tenantId} student={user.id} moduleIds={moduleIds} />
+      <section className="mb-5 rounded-xl border bg-card p-5 space-y-3" aria-label="Student wellbeing support">
+       <h2 className="font-semibold">Wellbeing, counselling and personal support</h2>
+       <p className="text-sm text-muted-foreground">Need someone to talk to about mental health, study stress, family problems, bullying or other challenges? Choose confidential Welfare support or submit separately without identifying yourself.</p>
+       <div className="flex flex-wrap gap-2">
+        <Link className="inline-flex min-h-11 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground" to="/student/wellbeing">Ask for help</Link>
+        <Link className="inline-flex min-h-11 items-center rounded-lg border px-4 text-sm font-medium" to="/wellbeing/anonymous">Anonymous option</Link>
+       </div>
+      </section>
       <section className="mb-5 rounded-xl border bg-card p-4"><h2 className="font-semibold">Your student workspace</h2><p className="my-2 text-sm text-muted-foreground">Courses, timetable, recordings, labs, residential visits, documents, careers, fees and support.</p><Link className="font-semibold underline" to="/workspace">Open all student services</Link></section>
       <div className="grid lg:grid-cols-3 gap-4 mb-6">
         {/* Module List */}
