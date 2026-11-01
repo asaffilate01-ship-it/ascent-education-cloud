@@ -6,7 +6,7 @@ import ParentDashboard from '@/pages/parent/ParentDashboard';
 import GuardianResultSharing from '@/components/assessment/GuardianResultSharing';
 const mocks=vi.hoisted(()=>({rpc:vi.fn(),results:vi.fn()}));
 vi.mock('@/lib/db',()=>({db:{rpc:mocks.rpc}}));
-vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'test-user'}})}));
+vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'test-user',tenantId:'centre',role:'parent_guardian',roles:['parent_guardian']}})}));
 vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:{children:React.ReactNode})=><main>{children}</main>}));
 afterEach(cleanup);beforeEach(()=>{mocks.results.mockReset();mocks.rpc.mockReset();mocks.rpc.mockImplementation((name,...args)=>['get_unipathway_guardian_activity','get_unipathway_guardian_scopes'].includes(name)?Promise.resolve({data:[],error:null}):mocks.results(name,...args));});
 describe('Guardian results',()=>{

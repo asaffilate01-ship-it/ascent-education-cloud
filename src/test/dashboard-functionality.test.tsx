@@ -1,34 +1,55 @@
-import {render, screen, fireEvent, cleanup} from '@testing-library/react';
-import {afterEach, beforeEach, expect, it, vi} from 'vitest';
+import {render,screen,cleanup} from '@testing-library/react';
 import {MemoryRouter} from 'react-router-dom';
-const mocks = vi.hoisted(() => ({query: vi.fn()}));
-vi.mock('@/contexts/AuthContext', () => ({useAuth: () => ({user: {id: 'staff', tenantId: 'centre'}})}));
-vi.mock('@/hooks/useSupabaseQuery', () => ({useSupabaseQuery: (...args: unknown[]) => mocks.query(...args)}));
-vi.mock('@/components/layout/DashboardLayout', () => ({default: ({children}: {children: React.ReactNode}) => <main>{children}</main>}));
+import {afterEach,beforeEach,expect,it,vi} from 'vitest';
+const mocks=vi.hoisted(()=>({query:vi.fn(),user:{id:'staff',tenantId:'centre',role:'exams_officer',roles:['exams_officer']} as any}));
+vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:mocks.user})}));
+vi.mock('@/hooks/useSupabaseQuery',()=>({useSupabaseQuery:(...args:unknown[])=>mocks.query(...args)}));
+vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:{children:React.ReactNode})=><main>{children}</main>}));
 import ExamsDashboard from '@/pages/exams/ExamsDashboard';
 import QADashboard from '@/pages/qa/QADashboard';
 afterEach(cleanup);
-beforeEach(() => {vi.clearAllMocks(); mocks.query.mockReturnValue({data: [], loading: false, error: null, refetch: vi.fn()});});
-it('shows recorded exams without manufactured dates, halls or invigilators', () => {
-  mocks.query.mockReturnValue({data: [{id: 'exam', title: 'Recorded exam', start_date: '2026-11-01T09:00:00Z', location: null}], loading: false, error: null});
-  render(<MemoryRouter initialEntries={['/exams']}><ExamsDashboard/></MemoryRouter>);
-  expect(screen.getByText('Recorded exam')).toBeInTheDocument(); expect(screen.getByText('Location: Not assigned')).toBeInTheDocument(); expect(screen.queryByText('Hall A')).not.toBeInTheDocument();
-  expect(mocks.query.mock.calls[0][1].filters).toContainEqual({column: 'tenant_id', operator: 'eq', value: 'centre'});
+beforeEach(()=>{vi.clearAllMocks();mocks.user={id:'staff',tenantId:'centre',role:'exams_officer',roles:['exams_officer']};mocks.query.mockReturnValue({data:[],loading:false,error:null,refetch:vi.fn()});});
+it('shows only centre-owned recorded exam events, without invented rooms or invigilators',()=>{
+ mocks.query.mockReturnValue({data:[
+  {id:'exam',tenant_id:'centre',event_type:'exam',title:'Recorded exam',start_date:'2026-11-01T09:00:00Z',location:null},
+  {id:'other',tenant_id:'another-centre',event_type:'exam',title:'Other centre exam',start_date:'2026-11-01T09:00:00Z'},
+  {id:'class',tenant_id:'centre',event_type:'class',title:'Ordinary lesson',start_date:'2026-11-01T09:00:00Z'},
+ ],loading:false,error:null});
+ render(<MemoryRouter initialEntries={['/exams']}><ExamsDashboard/></MemoryRouter>);
+ expect(screen.getByText('Recorded exam')).toBeInTheDocument();
+ expect(screen.getByText('Location: Not assigned')).toBeInTheDocument();
+ expect(screen.queryByText('Other centre exam')).toBeNull();
+ expect(screen.queryByText('Ordinary lesson')).toBeNull();
+ expect(mocks.query.mock.calls[0][1].filters).toContainEqual({column:'tenant_id',operator:'eq',value:'centre'});
+ expect(mocks.query.mock.calls[0][1].enabled).toBe(true);
 });
-it('opens requested exam sections and does not falsely claim to save incidents', () => {
-  render(<MemoryRouter initialEntries={['/exams/incidents']}><ExamsDashboard/></MemoryRouter>);
-  expect(screen.getByText(/persistent exam incident workflow is not connected/)).toBeInTheDocument(); expect(screen.queryByRole('button', {name: /Log Incident/})).not.toBeInTheDocument();
+it('shows unconnected examination services without fake incident saving',()=>{
+ render(<MemoryRouter initialEntries={['/exams/incidents']}><ExamsDashboard/></MemoryRouter>);
+ expect(screen.getByText(/persistent exam incident workflow is not connected/)).toBeInTheDocument();
+ expect(screen.queryByRole('button',{name:/Log Incident/})).not.toBeInTheDocument();
 });
-it('does not present failed exam queries as no exams', () => {
-  mocks.query.mockReturnValue({data: [], error: 'denied', loading: false});render(<MemoryRouter><ExamsDashboard/></MemoryRouter>);
-  expect(screen.getByRole('alert')).toHaveTextContent('could not be loaded'); expect(screen.queryByText('No exam events have been recorded.')).not.toBeInTheDocument();
+it('never treats an exam query failure as an empty timetable',()=>{
+ mocks.query.mockReturnValue({data:[],error:'denied',loading:false});
+ render(<MemoryRouter><ExamsDashboard/></MemoryRouter>);
+ expect(screen.getByRole('alert')).toHaveTextContent('could not be loaded');
+ expect(screen.queryByText('No exam events have been recorded.')).toBeNull();
 });
-it('QA review opens actual details without inventing AI or moderation decisions', () => {
-  mocks.query.mockImplementation(table => ({data: table === 'submissions' ? [{id: 's', assignment_id: 'a', student_name: 'Learner', status: 'graded', grade: 75, plagiarism_score: null, submitted_at: '2026-10-01', feedback: 'Recorded feedback'}] : [{id: 'a', title: 'Assignment'}], loading: false, error: null}));
-  render(<QADashboard/>); expect(screen.getByText('Not available')).toBeInTheDocument(); expect(screen.queryByText('AI Detected')).not.toBeInTheDocument(); expect(screen.queryByText('approved')).not.toBeInTheDocument();
-  fireEvent.click(screen.getByRole('button', {name: 'Review Learner'})); expect(screen.getByRole('dialog')).toHaveTextContent('Recorded feedback');
+it('blocks exam reads when the account switches to another active role',()=>{
+ mocks.user={id:'staff',tenantId:'centre',role:'student',roles:['student','exams_officer']};
+ render(<MemoryRouter><ExamsDashboard/></MemoryRouter>);
+ expect(mocks.query.mock.calls[0][1].enabled).toBe(false);
+ expect(screen.getByRole('alert')).toHaveTextContent('verified Exams Officer');
 });
-it('QA paginates rather than silently hiding later submissions', () => {
-  mocks.query.mockImplementation(table => ({data: table === 'submissions' ? Array.from({length: 21}, (_, i) => ({id: String(i), student_name: `Learner ${i}`, status: 'submitted', grade: null, plagiarism_score: null})) : [], loading: false, error: null}));
-  render(<QADashboard/>); expect(screen.queryByText('Learner 20')).not.toBeInTheDocument(); fireEvent.click(screen.getByText('Next submissions')); expect(screen.getByText('Learner 20')).toBeInTheDocument();
+it('directs centre programme leaders to their own quality workflows without loading learner submissions',()=>{
+ mocks.user={id:'staff',tenantId:'centre',role:'programme_leader',roles:['programme_leader']};
+ render(<MemoryRouter initialEntries={['/programme/moderation']}><QADashboard/></MemoryRouter>);
+ expect(screen.getByRole('link',{name:/Independent assessment allocation/})).toHaveAttribute('href','/programme/assessments');
+ expect(screen.queryByText('Recorded feedback')).toBeNull();
+ expect(mocks.query).not.toHaveBeenCalled();
+});
+it('blocks unapproved QA roles and cannot load legacy submissions',()=>{
+ mocks.user={id:'staff',tenantId:'centre',role:'agent',roles:['agent','iqa_officer']};
+ render(<MemoryRouter><QADashboard/></MemoryRouter>);
+ expect(screen.getByRole('alert')).toHaveTextContent('active, centre-verified');
+ expect(mocks.query).not.toHaveBeenCalled();
 });

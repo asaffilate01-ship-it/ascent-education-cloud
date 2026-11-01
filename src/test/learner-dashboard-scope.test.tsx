@@ -2,7 +2,7 @@ import {render,screen,cleanup} from '@testing-library/react';
 import {MemoryRouter} from 'react-router-dom';
 import {afterEach,it,expect,vi} from 'vitest';
 const mocks=vi.hoisted(()=>({query:vi.fn(),from:vi.fn()}));
-vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'learner',tenantId:'centre',name:'Learner'}})}));
+vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'learner',tenantId:'centre',name:'Learner',role:'student',roles:['student']}})}));
 vi.mock('@/hooks/useSupabaseQuery',()=>({useSupabaseQuery:(...args:unknown[])=>mocks.query(...args)}));
 vi.mock('@/lib/db',()=>({db:{from:(...args:unknown[])=>mocks.from(...args)}}));
 vi.mock('@/components/student/STEMCoachLearningAccess',()=>({default:()=>null}));
