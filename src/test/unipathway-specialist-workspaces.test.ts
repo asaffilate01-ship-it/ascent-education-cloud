@@ -3,6 +3,15 @@ import {describe,expect,it} from 'vitest';
 const src=(path:string)=>readFileSync(path,'utf8');
 
 describe('UniPathway director and office workflow separation',()=>{
+ it('does not allow old management memberships to bypass CCTV centre isolation',()=>{
+  const camera=src('src/pages/security/SecurityWorkspace.tsx');
+  expect(camera).toContain('user.roles?.includes(user.role)');
+  expect(camera).toContain(".eq('tenant_id',user!.tenantId!).order('name')");
+  expect(camera).toContain(".eq('id',c.id).eq('tenant_id',user!.tenantId!)");
+  expect(camera).toContain("to-from>86_400_000");
+  expect(camera).toContain("stream.protocol!=='https:'");
+  expect(camera).not.toContain("user?.roles.some(r=>['superadmin'");
+ });
  it('never opens the personal agent dashboard as a Centre Director',()=>{
   const app=src('src/App.tsx');
   expect(app).toContain('<Route path="/director/agents" element={<Director><DirectorAgentAllocationOverview /></Director>} />');
