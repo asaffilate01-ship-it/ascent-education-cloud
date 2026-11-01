@@ -95,6 +95,7 @@ const MicrosoftEducationAdmin = lazy(() => import("./pages/settings/MicrosoftEdu
 const TeamsTeachingDesk = lazy(() => import("./pages/classroom/TeamsTeachingDesk"));
 const LiveClassroom = lazy(() => import("./pages/classroom/TeamsClassroom"));
 const LiveClassScheduler = lazy(() => import("./pages/classroom/LiveClassScheduler"));
+const ClassReleaseManager = lazy(() => import("./pages/classroom/ClassReleaseManager"));
 const WhiteboardStudio = lazy(() => import("./pages/classroom/WhiteboardStudio"));
 const LiveWhiteboard = lazy(() => import("./pages/classroom/LiveWhiteboard"));
 const LectureDiscussion = lazy(() => import("./pages/classroom/LectureDiscussion"));
@@ -458,6 +459,9 @@ function AppRoutes() {
         <Route path="/lecturer/ielts" element={<LecturerR><IELTSAcademy /></LecturerR>} />
         <Route path="/lecturer/classroom" element={<LecturerR><LiveClassroom /></LecturerR>} />
         <Route path="/lecturer/class-scheduler" element={<LecturerR><LiveClassScheduler /></LecturerR>} />
+        <Route path="/lecturer/class-release" element={<RoleGuard allowed={['lecturer']}><ClassReleaseManager /></RoleGuard>} />
+        <Route path="/programme/class-release" element={<Programme><ClassReleaseManager /></Programme>} />
+        <Route path="/director/class-release" element={<Director><ClassReleaseManager /></Director>} />
         <Route path="/lecturer/lesson-archive" element={<LecturerR><LessonArchive /></LecturerR>} />
         <Route path="/lecturer/materials" element={<LecturerR><ModuleMaterials /></LecturerR>} />
         <Route path="/lecturer/course-content" element={<LecturerR><CourseContentHub /></LecturerR>} />
