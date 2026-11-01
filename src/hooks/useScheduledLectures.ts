@@ -51,7 +51,7 @@ export function useScheduledLectures() {
   const {data,loading,error,refetch:fetchLectures}=useSupabaseQuery('scheduled_lectures',{
     enabled:!!user?.id&&!!user?.tenantId,
     select:'*, modules!inner(title, code, programme_id, programmes!inner(title))',
-    filters:[{column:'tenant_id',operator:'eq',value:user?.tenantId},{column:'is_active',operator:'eq',value:true}],
+    filters:[{column:'tenant_id',operator:'eq',value:user?.tenantId},{column:'is_active',operator:'eq',value:true},...(user?.role==='lecturer'?[{column:'lecturer_id',operator:'eq' as const,value:user.id}]:[])],
     orderBy:{column:'day_of_week',ascending:true},
   });
   const lectures=useMemo<LectureWithModule[]>(()=>data.map(row=>{
@@ -77,7 +77,7 @@ export function useScheduledLectures() {
   // My lectures (for current user)
   const myLectures = useMemo(() => {
     if (!user) return [];
-    if (user.roles.includes('lecturer') || user.roles.includes('programme_leader')) {
+    if (user.role === 'lecturer') {
       return lectures.filter(l => l.lecturer_id === user.id);
     }
     return lectures;
