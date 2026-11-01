@@ -155,7 +155,7 @@ CREATE POLICY "Student technology grant required for lab sessions" ON public.lab
    (public.has_role(auth.uid(),'centre_director'::public.app_role) OR
     public.has_role(auth.uid(),'lecturer'::public.app_role))
    OR (module_id IS NOT NULL AND
-     unipathway_acl.tech_lab_allowed(auth.uid(),tenant_id,module_id))
+     public.check_my_unipathway_tech_lab(module_id))
   )
  );
 CREATE POLICY "Student technology grant required for private VMs" ON public.lab_vms
@@ -166,7 +166,7 @@ CREATE POLICY "Student technology grant required for private VMs" ON public.lab_
    OR (student_id=auth.uid() AND EXISTS(
     SELECT 1 FROM public.lab_sessions s WHERE s.id=lab_session_id AND
       s.tenant_id=lab_vms.tenant_id AND s.module_id IS NOT NULL AND
-      unipathway_acl.tech_lab_allowed(auth.uid(),lab_vms.tenant_id,s.module_id)
+      public.check_my_unipathway_tech_lab(s.module_id)
    ))
   )
  );
