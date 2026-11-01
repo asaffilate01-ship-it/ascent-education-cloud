@@ -34,8 +34,9 @@ export default function KanbanBoard({ applications, onRefetch }: KanbanBoardProp
     const app = applications.find((a) => a.id === appId);
     if (!app || app.stage === newStage) return;
 
-    if(newStage==='enrolled'||app.stage==='enrolled'){
-      toast({title:'Academic review required',description:'Use Academic enrolment review above. Enrolled records cannot be moved through the sales pipeline.'});return;
+    const approvalStages=new Set(['conditional_offer','unconditional_offer','deposit_paid','enrolled']);
+    if(approvalStages.has(newStage)||approvalStages.has(app.stage)){
+      toast({title:'Independent approval required',description:'Offer issuance, payment confirmation and enrolment cannot be changed through sales-stage drag and drop. Use the corresponding verified academic and finance workflow.'});return;
     }
 
     const { data, error } = await supabase
