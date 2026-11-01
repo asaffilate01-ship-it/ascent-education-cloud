@@ -11,7 +11,7 @@ const aws=get('supabase/functions/aws-lab-manager/index.ts');
 const coding=get('src/pages/coding/CloudCodingSandbox.tsx');
 describe('UniPathway LMS cloud/coding labs',()=>{
  it('preserves classroom and independent study on the same enrolled-module hub',()=>{
-  expect(routes).toContain('<StudentR><LabLearningHub /></StudentR>');
+  expect(routes).toContain('<StudentR><TechLabAccessGate><LabLearningHub /></TechLabAccessGate></StudentR>');
   expect(routes).toContain('<LecturerR><LabInstructorPlanner /></LecturerR>');
   expect(courses).toContain("useSupabaseQuery('student_enrolments'");
   expect(courses).toContain('enrolled.has(p.id)');
