@@ -36,8 +36,8 @@ CREATE TABLE public.centre_occupancy(
  tenant_id uuid NOT NULL,person_key text NOT NULL,person_type text NOT NULL,user_id uuid,visitor_id uuid,
  in_building boolean NOT NULL DEFAULT false,last_event_at timestamptz,last_gate_id text,
  PRIMARY KEY(tenant_id,person_key));
-CREATE TABLE public.cctv_cameras(id uuid PRIMARY KEY,tenant_id uuid NOT NULL,camera_code text,display_name text,status text,last_health_at timestamptz);
-CREATE TABLE public.security_devices(id uuid PRIMARY KEY,tenant_id uuid NOT NULL,device_code text,device_type text,status text,last_health_at timestamptz);
+CREATE TABLE public.cctv_cameras(id uuid PRIMARY KEY,tenant_id uuid NOT NULL,camera_code text,display_name text,status text,last_health_at timestamptz,stream_reference text,nvr_channel text);
+CREATE TABLE public.security_devices(id uuid PRIMARY KEY,tenant_id uuid NOT NULL,device_code text,device_type text,status text,last_health_at timestamptz,endpoint_reference text,metadata jsonb);
 CREATE TABLE public.emergency_muster_events(id uuid PRIMARY KEY,tenant_id uuid NOT NULL,status text,started_at timestamptz,ended_at timestamptz);
 CREATE TABLE public.emergency_muster_status(id uuid PRIMARY KEY,tenant_id uuid NOT NULL,muster_event_id uuid,person_key text,person_type text,expected_inside boolean,status text,muster_point text);
 ALTER TABLE public.centre_visitors ENABLE ROW LEVEL SECURITY;
@@ -70,6 +70,7 @@ async function deny(actor,sql){
 }
 const register=(tenant,request=id.checkin,attest=true)=>`SELECT public.unipathway_register_centre_visitor(
  ${uuid(tenant)},'Sample Visitor','Academic appointment','Reception',${attest},${uuid(request)}) AS receipt`;
+const read=(tenant,kind,event=null)=>`SELECT public.get_unipathway_security_operations_rows(${uuid(tenant)},'${kind}',0,200,${event?uuid(event):'NULL'}) AS receipt`;
 const checkout=(tenant,visitor,request=id.checkout)=>`SELECT public.unipathway_checkout_centre_visitor(
  ${uuid(tenant)},${uuid(visitor)},'Reception',${uuid(request)}) AS receipt`;
 const body=r=>typeof r.rows[0].receipt==='string'?JSON.parse(r.rows[0].receipt):r.rows[0].receipt;
@@ -80,6 +81,11 @@ await deny(id.guardA,register(id.b));
 await deny(id.guardA,register(id.a,id.checkin,false));
 await deny(id.guardA,`INSERT INTO public.centre_visitors(tenant_id,full_name,pass_number) VALUES(${uuid(id.a)},'Unsafe','unsafe')`);
 await deny(id.guardA,'SELECT * FROM unipathway_security.visitor_command_receipts');
+await deny(id.guardA,'SELECT id FROM public.centre_visitors');
+await deny(id.guardA,'SELECT stream_reference FROM public.cctv_cameras');
+await deny(id.guardA,read(id.b,'centre_visitors'));
+await deny(id.guardA,read(id.a,'not-allowlisted'));
+await deny(id.guardA,`SELECT public.get_unipathway_security_operations_rows(${uuid(id.a)},'centre_visitors',0,201,NULL)`);
 await deny(id.guardA,checkout(id.a,id.checkin));
 const first=body(await as(id.guardA,register(id.a)));
 assert.equal(first.tenant_id,id.a);assert.equal(first.status,'in_building');assert.match(first.pass_number,/^UP-/);checks++;
@@ -87,10 +93,17 @@ assert.equal(body(await as(id.guardA,register(id.a))).id,first.id);checks++;
 assert.equal((await q('SELECT count(*)::int AS n FROM public.centre_access_events')).rows[0].n,1);checks++;
 assert.equal((await q('SELECT count(*)::int AS n FROM public.centre_occupancy WHERE in_building')).rows[0].n,1);checks++;
 await deny(id.guardB,checkout(id.b,first.id));
-const guardAList=await as(id.guardA,'SELECT tenant_id::text AS tenant_id FROM public.centre_visitors');
-assert.deepEqual(guardAList.rows.map(r=>r.tenant_id),[id.a]);checks++;
-const guardBList=await as(id.guardB,'SELECT id FROM public.centre_visitors');
-assert.equal(guardBList.rows.length,0);checks++;
+const guardAList=body(await as(id.guardA,read(id.a,'centre_visitors')));
+assert.deepEqual(guardAList.map(r=>r.tenant_id),[id.a]);checks++;
+const guardBList=body(await as(id.guardB,read(id.b,'centre_visitors')));
+assert.equal(guardBList.length,0);checks++;
+await q(`INSERT INTO public.cctv_cameras(id,tenant_id,camera_code,display_name,status,last_health_at,stream_reference,nvr_channel)
+VALUES (gen_random_uuid(),${uuid(id.a)},'CAM-A','Front gate','online',now(),'SECRET-CAMERA-STREAM','NVR-CREDENTIAL')`);
+const projectedCameras=body(await as(id.guardA,read(id.a,'cctv_cameras')));
+assert.equal(projectedCameras.length,1);
+assert.equal(projectedCameras[0].camera_code,'CAM-A');
+assert.equal('stream_reference' in projectedCameras[0],false);
+assert.equal('nvr_channel' in projectedCameras[0],false);checks++;
 const out=body(await as(id.guardA,checkout(id.a,first.id)));
 assert.equal(out.status,'checked_out');checks++;
 assert.equal(body(await as(id.guardA,checkout(id.a,first.id))).id,first.id);checks++;
@@ -100,6 +113,7 @@ await deny(id.guardA,checkout(id.a,first.id,'30000000-0000-4000-8000-00000000000
 await deny(id.guardA,checkout(id.a,'30000000-0000-4000-8000-000000000003'));
 await q(`UPDATE public.tenants SET status='suspended' WHERE id=${uuid(id.a)}`);
 await deny(id.guardA,register(id.a,'30000000-0000-4000-8000-000000000004'));
-assert.equal((await as(id.guardA,'SELECT count(*)::int AS n FROM public.centre_visitors')).rows[0].n,0);checks++;
+await deny(id.guardA,read(id.a,'centre_visitors'));
+checks++;
 await db.close();
 console.log(`UniPathway PGlite physical-security authorization and idempotency: ${checks} assertions passed`);
