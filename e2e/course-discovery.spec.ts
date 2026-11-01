@@ -231,7 +231,7 @@ test('student technology labs remain closed before approved backend activation o
     else protectedWrites.push(name);
    }
    const headers={'access-control-allow-origin':'*','content-type':'application/json'};
-   const data=url.pathname.endsWith('/auth/v1/user')?user:name==='profiles'?{full_name:'Synthetic learner',tenant_id:tenant}:name==='user_roles'?[{role:'student'}]:[];
+   const data=url.pathname.endsWith('/auth/v1/user')?user:name==='profiles'?{full_name:'Synthetic learner',tenant_id:tenant}:name==='user_roles'?[{role:'student',tenant_id:tenant}]:[];
    await route.fulfill({status:200,headers,body:JSON.stringify(data)});
   });
   await page.setViewportSize({width:375,height:812});
