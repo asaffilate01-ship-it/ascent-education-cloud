@@ -92,6 +92,15 @@ describe('Post-class embargo for learning materials and recordings',()=>{
   expect(source('src/lib/learning/classMedia.ts')).toContain("'can_open_my_unipathway_class_media'");
   expect(source('src/lib/learning/offlineSync.ts')).toContain("'can_open_my_unipathway_material'");
  });
+ it('does not create immediately available recordings on a Jitsi session exit',()=>{
+  const live=source('src/pages/classroom/LiveClassroom.tsx');
+  expect(live).not.toContain("from('classroom_recordings'");
+  expect(live).not.toContain("status: 'available'");
+  expect(live).not.toContain('recording saved');
+  expect(live).toContain('POST_CLASS_EXPLANATION');
+  expect(live).toContain("'/student/lesson-archive'");
+  expect(live).toContain(".eq('tenant_id',user.tenantId)");
+ });
  it('shows actual class-end and urgent approvals only to appropriate staff',()=>{
   const app=source('src/App.tsx');
   expect(app).toContain('path="/lecturer/class-release"');
