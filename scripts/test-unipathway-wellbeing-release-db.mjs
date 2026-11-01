@@ -50,6 +50,7 @@ await db.exec(`
  CREATE TABLE public.live_class_artifacts(id uuid PRIMARY KEY,tenant_id uuid,session_id uuid,
   publication_status text,storage_reference text,available_at timestamptz);
  CREATE TABLE public.lesson_ai_packs(id uuid PRIMARY KEY,tenant_id uuid,session_id uuid,status text,summary text);
+ CREATE TABLE public.classroom_recordings(id uuid PRIMARY KEY,tenant_id uuid,status text);
  CREATE TABLE storage.objects(id uuid PRIMARY KEY,bucket_id text,name text);
  CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE
  AS $$ SELECT nullif(current_setting('test.uid',true),'')::uuid $$;
@@ -57,12 +58,14 @@ await db.exec(`
  ALTER TABLE public.unipathway_module_materials ENABLE ROW LEVEL SECURITY;
  ALTER TABLE public.live_class_artifacts ENABLE ROW LEVEL SECURITY;
  ALTER TABLE public.lesson_ai_packs ENABLE ROW LEVEL SECURITY;
+ ALTER TABLE public.classroom_recordings ENABLE ROW LEVEL SECURITY;
  ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
  CREATE POLICY baseline_material ON public.unipathway_module_materials FOR SELECT TO authenticated USING(true);
  CREATE POLICY baseline_artifacts ON public.live_class_artifacts FOR SELECT TO authenticated USING(true);
  CREATE POLICY baseline_packs ON public.lesson_ai_packs FOR SELECT TO authenticated USING(true);
+ CREATE POLICY baseline_legacy ON public.classroom_recordings FOR SELECT TO authenticated USING(true);
  CREATE POLICY baseline_storage ON storage.objects FOR SELECT TO authenticated USING(true);
- GRANT SELECT ON public.unipathway_module_materials,public.live_class_artifacts,public.lesson_ai_packs,storage.objects TO authenticated;
+ GRANT SELECT ON public.unipathway_module_materials,public.live_class_artifacts,public.lesson_ai_packs,public.classroom_recordings,storage.objects TO authenticated;
 `);
 await db.exec(readFileSync('scripts/activation/unipathway-wellbeing-requests-forward.sql','utf8'));
 await db.exec(readFileSync('scripts/activation/unipathway-post-class-resource-release-forward.sql','utf8'));
@@ -86,6 +89,8 @@ await db.exec(`
  ('${t.material}','${t.a}','${t.module}','Lab slides','${t.a}/slides.pdf','published',null,'${t.session}');
  INSERT INTO public.live_class_artifacts VALUES
  ('${t.artifact}','${t.a}','${t.session}','published','${t.a}/recording.mp4',null);
+ INSERT INTO public.classroom_recordings VALUES
+ ('75000000-0000-4000-8000-000000000001','${t.a}','available');
  INSERT INTO public.lesson_ai_packs VALUES
  ('73000000-0000-4000-8000-000000000001','${t.a}','${t.session}','published','Private recap');
  INSERT INTO storage.objects VALUES
@@ -96,6 +101,7 @@ await check(t.student,`SELECT public.can_access_my_unipathway_class_resource('${
 await check(t.student,'SELECT id FROM public.unipathway_module_materials',[]);
 await check(t.student,'SELECT id FROM public.live_class_artifacts',[]);
 await check(t.student,'SELECT id FROM public.lesson_ai_packs',[]);
+await check(t.student,'SELECT id FROM public.classroom_recordings',[]);
 await check(t.student,'SELECT name FROM storage.objects',[]);
 await check(t.studentB,`SELECT public.can_access_my_unipathway_class_resource('${t.session}','${t.a}') AS ok`,[{ok:false}]);
 await check(t.lecturer,`SELECT public.can_access_my_unipathway_class_resource('${t.session}','${t.a}') AS ok`,[{ok:true}]);
