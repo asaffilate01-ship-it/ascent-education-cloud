@@ -118,6 +118,7 @@ const StudentFees = lazy(() => import("./pages/student/StudentFees"));
 
 // Lecturer
 const LecturerDashboard = lazy(() => import("./pages/lecturer/LecturerDashboard"));
+const LecturerDeliveryReadiness = lazy(() => import("./pages/lecturer/LecturerDeliveryReadiness"));
 const LecturerTeaching = lazy(() => import("./pages/lecturer/LecturerTeaching"));
 const LecturerAssessmentBriefs = lazy(() => import("./pages/lecturer/LecturerAssessmentBriefs"));
 const LecturerAttendance = lazy(() => import("./pages/lecturer/LecturerAttendance"));
@@ -433,6 +434,7 @@ function AppRoutes() {
         <Route path="/lecturer/managed-labs" element={<LecturerR><LMSVirtualLabs /></LecturerR>} />
         <Route path="/lecturer" element={<LecturerR><LecturerDashboard /></LecturerR>} />
         <Route path="/lecturer/teaching" element={<LecturerR><LecturerTeaching /></LecturerR>} />
+        <Route path="/lecturer/delivery-readiness" element={<LecturerR><LecturerDeliveryReadiness /></LecturerR>} />
         <Route path="/lecturer/learning-plans" element={<LecturerR><LearningPlans teacher /></LecturerR>} />
         <Route path="/lecturer/assessments" element={<LecturerR><LecturerAssessmentBriefs /></LecturerR>} />
         <Route path="/lecturer/ielts" element={<LecturerR><IELTSAcademy /></LecturerR>} />
