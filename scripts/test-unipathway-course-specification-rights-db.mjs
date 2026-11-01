@@ -140,4 +140,25 @@ await equals(S_A,T_A,`SELECT name FROM storage.objects WHERE name='${T_A}/${MOD_
 await rejects(D_A,T_A,`UPDATE public.unipathway_module_materials SET title='changed' WHERE id='${MATERIAL_A}'`,/Approved current rights/i);
 await equals(D_B,T_B,`SELECT id FROM public.unipathway_material_rights WHERE id='${rights.id}'`,[]);
 await equals(S_A,T_A,`SELECT id FROM public.unipathway_material_rights WHERE id='${rights.id}'`,[]);
+// A withdrawn or expired source must not regain learner access through a new claim.
+await as(D_A,T_A,`UPDATE public.unipathway_module_materials SET publication_status='draft' WHERE id='${MATERIAL_A}'`);
+await rejects(S_A,T_A,`INSERT INTO public.unipathway_material_rights
+ (tenant_id,module_id,material_id,specification_id,rights_basis,rights_holder,evidence_reference,created_by,expires_at)
+ VALUES('${T_A}','${MOD_A}','${MATERIAL_A}','${spec.id}',
+ 'licensed_redistribution','External publisher','Licence agreement 2020 expired',auth.uid(),'2020-01-01T00:00:00Z')`,
+ /permission|row-level|policy/i);
+const expired=(await as(L_A,T_A,`INSERT INTO public.unipathway_material_rights
+ (tenant_id,module_id,material_id,specification_id,rights_basis,rights_holder,evidence_reference,created_by,expires_at)
+ VALUES('${T_A}','${MOD_A}','${MATERIAL_A}','${spec.id}',
+ 'licensed_redistribution','External publisher','Licence agreement 2020 expired',auth.uid(),'2020-01-01T00:00:00Z')
+ RETURNING id`)).rows[0].id;
+await rejects(D2_A,T_A,`SELECT public.review_unipathway_material_rights('${expired}','approved')`,/current redistributable rights/i);
+await as(D_A,T_A,`SELECT public.review_unipathway_material_rights('${expired}','withdrawn')`);
+const linkOnly=(await as(L_A,T_A,`INSERT INTO public.unipathway_material_rights
+ (tenant_id,module_id,material_id,specification_id,rights_basis,rights_holder,evidence_reference,created_by)
+ VALUES('${T_A}','${MOD_A}','${MATERIAL_A}','${spec.id}',
+ 'official_link_only','Exam board website','Use verified original publisher portal',auth.uid())
+ RETURNING id`)).rows[0].id;
+await rejects(D2_A,T_A,`SELECT public.review_unipathway_material_rights('${linkOnly}','approved')`,/current redistributable rights/i);
+await equals(S_A,T_A,`SELECT name FROM storage.objects WHERE name='${T_A}/${MOD_A}/lesson.pdf'`,[]);
 console.log('UniPathway course specification and rights DB boundaries:',checks,'assertions passed');
