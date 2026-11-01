@@ -219,6 +219,10 @@ GRANT EXECUTE ON FUNCTION public.submit_my_unipathway_welfare_request(text,text,
  public.my_unipathway_welfare_replies(uuid)
  TO authenticated;
 
+-- The trusted Edge service requires explicit table access; an authenticated
+-- browser or anonymous key receives NO direct insert/select grant.
+GRANT SELECT,INSERT ON public.unipathway_welfare_requests TO service_role;
+
 -- Only the separately authenticated, CAPTCHA-verified Edge service uses the
 -- service_role to insert anonymous tickets. There is no anonymous direct
 -- PostgREST table grant and no unrestricted public SECURITY DEFINER endpoint.
