@@ -11,7 +11,10 @@ import {db} from '@/lib/db';
 import {Button} from '@/components/ui/button';
 import {ShieldCheck,Users} from 'lucide-react';
 export default function ParentDashboard(){
- const {user}=useAuth();const {pathname}=useLocation();const identity=`${user?.id}:${user?.tenantId}:${user?.roles?.join(',')||user?.role}`;
+ const {user}=useAuth();const {pathname}=useLocation();
+ const verified=!!user?.id&&!!user.tenantId&&user.role==='parent_guardian'&&user.roles?.includes('parent_guardian');
+ if(!verified)return <DashboardLayout title="Parent & Guardian Portal"><p role="alert">An active, verified Guardian role and centre are required. No shared learner data has been loaded.</p></DashboardLayout>;
+ const identity=`${user?.id}:${user?.tenantId}:${user?.roles?.join(',')||user?.role}`;
  if(pathname==='/parent/progress')return <ParentResults key={identity}/>;
  const view=pathname==='/parent/messages'?'communication':pathname==='/parent/attendance'?'attendance':pathname==='/parent/schedule'?'schedule':'all';
  return <DashboardLayout title={parentPages.find(p=>p[1]===pathname)?.[0]||'Parent portal'} subtitle="Your learner’s shared updates"><ParentNavigation/>
@@ -23,12 +26,12 @@ function ParentResults(){
  const [search,setSearch]=useState(''),[page,setPage]=useState(0);
  const [loading,setLoading]=useState(true),[error,setError]=useState(''),[refresh,setRefresh]=useState(0);
  useEffect(()=>{let active=true;setLoading(true);setError('');setStudents([]);setSelected('');setPage(0);
-  if(!user?.id){setLoading(false);setError('Sign in to view shared results.');return;}
+  if(!user?.id||!user.tenantId||user.role!=='parent_guardian'||!user.roles?.includes('parent_guardian')){setLoading(false);setError('Verified Guardian access is required to view shared results.');return;}
   void (async()=>{try{const r=await db.rpc('get_unipathway_guardian_results');if(r.error||!validResults(r.data))throw Error('Unverified results');
    if(active){const list:Student[]=r.data;setStudents(list);setSelected(list.some(s=>s.id===params.get('learner'))?params.get('learner')!:list[0]?.id||'');}
   }catch{if(active)setError('Shared results could not be verified. No results are shown until verification succeeds.');}finally{if(active)setLoading(false);}})();
   return()=>{active=false;};
- },[user?.id,refresh]);
+ },[user?.id,user?.tenantId,user?.role,user?.roles,refresh]);
  const current=students.find(s=>s.id===selected);
  const results=current?.results.filter(r=>r.title.toLowerCase().includes(search.toLowerCase()))||[];
  return <DashboardLayout title="Parent & Guardian Portal" subtitle="Released coursework results shared by your linked learner">

@@ -30,6 +30,10 @@ const statusVariant = (s: string): 'success' | 'warning' | 'danger' | 'info' | '
 
 export default function FinanceDashboard() {
   const {user}=useAuth();
+  return <FinanceWorkspace key={[user?.id,user?.tenantId,user?.role,user?.roles?.join(',')].join(':')}/>;
+}
+function FinanceWorkspace() {
+  const {user}=useAuth();
   const [invoiceOpen, setInvoiceOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
@@ -38,7 +42,7 @@ export default function FinanceDashboard() {
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [exporting, setExporting] = useState(false);
   const { toast } = useToast();
-  const allowed=!!user?.tenantId&&['finance_officer','centre_director','superadmin'].includes(user.role);
+  const allowed=!!user?.id&&!!user.tenantId&&user.roles?.includes(user.role)&&['finance_officer','centre_director','superadmin'].includes(user.role);
   const { data: invoices, loading, error, refetch } = useSupabaseQuery('invoices', {
     enabled:allowed,
     filters:[{column:'tenant_id',operator:'eq',value:user?.tenantId||''}],
@@ -53,7 +57,8 @@ export default function FinanceDashboard() {
         body: { reportType: 'invoices', tenantId:user.tenantId, filters: statusFilter !== 'all' ? { status: statusFilter } : undefined },
       });
       if (resp.error) throw resp.error;
-      const csvText = typeof resp.data === 'string' ? resp.data : new TextDecoder().decode(resp.data);
+      const csvText = typeof resp.data==='string'?resp.data:resp.data instanceof Blob?await resp.data.text():resp.data instanceof ArrayBuffer?new TextDecoder().decode(resp.data):typeof resp.data?.csv==='string'?resp.data.csv:'';
+      if(!csvText.includes(',')||!csvText.includes('\n')||/^\s*[\{\[]/.test(csvText))throw Error('The report service did not return a verified CSV document.');
       const blob = new Blob([csvText], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -118,7 +123,7 @@ export default function FinanceDashboard() {
             <StatCard label="Total Billed" value={`Rs.${totalBilled.toLocaleString()}`} icon={CreditCard} />
             <StatCard label="Collected" value={`Rs.${totalCollected.toLocaleString()}`} change={totalBilled ? `${Math.round((totalCollected / totalBilled) * 100)}% collection` : '—'} changeType="positive" icon={TrendingUp} />
             <StatCard label="Overdue" value={`Rs.${overdue.toLocaleString()}`} change="action needed" changeType="negative" icon={AlertTriangle} />
-            <StatCard label="Commissions Due" value={`Rs.${commissionsDue.toLocaleString()}`} icon={Handshake} />
+            <StatCard label="Recorded commission invoices" value={`Rs.${commissionsDue.toLocaleString()}`} icon={Handshake} />
           </div>
 
           {/* Filters */}

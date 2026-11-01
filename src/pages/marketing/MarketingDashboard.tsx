@@ -52,6 +52,7 @@ export default function MarketingDashboard() {
   }, [applications]);
 
   const totalLeads = applications.length;
+  const largestStage=Math.max(1,...funnel.map(stage=>stage.count));
   const enrolledCount = applications.filter((a) => a.stage === 'enrolled').length;
   const conversionRate = totalLeads > 0 ? ((enrolledCount / totalLeads) * 100).toFixed(1) : '0';
 
@@ -77,7 +78,7 @@ export default function MarketingDashboard() {
     >
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Total Leads" value={totalLeads} icon={Users} />
-        <StatCard label="Conversion Rate" value={`${conversionRate}%`} change="Lead → Enrolled" changeType="positive" icon={Target} />
+        <StatCard label="Conversion Rate" value={`${conversionRate}%`} change="Current share in enrolled stage" changeType="positive" icon={Target} />
         <StatCard label="Enrolled" value={enrolledCount} icon={TrendingUp} />
         <StatCard label="Sources" value={sourceBreakdown.length} icon={Megaphone} />
       </div>
@@ -85,23 +86,19 @@ export default function MarketingDashboard() {
       {/* Lead Funnel */}
       <div className="surface-card p-5 mb-4">
         <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
-          <Target className="w-4 h-4 text-primary" /> Recruitment Funnel
+          <Target className="w-4 h-4 text-primary" /> Current application stages
         </h3>
         <div className="flex items-end gap-2">
-          {funnel.map((stage, i) => (
+          {funnel.map((stage) => (
             <div key={stage.stage} className="flex-1 text-center">
               <p className="text-lg font-bold mb-1">{stage.count}</p>
               <div
                 className="rounded-lg py-3 bg-primary/10 text-primary transition-default"
-                style={{ minHeight: `${20 + (i + 1) * 10}px`, opacity: 0.4 + (i * 0.12) }}
+                style={{ minHeight: `${Math.max(24,Math.round(stage.count/largestStage*100))}px`, opacity:stage.count?1:0.35 }}
               >
                 <p className="text-[10px] font-medium px-1">{stage.stage}</p>
               </div>
-              {i < funnel.length - 1 && funnel[i].count > 0 && (
-                <p className="text-[9px] text-muted-foreground mt-1">
-                  {funnel[i + 1].count > 0 ? `${((funnel[i + 1].count / funnel[i].count) * 100).toFixed(0)}% →` : '0% →'}
-                </p>
-              )}
+
             </div>
           ))}
         </div>

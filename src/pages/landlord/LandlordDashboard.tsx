@@ -11,6 +11,7 @@ import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useMemo } from 'react';
+import {useAuth} from '@/contexts/AuthContext';
 
 
 const statusVariant = (s: string) => {
@@ -20,11 +21,14 @@ const statusVariant = (s: string) => {
 };
 
 export default function LandlordDashboard() {
+  const {user}=useAuth();
+  const verified=!!user?.id&&user.role==='superadmin'&&user.roles?.includes('superadmin');
   const { data: tenants, loading: tLoading, error: tError, refetch } = useSupabaseQuery('tenants', {
+    enabled:verified,
     orderBy: { column: 'created_at', ascending: false },
   });
-  const { data: invoices, loading: iLoading, error: iError, refetch: refreshInvoices } = useSupabaseQuery('invoices');
-  const { data: applications, loading: aLoading, error: aError, refetch: refreshApplications } = useSupabaseQuery('applications');
+  const { data: invoices, loading: iLoading, error: iError, refetch: refreshInvoices } = useSupabaseQuery('invoices',{enabled:verified});
+  const { data: applications, loading: aLoading, error: aError, refetch: refreshApplications } = useSupabaseQuery('applications',{enabled:verified});
 
   const invoiceTrend = useMemo(() => invoiceMonths(invoices), [invoices]);
   const enrolmentTrend = useMemo(() => {
@@ -36,6 +40,7 @@ export default function LandlordDashboard() {
   }, [applications]);
 
   const loading = tLoading || iLoading || aLoading;
+  if(!verified)return <DashboardLayout title="Platform overview"><p role="alert">An active, globally verified Platform Owner role is required. No centre data was requested.</p></DashboardLayout>;
   if (loading) return <DashboardSkeleton />;
   if (tError || iError || aError) return <DashboardLayout title="Platform overview"><p role="alert">Platform records could not be loaded completely.</p><Button onClick={() => {void refetch(); void refreshInvoices(); void refreshApplications();}}>Retry platform records</Button></DashboardLayout>;
 
