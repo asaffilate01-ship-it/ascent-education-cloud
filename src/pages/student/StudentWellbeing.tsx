@@ -12,8 +12,7 @@ import {
 } from '@/lib/wellbeingRequests';
 
 type MyRequest={id:string;category:string;status:string;created_at:string};
-type CaptchaApi={render:(target:HTMLElement,options:{sitekey:string;callback:(token:string)=>void;'expired-callback':()=>void;'error-callback':()=>void})=>string|number;remove:(id:string|number)=>void};
-declare global{interface Window{turnstile?:CaptchaApi}}
+// Reuse the existing global TurnstileAPI contract shared with the platform.
 
 const categoryLabel=(value:string)=>WELLBEING_CATEGORIES.find(c=>c.value===value)?.label||'Wellbeing support';
 export default function StudentWellbeing({anonymousOnly=false}:{anonymousOnly?:boolean}){
@@ -45,10 +44,10 @@ function WellbeingWorkspace({anonymousOnly}:{anonymousOnly:boolean}){
  },[student,anonymousOnly,refresh]);
  useEffect(()=>{
   if(privacy!=='anonymous'||!anonActive||!captchaNode.current)return;
-  let active=true;let widget:string|number|undefined;const target=captchaNode.current;
+  let active=true;let widget:string|undefined;const target=captchaNode.current;
   const draw=()=>{
    if(!active||!window.turnstile||widget!==undefined)return;
-   widget=window.turnstile.render(target,{sitekey:import.meta.env.VITE_UNIPATHWAY_TURNSTILE_SITE_KEY,
+   widget=window.turnstile.render(target,{sitekey:String(import.meta.env.VITE_UNIPATHWAY_TURNSTILE_SITE_KEY),action:'student-wellbeing',
     callback:(token)=>{if(active){setCaptcha(token);setCaptchaError('');}},
     'expired-callback':()=>{if(active)setCaptcha('');},
     'error-callback':()=>{if(active){setCaptcha('');setCaptchaError('Human verification is unavailable. Please use a confidential request or contact the centre.');}},
