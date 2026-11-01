@@ -17,25 +17,86 @@ $fn$;
 REVOKE ALL ON FUNCTION unipathway_security.verified_officer(uuid) FROM PUBLIC,anon;
 GRANT EXECUTE ON FUNCTION unipathway_security.verified_officer(uuid) TO authenticated;
 
--- Existing director/superadmin policies are retained. Add specific security-officer SELECT,
--- requiring an actual current centre membership; no carte-blanche select for authenticated.
-GRANT SELECT ON public.centre_visitors, public.centre_occupancy, public.centre_access_events,
- public.cctv_cameras, public.security_devices, public.emergency_muster_events,
- public.emergency_muster_status TO authenticated;
-CREATE POLICY "unipathway officer visitor read" ON public.centre_visitors FOR SELECT TO authenticated
- USING (unipathway_security.verified_officer(tenant_id));
-CREATE POLICY "unipathway officer occupancy read" ON public.centre_occupancy FOR SELECT TO authenticated
- USING (unipathway_security.verified_officer(tenant_id));
-CREATE POLICY "unipathway officer gate read" ON public.centre_access_events FOR SELECT TO authenticated
- USING (unipathway_security.verified_officer(tenant_id));
-CREATE POLICY "unipathway officer camera inventory read" ON public.cctv_cameras FOR SELECT TO authenticated
- USING (unipathway_security.verified_officer(tenant_id));
-CREATE POLICY "unipathway officer device inventory read" ON public.security_devices FOR SELECT TO authenticated
- USING (unipathway_security.verified_officer(tenant_id));
-CREATE POLICY "unipathway officer muster events read" ON public.emergency_muster_events FOR SELECT TO authenticated
- USING (unipathway_security.verified_officer(tenant_id));
-CREATE POLICY "unipathway officer muster status read" ON public.emergency_muster_status FOR SELECT TO authenticated
- USING (unipathway_security.verified_officer(tenant_id));
+-- No security-officer SELECT policy is added to the raw, Data API exposed
+-- camera/device/visitor/gate tables. They contain confidential fields including
+-- stream_reference, endpoint_reference and metadata. A scoped SECURITY DEFINER
+-- projection returns ONLY the allowlisted columns used by the dashboards.
+CREATE OR REPLACE FUNCTION unipathway_security.verified_reader(p_tenant uuid)
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=''
+AS $fn$
+ SELECT (SELECT auth.uid()) IS NOT NULL AND p_tenant IS NOT NULL
+ AND EXISTS(SELECT 1 FROM public.tenants t WHERE t.id=p_tenant AND t.status='active')
+ AND EXISTS(SELECT 1 FROM public.profiles p WHERE p.user_id=(SELECT auth.uid()) AND p.tenant_id=p_tenant)
+ AND EXISTS(SELECT 1 FROM public.user_roles r
+   WHERE r.user_id=(SELECT auth.uid()) AND r.tenant_id=p_tenant
+   AND r.role::text IN ('security_officer','centre_director'))
+$fn$;
+REVOKE ALL ON FUNCTION unipathway_security.verified_reader(uuid) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION unipathway_security.verified_reader(uuid) TO authenticated;
+
+CREATE OR REPLACE FUNCTION unipathway_security.read_operations_impl(
+ p_tenant uuid,p_kind text,p_offset integer,p_limit integer,p_event_id uuid
+) RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path=''
+AS $fn$
+DECLARE v_rows jsonb:='[]'::jsonb;
+BEGIN
+ IF NOT unipathway_security.verified_reader(p_tenant) THEN
+  RAISE EXCEPTION 'Verified centre security reader required';
+ END IF;
+ IF p_offset IS NULL OR p_offset<0 OR p_offset>5000 OR p_limit IS NULL OR p_limit<1 OR p_limit>200 THEN
+  RAISE EXCEPTION 'Invalid secure page request';
+ END IF;
+ IF p_kind='centre_visitors' THEN
+  SELECT coalesce(jsonb_agg(to_jsonb(r)),'[]'::jsonb) INTO v_rows FROM (
+   SELECT id,tenant_id,full_name,pass_number,purpose,status,checked_in_at,checked_out_at,created_at
+   FROM public.centre_visitors WHERE tenant_id=p_tenant ORDER BY id LIMIT p_limit OFFSET p_offset
+  ) r;
+ ELSIF p_kind='centre_occupancy' THEN
+  SELECT coalesce(jsonb_agg(to_jsonb(r)),'[]'::jsonb) INTO v_rows FROM (
+   SELECT tenant_id,person_key,person_type,in_building,last_event_at,last_gate_id
+   FROM public.centre_occupancy WHERE tenant_id=p_tenant ORDER BY person_key LIMIT p_limit OFFSET p_offset
+  ) r;
+ ELSIF p_kind='centre_access_events' THEN
+  SELECT coalesce(jsonb_agg(to_jsonb(r)),'[]'::jsonb) INTO v_rows FROM (
+   SELECT id,tenant_id,gate_id,direction,decision,occurred_at
+   FROM public.centre_access_events WHERE tenant_id=p_tenant ORDER BY id LIMIT p_limit OFFSET p_offset
+  ) r;
+ ELSIF p_kind='cctv_cameras' THEN
+  SELECT coalesce(jsonb_agg(to_jsonb(r)),'[]'::jsonb) INTO v_rows FROM (
+   SELECT id,tenant_id,camera_code,display_name,status,last_health_at
+   FROM public.cctv_cameras WHERE tenant_id=p_tenant ORDER BY id LIMIT p_limit OFFSET p_offset
+  ) r;
+ ELSIF p_kind='security_devices' THEN
+  SELECT coalesce(jsonb_agg(to_jsonb(r)),'[]'::jsonb) INTO v_rows FROM (
+   SELECT id,tenant_id,device_code,device_type,status,last_health_at
+   FROM public.security_devices WHERE tenant_id=p_tenant ORDER BY id LIMIT p_limit OFFSET p_offset
+  ) r;
+ ELSIF p_kind='emergency_muster_events' THEN
+  SELECT coalesce(jsonb_agg(to_jsonb(r)),'[]'::jsonb) INTO v_rows FROM (
+   SELECT id,tenant_id,status,started_at,ended_at
+   FROM public.emergency_muster_events WHERE tenant_id=p_tenant ORDER BY id LIMIT p_limit OFFSET p_offset
+  ) r;
+ ELSIF p_kind='emergency_muster_status' THEN
+  IF p_event_id IS NULL THEN RAISE EXCEPTION 'An approved muster event is required';END IF;
+  SELECT coalesce(jsonb_agg(to_jsonb(r)),'[]'::jsonb) INTO v_rows FROM (
+   SELECT id,tenant_id,muster_event_id,person_key,person_type,expected_inside,status,muster_point
+   FROM public.emergency_muster_status WHERE tenant_id=p_tenant AND muster_event_id=p_event_id
+   ORDER BY id LIMIT p_limit OFFSET p_offset
+  ) r;
+ ELSE
+  RAISE EXCEPTION 'Unknown centre security dataset';
+ END IF;
+ RETURN v_rows;
+END;$fn$;
+REVOKE ALL ON FUNCTION unipathway_security.read_operations_impl(uuid,text,integer,integer,uuid) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION unipathway_security.read_operations_impl(uuid,text,integer,integer,uuid) TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.get_unipathway_security_operations_rows(
+ p_tenant uuid,p_kind text,p_offset integer DEFAULT 0,p_limit integer DEFAULT 200,p_event_id uuid DEFAULT NULL
+) RETURNS jsonb LANGUAGE sql STABLE SECURITY INVOKER SET search_path=''
+AS $fn$ SELECT unipathway_security.read_operations_impl(p_tenant,p_kind,p_offset,p_limit,p_event_id) $fn$;
+REVOKE ALL ON FUNCTION public.get_unipathway_security_operations_rows(uuid,text,integer,integer,uuid) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.get_unipathway_security_operations_rows(uuid,text,integer,integer,uuid) TO authenticated;
 
 -- Private, non-API idempotency ledger. Keeps visitor events atomic when the operator retries after a timeout.
 CREATE TABLE unipathway_security.visitor_command_receipts (
