@@ -6,11 +6,19 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { useMemo } from 'react';
 import {Link} from 'react-router-dom';
+import {useAuth} from '@/contexts/AuthContext';
 import {DashboardSkeleton} from '@/components/ui/Skeletons';
 
 export default function MarketingDashboard() {
+  const {user}=useAuth();
+  // Do not fetch a cross-centre marketing funnel when the selected role or
+  // centre has not been verified. Database RLS must independently enforce this.
+  const scoped=!!user?.id&&!!user.tenantId&&
+   ['marketing_officer','centre_director','superadmin'].includes(user.role)&&user.roles?.includes(user.role);
   const { data: applications, loading, error, refetch } = useSupabaseQuery('applications', {
     orderBy: { column: 'created_at', ascending: false },
+    enabled: scoped,
+    filters: [{column:'tenant_id',operator:'eq',value:user?.tenantId||''}],
   });
 
   // Compute funnel from real application stages
@@ -55,6 +63,7 @@ export default function MarketingDashboard() {
     return Object.entries(map).sort((a, b) => b[1] - a[1]);
   }, [applications]);
 
+  if(!scoped) return <DashboardLayout title="Marketing Dashboard"><p role="alert" className="rounded-xl border p-5">A verified active marketing or centre leadership role and an assigned centre are required. No applications or funnel statistics have been loaded.</p></DashboardLayout>;
   if (loading) return <DashboardLayout title="Marketing Dashboard"><DashboardSkeleton /></DashboardLayout>;
   if (error) return <DashboardLayout title="Marketing Dashboard"><div role="alert"><p>Lead data could not be loaded. Marketing totals are unavailable.</p><Button className="mt-3" onClick={() => void refetch()}>Retry marketing data</Button></div></DashboardLayout>;
 
