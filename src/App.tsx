@@ -12,6 +12,10 @@ import CookieConsent from "@/components/CookieConsent";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { lazy, Suspense } from "react";
+const SecurityCommandCentre = lazy(() => import('./pages/security/SecurityCommandCentre'));
+const CentreSecurity = lazy(() => import('./pages/security/CentreSecurity'));
+const VisitorReception = lazy(() => import('./pages/security/VisitorReception'));
+const MusterMode = lazy(() => import('./pages/security/MusterMode'));
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { studyDestinations } from "@/lib/studyDestinations";
 import RouteIndexing from '@/components/RouteIndexing';
@@ -364,6 +368,10 @@ function AppRoutes() {
         <Route path="/blog/:slug" element={<BlogPostPage />} />
         <Route path="/verify" element={<CertificateVerification />} />
         <Route path="/security" element={<RoleGuard allowed={['security_officer','centre_director','superadmin']}><SecurityWorkspace /></RoleGuard>} />
+        <Route path="/security/operations" element={<RoleGuard allowed={['security_officer','centre_director']}><SecurityCommandCentre /></RoleGuard>} />
+        <Route path="/security/centre" element={<RoleGuard allowed={['security_officer','centre_director']}><CentreSecurity /></RoleGuard>} />
+        <Route path="/security/visitors" element={<RoleGuard allowed={['security_officer','centre_director']}><VisitorReception /></RoleGuard>} />
+        <Route path="/security/muster" element={<RoleGuard allowed={['security_officer','centre_director']}><MusterMode /></RoleGuard>} />
         <Route path="/live-classroom" element={<P><LiveClassroom /></P>} />
 
         {/* ========== LANDLORD ========== */}

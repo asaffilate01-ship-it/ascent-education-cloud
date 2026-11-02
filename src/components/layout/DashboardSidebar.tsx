@@ -38,7 +38,14 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
   secretary: [{title:'Centre secretary',items:[
     {label:'Secretary dashboard',icon:Calendar,path:'/office'},
   ]}],
-  security_officer: [{title: 'Security', items: [{label: 'Communications', icon: Mail, path: '/communications'},{label: 'CCTV live & playback', icon: Shield, path: '/security'}]}],
+  security_officer: [{title: 'Centre security',items:[
+    {label:'Operations command',icon:Shield,path:'/security/operations'},
+    {label:'Gates & occupancy',icon:Users,path:'/security/centre'},
+    {label:'Visitor reception',icon:UserCheck,path:'/security/visitors'},
+    {label:'Emergency muster',icon:AlertTriangle,path:'/security/muster'},
+    {label:'CCTV live & playback',icon:Shield,path:'/security'},
+    {label:'Communications',icon:Mail,path:'/communications'},
+  ]}],
   superadmin: [
     { title: 'Platform', items: [
       { label: 'Placements', icon: Briefcase, path: '/landlord/placements' },
@@ -89,6 +96,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'CIBTAC / CPD Accreditation', icon: Award, path: '/director/beauty-accreditation' },
       { label: 'IELTS Academy', icon: GraduationCap, path: '/director/ielts' },
       { label: 'CCTV live & playback', icon: Shield, path: '/security' },
+      { label: 'Physical centre operations', icon: Shield, path: '/security/operations' },
       { label: 'Sponsor funding', icon: Handshake, path: '/director/funding' },
       { label: 'Staff', icon: Users, path: '/director/staff' },
       { label: 'Office & HR permissions', icon: Shield, path: '/director/staff-access' },

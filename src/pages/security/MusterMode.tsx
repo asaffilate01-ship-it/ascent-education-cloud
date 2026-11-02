@@ -1,3 +1,34 @@
-import { db } from '@/lib/db';
-import DashboardLayout from '@/components/layout/DashboardLayout'; import StatusBadge from '@/components/ui/StatusBadge'; import {useEffect,useState} from 'react'; import {supabase} from '@/integrations/supabase/client'; import {ShieldAlert,Users,UserCheck,AlertTriangle} from 'lucide-react';
-export default function MusterMode(){const [event,setEvent]=useState<any>(null),[rows,setRows]=useState<any[]>([]);useEffect(()=>{db.from('emergency_muster_events').select('*').eq('status','active').order('started_at',{ascending:false}).limit(1).maybeSingle().then(async({data})=>{setEvent(data);if(data){const {data:r}=await db.from('emergency_muster_status').select('*').eq('muster_event_id',data.id);setRows(r||[])}})},[]);const safe=rows.filter(x=>x.status==='safe').length,missing=rows.filter(x=>x.status==='unaccounted').length;return <DashboardLayout title="Emergency Muster" subtitle="Live accountability without altering gate history"><div className="grid grid-cols-3 gap-3 mb-5"><div className="surface-card p-5"><Users className="w-5 h-5"/><p className="stat-value mt-2">{rows.length}</p><p className="text-xs text-muted-foreground">Expected</p></div><div className="surface-card p-5"><UserCheck className="w-5 h-5 text-success"/><p className="stat-value mt-2">{safe}</p><p className="text-xs text-muted-foreground">Safe</p></div><div className="surface-card p-5"><AlertTriangle className="w-5 h-5 text-destructive"/><p className="stat-value mt-2">{missing}</p><p className="text-xs text-muted-foreground">Unaccounted</p></div></div>{!event?<div className="empty-state"><ShieldAlert className="w-8 h-8 mx-auto"/><h3 className="font-semibold mt-3">No active emergency</h3></div>:<div className="surface-card overflow-hidden">{rows.map(x=><div key={x.id} className="p-4 border-b last:border-0 flex justify-between gap-3"><div><p className="text-sm font-semibold">{x.person_key}</p><p className="text-xs text-muted-foreground">{x.person_type}{x.muster_point?' · '+x.muster_point:''}</p></div><StatusBadge status={x.status} variant={x.status==='safe'?'success':'danger'}/></div>)}</div>}</DashboardLayout>}
+
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import {useAuth} from '@/contexts/AuthContext';
+import {useScopedSecurityRows} from '@/hooks/useScopedSecurityRows';
+import PhysicalSecurityReadiness from '@/components/security/PhysicalSecurityReadiness';
+import {physicalSecurityScope,PHYSICAL_SECURITY_ENABLED,displayTime,type MusterEvent,type MusterRow} from '@/lib/physicalSecurity';
+import {Button} from '@/components/ui/button';
+export default function MusterMode(){const {user}=useAuth();return <ReadMuster key={`${user?.id}:${user?.tenantId}:${user?.role}:${user?.roles?.join(',')}`}/>;}
+function ReadMuster(){
+ const {user}=useAuth(),permitted=!!physicalSecurityScope(user)&&PHYSICAL_SECURITY_ENABLED;
+ const events=useScopedSecurityRows<MusterEvent>(user,'emergency_muster_events','id,tenant_id,status,started_at,ended_at','id');
+ const active=events.data.filter(e=>e.status==='active');
+ const current=active.length===1?active[0]:null;
+ const rows=useScopedSecurityRows<MusterRow>(user,'emergency_muster_status','id,tenant_id,muster_event_id,person_type,expected_inside,status,muster_point','id',current?{column:'muster_event_id',value:current.id}:undefined,!!current);
+ const loading=events.loading||(!!current&&rows.loading),failed=events.error||(!!current&&rows.error);
+ const expected=rows.data.filter(r=>r.muster_event_id===current?.id&&r.expected_inside);
+ const accounted=expected.filter(r=>r.status==='safe').length;
+ const unaccounted=expected.filter(r=>r.status!=='safe').length;
+ return <DashboardLayout title="Recorded emergency muster" subtitle="Centre-scoped accountability, not a substitute for on-site emergency response">
+  <PhysicalSecurityReadiness/>
+  {permitted&&loading&&<p role="status">Checking recorded muster events…</p>}
+  {permitted&&failed&&<div role="alert" className="rounded-xl border p-4"><p>Emergency accountability data could not be fully verified. Follow the physical emergency plan.</p><Button onClick={()=>{events.refresh();rows.refresh();}}>Retry</Button></div>}
+  {permitted&&!loading&&!failed&&<section className="mt-4 rounded-xl border bg-card p-5">
+   {active.length>1?<p role="alert">Multiple active muster events exist. No authoritative headcount can be shown; contact the responsible centre official.</p>:
+   !current?<><h2 className="font-semibold">No active muster recorded</h2><p className="mt-2 text-sm text-muted-foreground">This is only a database observation. For alarms or incidents, use the centre's physical emergency plan immediately.</p></>:
+   <><h2 className="font-semibold">Muster recorded at {displayTime(current.started_at)} PKT</h2>
+    {!rows.data.length&&<p role="alert" className="mt-3">No accountability records are associated with this active muster. Do not interpret zero as all accounted for. Follow the on-site emergency roll-call.</p>}
+    <div className="mt-4 grid grid-cols-3 gap-3">{[['Expected records',expected.length],['Marked safe',accounted],['Not marked safe',unaccounted]].map(([label,value])=><div key={label} className="rounded-lg border p-3"><p className="text-sm">{label}</p><p className="mt-2 text-xl font-semibold">{value}</p></div>)}</div>
+    <p className="mt-3 text-sm text-muted-foreground">Numbers cover stored status rows only; missing registration rows are not detectable here. Human roll-call and emergency services remain authoritative.</p>
+    <div className="mt-4 divide-y">{expected.slice(0,80).map((row,i)=><div key={row.id} className="flex flex-wrap justify-between gap-3 py-3 text-sm"><span>{row.person_type} · record {i+1}</span><span>{row.status==='safe'?'Marked safe':'Not confirmed'}{row.muster_point?' · '+row.muster_point:''}</span></div>)}</div>
+   </>}
+  </section>}
+ </DashboardLayout>;
+}

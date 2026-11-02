@@ -42,6 +42,8 @@ jobs:
       - run: npm run test:db
       - name: Cross-centre office role, invitation and tech lab RLS rehearsal
         run: node scripts/test-unipathway-office-and-tech-db.mjs
+      - name: Centre physical security, visitor idempotency and two-tenant RLS rehearsal
+        run: node scripts/test-unipathway-physical-security-db.mjs
       - name: Welfare privacy and 24/12-hour class release PostgreSQL rehearsal
         run: node scripts/test-unipathway-wellbeing-release-db.mjs
       - name: Fresh schema and access checks (hosted extensions deferred)
@@ -85,5 +87,7 @@ jobs:
         with: {node-version: 24, cache: npm}
       - run: npm ci --ignore-scripts
       - run: npx playwright install --with-deps chromium
+      - name: Browser startup diagnostics (real DOM and captured runtime errors)
+        run: npx playwright test e2e/browser-startup-diagnostics.spec.ts --workers=1
       - name: Chromium acceptance for public, progression and protected routes
         run: npx playwright test e2e/unipathway-ielts-admissions.spec.ts e2e/public-smoke.spec.ts e2e/assessment-evidence.spec.ts e2e/private-feedback.spec.ts e2e/centre-feedback.spec.ts e2e/course-discovery.spec.ts e2e/qualification-accessibility.spec.ts
