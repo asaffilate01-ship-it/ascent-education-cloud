@@ -4,6 +4,7 @@ import {useAuth} from '@/contexts/AuthContext';
 import {Button} from '@/components/ui/button';
 import {useLocation, Link} from 'react-router-dom';
 import {useState, useEffect} from 'react';
+import {examEventChecks,examReadinessSummary} from '@/lib/exams/examReadiness';
 
 const sections = ['schedule', 'rooms', 'seating', 'entry', 'incidents', 'results'] as const;
 export default function ExamsDashboard() {
@@ -19,16 +20,18 @@ export default function ExamsDashboard() {
     orderBy: {column: 'start_date', ascending: true},
   });
   const safeEvents=verified?events.data.filter(event=>event.tenant_id===user!.tenantId&&event.event_type==='exam'):[];
+  const readiness=examReadinessSummary(safeEvents);
   return <DashboardLayout title="Examinations" subtitle="Recorded exam events and operational readiness">
     <nav aria-label="Examination sections" className="flex flex-wrap gap-3 mb-5">{sections.map(item => <Link key={item} to={`/exams/${item}`} aria-current={section === item ? 'page' : undefined} className="capitalize underline">{item}</Link>)}</nav>
     {!verified ? <p role="alert">An active, verified Exams Officer role and assigned centre are required.</p> : section === 'schedule' || section === 'rooms' ? <section className="surface-card p-5 space-y-4">
       <h2 className="font-semibold">{section === 'rooms' ? 'Recorded exam locations' : 'Recorded exam timetable'}</h2>
       <p>These are exam events from the academic calendar. Room capacity, invigilator assignments and candidate registration are not recorded here.</p>
       {events.loading ? <p role="status">Loading exam events…</p> : events.error ? <div><p role="alert">Exam events could not be loaded.</p><Button onClick={() => void events.refetch()}>Retry exam events</Button></div> : <>
+        <aside aria-label="Exam preparation checks" className="rounded-xl border bg-background p-4 space-y-2"><h3 className="font-semibold">Recorded calendar preparation</h3><p className="text-sm text-muted-foreground">Read-only warnings. Candidate registration, identity, invigilators and official board approval must be verified separately.</p><div className="flex flex-wrap gap-4 text-sm"><span>Events: {readiness.total}</span><span>Missing venue: {readiness.missingVenue}</span><span>Invalid dates: {readiness.invalidDates}</span><span>Possible venue clashes: {readiness.overlapPairs}</span></div></aside>
         {!safeEvents.length && <p>No exam events have been recorded.</p>}
         {safeEvents.slice(page * 20, page * 20 + 20).map(event => <article key={event.id} className="border rounded p-3">
           <h3 className="font-medium">{event.title}</h3><p>{new Date(event.start_date).toLocaleString()} {event.all_day ? '(all day)' : ''}</p>
-          <p>Location: {event.location || 'Not assigned'}</p>{event.description && <p>{event.description}</p>}
+          <p>Location: {event.location || 'Not assigned'}</p>{examEventChecks(event,safeEvents).map(issue=><p key={issue} className="text-sm text-amber-700 dark:text-amber-300">Review needed: {issue}</p>)}{event.description && <p>{event.description}</p>}
         </article>)}
         <div className="flex gap-2"><Button disabled={page === 0} onClick={() => setPage(p => p - 1)}>Previous exams</Button><Button disabled={(page + 1) * 20 >= safeEvents.length} onClick={() => setPage(p => p + 1)}>Next exams</Button></div>
       </>}
