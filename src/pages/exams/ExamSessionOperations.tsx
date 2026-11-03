@@ -133,10 +133,7 @@ function PlanEditor({tenant,event,plan,refresh}:{tenant:string;event:ExamCalenda
  const change=(patch:Partial<ExamDraft>)=>setForm(previous=>({...previous,...patch}));
  const blocked=busy||!!attempt;
  const run=async(submit:boolean)=>{
-  if(busy||plan?.status==='internally_approved'||!planMatchesCalendar(plan||{
-   tenant_id:tenant,event_id:event.id,event_start:event.start_date||'',
-   event_end:event.end_date||'',event_location:event.location||''
-  } as ExamPlan,event)||!validExamDraft(form,submit))return;
+  if(busy||plan?.status==='internally_approved'||!validCalendar||!validExamDraft(form,submit))return;
   const previous=plan?.revision||0;
   const request=attempt||{id:crypto.randomUUID(),submit,payload:{...form}};
   setAttempt(request);setBusy(true);setError('');setMessage('');
