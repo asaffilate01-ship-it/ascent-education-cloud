@@ -97,6 +97,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'IELTS Academy', icon: GraduationCap, path: '/director/ielts' },
       { label: 'CCTV live & playback', icon: Shield, path: '/security' },
       { label: 'Physical centre operations', icon: Shield, path: '/security/operations' },
+      { label: 'Exam plans & approvals', icon: ClipboardCheck, path: '/director/exam-plans' },
       { label: 'Sponsor funding', icon: Handshake, path: '/director/funding' },
       { label: 'Staff', icon: Users, path: '/director/staff' },
       { label: 'Office & HR permissions', icon: Shield, path: '/director/staff-access' },
@@ -266,6 +267,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
   exams_officer: [
     { items: [
       { label: 'Dashboard', icon: LayoutDashboard, path: '/exams' },
+      { label: 'Exam session plans', icon: ClipboardCheck, path: '/exams/session-plans' },
       { label: 'Schedule', icon: Calendar, path: '/exams/schedule' },
        { label: 'IELTS Mocks', icon: GraduationCap, path: '/exams/ielts' },
       { label: 'Rooms', icon: Monitor, path: '/exams/rooms' },

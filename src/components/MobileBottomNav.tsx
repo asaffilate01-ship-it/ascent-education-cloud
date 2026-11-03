@@ -117,7 +117,7 @@ export const BOTTOM_NAV: Record<UserRole, BottomNavItem[]> = {
   ],
   exams_officer: [
     { label: 'Home', icon: Home, path: '/exams' },
-    { label: 'Results status', icon: BarChart3, path: '/exams/results' },
+    { label: 'Exam plans', icon: ClipboardCheck, path: '/exams/session-plans' },
     { label: 'Schedule', icon: ClipboardList, path: '/exams/schedule' },
     { label: 'Alerts', icon: Bell, path: '/notifications' },
     { label: 'Chat', icon: MessageSquare, path: '/messaging' },
