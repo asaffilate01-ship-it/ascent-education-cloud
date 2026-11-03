@@ -161,7 +161,7 @@ function PlanEditor({tenant,event,plan,refresh}:{tenant:string;event:ExamCalenda
   ['identity','In-person identity-check procedure reviewed'],
   ['emergency','Safety, access and emergency procedure reviewed']
  ] as const;
- const validCalendar=event.location&&event.end_date&&Date.parse(event.end_date)>Date.parse(event.start_date||'')&&!event.all_day;
+ const validCalendar=!!(event.location&&event.end_date&&Date.parse(event.end_date)>Date.parse(event.start_date||'')&&!event.all_day);
  return <section className="space-y-4 rounded-xl border bg-background p-4">
   <h3 className="font-semibold">Exams Officer — internal session preparation</h3>
   {!validCalendar&&<p role="alert">The calendar must have a valid dated session, venue and end time before an internal plan can be saved.</p>}
