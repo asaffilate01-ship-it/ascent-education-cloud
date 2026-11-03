@@ -89,7 +89,7 @@ function ExamOperationsWorkspace(){
          aria-pressed={selected===event.id} className={`w-full rounded-lg border p-3 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${selected===event.id?'border-primary bg-primary/5':'hover:bg-accent'}`}>
          <span className="block font-medium">{event.title}</span>
          <span className="mt-1 block text-xs text-muted-foreground">{new Date(event.start_date).toLocaleString('en-PK',{timeZone:'Asia/Karachi'})} · {event.location||'Venue missing'}</span>
-         <span className="mt-1 block text-xs">{mismatch?'Calendar changed — review again':current?current.status.replaceAll('_',' '):'No internal plan recorded'}</span>
+         <span className="mt-1 block text-xs">{mismatch?'Calendar changed — review again':current?current.status.replace(/_/g,' '):'No internal plan recorded'}</span>
         </button>;
        })}
       </div>
@@ -104,7 +104,7 @@ function ExamOperationsWorkspace(){
          <div className="rounded-lg border p-3"><p className="text-muted-foreground">Planned candidates</p><p className="font-semibold">{plan.planned_candidates}</p></div>
          <div className="rounded-lg border p-3"><p className="text-muted-foreground">Recorded room capacity</p><p className="font-semibold">{plan.room_capacity}</p></div>
          <div className="rounded-lg border p-3"><p className="text-muted-foreground">Planned invigilators</p><p className="font-semibold">{plan.planned_invigilators}</p></div>
-         <div className="rounded-lg border p-3"><p className="text-muted-foreground">Internal status</p><p className="font-semibold capitalize">{plan.status.replaceAll('_',' ')} · v{plan.revision}</p></div>
+         <div className="rounded-lg border p-3"><p className="text-muted-foreground">Internal status</p><p className="font-semibold capitalize">{plan.status.replace(/_/g,' ')} · v{plan.revision}</p></div>
         </div>}
         {officer&&EXAM_WRITES_ENABLED&&plan?.status!=='internally_approved'&&
          <PlanEditor key={`${tenant}:${exam.id}:${plan?.revision||0}`} tenant={tenant!} event={exam} plan={plan} refresh={refresh}/>}
