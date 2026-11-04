@@ -9,11 +9,12 @@ import { db } from '@/lib/db';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { ArrowLeft, Eraser, Film, Pen, Play, Pause, RefreshCcw, ShieldCheck, Type, Users } from 'lucide-react';
+import { ArrowLeft, Download, Eraser, Film, Pen, Play, Pause, RefreshCcw, ShieldCheck, Type, Users } from 'lucide-react';
+import {activeClassroomCentre,activeClassroomTeacher,activeWhiteboardManager,mayEditWhiteboard} from '@/lib/classroomScope';
 import {
  WHITEBOARD_WIDTH,WHITEBOARD_HEIGHT,applyWhiteboardOperation,
  isWhiteboardOperation,replayWhiteboard,restoreWhiteboardSnapshot,
- sampleStroke,toCanvasPoint,whiteboardTimelineMs,
+ sampleStroke,toCanvasPoint,whiteboardTimelineMs,whiteboardSvg,
  type Point,type WhiteboardOperation,type WhiteboardEvent,type WhiteboardShape
 } from '@/lib/whiteboardOperations';
 
@@ -43,6 +44,10 @@ function BoardSurface({shapes,draft,onPointerDown,onPointerMove,onPointerUp,edit
 export default function LiveWhiteboard(){
  const {boardId}=useParams<{boardId:string}>();
  const {user}=useAuth();
+ return <ScopedWhiteboard key={`${boardId}:${user?.id}:${user?.tenantId}:${user?.role}:${user?.roles?.join(',')}`} boardId={boardId}/>;
+}
+function ScopedWhiteboard({boardId}:{boardId?:string}){
+ const {user}=useAuth();
  const [board,setBoard]=useState<Board|null>(null);
  const [shapes,setShapes]=useState<WhiteboardShape[]>([]);
  const [draft,setDraft]=useState<Point[]>([]);
@@ -65,9 +70,10 @@ export default function LiveWhiteboard(){
  const seqRef=useRef(0);
  const refreshingRef=useRef(false);
  const userId=user?.id;
- const manager=!!user?.roles.some(r=>['superadmin','centre_director','programme_leader'].includes(r));
- const editable=!!board&&!board.locked_after_class&&(manager||board.prepared_by===userId);
- const teacher=!!user?.roles.some(r=>['lecturer','programme_leader','centre_director','superadmin'].includes(r));
+ const centre=activeClassroomCentre(user);
+ const manager=activeWhiteboardManager(user);
+ const teacher=activeClassroomTeacher(user);
+ const editable=mayEditWhiteboard(user,board);
  const apply=(sh:WhiteboardShape[])=>{shapesRef.current=sh;setShapes(sh);};
  // Idempotent application: each durable operation carries a per-board sequence.
  const absorb=useCallback((event:WhiteboardEvent)=>{
@@ -89,7 +95,7 @@ export default function LiveWhiteboard(){
     if(e)throw e;
     const rows=(data||[]) as WhiteboardEvent[];
     if(rows.length===0)break;
-    for(const row of rows)absorb(row);
+    for(const row of rows){if(row.sequence>seqRef.current+1)throw Error('Whiteboard event sequence incomplete');absorb(row);}
     if(rows.length<PAGE)break;
     page++;
    }
@@ -97,14 +103,16 @@ export default function LiveWhiteboard(){
   finally{refreshingRef.current=false;}
  },[boardId,absorb]);
  const init=useCallback(async()=>{
-  if(!boardId||!userId)return;
+  if(!boardId||!userId||!centre){setBoard(null);setLoading(false);setError('An active classroom role and assigned centre are required');return;}
   setLoading(true);setError('');
   try{
    const {data:b,error:e}=await db.from('lesson_whiteboards')
     .select('id,tenant_id,session_id,title,prepared_by,locked_after_class,current_sequence')
     .eq('id',boardId).single();
    if(e||!b)throw Error(e?.message||'Whiteboard unavailable or not assigned');
-   const selected=b as Board;setBoard(selected);
+   const selected=b as Board;
+   if(selected.tenant_id!==centre)throw Error('The whiteboard is not available in the selected centre');
+   setBoard(selected);
    const {data:latest,error:snapError}=await db.from('lesson_whiteboard_snapshots')
     .select('through_sequence,shapes').eq('board_id',boardId)
     .order('through_sequence',{ascending:false}).limit(1).maybeSingle();
@@ -118,17 +126,17 @@ export default function LiveWhiteboard(){
      .select('sequence,operation,created_at').eq('board_id',boardId)
      .gt('sequence',seqRef.current).order('sequence',{ascending:true}).limit(PAGE);
     if(opsError)throw opsError;
-    for(const row of (data||[]) as WhiteboardEvent[])absorb(row);
+    for(const row of (data||[]) as WhiteboardEvent[]){if(row.sequence>seqRef.current+1)throw Error('Whiteboard history incomplete; refresh required');absorb(row);}
     if(!data||data.length<PAGE)break;
     page++;
    }
    setConnection('Live board connected');
   }catch(e){setError(e instanceof Error?e.message:'Whiteboard cannot be loaded');setBoard(null);}
   finally{setLoading(false);}
- },[boardId,userId,absorb]);
+ },[boardId,userId,centre,absorb]);
  useEffect(()=>{void init();},[init]);
  useEffect(()=>{
-  if(!boardId||!board||!userId)return;
+  if(!boardId||!board||!userId||!centre||board.tenant_id!==centre)return;
   let active=true;
   let channel:ReturnType<typeof supabase.channel>|undefined;
   (async()=>{
@@ -188,6 +196,16 @@ export default function LiveWhiteboard(){
    });
    if(snapError)toast.error('Checkpoint delayed; full whiteboard history remains saved.');
   }
+ };
+ const exportDrawing=()=>{
+  if(!editable||mode!=='live'||writing)return;
+  try{
+   const xml=whiteboardSvg(shapesRef.current);
+   const url=URL.createObjectURL(new Blob([xml],{type:'image/svg+xml;charset=utf-8'}));
+   const link=document.createElement('a');link.href=url;link.download='unipathway-lesson-whiteboard.svg';
+   document.body.appendChild(link);link.click();link.remove();
+   window.setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }catch{toast.error('This whiteboard drawing could not be exported safely.');}
  };
  const startStroke=(e:ReactPointerEvent<SVGSVGElement>)=>{
   if(!editable||mode!=='live'||writing)return;
@@ -249,11 +267,11 @@ export default function LiveWhiteboard(){
  return <DashboardLayout title="UniPathway Live Whiteboard" subtitle="One presenter, many invited learners, secure live updates and durable lesson replay">
   <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
    <Link className="inline-flex items-center gap-2 text-sm font-semibold underline" to={teacher?"/lecturer/classroom":"/student/classroom"}><ArrowLeft className="size-4"/>My classes</Link>
-   <span className="text-xs text-muted-foreground" role="status">{connection}</span>
+   <span className="text-xs text-muted-foreground" role="status" aria-live="polite">{connection}</span>
   </div>
   {loading&&<p role="status">Checking your classroom invitation and whiteboard access…</p>}
   {error&&<p className="rounded-xl border border-destructive p-5" role="alert">{error}. Access requires an active enrolment and class invitation, or assignment as an authorised educator.</p>}
-  {board&&!loading&&<div className="space-y-4">
+  {board&&board.tenant_id===centre&&!loading&&<div className="space-y-4">
    <div className="flex flex-wrap items-center justify-between gap-3"><div>
     <h2 className="text-2xl font-bold">{board.title}</h2>
     <p className="mt-1 text-xs text-muted-foreground">Saved events: {seqRef.current} · {editable?'Presenter access':'Read-only classroom view'} · {board.locked_after_class?'Board locked':''}</p>
@@ -269,8 +287,9 @@ export default function LiveWhiteboard(){
     <Button size="sm" variant={tool==='text'?'default':'outline'} onClick={()=>setTool('text')}><Type className="mr-1 size-4"/>Text</Button>
     <label className="flex items-center gap-2 text-sm">Ink <input type="color" value={ink} onChange={e=>setInk(e.target.value)} aria-label="Ink colour"/></label>
     <label className="text-sm">Width <select aria-label="Pen width" className="rounded-md border px-2 py-1" value={width} onChange={e=>setWidth(Number(e.target.value))}><option value="2">Fine</option><option value="4">Medium</option><option value="8">Bold</option><option value="16">Marker</option></select></label>
-    {tool==='text'&&<Input aria-label="Text annotation" className="max-w-60" maxLength={180} value={note} placeholder="Enter text, then tap canvas" onChange={e=>setNote(e.target.value)}/>}
+    {tool==='text'&&<><Input aria-label="Text annotation" className="max-w-60" maxLength={180} value={note} placeholder="Enter text, then tap canvas" onChange={e=>setNote(e.target.value)}/><Button variant="outline" size="sm" disabled={!note.trim()||writing} onClick={()=>void submit({type:'text',x:WHITEBOARD_WIDTH/2,y:WHITEBOARD_HEIGHT/2,text:note.trim(),color:ink})}>Place text at centre (keyboard)</Button></>}
     <Button variant="outline" size="sm" disabled={writing} onClick={clearBoard}><Eraser className="mr-1 size-4"/>Clear page</Button>
+    <Button variant="outline" size="sm" disabled={writing} onClick={exportDrawing}><Download className="mr-1 size-4"/>Export drawing (SVG)</Button>
    </div>}
    <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(20rem,1fr)]">
    <div className="space-y-3 min-w-0">
@@ -281,7 +300,7 @@ export default function LiveWhiteboard(){
     {mode==='replay'&&<><Button disabled={duration===0} size="sm" onClick={()=>setPlaying(p=>!p)}>{playing?<Pause className="mr-1 size-4"/>:<Play className="mr-1 size-4"/>}{playing?'Pause':'Play'}</Button>
      <label className="flex flex-1 items-center gap-2 text-sm"><span>Timeline</span><input aria-label="Whiteboard replay timeline" className="min-w-36 flex-1" type="range" min={0} max={Math.max(duration,1)} step={250} value={replayAt} onChange={e=>setReplayAt(Number(e.target.value))}/><span>{Math.round(replayAt/1000)}s / {Math.round(duration/1000)}s</span></label></>}
    </div>
-   <p className="text-xs text-muted-foreground">Whiteboard replay saves drawing and annotation order, not microphone, camera or Teams chat. Students need a valid class invitation to access it. Video/audio recording requires a separate Teams recording workflow and provider authorisation.</p>
+   <p className="text-xs text-muted-foreground">Presenter-only SVG export saves a copy on this device; review your centre's learner privacy and sharing policy before distributing it. Whiteboard replay saves drawing and annotation order, not microphone, camera or Teams chat. Students need a valid class invitation to access it. Video/audio recording requires a separate Teams recording workflow and provider authorisation.</p>
    </div>
    <LectureInteractions sessionId={board.session_id} compact />
    </div>
