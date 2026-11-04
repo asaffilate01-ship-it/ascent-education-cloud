@@ -69,6 +69,7 @@ function ExamOperationsWorkspace(){
    <Link className="underline font-medium" to={director?'/director/schedule':'/exams/schedule'}>View recorded academic calendar</Link>
   </section>:<>
    <section className="mb-5 rounded-xl border bg-primary/5 p-5 space-y-2">
+    <Link className="font-semibold underline" to={director?"/director/exam-rosters":"/exams/candidate-seating"}>Candidate eligibility and provisional seats</Link>
     <h2 className="font-semibold">Internal preparation, not official examination entry</h2>
     <p className="text-sm text-muted-foreground">Candidate figures are planning totals, not verified individual registrations. A checked process means the centre reviewed its procedure, not that every candidate passed a check. Only a different Centre Director can approve a submitted internal plan.</p>
     <Button variant="outline" size="sm" onClick={refresh} disabled={events.loading||plans.loading}>Refresh authorised records</Button>
