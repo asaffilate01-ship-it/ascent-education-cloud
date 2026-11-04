@@ -81,6 +81,7 @@ const SponsorFundingDesk = lazy(() => import('./pages/funding/SponsorFundingDesk
 const FinanceDashboard = lazy(() => import("./pages/finance/FinanceDashboard"));
 const ExamsDashboard = lazy(() => import("./pages/exams/ExamsDashboard"));
 const ExamSessionOperations = lazy(() => import("./pages/exams/ExamSessionOperations"));
+const ExamCandidateRoster = lazy(() => import("./pages/exams/ExamCandidateRoster"));
 const ProgressionDashboard = lazy(() => import("./pages/progression/ProgressionDashboard"));
 const KnowledgeLibrary = lazy(() => import("./pages/knowledge/KnowledgeLibrary"));
 const EducationIntelligence = lazy(() => import("./pages/analytics/EducationIntelligence"));
@@ -529,6 +530,8 @@ function AppRoutes() {
         <Route path="/exams/schedule" element={<Exams><ExamsDashboard /></Exams>} />
         <Route path="/exams/session-plans" element={<RoleGuard allowed={['exams_officer']}><ExamSessionOperations /></RoleGuard>} />
         <Route path="/director/exam-plans" element={<RoleGuard allowed={['centre_director']}><ExamSessionOperations /></RoleGuard>} />
+        <Route path="/exams/candidate-seating" element={<RoleGuard allowed={['exams_officer']}><ExamCandidateRoster /></RoleGuard>} />
+        <Route path="/director/exam-rosters" element={<RoleGuard allowed={['centre_director']}><ExamCandidateRoster /></RoleGuard>} />
         <Route path="/exams/rooms" element={<Exams><ExamsDashboard /></Exams>} />
         <Route path="/exams/seating" element={<Exams><ExamsDashboard /></Exams>} />
         <Route path="/exams/entry" element={<Exams><ExamsDashboard /></Exams>} />

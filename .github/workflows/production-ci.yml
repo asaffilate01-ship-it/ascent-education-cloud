@@ -46,6 +46,8 @@ jobs:
         run: node scripts/test-unipathway-physical-security-db.mjs
       - name: Exam session planning, reviewer independence, disabled gates and multi-centre RLS rehearsal
         run: node scripts/test-unipathway-exam-operations-db.mjs
+      - name: Candidate roster F2, active enrolment, provisional seats and independent approval rehearsal
+        run: node scripts/test-unipathway-exam-roster-db.mjs
       - name: Welfare privacy and 24/12-hour class release PostgreSQL rehearsal
         run: node scripts/test-unipathway-wellbeing-release-db.mjs
       - name: Fresh schema and access checks (hosted extensions deferred)
