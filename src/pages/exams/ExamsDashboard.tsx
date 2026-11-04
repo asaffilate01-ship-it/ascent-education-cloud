@@ -23,6 +23,7 @@ export default function ExamsDashboard() {
   const readiness=examReadinessSummary(safeEvents);
   return <DashboardLayout title="Examinations" subtitle="Recorded exam events and operational readiness">
     <p className="mb-4 text-sm"><Link to="/exams/session-plans" className="font-semibold underline">Exam session preparation and Centre Director handoff</Link> · internal planning service (activation gated)</p>
+    <p className="mb-4 text-sm"><Link to="/exams/candidate-seating" className="font-semibold underline">Programme-linked candidate and provisional seating workflow</Link> · activation gated</p>
     <nav aria-label="Examination sections" className="flex flex-wrap gap-3 mb-5">{sections.map(item => <Link key={item} to={`/exams/${item}`} aria-current={section === item ? 'page' : undefined} className="capitalize underline">{item}</Link>)}</nav>
     {!verified ? <p role="alert">An active, verified Exams Officer role and assigned centre are required.</p> : section === 'schedule' || section === 'rooms' ? <section className="surface-card p-5 space-y-4">
       <h2 className="font-semibold">{section === 'rooms' ? 'Recorded exam locations' : 'Recorded exam timetable'}</h2>
