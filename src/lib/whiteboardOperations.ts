@@ -61,7 +61,7 @@ export function whiteboardSvg(shapes:readonly WhiteboardShape[]):string{
  const escapeText=(value:string)=>value.replace(/&/g,'&amp;').replace(/</g,'&lt;')
   .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
  const parts=shapes.map(shape=>{
-  if(!isWhiteboardOperation(shape)||shape.type==='clear')throw Error('Cannot export invalid whiteboard content');
+  if(!isWhiteboardOperation(shape))throw Error('Cannot export invalid whiteboard content');
   if(shape.type==='text')return `<text x="${shape.x}" y="${shape.y}" fill="${shape.color}" font-family="sans-serif" font-size="27">${escapeText(shape.text)}</text>`;
   return `<polyline points="${shape.points.map(p=>p.join(',')).join(' ')}" stroke="${shape.color}" stroke-width="${shape.width}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
  }).join('');
