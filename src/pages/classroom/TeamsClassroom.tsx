@@ -8,14 +8,15 @@ import StatusBadge from '@/components/ui/StatusBadge';
 import {isTeamsMeetingUrl as isTeamsUrl} from '@/lib/teamsTeaching';
 import { db } from '@/lib/db';
 import { useAuth } from '@/contexts/AuthContext';
+import {activeClassroomCentre,activeClassroomTeacher} from '@/lib/classroomScope';
 import { AlertTriangle, BookOpen, Calendar, ExternalLink, Film, Hand, PenTool, ShieldCheck, Video, Users } from 'lucide-react';
 
 type Session={id:string;tenant_id:string;title:string;module_id:string|null;starts_at:string;ends_at:string;
  class_mode:string;status:string;join_url:string|null;recording_enabled:boolean;capacity:number};
-type Board={id:string;session_id:string;title:string};
-export default function TeamsClassroom(){const {user}=useAuth();return <ClassroomWorkspace key={`${user?.id}:${user?.tenantId}:${user?.role}`}/>;}
+type Board={id:string;tenant_id:string;session_id:string;title:string};
+export default function TeamsClassroom(){const {user}=useAuth();return <ClassroomWorkspace key={`${user?.id}:${user?.tenantId}:${user?.role}:${user?.roles?.join(',')}`}/>;}
 function ClassroomWorkspace(){
- const {user}=useAuth();const [params]=useSearchParams();const moduleId=params.get('module');
+ const {user}=useAuth();const centre=activeClassroomCentre(user);const [params]=useSearchParams();const moduleId=params.get('module');
  const [sessions,setSessions]=useState<Session[]>([]);
  const [boards,setBoards]=useState<Board[]>([]);
  const [loading,setLoading]=useState(true);const [error,setError]=useState('');
@@ -24,23 +25,23 @@ function ClassroomWorkspace(){
  useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),30000);return()=>clearInterval(timer);},[]);
  const [showPast,setShowPast]=useState(false);const [refresh,setRefresh]=useState(0);
  useEffect(()=>{
-  if(!user?.id||!user.tenantId){setSessions([]);setBoards([]);setError('A verified centre assignment is required to load class invitations.');setLoading(false);return;}
+  if(!centre||!user?.id){setSessions([]);setBoards([]);setError('An active classroom role and verified centre assignment are required to load class invitations.');setLoading(false);return;}
   let live=true;setLoading(true);setError('');setBoardError('');
   void Promise.all([
    db.from('live_class_sessions').select('id,tenant_id,title,module_id,starts_at,ends_at,class_mode,status,join_url,recording_enabled,capacity')
-    .eq('tenant_id',user.tenantId).order('starts_at',{ascending:false}).limit(200),
-   db.from('lesson_whiteboards').select('id,session_id,title').eq('tenant_id',user.tenantId).order('created_at',{ascending:false}).limit(200),
+     .eq('tenant_id',centre).order('starts_at',{ascending:false}).limit(200),
+   db.from('lesson_whiteboards').select('id,tenant_id,session_id,title').eq('tenant_id',centre).order('created_at',{ascending:false}).limit(200),
   ]).then(([classes,whiteboards])=>{
    if(!live)return;
-   if(classes.error){setError(classes.error.message);setSessions([]);}else setSessions(((classes.data||[]) as Session[]).filter(s=>s.tenant_id===user.tenantId));
-   if(whiteboards.error){setBoardError(whiteboards.error.message);setBoards([]);}else setBoards((whiteboards.data||[]) as Board[]);
+   if(classes.error){setError(classes.error.message);setSessions([]);}else setSessions(((classes.data||[]) as Session[]).filter(s=>s.tenant_id===centre));
+   if(whiteboards.error){setBoardError(whiteboards.error.message);setBoards([]);}else setBoards(((whiteboards.data||[]) as Board[]).filter(b=>b.tenant_id===centre));
    setLoading(false);
   }).catch(()=>{if(live){setError('Classroom service unavailable');setLoading(false);}});
   return()=>{live=false};
- },[user?.id,user?.tenantId,user?.role,refresh]);
+ },[user?.id,centre,user?.role,user?.roles?.join(','),refresh]);
  const upcoming=useMemo(()=>[...sessions].filter(s=>(!moduleId||s.module_id===moduleId)&&s.status!=='cancelled' && (showPast ? classJoinState(s,now)==='ended' : classJoinState(s,now)!=='ended'))
   .sort((a,b)=>(showPast?-1:1)*(new Date(a.starts_at).getTime()-new Date(b.starts_at).getTime())),[sessions,showPast,moduleId,now]);
- const teacher=!!user&&['lecturer','programme_leader','centre_director','superadmin'].includes(user.role);
+ const teacher=activeClassroomTeacher(user);
  return <DashboardLayout title="UniPathway Live Classroom" subtitle="Private lecture rooms with interactive whiteboard and on-demand materials">
   <ModuleJourney moduleId={moduleId||undefined} teacher={teacher}/>
   <section className="mb-5 rounded-xl border border-primary/25 bg-primary/5 p-4">
