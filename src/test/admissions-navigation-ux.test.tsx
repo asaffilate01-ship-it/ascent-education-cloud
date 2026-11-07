@@ -132,7 +132,7 @@ describe('Admissions record navigation', () => {
     expect(currentUrl().searchParams.get('q')).toBe('Business');
     expect(currentUrl().searchParams.get('stage')).toBe('applied');
     expect(currentUrl().searchParams.get('reviewSearch')).toBe('Usman');
-    fireEvent.click(screen.getByRole('link', {name: 'Eligibility', exact: true}));
+    fireEvent.click(screen.getByRole('link', {name: 'Eligibility'}));
     expect(currentUrl().searchParams.get('application')).toBe('app-b');
     fireEvent.click(screen.getByRole('button', {name: 'Change applicant'}));
     expect(screen.getByRole('textbox', {name: 'Find student, programme or current stage'})).toHaveValue('Usman');
@@ -202,7 +202,7 @@ describe('Admissions selection boundaries', () => {
     mount('/admissions/documents?application=app-a');
     expect(screen.queryByRole('region', {name: 'Selected applicant'})).not.toBeInTheDocument();
     expect(screen.queryByText('Aisha Khan')).not.toBeInTheDocument();
-    expect(urlOf(screen.getByRole('link', {name: 'Offers', exact: true})).searchParams.get('application')).toBe('app-a');
+    expect(urlOf(screen.getByRole('link', {name: 'Offers'})).searchParams.get('application')).toBe('app-a');
     expect(mocks.from).not.toHaveBeenCalled();
     if (state === 'error') {
       fireEvent.click(screen.getByRole('button', {name: 'Retry'}));

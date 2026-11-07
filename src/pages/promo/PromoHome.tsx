@@ -41,7 +41,7 @@ export default function PromoHome() {
     'Qualifications & university': ['/qualifications', '/europe', '/scholarships'],
   };
   const matches = pathways.filter(p => matchesLocalSearch(`${p.title} ${p.caption}`, query) && (area === 'All subjects' || areas[area].includes(p.to)));
-  return <div className="public-site min-h-dvh bg-background text-foreground">
+  return <div className="public-site min-h-dvh bg-background text-foreground [overflow-wrap:anywhere]">
     <Seo title="UniPathway | Online & In-Class Learning in Pakistan" description="Explore tuition, languages, qualifications and skills. Learn online across Pakistan or in class in Jhelum." canonical="/" />
     <PublicNav />
     <main id="main-content">

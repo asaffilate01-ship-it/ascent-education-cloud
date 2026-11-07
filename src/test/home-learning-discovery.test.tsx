@@ -27,7 +27,7 @@ it('finds a learning area by words in any order across its title and description
 it('combines subject and text filters, then restores discovery and keyboard focus after no matches', () => {
   mount();
   const search = screen.getByRole('searchbox', {name: 'Search learning areas'});
-  fireEvent.click(screen.getByRole('button', {name: 'Languages', exact: true}));
+  fireEvent.click(screen.getByRole('button', {name: 'Languages'}));
   fireEvent.change(search, {target: {value: 'practice IELTS'}});
   expect(screen.getByRole('link', {name: /IELTS Preparation Academic/})).toHaveAttribute('href', '/ielts-preparation');
   expect(screen.getByRole('status')).toHaveTextContent('1 matching learning area');
@@ -36,7 +36,7 @@ it('combines subject and text filters, then restores discovery and keyboard focu
   fireEvent.click(screen.getByRole('button', {name: 'Show all learning areas'}));
   expect(search).toHaveValue('');
   expect(search).toHaveFocus();
-  expect(screen.getByRole('button', {name: 'All subjects', exact: true})).toHaveAttribute('aria-pressed', 'true');
+  expect(screen.getByRole('button', {name: 'All subjects'})).toHaveAttribute('aria-pressed', 'true');
   expect(screen.getByRole('heading', {name: 'Technology Academy'})).toBeInTheDocument();
   expect(screen.getByRole('status')).toHaveTextContent('Explore all learning areas');
 });

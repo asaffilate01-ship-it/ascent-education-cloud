@@ -15,17 +15,17 @@ export default function PublicBottomNav() {
   const { pathname } = useLocation();
   return (
     <nav aria-label="Quick navigation" className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 backdrop-blur-xl lg:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-      <ul className="mx-auto grid h-16 max-w-md grid-cols-5 items-center">
+      <ul className="mx-auto grid min-h-16 max-w-md grid-cols-5 items-center">
         {items.map(({ label, to, icon: Icon, primary }) => {
           const active = isMobileTabActive(to, pathname);
           return (
-            <li key={to} className="flex justify-center">
+            <li key={to} className="flex min-w-0 justify-center">
               {primary ? (
-                <Link to={to} aria-current={active ? 'page' : undefined} className="-mt-6 flex size-14 flex-col items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg ring-4 ring-background transition-transform active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary motion-reduce:transform-none">
+                <Link to={to} aria-current={active ? 'page' : undefined} className="-mt-6 flex min-h-[44px] min-w-[44px] w-full max-w-14 aspect-square flex-col items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg ring-4 ring-background transition-transform active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary motion-reduce:transform-none">
                   <Icon aria-hidden="true" className="size-5" /><span className="text-[10px] font-bold">{label}</span>
                 </Link>
               ) : (
-                <Link to={to} aria-current={active ? 'page' : undefined} className={`flex min-h-11 min-w-11 flex-col items-center justify-center gap-0.5 px-2 py-1 text-[11px] font-semibold transition-transform active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:transform-none ${active ? 'text-primary' : 'text-muted-foreground'}`}>
+                <Link to={to} aria-current={active ? 'page' : undefined} className={`flex min-h-11 min-w-[44px] w-full flex-col items-center justify-center gap-0.5 px-1 py-1 text-center text-[11px] font-semibold transition-transform active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:transform-none ${active ? 'text-primary' : 'text-muted-foreground'}`}>
                   <Icon aria-hidden="true" className="size-5" />{label}
                 </Link>
               )}

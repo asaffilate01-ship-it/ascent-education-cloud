@@ -73,7 +73,7 @@ export default function ContinueLearning({ modules }: { modules: Module[] }) {
           <p className="mt-3 text-sm text-muted-foreground">{detail.description}</p>
           {target.saved && <p className="mt-2 text-xs text-muted-foreground">Last synced <time dateTime={target.saved.updated_at}>{new Date(target.saved.updated_at).toLocaleString('en-PK', { timeZone: 'Asia/Karachi', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}</time> · Pakistan time</p>}
         </div>
-        <div className="flex flex-col items-start gap-2 md:items-end"><Button className="min-h-11" asChild><Link to={continueLessonPath(target.lesson)}>{detail.action}<ArrowRight className="ml-2 size-4" aria-hidden="true" /></Link></Button>
+        <div className="flex min-w-0 flex-col items-start gap-2 md:items-end"><Button className="min-h-11" asChild><Link to={continueLessonPath(target.lesson)}>{detail.action}<ArrowRight className="size-4" aria-hidden="true" /></Link></Button>
           <Link className="inline-flex min-h-11 items-center text-sm font-medium underline underline-offset-4" to={`/student/module?${new URLSearchParams({ module: target.lesson.module_id })}`}>Open module overview</Link>
         </div>
         <p className="text-xs text-muted-foreground md:col-span-2">{completed} of {current.lessons.length} current lessons completed across your enrolled modules. <Link className="inline-flex min-h-11 items-center underline underline-offset-4" to="/student/downloads">Manage saved learning and unsynced progress</Link></p>

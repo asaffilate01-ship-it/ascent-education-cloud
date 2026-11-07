@@ -54,14 +54,37 @@ async function records(context: BrowserContext, role: string, tables: Record<str
 
 async function dismissConsent(page: Page) {
   const consent = page.getByRole('dialog', {name: 'Cookie preferences'});
-  if (await consent.isVisible()) await consent.getByRole('button', {name: 'Reject all'}).click();
+  await expect(consent).toBeVisible();
+  await consent.getByRole('button', {name: 'Reject all'}).click();
+  await expect(consent).toBeHidden();
 }
 
 async function inspectLayouts(page: Page, info: TestInfo, name: string) {
+  const positionPage = async () => {
+    await page.evaluate(() => window.scrollTo({top: 0, left: 0, behavior: 'instant'}));
+    if ((page.viewportSize()?.width || 0) >= 1024 && await page.locator('#dashboard-content').count()) {
+      await expect.poll(() => page.evaluate(() => {
+        const sidebar = document.querySelector('[aria-label="Dashboard navigation"]')!.getBoundingClientRect();
+        const content = document.querySelector('#dashboard-content')!.getBoundingClientRect();
+        return content.left >= sidebar.right - 1 ? null : {contentLeft: Math.round(content.left), sidebarRight: Math.round(sidebar.right)};
+      })).toBeNull();
+    }
+  };
+  const overflow = () => page.evaluate(() => {
+    if (document.documentElement.scrollWidth <= innerWidth + 1) return [];
+    return Array.from(document.querySelectorAll('body *')).filter(element => {
+      const rect = element.getBoundingClientRect();
+      return rect.width > 0 && rect.right > innerWidth + 1 && getComputedStyle(element).visibility !== 'hidden';
+    }).slice(-15).map(element => ({
+      tag: element.tagName, text: element.textContent?.slice(0, 100), class: element.className,
+      right: Math.round(element.getBoundingClientRect().right), viewport: innerWidth,
+    }));
+  });
   for (const width of [360, 390, 768, 1440]) {
     await page.setViewportSize({width, height: 1000});
-    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+    await positionPage();
     await page.screenshot({path: info.outputPath(`${name}-${width}.png`), fullPage: true});
+    await expect.poll(overflow).toEqual([]);
   }
   await page.evaluate(() => {
     document.documentElement.classList.add('dark');
@@ -69,9 +92,10 @@ async function inspectLayouts(page: Page, info: TestInfo, name: string) {
   });
   for (const width of [360, 390, 768, 1440]) {
     await page.setViewportSize({width, height: 1000});
-    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+    await positionPage();
+    await page.screenshot({path: info.outputPath(`${name}-dark-200-percent-text-${width}.png`), fullPage: true});
+    await expect.poll(overflow).toEqual([]);
   }
-  await page.screenshot({path: info.outputPath(`${name}-dark-200-percent-text.png`), fullPage: true});
 }
 
 test('homepage discovery combines reordered words and filters with keyboard recovery', async ({context, page}, info) => {

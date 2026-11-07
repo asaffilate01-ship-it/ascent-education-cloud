@@ -87,9 +87,9 @@ export default function PublicNav() {
     return () => document.removeEventListener('keydown', containFocus);
   }, [open]);
   return <>{!open && <WhatsAppWidget />}{!open && <PublicBottomNav />}<header ref={headerRef} className={cn('sticky top-0 z-50 border-b bg-background/85 backdrop-blur-xl transition-shadow', scrolled ? 'border-border shadow-surface-lg' : 'border-transparent')}>
-    <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-5 px-4 sm:h-20 sm:px-8 lg:h-20">
-      <Link to="/" aria-label="UniPathway home" className="shrink-0"><BrandLogo className="h-11 lg:h-14" /></Link>
-      <nav aria-label="Main navigation" className="hidden items-center gap-1 lg:flex">
+    <div className="mx-auto flex min-h-16 max-w-7xl flex-wrap items-center justify-between gap-x-5 gap-y-2 px-4 py-2 sm:min-h-20 sm:px-8">
+      <Link to="/" aria-label="UniPathway home" className="min-w-0 flex-1 basis-0 lg:flex-none lg:basis-auto"><BrandLogo className="h-11 max-w-full object-left lg:h-14" /></Link>
+      <nav aria-label="Main navigation" className="hidden min-w-0 max-w-full flex-wrap items-center gap-1 lg:flex">
         <Link to="/" className={linkCls(pathname === '/')}>Home</Link>
         <div className="relative">
           <button ref={coursesTrigger} type="button" aria-haspopup="true" aria-expanded={studyOpen} onClick={() => { setStudyOpen(!studyOpen); setDestinationsOpen(false); }} className={cn(linkCls(studyOpen), 'inline-flex items-center gap-1')}>Courses <ChevronDown className={cn('size-4 transition-transform', studyOpen && 'rotate-180')} /></button>
@@ -110,7 +110,7 @@ export default function PublicNav() {
         <Link to="/contact" className={linkCls(pathname === '/contact')}>Contact</Link>
       </nav>
       <div className="hidden items-center gap-2 lg:flex"><Button variant="ghost" className="rounded-full font-semibold" asChild><Link to="/login">Sign in</Link></Button><Button className="rounded-full px-5 shadow-surface-lg" asChild><Link to="/apply">Apply now <ArrowRight /></Link></Button></div>
-      <Button ref={mobileTrigger} variant="outline" size="icon" className="rounded-full lg:hidden" aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open} onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</Button>
+      <Button ref={mobileTrigger} variant="outline" size="icon" className="shrink-0 rounded-full lg:hidden" aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open} onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</Button>
     </div>
     {open && <nav aria-label="Mobile navigation" className="h-[calc(100dvh-4rem)] overflow-y-auto border-t border-border bg-background px-4 pb-28 pt-4 animate-in fade-in-0 slide-in-from-top-2 sm:h-[calc(100dvh-5rem)] sm:px-8 lg:hidden">
       <div className="mb-6 grid grid-cols-2 gap-2">{[['All courses','/study'],['Contact admissions','/contact'],['About UniPathway','/about'],['Student sign in','/login']].map(([label,to])=><Link key={to} to={to} className="flex min-h-12 items-center rounded-xl border bg-card px-4 text-sm font-semibold">{label}</Link>)}</div>
