@@ -9,11 +9,11 @@ import { destinationLinks, studyLinks } from './PublicNav';
 export default function PublicFooter() {
   return <footer className="border-t border-border bg-card pb-28 lg:pb-0">
     <div className="mx-auto max-w-7xl px-5 sm:px-8">
-      <div className="-translate-y-0 flex flex-col items-start justify-between gap-5 border-b border-border py-10 md:flex-row md:items-center">
-        <div><h2 className="text-2xl font-bold sm:text-3xl">Ready to take your next step?</h2><p className="mt-2 text-sm text-muted-foreground">Speak to an adviser about courses, tuition or studying abroad.</p></div>
-        <div className="flex flex-wrap gap-2"><Button variant="outline" className="rounded-full" asChild><Link to="/contact">Contact us</Link></Button><Button className="rounded-full" asChild><Link to="/apply">Apply now <ArrowRight /></Link></Button></div>
+      <div className="flex flex-wrap items-center justify-between gap-5 border-b border-border py-10">
+        <div className="min-w-0 flex-[1_1_24rem]"><h2 className="text-2xl font-bold sm:text-3xl">Ready to take your next step?</h2><p className="mt-2 text-sm text-muted-foreground">Speak to an adviser about courses, tuition or studying abroad.</p></div>
+        <div className="flex min-w-0 max-w-full flex-wrap gap-2"><Button variant="outline" className="rounded-full" asChild><Link to="/contact">Contact us</Link></Button><Button className="rounded-full" asChild><Link to="/apply">Apply now <ArrowRight /></Link></Button></div>
       </div>
-      <div className="grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr]">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),1fr))] gap-10 py-12">
         <div><Link to="/" aria-label="UniPathway home"><BrandLogo className="h-16" /></Link><p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">Qualifications, school tuition, employer learning and global progression — connected through one learning experience.</p><p className="mt-3 text-sm font-semibold">Learn online across Pakistan or in class in Jhelum.</p><SocialIcons className="mt-4" /></div>
         <FooterCol title="Learn" links={studyLinks.filter(l => ['/study', '/scholarships', '/qualifications', '/tuition', '/ielts-preparation', '/german-preparation', '/tech-academy', '/finance-academy', '/beauty-aesthetics', '/creative-crafts'].includes(l.to)).map(l => [l.label, l.to])} />
         <FooterCol title="Study abroad" links={destinationLinks.map(l => [l.label, l.to])} />

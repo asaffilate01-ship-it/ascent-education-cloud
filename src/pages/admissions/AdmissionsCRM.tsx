@@ -7,13 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState } from 'react';
 import {useAuth} from '@/contexts/AuthContext';
-import {Link} from 'react-router-dom';
+import {Link,useSearchParams} from 'react-router-dom';
 import AddLeadModal from '@/components/modals/AddLeadModal';
 import KanbanBoard from '@/components/admissions/KanbanBoard';
 import AdmissionHandover from '@/components/admissions/AdmissionHandover';
 import ServiceActivationQueue from '@/components/admissions/ServiceActivationQueue';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
+import { admissionsPath, applicationReviewAction } from '@/lib/admissionsNavigation';
 
 const PIPELINE_STAGES = [
   { key: 'lead', label: 'Lead' },
@@ -41,11 +42,20 @@ export default function AdmissionsCRM() {
   const tenant=user?.tenantId||'';
   const canWork=!!user?.id&&!!tenant&&!!user.role&&['admissions_admin','centre_director'].includes(user.role)&&user.roles?.includes(user.role);
   const [addLeadOpen, setAddLeadOpen] = useState(false);
-  const [view, setView] = useState<'kanban' | 'table'>('table');
-  const [search, setSearch] = useState('');
-  const [stageFilter, setStageFilter] = useState<string>('all');
-  const [destFilter, setDestFilter] = useState<string>('all');
-  const [sourceFilter, setSourceFilter] = useState<string>('all');
+  const [params, setParams] = useSearchParams();
+  const view = params.get('view') === 'kanban' ? 'kanban' : 'table';
+  const search = params.get('q') || '';
+  const stageFilter = PIPELINE_STAGES.some(stage => stage.key === params.get('stage')) ? params.get('stage')! : 'all';
+  const destFilter = ['pakistan', 'germany', 'uk', 'usa', 'canada', 'australia'].includes(params.get('destination') || '') ? params.get('destination')! : 'all';
+  const sourceFilter = ['ielts', 'university'].includes(params.get('source') || '') ? params.get('source')! : 'all';
+  const setFilter = (key: 'q' | 'stage' | 'source' | 'destination' | 'view', value: string) => {
+    setParams(current => {
+      const next = new URLSearchParams(current);
+      if (!value || value === 'all' || (key === 'view' && value === 'table')) next.delete(key);
+      else next.set(key, value);
+      return next;
+    }, {replace: true});
+  };
   const { data: applications, loading, error, refetch } = useSupabaseQuery('applications', {
     enabled:canWork,filters:[{column:'tenant_id',operator:'eq',value:tenant}],
     orderBy: { column: 'updated_at', ascending: false },
@@ -65,8 +75,8 @@ export default function AdmissionsCRM() {
       const d = (app as any).destination || (source.startsWith('consultancy_') ? source.replace('consultancy_', '') : source.startsWith('university_progression_') ? source.replace('university_progression_', '') : 'pakistan');
       if (String(d).toLowerCase() !== destFilter) return false;
     }
-    if (search) {
-      const q = search.toLowerCase();
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
       return (
         app.student_name.toLowerCase().includes(q) ||
         app.email.toLowerCase().includes(q) ||
@@ -91,19 +101,19 @@ export default function AdmissionsCRM() {
         <div className="flex items-center gap-2">
           <div className="hidden md:flex items-center rounded-md border border-border overflow-hidden">
             <button
-              aria-label="Kanban view" onClick={() => setView('kanban')}
-              className={`p-3 transition-colors ${view === 'kanban' ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:text-foreground'}`}
+              aria-label="Kanban view" aria-pressed={view === 'kanban'} onClick={() => setFilter('view', 'kanban')}
+              className={`min-h-11 min-w-11 p-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring ${view === 'kanban' ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:text-foreground'}`}
             >
               <LayoutGrid className="w-3.5 h-3.5" />
             </button>
             <button
-              aria-label="Table view" onClick={() => setView('table')}
-              className={`p-3 transition-colors ${view === 'table' ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:text-foreground'}`}
+              aria-label="Table view" aria-pressed={view === 'table'} onClick={() => setFilter('view', 'table')}
+              className={`min-h-11 min-w-11 p-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring ${view === 'table' ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:text-foreground'}`}
             >
               <List className="w-3.5 h-3.5" />
             </button>
           </div>
-          <Button size="sm" onClick={() => setAddLeadOpen(true)}>
+          <Button onClick={() => setAddLeadOpen(true)}>
             <UserPlus className="w-3.5 h-3.5 mr-1.5" /> New Lead
           </Button>
         </div>
@@ -114,11 +124,11 @@ export default function AdmissionsCRM() {
        <p className="mt-1 text-sm text-muted-foreground">Review identity, eligibility, finance, accepted offers, correct programme and module access before enrolment. No stage drag proves identity or payment.</p>
        <div className="mt-3 flex flex-wrap gap-2">{[
         ['Identity documents','/admissions/documents'],['Eligibility','/admissions/eligibility'],['Offers & acceptance','/admissions/offers'],['Module allocation','/admissions/allocations']
-       ].map(([name,to])=><Link key={to} to={to} className="inline-flex min-h-11 items-center rounded-lg border px-3 text-sm font-medium hover:bg-accent">{name}</Link>)}</div>
+       ].map(([name,to])=><Link key={to} to={admissionsPath(to, params.toString(), null)} className="inline-flex min-h-11 items-center rounded-lg border px-3 text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{name}</Link>)}</div>
       </section>
       <AdmissionHandover applications={scoped} onRefetch={()=>void refetch()}/>
       <details className="surface-card p-5 mb-6"><summary className="cursor-pointer font-semibold">IELTS and consultancy service activation</summary><div className="mt-4"><ServiceActivationQueue /></div></details>
-      <details className="mb-6"><summary className="cursor-pointer text-sm font-medium">Pipeline totals · {totalLeads} applications</summary><div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+      <details className="mb-6"><summary className="cursor-pointer text-sm font-medium">Pipeline totals · {totalLeads} applications</summary><div className="grid min-w-0 grid-cols-[repeat(auto-fit,minmax(min(100%,max(9rem,calc(50%_-_0.5rem))),1fr))] gap-4 mt-4 lg:grid-cols-[repeat(auto-fit,minmax(min(100%,9rem),1fr))]">
         <StatCard label="Total Leads" value={String(totalLeads)} icon={UserPlus} />
         <StatCard label="Applications" value={String(applied)} icon={FileText} />
         <StatCard label="Offers Issued" value={String(offers)} icon={Award} />
@@ -129,10 +139,10 @@ export default function AdmissionsCRM() {
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-          <Input aria-label="Search applications" placeholder="Search by name, email, programme..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-11 text-sm" />
+          <Input aria-label="Search applications" placeholder="Search by name, email, programme..." value={search} onChange={(e) => setFilter('q', e.target.value)} maxLength={120} className="pl-9 h-11 text-sm" />
         </div>
-        <Select value={stageFilter} onValueChange={setStageFilter}>
-          <SelectTrigger className="w-[150px] h-11 text-sm">
+        <Select value={stageFilter} onValueChange={value => setFilter('stage', value)}>
+          <SelectTrigger aria-label="Filter by application stage" className="w-[150px] h-11 text-sm">
             <SelectValue placeholder="Stage" />
           </SelectTrigger>
           <SelectContent>
@@ -142,16 +152,16 @@ export default function AdmissionsCRM() {
             ))}
           </SelectContent>
         </Select>
-        <Select value={sourceFilter} onValueChange={setSourceFilter}>
-          <SelectTrigger className="w-[160px] h-11 text-sm"><SelectValue placeholder="Lead source" /></SelectTrigger>
+        <Select value={sourceFilter} onValueChange={value => setFilter('source', value)}>
+          <SelectTrigger aria-label="Filter by lead source" className="w-[160px] h-11 text-sm"><SelectValue placeholder="Lead source" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All lead sources</SelectItem>
             <SelectItem value="ielts">IELTS enquiries</SelectItem>
             <SelectItem value="university">University progression</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={destFilter} onValueChange={setDestFilter}>
-          <SelectTrigger className="w-[150px] h-11 text-sm">
+        <Select value={destFilter} onValueChange={value => setFilter('destination', value)}>
+          <SelectTrigger aria-label="Filter by study destination" className="w-[150px] h-11 text-sm">
             <SelectValue placeholder="Destination" />
           </SelectTrigger>
           <SelectContent>
@@ -175,6 +185,11 @@ export default function AdmissionsCRM() {
           <StatusBadge status={app.stage.replace(/_/g,' ')} variant={stageVariant(app.stage)}/>
           <p className="text-sm">{['unconditional_offer','deposit_paid'].includes(app.stage)?'Next: use Academic enrolment review above to verify the account and programme.':app.stage==='enrolled'?'Next: verify class allocation, timetable and learning materials.':app.stage==='lost'?'Application closed.':app.stage==='conditional_offer'?'Next: verify outstanding offer conditions and supporting documents.':'Next: review the application and record the follow-up with your admissions team.'}</p>
           <p className="text-sm text-muted-foreground">Counsellor: {app.counsellor||'Unassigned'}</p>
+          <Button asChild variant="outline" className="w-full justify-between whitespace-normal text-left">
+            <Link to={admissionsPath(applicationReviewAction(app.stage).path, params.toString(), app.id)} aria-label={`${applicationReviewAction(app.stage).label} for ${app.student_name}`}>
+              {applicationReviewAction(app.stage).label}<span aria-hidden="true">→</span>
+            </Link>
+          </Button>
         </article>)}
       </section>
       <div className="hidden md:block">
@@ -197,6 +212,7 @@ export default function AdmissionsCRM() {
                     <th className="text-label text-left px-4 py-3 hidden md:table-cell">Counsellor</th>
                     <th className="text-label text-left px-4 py-3 hidden lg:table-cell">Source</th>
                     <th className="text-label text-left px-4 py-3 hidden sm:table-cell">Updated</th>
+                    <th className="text-label text-left px-4 py-3">Review</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -214,6 +230,13 @@ export default function AdmissionsCRM() {
                       <td className="px-4 py-3 text-sm text-muted-foreground hidden lg:table-cell">{app.source || '—'}</td>
                       <td className="px-4 py-3 text-xs text-muted-foreground hidden sm:table-cell">
                         {new Date(app.updated_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Button asChild variant="outline">
+                          <Link to={admissionsPath(applicationReviewAction(app.stage).path, params.toString(), app.id)} aria-label={`${applicationReviewAction(app.stage).label} for ${app.student_name}`}>
+                            {applicationReviewAction(app.stage).label}
+                          </Link>
+                        </Button>
                       </td>
                     </tr>
                   ))}

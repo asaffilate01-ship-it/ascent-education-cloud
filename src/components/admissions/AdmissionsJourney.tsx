@@ -1,9 +1,10 @@
 import {useCallback,useEffect,useMemo,useState} from 'react';
-import {Link} from 'react-router-dom';
+import {Link,useLocation} from 'react-router-dom';
 import {useAuth} from '@/contexts/AuthContext';
 import {db} from '@/lib/db';
 import {pagedRows,rowsByIds} from '@/lib/pagedRows';
 import {Button} from '@/components/ui/button';
+import {admissionsPath} from '@/lib/admissionsNavigation';
 
 type Application={id:string;tenant_id:string;student_name:string;email:string;stage:string;user_id:string|null;
  programme_id:string|null;programme_name:string|null;intake:string|null;document_checklist:unknown};
@@ -37,6 +38,7 @@ export const admissionReadiness=(a:Application,state:State)=>{
 const activeRoles=new Set(['admissions_admin','centre_director']);
 export default function AdmissionsJourney({application}:{application:Application}){
  const {user}=useAuth();
+ const location=useLocation();
  const permitted=Boolean(user?.id&&user?.tenantId===application.tenant_id&&user.role&&activeRoles.has(user.role)&&user.roles?.includes(user.role));
  const [state,setState]=useState<State>(empty),[loading,setLoading]=useState(true),[error,setError]=useState(''),[revision,setRevision]=useState(0);
  const tenant=application.tenant_id,student=application.user_id,programme=application.programme_id;
@@ -65,20 +67,21 @@ export default function AdmissionsJourney({application}:{application:Application
  useEffect(()=>{let current=true;void load(()=>current);return()=>{current=false;};},[load,revision]);
  const checks=useMemo(()=>admissionReadiness(application,state),[application,state]);
  if(!permitted)return <p role="alert">An assigned admissions or centre-director role is required to view applicant checks.</p>;
- return <section className="rounded-xl border bg-card p-5 space-y-4" aria-label="Application verification and enrolment checklist">
+ return <section className="min-w-0 [overflow-wrap:anywhere] rounded-xl border bg-card p-4 sm:p-5 space-y-4" aria-label="Application verification and enrolment checklist">
   <div className="flex flex-wrap items-start justify-between gap-2">
-   <div><h3 className="font-semibold">Application readiness: {application.student_name}</h3>
+   <div className="min-w-0"><h3 className="font-semibold">Application readiness: {application.student_name}</h3>
     <p className="text-sm text-muted-foreground">Evidence tracking only. A record is not an official approval or automatic acceptance.</p></div>
-   <Button size="sm" variant="outline" disabled={loading} onClick={()=>setRevision(v=>v+1)}>Recheck source records</Button>
+   <Button variant="outline" disabled={loading} onClick={()=>setRevision(v=>v+1)}>Recheck source records</Button>
   </div>
   {loading&&<p role="status">Checking KYC, funding, offers, enrolment, modules and teaching dates…</p>}
   {error&&<p role="alert">{error}</p>}
-  {!loading&&!error&&<div className="grid gap-3 sm:grid-cols-2">
-   {checks.map(item=><article key={item.key} className="rounded-xl border p-4">
+  {/* Keep at most two columns, and let enlarged text raise each card's minimum width. */}
+  {!loading&&!error&&<div className="grid min-w-0 grid-cols-[repeat(auto-fit,minmax(min(100%,max(18rem,calc(50%_-_0.375rem))),1fr))] gap-3">
+   {checks.map(item=><article key={item.key} className="min-w-0 rounded-xl border p-4">
     <h4 className="font-semibold text-sm">{item.title}</h4>
     <p className="mt-1 text-xs text-muted-foreground">{item.status==='recorded'?'Source record found · not approval':item.status==='manual'?'Manual independent decision required':'Verification outstanding'}</p>
     <p className="mt-2 text-sm leading-relaxed">{item.detail}</p>
-    <Link className="mt-3 inline-flex min-h-9 items-center rounded-lg border px-3 text-xs font-semibold hover:bg-accent" to={item.to}>Open related workflow</Link>
+    <Link className="mt-3 inline-flex min-h-11 min-w-0 max-w-full items-center whitespace-normal rounded-lg border px-3 text-sm font-semibold hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" to={admissionsPath(item.to,location.search,application.id)} aria-label={`Open related workflow: ${item.title}`}>Open related workflow</Link>
    </article>)}
   </div>}
  </section>;

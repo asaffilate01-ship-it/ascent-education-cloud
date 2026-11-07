@@ -95,3 +95,13 @@ jobs:
         run: npx playwright test e2e/browser-startup-diagnostics.spec.ts --workers=1
       - name: Chromium acceptance for public, progression and protected routes
         run: npx playwright test e2e/unipathway-ielts-admissions.spec.ts e2e/public-smoke.spec.ts e2e/assessment-evidence.spec.ts e2e/private-feedback.spec.ts e2e/centre-feedback.spec.ts e2e/course-discovery.spec.ts e2e/qualification-accessibility.spec.ts
+      - name: Calendar, admissions and learning flow acceptance
+        run: npx playwright test e2e/ux-flow.spec.ts --workers=1
+      - name: Retain UX flow screenshots and failure traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unipathway-ux-flow-browser-evidence
+          path: test-results/
+          retention-days: 14
+          if-no-files-found: ignore

@@ -90,19 +90,19 @@ export default function CookieConsent() {
       role="dialog"
       aria-modal="true"
       aria-label="Cookie preferences"
-      className="fixed bottom-0 left-0 right-0 z-[100] p-4 bg-card border-t border-border shadow-2xl"
+      className="fixed bottom-0 left-0 right-0 z-[100] max-h-[90dvh] overflow-y-auto p-4 bg-card border-t border-border shadow-2xl"
     >
       <div className="max-w-5xl mx-auto">
         {!showDetails ? (
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-4">
             <Shield className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-            <p className="text-sm text-muted-foreground flex-1">
+            <p className="min-w-0 text-sm text-muted-foreground flex-1 sm:basis-64">
               We use essential cookies to run UniPathway, and optional cookies for analytics and marketing.
               See our{' '}
               <Link to="/cookies" className="text-primary hover:underline">Cookie Policy</Link> and{' '}
               <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
             </p>
-            <div className="flex gap-2 shrink-0 flex-wrap">
+            <div className="flex max-w-full gap-2 flex-wrap">
               <Button variant="ghost" size="sm" onClick={() => setShowDetails(true)}>
                 <Settings2 className="w-3.5 h-3.5 mr-1.5" /> Preferences
               </Button>
