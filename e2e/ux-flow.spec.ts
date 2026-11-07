@@ -62,11 +62,29 @@ async function dismissConsent(page: Page) {
 async function inspectLayouts(page: Page, info: TestInfo, name: string) {
   const positionPage = async () => {
     await page.evaluate(() => window.scrollTo({top: 0, left: 0, behavior: 'instant'}));
+    await page.evaluate(async () => {
+      await document.fonts.ready;
+      let previous = '', stableFrames = 0;
+      for (let frame = 0; frame < 30 && stableFrames < 3; frame++) {
+        await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+        const size = `${document.documentElement.scrollWidth}:${document.documentElement.scrollHeight}`;
+        stableFrames = size === previous ? stableFrames + 1 : 0;
+        previous = size;
+      }
+    });
     if ((page.viewportSize()?.width || 0) >= 1024 && await page.locator('#dashboard-content').count()) {
       await expect.poll(() => page.evaluate(() => {
         const sidebar = document.querySelector('[aria-label="Dashboard navigation"]')!.getBoundingClientRect();
         const content = document.querySelector('#dashboard-content')!.getBoundingClientRect();
         return content.left >= sidebar.right - 1 ? null : {contentLeft: Math.round(content.left), sidebarRight: Math.round(sidebar.right)};
+      })).toBeNull();
+    }
+    if (await page.getByRole('navigation', {name: 'Breadcrumb', exact: true}).isVisible()) {
+      await expect.poll(() => page.evaluate(() => {
+        const breadcrumb = document.querySelector('[aria-label="Breadcrumb"]')!.getBoundingClientRect();
+        const actions = document.querySelector('[aria-label="Workspace actions"]')!.getBoundingClientRect();
+        const separated = breadcrumb.right <= actions.left + 1 || breadcrumb.bottom <= actions.top + 1;
+        return separated ? null : {breadcrumbRight: Math.round(breadcrumb.right), breadcrumbBottom: Math.round(breadcrumb.bottom), actionsLeft: Math.round(actions.left), actionsTop: Math.round(actions.top)};
       })).toBeNull();
     }
   };
@@ -80,10 +98,15 @@ async function inspectLayouts(page: Page, info: TestInfo, name: string) {
       right: Math.round(element.getBoundingClientRect().right), viewport: innerWidth,
     }));
   });
+  const captureLayout = async (filename: string) => {
+    const screenshot = await page.screenshot({path: info.outputPath(filename), fullPage: true, scale: 'css', animations: 'disabled'});
+    const height = await page.evaluate(() => Math.max(innerHeight, document.documentElement.scrollHeight, document.body.scrollHeight));
+    expect(screenshot.readUInt32BE(20), 'Full-page evidence must include the settled document height').toBeGreaterThanOrEqual(height);
+  };
   for (const width of [360, 390, 768, 1440]) {
     await page.setViewportSize({width, height: 1000});
     await positionPage();
-    await page.screenshot({path: info.outputPath(`${name}-${width}.png`), fullPage: true});
+    await captureLayout(`${name}-${width}.png`);
     await expect.poll(overflow).toEqual([]);
   }
   await page.evaluate(() => {
@@ -93,7 +116,7 @@ async function inspectLayouts(page: Page, info: TestInfo, name: string) {
   for (const width of [360, 390, 768, 1440]) {
     await page.setViewportSize({width, height: 1000});
     await positionPage();
-    await page.screenshot({path: info.outputPath(`${name}-dark-200-percent-text-${width}.png`), fullPage: true});
+    await captureLayout(`${name}-dark-200-percent-text-${width}.png`);
     await expect.poll(overflow).toEqual([]);
   }
 }
@@ -116,6 +139,22 @@ test('homepage discovery combines reordered words and filters with keyboard reco
   await search.fill('practice IELTS');
   await expect(page.getByRole('heading', {name: 'IELTS Preparation', exact: true})).toBeVisible();
   await inspectLayouts(page, info, 'home-discovery');
+  const navigation = page.getByRole('navigation', {name: 'Main navigation', exact: true});
+  for (const [triggerName, regionName] of [['Courses', 'Course options'], ['Study Abroad', 'Study abroad options']]) {
+    const trigger = navigation.getByRole('button', {name: triggerName, exact: true});
+    await trigger.click();
+    const panel = page.getByRole('region', {name: regionName, exact: true});
+    await expect(panel).toBeVisible();
+    const bounds = await panel.boundingBox();
+    expect(bounds?.x).toBeGreaterThanOrEqual(0);
+    expect((bounds?.x || 0) + (bounds?.width || 0)).toBeLessThanOrEqual(1440);
+    expect((bounds?.y || 0) + (bounds?.height || 0)).toBeLessThanOrEqual(1000);
+    await panel.getByRole('link').last().scrollIntoViewIfNeeded();
+    await page.screenshot({path: info.outputPath(`home-${triggerName.toLowerCase().replaceAll(' ', '-')}-menu-dark-200-percent-text.png`)});
+    await page.keyboard.press('Escape');
+    await expect(panel).toBeHidden();
+    await expect(trigger).toBeFocused();
+  }
 });
 
 test('admissions keeps the applicant and pipeline filters across every review section', async ({context, page}, info) => {
