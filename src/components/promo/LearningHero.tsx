@@ -37,7 +37,7 @@ export default function LearningHero(){
   <div className="px-5 pt-8 sm:px-8 sm:pt-10 lg:order-1 lg:px-0 lg:pt-0">
    <div className="max-w-2xl pb-8 sm:pb-10 lg:pb-0">
     <p className="inline-flex items-center border-l-2 border-[#e9ca7a] pl-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-white">Your next chapter starts in Pakistan</p>
-    <h1 id="home-hero-title" className="mt-6 text-[clamp(2.6rem,4.4vw,4rem)] font-extrabold leading-[1.08] tracking-tight">Learn online.<br/>Learn in class.<br/><span className="text-[#e9ca7a]">Move forward.</span></h1>
+    <h1 id="home-hero-title" className="mt-6 text-[clamp(2rem,4.4vw,4rem)] font-extrabold leading-[1.08] tracking-tight">Learn online.<br/>Learn in class.<br/><span className="text-[#e9ca7a]">Move forward.</span></h1>
     <p className="mt-6 max-w-lg text-base leading-relaxed text-white/90 sm:text-lg">Build your skills, prepare for exams or take your next academic step. Online across Pakistan. In class at our Jhelum centre.</p>
     <div className="mt-8 flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row"><Button size="lg" className="h-auto min-h-12 bg-[#e9ca7a] px-6 text-[#102e2a] hover:bg-[#f3dca0]" asChild><a href="#study">Find your course <ArrowRight/></a></Button><Button variant="outline" size="lg" className="h-auto min-h-12 border-white/50 bg-transparent text-white hover:bg-white/10 hover:text-white" asChild><Link to="/apply">Plan your application <ArrowRight/></Link></Button></div>
     <a href="#how-it-works" className="mt-5 inline-flex min-h-11 items-center text-sm font-semibold text-white underline underline-offset-4">See how learning works</a>

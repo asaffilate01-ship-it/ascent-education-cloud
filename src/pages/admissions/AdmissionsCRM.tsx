@@ -128,7 +128,7 @@ export default function AdmissionsCRM() {
       </section>
       <AdmissionHandover applications={scoped} onRefetch={()=>void refetch()}/>
       <details className="surface-card p-5 mb-6"><summary className="cursor-pointer font-semibold">IELTS and consultancy service activation</summary><div className="mt-4"><ServiceActivationQueue /></div></details>
-      <details className="mb-6"><summary className="cursor-pointer text-sm font-medium">Pipeline totals · {totalLeads} applications</summary><div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+      <details className="mb-6"><summary className="cursor-pointer text-sm font-medium">Pipeline totals · {totalLeads} applications</summary><div className="grid min-w-0 grid-cols-[repeat(auto-fit,minmax(min(100%,max(9rem,calc(50%_-_0.5rem))),1fr))] gap-4 mt-4 lg:grid-cols-[repeat(auto-fit,minmax(min(100%,9rem),1fr))]">
         <StatCard label="Total Leads" value={String(totalLeads)} icon={UserPlus} />
         <StatCard label="Applications" value={String(applied)} icon={FileText} />
         <StatCard label="Offers Issued" value={String(offers)} icon={Award} />

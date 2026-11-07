@@ -103,7 +103,7 @@ function StudentDashboardContent() {
       </section>
       <section className="mb-5 rounded-xl border bg-card p-4"><h2 className="font-semibold">Your student workspace</h2><p className="my-2 text-sm text-muted-foreground">Courses, timetable, recordings, labs, residential visits, documents, careers, fees and support.</p><Link className="font-semibold underline" to="/workspace">Open all student services</Link></section>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),1fr))] gap-4 mb-6">
         {stats.map((stat, i) => (
           <motion.div key={stat.label} custom={i} initial={reducedMotion ? false : 'hidden'} animate={reducedMotion ? undefined : 'visible'} variants={reducedMotion ? undefined : fadeUp}>
             <StatCard {...stat} />
@@ -137,12 +137,12 @@ function StudentDashboardContent() {
              const brief=releasedBriefs.find(item=>item.id===g.brief_id);
              const module=modules.find(item=>item.id===brief?.module_id);
              const feedbackPath=brief?.module_id?`/student/grades?${new URLSearchParams({module:brief.module_id})}`:'/student/grades';
-             return <article key={g.attempt_id} className="flex items-start justify-between gap-3 border-b border-border/30 py-2 last:border-0">
-               <div className="min-w-0"><h4 className="break-words text-sm font-medium">{brief?.title||'Approved coursework'}</h4>
+             return <article key={g.attempt_id} className="flex flex-wrap items-start justify-between gap-3 border-b border-border/30 py-2 last:border-0">
+               <div className="min-w-0 flex-[1_1_14rem]"><h4 className="break-words text-sm font-medium">{brief?.title||'Approved coursework'}</h4>
                 {module&&<p className="mt-1 break-words text-xs text-muted-foreground">{module.title}</p>}
                 <p className="mt-1 text-xs text-muted-foreground">Released {formatPakistanAcademicDate(g.released_at)}</p>
                 <Link className="inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4" to={feedbackPath}>View approved feedback<span className="sr-only"> for {brief?.title||'this coursework'}</span></Link></div>
-               <span className="shrink-0 text-sm font-bold text-primary">{score}/100</span>
+               <span className="ml-auto shrink-0 whitespace-nowrap text-sm font-bold text-primary">{score}/100</span>
               </article>;
             })}
             {!gradeError&&!gradeLoading&&approved.length===0&&<p className="py-4 text-center text-sm text-muted-foreground">No independently released grades yet</p>}

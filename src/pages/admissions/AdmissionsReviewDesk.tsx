@@ -116,7 +116,7 @@ export default function AdmissionsReviewDesk() {
             <Input ref={applicantSearch} value={search} onChange={event => updateParam('reviewSearch', event.target.value)} className="mt-1 min-h-11" maxLength={120}/>
           </label>
           <p role="status" className="text-sm text-muted-foreground">{filtered.length} of {apps.length} centre applications</p>
-          <div className="grid max-h-80 gap-2 overflow-y-auto lg:grid-cols-2">
+          <div className="grid min-w-0 max-h-80 grid-cols-1 gap-2 overflow-y-auto lg:grid-cols-[repeat(auto-fit,minmax(min(100%,max(18rem,calc(50%_-_0.25rem))),1fr))]">
             {filtered.map(a => <Button
               key={a.id}
               variant={selected?.id === a.id ? 'default' : 'outline'}

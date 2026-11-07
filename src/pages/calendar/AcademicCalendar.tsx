@@ -216,18 +216,22 @@ function CalendarWorkspace({ user, authLoading }: { user: CalendarUser; authLoad
           : <>
             <section className="surface-card mb-5 p-3 sm:p-4" aria-label="Calendar controls">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-1"><Button variant="ghost" size="icon" className="h-11 w-11 shrink-0" aria-label="Previous month" onClick={() => setMonth(value => shiftCalendarMonth(value, -1))}><ChevronLeft aria-hidden="true" className="h-4 w-4" /></Button><h2 id="calendar-month" tabIndex={-1} aria-live="polite" className="min-w-0 text-base font-semibold sm:text-lg">{calendarMonthLabel(month)}</h2><Button variant="ghost" size="icon" className="h-11 w-11 shrink-0" aria-label="Next month" onClick={() => setMonth(value => shiftCalendarMonth(value, 1))}><ChevronRight aria-hidden="true" className="h-4 w-4" /></Button></div>
-                <Button variant="outline" className="min-h-11" onClick={() => setMonth(today.slice(0, 7))}>Today</Button>
-                <div className="flex flex-wrap items-center gap-3">
-                  <div role="group" aria-label="Calendar view" className="flex rounded-lg border p-1"><Button variant={activeView === 'agenda' ? 'secondary' : 'ghost'} className="min-h-11" aria-pressed={activeView === 'agenda'} onClick={() => setView('agenda')}>Agenda</Button><Button variant={activeView === 'month' ? 'secondary' : 'ghost'} className="min-h-11" aria-pressed={activeView === 'month'} onClick={() => setView('month')}>Month</Button></div>
-                  <div className="min-w-[150px] flex-1"><Label htmlFor="calendar-filter" className="sr-only">Filter event type</Label><Select value={filter} onValueChange={setFilter}><SelectTrigger id="calendar-filter" className="min-h-11"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All event types</SelectItem>{EVENT_TYPES.map(type => <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>)}</SelectContent></Select></div>
+                <div className="grid w-full min-w-0 grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-x-1 gap-y-2 sm:flex sm:w-auto sm:flex-wrap">
+                  <h2 id="calendar-month" tabIndex={-1} aria-live="polite" className="col-span-3 row-start-1 min-w-0 break-normal text-base font-semibold [overflow-wrap:normal] sm:order-2 sm:text-lg">{calendarMonthLabel(month)}</h2>
+                  <Button variant="ghost" size="icon" className="col-start-1 row-start-2 h-[44px] w-[44px] shrink-0 sm:order-1" aria-label="Previous month" onClick={() => setMonth(value => shiftCalendarMonth(value, -1))}><ChevronLeft aria-hidden="true" className="h-4 w-4" /></Button>
+                  <Button variant="outline" className="col-start-2 row-start-2 min-h-11 justify-self-center whitespace-nowrap [overflow-wrap:normal] sm:order-4 sm:ml-2" onClick={() => setMonth(today.slice(0, 7))}>Today</Button>
+                  <Button variant="ghost" size="icon" className="col-start-3 row-start-2 h-[44px] w-[44px] shrink-0 sm:order-3" aria-label="Next month" onClick={() => setMonth(value => shiftCalendarMonth(value, 1))}><ChevronRight aria-hidden="true" className="h-4 w-4" /></Button>
+                </div>
+                <div className="flex max-w-full flex-wrap items-center gap-3">
+                  <div role="group" aria-label="Calendar view" className="flex max-w-full flex-wrap rounded-lg border p-1"><Button variant={activeView === 'agenda' ? 'secondary' : 'ghost'} className="min-h-11 grow shrink-0 whitespace-nowrap [overflow-wrap:normal]" aria-pressed={activeView === 'agenda'} onClick={() => setView('agenda')}>Agenda</Button><Button variant={activeView === 'month' ? 'secondary' : 'ghost'} className="min-h-11 grow shrink-0 whitespace-nowrap [overflow-wrap:normal]" aria-pressed={activeView === 'month'} onClick={() => setView('month')}>Month</Button></div>
+                  <div className="min-w-0 max-w-full flex-[1_1_11rem]"><Label htmlFor="calendar-filter" className="sr-only">Filter event type</Label><Select value={filter} onValueChange={setFilter}><SelectTrigger id="calendar-filter" className="h-auto min-h-11 gap-2 text-left [&>span]:line-clamp-none [&>span]:whitespace-normal [&>svg]:shrink-0"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All event types</SelectItem>{EVENT_TYPES.map(type => <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>)}</SelectContent></Select></div>
                 </div>
               </div>
             </section>
             {loading ? <div role="status" className="surface-card flex items-center gap-3 p-6"><Loader2 aria-hidden="true" className="h-5 w-5 animate-spin motion-reduce:animate-none" /><p>Loading this centre’s calendar…</p></div>
               : error ? <div role="alert" className="surface-card space-y-3 p-6"><h3 className="font-semibold">Calendar could not be loaded</h3><p className="text-sm text-muted-foreground">We could not check this centre’s events. Try again to load the calendar.</p><Button variant="outline" className="min-h-11" onClick={() => void refetch()}>Retry calendar</Button></div>
-                : <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_18rem]">
-                  <section className="min-w-0" aria-labelledby="calendar-month">
+                : <div className="flex flex-wrap gap-5">
+                  <section className="min-w-0 flex-[3_1_44rem]" aria-labelledby="calendar-month">
                     {activeView === 'month' ? <div className="surface-card overflow-x-auto p-2 sm:p-3"><div className="min-w-[42rem]">
                       <div className="grid grid-cols-7">{DAYS.map(day => <div key={day} className="p-2 text-center text-xs font-semibold text-muted-foreground">{day}</div>)}</div>
                       <div className="grid grid-cols-7 gap-px overflow-hidden rounded-lg border bg-border">{days.map(day => {
@@ -245,7 +249,7 @@ function CalendarWorkspace({ user, authLoading }: { user: CalendarUser; authLoad
                     </div>}
                     {activeView === 'month' && !agenda.length && <p role="status" className="mt-3 text-sm text-muted-foreground">No {filter === 'all' ? '' : 'matching '}events are recorded for this month.</p>}
                   </section>
-                  <aside className="surface-card self-start p-4" aria-labelledby="calendar-upcoming"><h3 id="calendar-upcoming" className="font-semibold">Upcoming & ongoing</h3><p className="mt-1 text-xs leading-relaxed text-muted-foreground">From today across all months{filter !== 'all' ? ', using the selected event type' : ''}.</p>
+                  <aside className="surface-card min-w-0 flex-[1_1_18rem] self-start p-4" aria-labelledby="calendar-upcoming"><h3 id="calendar-upcoming" className="text-base font-semibold">Upcoming & ongoing</h3><p className="mt-1 text-xs leading-relaxed text-muted-foreground">From today across all months{filter !== 'all' ? ', using the selected event type' : ''}.</p>
                     {upcoming.length ? <><ul className="mt-3 divide-y">{upcoming.slice(0, 8).map(event => <li key={event.id}>{eventButton(event, calendarDay(event.start_date) < today ? today : calendarDay(event.start_date))}</li>)}</ul>{upcoming.length > 8 && <p className="mt-3 text-xs text-muted-foreground">Showing the next 8 of {upcoming.length} events. Use the calendar to explore more.</p>}</>
                       : <p className="py-5 text-sm text-muted-foreground">No {filter === 'all' ? '' : 'matching '}upcoming events are recorded.</p>}
                   </aside>
