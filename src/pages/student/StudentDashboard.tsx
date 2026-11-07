@@ -1,10 +1,9 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatCard from '@/components/ui/StatCard';
-import StatusBadge from '@/components/ui/StatusBadge';
-import { BookOpen, Video, ClipboardList, BarChart3, Calendar, Clock, TrendingUp, MessageSquare } from 'lucide-react';
+import { BookOpen, Video, BarChart3, TrendingUp, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { useAuth } from '@/contexts/AuthContext';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
@@ -12,6 +11,9 @@ import { useEffect, useState } from 'react';
 import { db } from '@/lib/db';
 import StudentLearningAgenda from '@/components/student/StudentLearningAgenda';
 import STEMCoachLearningAccess from '@/components/student/STEMCoachLearningAccess';
+import ContinueLearning from '@/components/student/ContinueLearning';
+import { rowsByIds } from '@/lib/pagedRows';
+import { formatPakistanAcademicDate } from '@/lib/assessment/courseworkQueue';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
@@ -27,6 +29,7 @@ export default function StudentDashboard() {
 }
 function StudentDashboardContent() {
   const { user } = useAuth();
+  const reducedMotion = useReducedMotion();
   const verified=!!user?.id&&!!user.tenantId&&user.role==='student'&&user.roles?.includes('student');
   const scope = [{column: 'tenant_id', operator: 'eq' as const, value: user?.tenantId}];
   const enrolmentsQuery = useSupabaseQuery('student_enrolments', {enabled: verified, filters: [...scope, {column: 'student_id', operator: 'eq', value: user?.id}, {column: 'status', operator: 'eq', value: 'active'}]});
@@ -36,19 +39,21 @@ function StudentDashboardContent() {
   const moduleIds = modulesQuery.data.map(row => row.id);
   type Approved={attempt_id:string;brief_id:string;final_score:number;released_at:string};
   type Amendment={attempt_id:string;corrected_final_score:number};
+  type ReleasedBrief={id:string;module_id:string;title:string};
   const [approved,setApproved]=useState<Approved[]>([]);
   const [corrections,setCorrections]=useState<Amendment[]>([]);
+  const [releasedBriefs,setReleasedBriefs]=useState<ReleasedBrief[]>([]);
   const [gradeRefresh,setGradeRefresh]=useState(0);
   const [gradeError,setGradeError]=useState('');
   const [gradeLoading,setGradeLoading]=useState(true);
   useEffect(()=>{
-   if(!verified){setGradeLoading(false);setApproved([]);setCorrections([]);setGradeError('');return;}
-   let live=true;setGradeLoading(true);setGradeError('');
+   if(!verified){setGradeLoading(false);setApproved([]);setCorrections([]);setReleasedBriefs([]);setGradeError('');return;}
+   let live=true;setGradeLoading(true);setGradeError('');setApproved([]);setCorrections([]);setReleasedBriefs([]);
    void (async()=>{
     const a=await db.from('unipathway_assessment_released_results')
       .select('attempt_id,brief_id,final_score,released_at')
       .eq('student_id',user.id).eq('tenant_id',user.tenantId).order('released_at',{ascending:false}).limit(100);
-    if(a.error)throw a.error;
+    if(a.error||!Array.isArray(a.data))throw Error('Released results could not be verified');
     if(!live)return;
     const ids=(a.data||[]).map((row:Approved)=>row.attempt_id);
     const b=ids.length?await db.from('unipathway_assessment_grade_amendments')
@@ -56,10 +61,13 @@ function StudentDashboardContent() {
       .eq('student_id',user.id).eq('tenant_id',user.tenantId).in('attempt_id',ids).limit(100):{data:[],error:null};
 
     if(!live)return;
-    if(a.error||b.error){setApproved([]);setCorrections([]);setGradeError('Only independently released marks are available; the secure grade service is not ready.');}
-    else {setApproved((a.data||[]) as Approved[]);setCorrections((b.data||[]) as Amendment[]);}
+    if(b.error||!Array.isArray(b.data))throw Error('Released corrections could not be verified');
+    const briefs=await rowsByIds<ReleasedBrief>((a.data as Approved[]).map(row=>row.brief_id),briefIds=>()=>
+      db.from('unipathway_assessment_briefs').select('id,module_id,title').eq('tenant_id',user.tenantId).in('id',briefIds),()=>live);
+    if(!live)return;
+    setApproved(a.data as Approved[]);setCorrections(b.data as Amendment[]);setReleasedBriefs(briefs);
     setGradeLoading(false);
-   })().catch(()=>{if(live){setApproved([]);setCorrections([]);setGradeError('Secure approved grades are unavailable.');setGradeLoading(false);}});
+   })().catch(()=>{if(live){setApproved([]);setCorrections([]);setReleasedBriefs([]);setGradeError('Secure approved grades are unavailable.');setGradeLoading(false);}});
    return()=>{live=false;};
   },[verified,user?.id,user?.tenantId,gradeRefresh]);
   const {data: modules} = modulesQuery;
@@ -93,39 +101,11 @@ function StudentDashboardContent() {
        </div>
       </section>
       <section className="mb-5 rounded-xl border bg-card p-4"><h2 className="font-semibold">Your student workspace</h2><p className="my-2 text-sm text-muted-foreground">Courses, timetable, recordings, labs, residential visits, documents, careers, fees and support.</p><Link className="font-semibold underline" to="/workspace">Open all student services</Link></section>
-      <div className="grid lg:grid-cols-3 gap-4 mb-6">
-        {/* Module List */}
-        <div className="lg:col-span-2 surface-card p-5">
-          <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-primary" /> Continue learning
-          </h3>
-          <div className="space-y-2">
-            {!modules.length&&<p>No modules are available for your active enrolments.</p>}
-            {modules.slice(0, 5).map((mod) => (
-              <div key={mod.id} className="flex items-center gap-4 py-3 border-b border-border/30 last:border-0">
-                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <BookOpen className="w-4 h-4 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <Link className="text-sm font-medium underline" to={`/student/module?module=${encodeURIComponent(mod.id)}`}>{mod.title}</Link>
-                  <p className="text-xs text-muted-foreground">{mod.code || ''} · {mod.credits || 0} credits</p>
-                </div>
-                <span className={`text-[10px] font-medium px-2 py-0.5 rounded ${
-                  mod.status === 'active' ? 'bg-success/10 text-success' : 'bg-secondary text-muted-foreground'
-                }`}>
-                  {mod.status}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+      <ContinueLearning modules={modules} />
 
-      </div>
-
-
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         {stats.map((stat, i) => (
-          <motion.div key={stat.label} custom={i} initial="hidden" animate="visible" variants={fadeUp}>
+          <motion.div key={stat.label} custom={i} initial={reducedMotion ? false : 'hidden'} animate={reducedMotion ? undefined : 'visible'} variants={reducedMotion ? undefined : fadeUp}>
             <StatCard {...stat} />
           </motion.div>
         ))}
@@ -150,15 +130,20 @@ function StudentDashboardContent() {
             <TrendingUp className="w-4 h-4 text-primary" /> Recent Grades
           </h3>
           <div className="space-y-3">
-            {gradeError&&<div><p role="alert">{gradeError}</p><Button onClick={()=>setGradeRefresh(x=>x+1)}>Retry approved grades</Button></div>}
+            {gradeError&&<div><p role="alert">{gradeError}</p><Button className="min-h-11" onClick={()=>setGradeRefresh(x=>x+1)}>Retry approved grades</Button></div>}
             {gradeLoading&&<p role="status" className="text-sm text-muted-foreground">Verifying independent marks…</p>}
             {!gradeError&&!gradeLoading&&approved.slice(0,5).map(g=>{
              const score=corrections.find(x=>x.attempt_id===g.attempt_id)?.corrected_final_score??g.final_score;
-             return <div key={g.attempt_id} className="flex items-center justify-between border-b border-border/30 py-2">
-               <div><p className="text-sm font-medium">Approved coursework</p>
-                <p className="text-xs text-muted-foreground">Released {new Date(g.released_at).toLocaleDateString()} · {g.attempt_id.slice(0,8)}</p></div>
-               <span className="text-sm font-bold text-primary">{score}/100</span>
-              </div>;
+             const brief=releasedBriefs.find(item=>item.id===g.brief_id);
+             const module=modules.find(item=>item.id===brief?.module_id);
+             const feedbackPath=brief?.module_id?`/student/grades?${new URLSearchParams({module:brief.module_id})}`:'/student/grades';
+             return <article key={g.attempt_id} className="flex items-start justify-between gap-3 border-b border-border/30 py-2 last:border-0">
+               <div className="min-w-0"><h4 className="break-words text-sm font-medium">{brief?.title||'Approved coursework'}</h4>
+                {module&&<p className="mt-1 break-words text-xs text-muted-foreground">{module.title}</p>}
+                <p className="mt-1 text-xs text-muted-foreground">Released {formatPakistanAcademicDate(g.released_at)}</p>
+                <Link className="inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4" to={feedbackPath}>View approved feedback<span className="sr-only"> for {brief?.title||'this coursework'}</span></Link></div>
+               <span className="shrink-0 text-sm font-bold text-primary">{score}/100</span>
+              </article>;
             })}
             {!gradeError&&!gradeLoading&&approved.length===0&&<p className="py-4 text-center text-sm text-muted-foreground">No independently released grades yet</p>}
           </div>
