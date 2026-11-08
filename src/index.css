@@ -404,7 +404,7 @@
 .public-site main h3 { text-wrap: pretty; }
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
 @media (max-width: 767px) {
-  #dashboard-content :is(input:not([type=checkbox]):not([type=radio]), textarea, select) { font-size: 16px; }
+  #dashboard-content :is(input:not([type=checkbox]):not([type=radio]), textarea, select) { font-size: max(1rem, 16px); }
 }
 
 /* Prevent iOS focus zoom in public navigation and shared account dialogs too. */

@@ -204,6 +204,7 @@ function Scheduler() {
   }
 
   return <DashboardLayout title="Schedule a live class" subtitle="Choose the class and learners; track Microsoft invitation delivery here">
+    <div className="min-w-0 text-sm [overflow-wrap:anywhere]">
     <div className="flex flex-wrap items-center justify-between gap-3">
       <Link className="underline" to={`/lecturer/classroom${module ? `?module=${encodeURIComponent(module)}` : ''}`}>View classroom</Link>
       <Button variant="outline" disabled={!active || busy || state.isFetching} onClick={() => void state.refetch()}>Refresh classes</Button>
@@ -212,10 +213,10 @@ function Scheduler() {
       : state.isLoading ? <p role="status" className="mt-5">Loading your teaching modules…</p>
       : state.isError ? <div role="alert" className="mt-5 space-y-3"><p>{state.error.message}</p><Button variant="outline" onClick={() => void state.refetch()}>Retry scheduling</Button></div>
       : <div className="mt-5 space-y-6">
-        <section className="space-y-4 rounded-xl border bg-card p-5">
+        <section className="min-w-0 space-y-4 rounded-xl border bg-card p-5 max-sm:px-[16px]">
           <h2 className="text-xl font-bold">{editing ? 'Update class' : 'New class'}</h2>
-          <label className="block">Module
-            <select className="mt-1 min-h-11 w-full rounded border bg-background p-2" value={module} disabled={busy} onChange={event => {
+          <label className="block min-w-0">Module
+            <select className="mt-1 min-h-11 w-full min-w-0 max-w-full rounded border bg-background p-2" value={module} disabled={busy} onChange={event => {
               const next = new URLSearchParams(params); next.set('module', event.target.value); setParams(next);
             }}>
               <option value="">Choose a module</option>
@@ -229,30 +230,30 @@ function Scheduler() {
             {candidates.isFetching && <p role="status">Checking enrolled learners and connected organisers…</p>}
             {candidates.isError && <div role="alert" className="space-y-3"><p>{candidates.error.message}</p><Button variant="outline" disabled={busy || candidates.isFetching} onClick={() => void candidates.refetch()}>Retry learners and organisers</Button></div>}
             {candidateReady && !candidates.data.organisers.length && <p role="alert">No enabled Microsoft organiser is connected. Ask your centre administrator to complete Teams setup before scheduling.</p>}
-            <fieldset disabled={busy} className="space-y-4">
+            <fieldset disabled={busy} className="min-w-0 max-w-full space-y-4">
               <legend className="sr-only">Class details</legend>
               <label className="block" htmlFor="class-title">Class title</label>
-              <Input id="class-title" value={title} maxLength={120} onChange={event => setTitle(event.target.value)}/>
-              <label className="block">Meeting organiser
-                <select id="class-organiser" disabled={!!editing || !candidateReady} value={organiser} onChange={event => setOrganiser(event.target.value)} className="mt-1 min-h-11 w-full rounded border bg-background p-2">
+              <Input id="class-title" className="min-w-0 max-w-full max-sm:px-[12px]" value={title} maxLength={120} onChange={event => setTitle(event.target.value)}/>
+              <label className="block min-w-0">Meeting organiser
+                <select id="class-organiser" disabled={!!editing || !candidateReady} value={organiser} onChange={event => setOrganiser(event.target.value)} className="mt-1 min-h-11 w-full min-w-0 max-w-full rounded border bg-background p-2">
                   <option value="">Choose connected organiser</option>
                   {candidates.data?.organisers.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
                 </select>
               </label>
-              <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,18rem),1fr))] gap-4">
-                <div><label htmlFor="class-start">Starts (Pakistan time)</label><Input id="class-start" type="datetime-local" value={start} aria-invalid={!!timeErrors.start} aria-describedby={timeErrors.start ? 'class-start-error class-time-zone' : 'class-time-zone'} onChange={event => setStart(event.target.value)}/>{timeErrors.start && <p id="class-start-error" role="alert" className="mt-1 text-sm text-destructive">{timeErrors.start}</p>}</div>
-                <div><label htmlFor="class-end">Ends (Pakistan time)</label><Input id="class-end" type="datetime-local" value={end} aria-invalid={!!timeErrors.end} aria-describedby={timeErrors.end ? 'class-end-error class-time-zone' : 'class-time-zone'} onChange={event => setEnd(event.target.value)}/>{timeErrors.end && <p id="class-end-error" role="alert" className="mt-1 text-sm text-destructive">{timeErrors.end}</p>}</div>
+              <div className="grid min-w-0 grid-cols-[repeat(auto-fit,minmax(min(100%,18rem),1fr))] gap-4">
+                <div className="min-w-0"><label htmlFor="class-start">Starts (Pakistan time)</label><Input id="class-start" className="min-w-0 max-w-full max-sm:px-[8px]" type="datetime-local" value={start} aria-invalid={!!timeErrors.start} aria-describedby={timeErrors.start ? 'class-start-error class-time-zone' : 'class-time-zone'} onChange={event => setStart(event.target.value)}/>{timeErrors.start && <p id="class-start-error" role="alert" className="mt-1 text-sm text-destructive">{timeErrors.start}</p>}</div>
+                <div className="min-w-0"><label htmlFor="class-end">Ends (Pakistan time)</label><Input id="class-end" className="min-w-0 max-w-full max-sm:px-[8px]" type="datetime-local" value={end} aria-invalid={!!timeErrors.end} aria-describedby={timeErrors.end ? 'class-end-error class-time-zone' : 'class-time-zone'} onChange={event => setEnd(event.target.value)}/>{timeErrors.end && <p id="class-end-error" role="alert" className="mt-1 text-sm text-destructive">{timeErrors.end}</p>}</div>
               </div>
               <p id="class-time-zone" className="text-sm text-muted-foreground">All class times use Pakistan time (Asia/Karachi, UTC+5), regardless of your device timezone. Classes can last up to 12 hours.</p>
-              <fieldset disabled={!candidateReady} className="rounded-lg border p-3">
-                <legend>Invited learners ({students.length})</legend>
+              <fieldset disabled={!candidateReady} className="min-w-0 max-w-full rounded-lg border p-3 max-sm:px-[12px]">
+                <legend className="max-w-full">Invited learners ({students.length})</legend>
                 <div className="flex flex-wrap gap-2">
-                  <Button type="button" variant="ghost" disabled={!candidateReady || !candidates.data.students.length || candidates.data.students.length > 300} onClick={() => { if (candidateReady) setStudents(candidates.data.students.map(item => item.id)); }}>Select all enrolled learners</Button>
-                  <Button type="button" variant="ghost" disabled={!candidateReady || !students.length} onClick={() => setStudents([])}>Clear learner selection</Button>
+                  <Button type="button" variant="ghost" className="max-sm:px-[12px]" disabled={!candidateReady || !candidates.data.students.length || candidates.data.students.length > 300} onClick={() => { if (candidateReady) setStudents(candidates.data.students.map(item => item.id)); }}>Select all enrolled learners</Button>
+                  <Button type="button" variant="ghost" className="max-sm:px-[12px]" disabled={!candidateReady || !students.length} onClick={() => setStudents([])}>Clear learner selection</Button>
                 </div>
                 {candidateReady && <>
-                  <div className="max-h-64 overflow-auto">{candidates.data.students.map(item => <label key={item.id} className="flex min-h-11 min-w-0 items-center gap-3 py-1">
-                    <input type="checkbox" checked={students.includes(item.id)} onChange={event => setStudents(current => event.target.checked ? [...current, item.id] : current.filter(student => student !== item.id))}/><span className="break-words">{item.name}</span>
+                  <div className="max-h-64 min-w-0 overflow-auto">{candidates.data.students.map(item => <label key={item.id} className="flex min-h-11 min-w-0 items-center gap-3 py-1">
+                    <input type="checkbox" checked={students.includes(item.id)} onChange={event => setStudents(current => event.target.checked ? [...current, item.id] : current.filter(student => student !== item.id))}/><span className="min-w-0 break-words">{item.name}</span>
                   </label>)}</div>
                   {!candidates.data.students.length && <p>No active learners are enrolled in this programme.</p>}
                   {candidates.data.students.length > 300 && <p className="mt-2 text-sm text-muted-foreground">Choose up to 300 learners for this class.</p>}
@@ -272,7 +273,7 @@ function Scheduler() {
           {state.isFetching && <p role="status">Refreshing class status…</p>}
           {visibleClasses.map(item => {
             const job = state.data!.jobs.find(current => current.session_id === item.id);
-            return <article key={item.id} className="rounded-xl border bg-card p-4">
+            return <article key={item.id} className="min-w-0 rounded-xl border bg-card p-4 max-sm:px-[16px]">
               <h3 className="break-words font-semibold">{item.title}</h3>
               <p className="my-2 text-sm">{pakistanClassTime(item.starts_at)} PKT · {item.status} · {job?.status?.replace(/_/g, ' ') || 'Existing manual meeting'}</p>
               {job?.error_code && <p className="text-sm" role="alert">Delivery needs attention: {job.error_code.replace(/_/g, ' ')}. No delivery success has been assumed.</p>}
@@ -287,7 +288,7 @@ function Scheduler() {
         </section>
       </div>}
     <AlertDialog open={!!cancelTarget && active} onOpenChange={open => { if (!open && !operation.current) { setCancelTarget(null); setCancelError(''); } }}>
-      <AlertDialogContent className="max-h-[90dvh] w-[calc(100%_-_2rem)] overflow-y-auto" onCloseAutoFocus={event => {
+      <AlertDialogContent className="max-h-[90dvh] w-[calc(100%_-_2rem)] min-w-0 overflow-y-auto text-sm [overflow-wrap:anywhere] max-sm:w-[calc(100%_-_32px)] max-sm:px-[16px]" onCloseAutoFocus={event => {
         event.preventDefault();
         if (cancelOpener.current?.isConnected) cancelOpener.current.focus();
         else document.getElementById('class-delivery-heading')?.focus();
@@ -303,5 +304,6 @@ function Scheduler() {
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+    </div>
   </DashboardLayout>;
 }

@@ -38,9 +38,13 @@ The four added browser journeys cover:
 3. Coursework with an empty receipt, a status check, later draft edits, an exact reviewed retry and a verified original response.
 4. Scheduler loading and failed candidates, retry, an empty save receipt, Pakistan-time serialisation and cancellation readback.
 
-The shared layout-evidence helper captures complete pages at 360, 390, 768 and 1440px, then repeats those widths in dark mode with a 32px root font and reduced motion. It checks document overflow, dashboard/header separation and screenshot height. Confirmation dialogs receive additional bounded-layout checks. CI retains the previous connected-journey screenshots and these new screenshots in one artifact.
+The shared layout-evidence helper captures complete pages at 360, 390, 768 and 1440px, then repeats those widths in dark mode with a 32px root font and reduced motion. It checks document overflow, dashboard/header separation, mobile menu separation and minimum target size, and screenshot height. Confirmation dialogs receive additional bounded-layout checks. CI retains the previous connected-journey screenshots and these new screenshots in one artifact, including the archive's disabled-activation screen.
 
-Validation results and rendered-review findings are recorded below once the final source tree has passed its checks.
+The integration unit run passed **1,204 tests across 227 files**, an increase of 85 cases from the previous merged build. TypeScript, repository lint, the application build, database rehearsals and edge checks also passed during integration. The final browser and release evidence is tracked in [PR #185](https://github.com/asaffilate01-ship-it/ascent-education-cloud/pull/185), including the retained `unipathway-ux-flow-browser-evidence` artifact for its current checked commit.
+
+Rendered review identified issues beyond document-level overflow: enlarged mobile recovery controls split common words, some reading text inherited a fixed small size, the scheduler fieldset could extend beyond its card, and the mobile menu overlapped wrapped header actions. The follow-up changes cap narrow-screen nested padding, size reading text and headings in rem units, let mobile fields grow above their 16px minimum, constrain fieldsets and reserve space for the 44px menu control. An uncertain coursework attempt also now has an uncertainty badge instead of “Ready for submission.” These findings are covered by the repeated screenshot matrix before merge.
+
+The root-font check measures enlarged-text reflow; it does not replace physical-device testing or certify every platform's browser zoom behavior. Native single-line selectors may abbreviate a long selected title; the complete current lesson title remains visible in its heading.
 
 ## Acceptance boundary
 

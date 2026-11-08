@@ -27,6 +27,17 @@ export async function inspectLayouts(page: Page, info: TestInfo, name: string) {
         return content.left >= sidebar.right - 1 ? null : {contentLeft: Math.round(content.left), sidebarRight: Math.round(sidebar.right)};
       })).toBeNull();
     }
+    if (await page.getByRole('button', {name: 'Open navigation', exact: true}).isVisible()) {
+      await expect.poll(() => page.evaluate(() => {
+        const menu = document.querySelector('[aria-label="Open navigation"]')!.getBoundingClientRect();
+        const actions = document.querySelector('[aria-label="Workspace actions"]')!.getBoundingClientRect();
+        const separated = menu.right <= actions.left + 1 || menu.bottom <= actions.top + 1;
+        return separated && menu.width >= 44 && menu.height >= 44 ? null : {
+          menu: {right: Math.round(menu.right), bottom: Math.round(menu.bottom), width: Math.round(menu.width), height: Math.round(menu.height)},
+          actions: {left: Math.round(actions.left), top: Math.round(actions.top)},
+        };
+      })).toBeNull();
+    }
     if (await page.getByRole('navigation', {name: 'Breadcrumb', exact: true}).isVisible()) {
       await expect.poll(() => page.evaluate(() => {
         const breadcrumb = document.querySelector('[aria-label="Breadcrumb"]')!.getBoundingClientRect();

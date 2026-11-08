@@ -54,11 +54,13 @@ test('a withdrawn lesson link stays unavailable until the learner explicitly cho
   await inspectLayouts(page, info, 'selected-lesson');
   expect(fixture.requests.filter(read => read.name === 'unipathway_lessons').every(read =>
     read.params.get('tenant_id') === `eq.${tenant}` && read.params.get('module_id') === `eq.${moduleId}` && read.params.get('status') === 'eq.published')).toBe(true);
-  expect(fixture.requests.some(read => !['GET', 'HEAD'].includes(read.method) && read.name !== 'ensure_my_account')).toBe(false);
+  expect(fixture.requests.filter(read => !['GET', 'HEAD'].includes(read.method) &&
+    !['ensure_my_account', 'consent_records'].includes(read.name)).map(read => ({method: read.method, path: read.pathname})),
+  'Opening lessons must not mutate learning records; auth bootstrap and explicit cookie consent are separate').toEqual([]);
 });
 
 test('the learning agenda opens the exact invited class and preserves its archive return path', async ({context, page}, info) => {
-  test.setTimeout(90_000);
+  test.setTimeout(120_000);
   await page.clock.setFixedTime(new Date('2026-11-08T09:00:00Z'));
   const tables = enrolledTables();
   const selectedClass = {id: session, tenant_id: tenant, module_id: moduleId, title: 'Python problem-solving workshop',
@@ -112,6 +114,7 @@ test('the learning agenda opens the exact invited class and preserves its archiv
   await expect(page.getByRole('heading', {name: 'Recordings are awaiting activation', exact: true})).toBeVisible();
   await expect(page.getByRole('link', {name: 'Return to classroom', exact: true})).toHaveAttribute('href', classPath);
   expect(new URL(page.url()).searchParams.get('session')).toBe(session);
+  await inspectLayouts(page, info, 'archive-activation');
   expect(fixture.requests.slice(archiveStart).some(read =>
     read.pathname.includes('/storage/v1/') ||
     ['live_class_sessions', 'live_class_artifacts', 'lesson_ai_packs', 'can_open_my_unipathway_class_media'].includes(read.name))).toBe(false);

@@ -605,7 +605,7 @@ export default function DashboardSidebar() {
         aria-label="Open navigation"
         aria-expanded={mobileOpen}
         onClick={() => { setCollapsed(false); setMobileOpen(true); }}
-        className="lg:hidden fixed top-3 left-3 z-50 p-2 rounded-lg bg-card/90 backdrop-blur-sm shadow-surface-md border border-border/50 hover:bg-card transition-default"
+        className="lg:hidden fixed top-3 left-3 z-50 inline-flex min-h-11 min-w-11 items-center justify-center p-2 rounded-lg bg-card/90 backdrop-blur-sm shadow-surface-md border border-border/50 hover:bg-card transition-default"
       >
         <Menu className="w-5 h-5 text-foreground" />
       </button>

@@ -37,6 +37,7 @@ export async function academicRecords(context: BrowserContext, role: string, tab
       return respond({status: 503, body: {message: 'Synthetic unavailable source'}});
     }
     if (url.pathname.endsWith('/auth/v1/user')) return respond({body: user});
+    if (name === 'consent_records' && request.method() === 'POST') return respond({body: null});
     if (name === 'profiles') return respond({body: {full_name: role === 'student' ? 'Synthetic learner' : 'Synthetic lecturer', tenant_id: tenant}});
     if (name === 'user_roles') return respond({body: [{role, tenant_id: tenant}]});
     if (url.pathname.includes('/rpc/')) {

@@ -61,6 +61,7 @@ describe('reviewed coursework and confirmed receipts',()=>{
   mock.rpc.mockResolvedValue({data,error:null});mount();const dialog=await sendUnconfirmed();
   expect(screen.queryByRole('status',{name:'Submission receipt'})).toBeNull();expect(within(dialog).getByRole('button',{name:'Retry same submission'})).toBeEnabled();
   fireEvent.click(within(dialog).getByRole('button',{name:'Keep editing'}));
+  expect(screen.getByText('Submission not confirmed',{selector:'span'})).toBeInTheDocument();expect(screen.queryByText('Ready for submission')).toBeNull();
   expect(screen.getByLabelText('Your original submitted evidence')).toHaveValue(original);expect(screen.getByRole('button',{name:'Manage attachments'})).toBeDisabled();
  });
  it('freezes reviewed text, attachments and request key across an uncertain retry while preserving later edits',async()=>{
