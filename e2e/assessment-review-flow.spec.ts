@@ -131,7 +131,7 @@ test('a lecturer recovers the original brief and keeps criterion wording attache
   await page.getByLabel('Approved penalty points per resubmission', {exact: true}).fill('5');
   await page.getByLabel('Awarding-body or centre-approved assessment policy reference', {exact: true}).fill(policy);
   await page.getByRole('button', {name: 'Review assessment brief', exact: true}).click();
-  const briefReview = page.getByRole('dialog', {name: 'Review unpublished assessment brief', exact: true});
+  const briefReview = page.getByRole('dialog', {name: 'Review brief', exact: true});
   await expect(briefReview).toContainText(teaching);
   await expect(briefReview).toContainText('Test and explain boundary cases');
   await inspectReview(page, briefReview, 'Save reviewed assessment brief', info, 'lecturer-brief-review');
@@ -147,6 +147,7 @@ test('a lecturer recovers the original brief and keeps criterion wording attache
   await expect(briefReview).toContainText(String(saved.id));
   await briefReview.getByRole('button', {name: 'Check saved record', exact: true}).click();
   await expect(briefReview).toBeHidden();
+  await expect(page.getByText('Assessment brief saved as an unpublished draft. Complete its rubric for programme-leader approval.', {exact: true})).toBeVisible();
   expect(briefWrites()).toHaveLength(1);
   await expect(page.getByRole('button', {name: 'Open assessment Test and explain boundary cases', exact: true})).toBeVisible();
 
@@ -165,7 +166,7 @@ test('a lecturer recovers the original brief and keeps criterion wording attache
   await inspectLayouts(page, info, 'lecturer-assessment-drafts');
   await restoreText(page);
   await page.getByRole('button', {name: 'Review criterion', exact: true}).click();
-  const criterionReview = page.getByRole('dialog', {name: 'Review assessment criterion', exact: true});
+  const criterionReview = page.getByRole('dialog', {name: 'Review criterion', exact: true});
   await expect(criterionReview).toContainText(titleA);
   await expect(criterionReview).toContainText(firstBrief);
   await inspectReview(page, criterionReview, 'Save reviewed criterion', info, 'lecturer-criterion-review');
@@ -173,6 +174,7 @@ test('a lecturer recovers the original brief and keeps criterion wording attache
   await expect(criterionReview.getByRole('button', {name: 'Check saved record', exact: true})).toBeEnabled();
   await criterionReview.getByRole('button', {name: 'Check saved record', exact: true}).click();
   await expect(criterionReview).toBeHidden();
+  await expect(page.getByText(`Criterion LO1.P1 saved to ${titleA}.`, {exact: true})).toBeVisible();
   const criterionWrites = fixture.requests.filter(request => request.name === 'unipathway_assessment_criteria' && request.method === 'POST');
   expect(criterionWrites).toHaveLength(1);
   expect(criterionWrites[0].body).toMatchObject({tenant_id: tenant, brief_id: firstBrief, criterion_code: 'LO1.P1', max_points: 50});
@@ -368,6 +370,7 @@ test('an unconfirmed human mark preserves private work and a verified zero goes 
   await review.getByRole('button', {name: 'Submit mark for IQA', exact: true}).click();
   await expect(page.getByText('Mark submitted for IQA review', {exact: true})).toBeVisible();
   await expect(page.getByText('Recorded private score: 0/100', {exact: true})).toBeVisible();
+  await expect(page.getByText(/Mark not confirmed/i)).toHaveCount(0);
   expect(markingCalls).toBe(2);
   expect(attempt.status).toBe('human_marked');
   expect(tables.uni_marking_drafts[0].feedback).toBe(feedback);

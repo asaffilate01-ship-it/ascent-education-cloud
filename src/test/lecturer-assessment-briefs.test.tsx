@@ -15,12 +15,11 @@ type Actor = {id: string; tenantId?: string; role: UserRole; roles: UserRole[]};
 const state = vi.hoisted(() => ({
   user: null as Actor | null, loading: false, tables: {} as Record<string, Row[]>, requests: [] as Query[],
   read: vi.fn<(query: Query) => Promise<Result> | Result | undefined>(),
-  insert: vi.fn<(query: Query) => Promise<Result> | Result>(), success: vi.fn(),
+  insert: vi.fn<(query: Query) => Promise<Result> | Result>(),
 }));
 vi.mock('@/contexts/AuthContext', () => ({useAuth: () => ({user: state.user, loading: state.loading})}));
 vi.mock('@/components/layout/DashboardLayout', () => ({default: ({children}: {children: React.ReactNode}) => <main>{children}</main>}));
 vi.mock('@/components/assessment/ModuleJourney', () => ({default: () => null}));
-vi.mock('sonner', () => ({toast: {success: state.success}}));
 vi.mock('@/lib/db', () => ({db: {from: (table: string) => {
   const request: Query = {table, kind: 'read', columns: '', filters: {}, single: false, start: 0, end: 999999};
   const query = {
@@ -45,6 +44,7 @@ vi.mock('@/lib/db', () => ({db: {from: (table: string) => {
 
 const uuid = (number: number) => `00000000-0000-4000-8000-${String(number).padStart(12, '0')}`;
 const uid = uuid(1), tenant = uuid(2), moduleA = uuid(10), moduleB = uuid(11), briefA = uuid(20), briefB = uuid(21);
+const briefSavedMessage = 'Assessment brief saved as an unpublished draft. Complete its rubric for programme-leader approval.';
 const scope = {userId: uid, tenantId: tenant};
 const modules: TeachingModule[] = [
   {id: moduleA, title: 'Physics mechanics', tenant_id: tenant, lecturer_id: uid},
@@ -64,7 +64,7 @@ function deferred<T>() {let resolve!: (value: T) => void; let reject!: (reason: 
 beforeEach(() => {
   state.user = {id: uid, tenantId: tenant, role: 'lecturer', roles: ['lecturer', 'programme_leader']}; state.loading = false;
   state.tables = {modules: structuredClone(modules), unipathway_assessment_briefs: [brief(), brief(briefB, moduleB, 'Chemical reactions assessment')], unipathway_assessment_criteria: [criterion()]};
-  state.requests = []; state.read.mockReset(); state.success.mockReset();
+  state.requests = []; state.read.mockReset();
   state.insert.mockReset().mockImplementation(request => {const row = structuredClone(request.payload!); state.tables[request.table].push(row); return {data: row, error: null};});
   vi.spyOn(Date, 'now').mockReturnValue(Date.parse('2026-11-08T09:00:00Z'));
 });
@@ -84,8 +84,8 @@ function fillCriterion() {
   const values = criterionForm();
   for (const [label, field] of [['Criterion code', 'code'], ['Criterion learning outcome', 'outcome'], ['Criterion evidence standard', 'description'], ['Criterion marking guidance', 'guidance'], ['Maximum points', 'points']] as const) fireEvent.change(screen.getByLabelText(label), {target: {value: values[field]}});
 }
-async function reviewBrief() {await ready(); fillBrief(); fireEvent.click(screen.getByRole('button', {name: 'Review assessment brief'})); return screen.findByRole('dialog', {name: 'Review unpublished assessment brief'});}
-async function reviewCriterion() {await ready(); fireEvent.click(screen.getByRole('button', {name: 'Open assessment Forces and motion assessment'})); fillCriterion(); fireEvent.click(screen.getByRole('button', {name: 'Review criterion'})); return screen.findByRole('dialog', {name: 'Review assessment criterion'});}
+async function reviewBrief() {await ready(); fillBrief(); fireEvent.click(screen.getByRole('button', {name: 'Review assessment brief'})); return screen.findByRole('dialog', {name: 'Review brief'});}
+async function reviewCriterion() {await ready(); fireEvent.click(screen.getByRole('button', {name: 'Open assessment Forces and motion assessment'})); fillCriterion(); fireEvent.click(screen.getByRole('button', {name: 'Review criterion'})); return screen.findByRole('dialog', {name: 'Review criterion'});}
 
 it.each(['loading', 'missing membership', 'unapproved active role', 'missing centre', 'signed out'] as const)('does not read or offer edits with %s', async reason => {
   if (reason === 'loading') state.loading = true;
@@ -144,12 +144,14 @@ it('does not discard a draft when the same verified memberships are returned in 
 it('reviews the named module and Pakistan deadline, writes the exact payload, and only clears after a matching returned row', async () => {
   show(); const dialog = await reviewBrief();
   expect(writes()).toEqual([]); expect(within(dialog).getByText('Physics mechanics')).toBeInTheDocument();
+  expect(within(dialog).getByText(/named module and unpublished assessment details/)).toBeInTheDocument();
   expect(within(dialog).getByText(/01 Dec 2026, 10:00 PKT/)).toBeInTheDocument();
   fireEvent.click(within(dialog).getByRole('button', {name: 'Save reviewed assessment brief'}));
   await screen.findByRole('button', {name: 'Open assessment Review force and acceleration'});
   expect(writes()).toHaveLength(1);
   expect(writes()[0].payload).toMatchObject({tenant_id: tenant, lecturer_id: uid, module_id: moduleA, due_at: '2026-12-01T05:00:00.000Z', submission_cutoff: '2026-12-08T05:00:00.000Z', status: 'draft', published_by: null, published_at: null});
-  expect(screen.getByLabelText('Assessment title')).toHaveValue(''); expect(state.success).toHaveBeenCalledOnce();
+  expect(screen.getByLabelText('Assessment title')).toHaveValue('');
+  expect(screen.getByRole('status')).toHaveTextContent(briefSavedMessage); expect(screen.getByRole('status')).toBeVisible();
   expect(screen.getByRole('button', {name: 'Open assessment Review force and acceleration'})).toHaveAttribute('aria-pressed', 'true');
 });
 
@@ -162,7 +164,7 @@ it('locks review and mutation synchronously, freezes target and fields, and pres
   await waitFor(() => expect(state.requests.filter(query => query.table === 'modules' && query.single)).toHaveLength(1));
   expect(screen.getByLabelText('Assigned teaching module')).toBeDisabled(); expect(screen.getByLabelText('Assessment title')).toBeDisabled();
   await act(async () => moduleCheck.resolve({data: modules[0], error: null}));
-  const dialog = await screen.findByRole('dialog', {name: 'Review unpublished assessment brief'});
+  const dialog = await screen.findByRole('dialog', {name: 'Review brief'});
   state.read.mockReset(); state.insert.mockReturnValue(save.promise);
   const saveButton = within(dialog).getByRole('button', {name: 'Save reviewed assessment brief'});
   act(() => {fireEvent.click(saveButton); fireEvent.click(saveButton);});
@@ -183,8 +185,8 @@ it('recovers a rejected preflight promise without losing the lecturer draft or l
 
 it('moves keyboard focus into the named review and returns it to the initiating action without losing edits', async () => {
   show(); await ready(); fillBrief(); const button = screen.getByRole('button', {name: 'Review assessment brief'}); button.focus(); fireEvent.click(button);
-  const dialog = await screen.findByRole('dialog', {name: 'Review unpublished assessment brief'});
-  expect(within(dialog).getByRole('heading', {name: 'Review unpublished assessment brief'})).toHaveFocus();
+  const dialog = await screen.findByRole('dialog', {name: 'Review brief'});
+  expect(within(dialog).getByRole('heading', {name: 'Review brief'})).toHaveFocus();
   fireEvent.click(within(dialog).getByRole('button', {name: 'Back to details'}));
   await waitFor(() => expect(button).toHaveFocus()); expect(screen.getByLabelText('Assessment title')).toHaveValue(form().title); expect(writes()).toEqual([]);
 });
@@ -196,14 +198,14 @@ it('retains editable draft wording after a definite database rejection', async (
   expect(within(dialog).queryByRole('button', {name: 'Check saved record'})).toBeNull();
   fireEvent.click(within(dialog).getByRole('button', {name: 'Back to details'}));
   expect(screen.getByLabelText('Assessment title')).toHaveValue(form().title); expect(screen.getByLabelText('Lessons taught and progress')).toHaveValue(form().teaching);
-  expect(screen.getByLabelText('Assessment title')).toBeEnabled(); expect(state.success).not.toHaveBeenCalled();
+  expect(screen.getByLabelText('Assessment title')).toBeEnabled(); expect(screen.queryByText(briefSavedMessage)).toBeNull();
 });
 
 it.each([null, undefined, [], {}, {id: uuid(99)}])('does not accept an incomplete or mismatched creation receipt: %j', async receipt => {
   state.insert.mockResolvedValue({data: receipt, error: null}); show(); const dialog = await reviewBrief();
   fireEvent.click(within(dialog).getByRole('button', {name: 'Save reviewed assessment brief'}));
   await within(dialog).findByText(/no matching receipt/);
-  expect(screen.getByLabelText('Assessment title')).toHaveValue(form().title); expect(state.success).not.toHaveBeenCalled();
+  expect(screen.getByLabelText('Assessment title')).toHaveValue(form().title); expect(screen.queryByText(briefSavedMessage)).toBeNull();
   expect(within(dialog).getByRole('button', {name: 'Check saved record'})).toBeEnabled(); expect(writes()).toHaveLength(1);
 });
 
@@ -216,7 +218,8 @@ it('recovers a lost response by reading the original scoped UUID and never inser
   fireEvent.click(screen.getByRole('button', {name: 'Continue save check'}));
   fireEvent.click(screen.getByRole('button', {name: 'Check saved record'}));
   await screen.findByRole('button', {name: 'Open assessment Review force and acceleration'});
-  expect(writes()).toHaveLength(1); expect(state.success).toHaveBeenCalledOnce();
+  expect(writes()).toHaveLength(1);
+  expect(screen.getByRole('status')).toHaveTextContent(briefSavedMessage); expect(screen.getByRole('status')).toBeVisible();
   expect(state.requests.some(query => query.kind === 'read' && query.single && query.table === 'unipathway_assessment_briefs'
     && query.filters.id === writes()[0].payload!.id && query.filters.tenant_id === tenant && query.filters.lecturer_id === uid && query.filters.module_id === moduleA)).toBe(true);
 });
@@ -239,7 +242,7 @@ it('blocks retry if readback finds conflicting content, and does not discard the
   show(); const dialog = await reviewBrief(); fireEvent.click(within(dialog).getByRole('button', {name: 'Save reviewed assessment brief'})); await within(dialog).findByText(/no matching receipt/);
   fireEvent.click(within(dialog).getByRole('button', {name: 'Retry same assessment brief'}));
   await within(dialog).findByText(/does not match these reviewed details/);
-  expect(within(dialog).getByRole('button', {name: 'Retry same assessment brief'})).toBeDisabled(); expect(writes()).toHaveLength(1); expect(state.success).not.toHaveBeenCalled();
+  expect(within(dialog).getByRole('button', {name: 'Retry same assessment brief'})).toBeDisabled(); expect(writes()).toHaveLength(1); expect(screen.queryByText(briefSavedMessage)).toBeNull();
   expect(within(dialog).getByText(form().title)).toBeInTheDocument();
 });
 
@@ -249,7 +252,7 @@ it('does not send another insert when the uncertain record cannot be rechecked',
   const requestId = writes()[0].payload!.id;
   state.read.mockImplementation(query => query.filters.id === requestId ? {data: null, error: {message: 'Read interrupted'}} : undefined);
   fireEvent.click(within(dialog).getByRole('button', {name: 'Retry same assessment brief'})); await within(dialog).findByText(/saved record could not be checked/);
-  expect(writes()).toHaveLength(1); expect(state.success).not.toHaveBeenCalled();
+  expect(writes()).toHaveLength(1); expect(screen.queryByText(briefSavedMessage)).toBeNull();
   expect(within(dialog).getByRole('button', {name: 'Check saved record'})).toBeEnabled();
 });
 
@@ -279,6 +282,7 @@ it('recovers the exact criterion without clearing a different brief’s saved lo
   fireEvent.click(within(dialog).getByRole('button', {name: 'Check saved record'}));
   await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull()); await ready();
   expect(writes()).toHaveLength(1); expect(writes()[0].payload).toMatchObject({brief_id: briefA, tenant_id: tenant, criterion_code: 'LO2.P1', display_order: 2});
+  expect(screen.getByRole('status')).toHaveTextContent('Criterion LO2.P1 saved to Forces and motion assessment.'); expect(screen.getByRole('status')).toBeVisible();
   expect(screen.getByLabelText('Criterion code')).toHaveValue('');
   fireEvent.click(screen.getByRole('button', {name: 'Open assessment Chemical reactions assessment'})); expect(screen.getByLabelText('Criterion code')).toHaveValue('CH1.P1');
 });
@@ -298,7 +302,7 @@ it.each(['account', 'centre', 'active role', 'membership', 'auth loading'] as co
   else if (boundary === 'account' || boundary === 'centre') await screen.findByText(/No teaching modules are currently assigned/);
   const reads = state.requests.length;
   await act(async () => save.resolve({data: writes()[0].payload, error: null}));
-  expect(state.success).not.toHaveBeenCalled(); expect(state.requests).toHaveLength(reads);
+  expect(screen.queryByText(briefSavedMessage)).toBeNull(); expect(state.requests).toHaveLength(reads);
   expect(screen.queryByDisplayValue(form().title)).toBeNull();
 });
 
@@ -312,7 +316,7 @@ it('ignores a delayed old module read when the URL selects another module', asyn
   await screen.findByRole('button', {name: 'Open assessment Chemical reactions assessment'});
   await act(async () => old.resolve({data: [modules[0]], error: null}));
   expect(screen.queryByRole('button', {name: 'Open assessment Forces and motion assessment'})).toBeNull();
-  expect(screen.getByLabelText('Assigned teaching module')).toHaveValue(moduleB); expect(state.success).not.toHaveBeenCalled();
+  expect(screen.getByLabelText('Assigned teaching module')).toHaveValue(moduleB); expect(screen.queryByText(briefSavedMessage)).toBeNull();
 });
 
 describe('lecturer payload and receipt contracts', () => {

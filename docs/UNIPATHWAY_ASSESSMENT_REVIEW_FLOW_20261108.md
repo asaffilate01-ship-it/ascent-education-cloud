@@ -71,7 +71,7 @@ The pull request is the release record for the exact published revision, complet
 
 The four added browser journeys cover lecturer save recovery and per-brief criterion wording; a draft beyond the former 250-record limit and a submission beyond the former 300-record limit; failed versus empty visible staff directories; and an unconfirmed human mark followed by a verified zero-score submission to IQA. They use synthetic in-browser records, assert no unhandled page errors, and perform no hosted writes. Full-page evidence checks include the settled document height, while review dialogs are checked for viewport bounds and reachable final actions.
 
-Rendered review also exposed fixed-size inherited headings, narrow marking columns and a publication toast covering the next dialog's close action. Scoped rem-based workspace and dialog text, wrapping marking panes and citation controls, and retained inline management confirmations address those issues. Review disclosure checks use stable locators while sections open; the browser assertions remain unchanged.
+Rendered review also exposed fixed-size inherited headings, narrow marking columns and floating notifications covering the next dialog's actions or showing obsolete uncertainty after successful recovery. Scoped rem-based text, concise dialog headings, wrapping marking panes and citation controls, capped nested horizontal padding, and persistent inline outcomes address those issues. Review disclosure checks use stable locators while sections open. Browser checks retain the workflow and layout assertions and additionally require that a confirmed mark has no remaining “Mark not confirmed” message.
 
 ## Delivery boundary
 

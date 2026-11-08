@@ -1,7 +1,6 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useSearchParams} from 'react-router-dom';
 import {BookOpen, Plus, ShieldCheck} from 'lucide-react';
-import {toast} from 'sonner';
 import ModuleJourney from '@/components/assessment/ModuleJourney';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {Button} from '@/components/ui/button';
@@ -26,7 +25,7 @@ type Creation = ({kind: 'brief'; payload: NewLecturerBrief} | {kind: 'criterion'
 const LECTURER_ROLES = ['lecturer', 'programme_leader', 'centre_director', 'superadmin'] as const;
 const fieldClass = 'mt-1 min-w-0 max-w-full px-[min(0.75rem,12px)] sm:px-3';
 const selectClass = 'mt-1 min-h-11 w-full min-w-0 max-w-full rounded-md border bg-background px-[min(0.75rem,12px)] py-2 text-base sm:px-3';
-const buttonClass = 'h-auto min-h-11 max-w-full whitespace-normal [overflow-wrap:anywhere]';
+const buttonClass = 'h-auto min-h-11 max-w-full gap-[min(0.5rem,8px)] px-[min(1rem,16px)] whitespace-normal [overflow-wrap:anywhere]';
 
 function verifiedRows<T extends {id: string}>(rows: unknown[], parse: (row: unknown) => T | null): T[] {
   const parsed = rows.map(parse);
@@ -229,7 +228,7 @@ function BriefsWorkspace({moduleFilter}: {moduleFilter: string}) {
         if (target.kind === 'brief') {setForm(emptyBriefForm(target.moduleId)); setSelected(target.payload.id);}
         else setCriterionDrafts(previous => ({...previous, [target.brief.id]: emptyCriterionForm()}));
         const success = target.kind === 'brief' ? 'Assessment brief saved as an unpublished draft. Complete its rubric for programme-leader approval.' : `Criterion ${target.payload.criterion_code} saved to ${target.brief.title}.`;
-        setSavedMessage(success); toast.success(success); await load();
+        setSavedMessage(success); await load();
       }
     } catch (error) {if (current()) setIssue(message(error, 'The save could not be confirmed. Your reviewed details are kept; check the saved record.'));}
     finally {if (current()) {operation.current = null; setPending(null);}}
@@ -286,7 +285,7 @@ function BriefsWorkspace({moduleFilter}: {moduleFilter: string}) {
                 <label>Approved penalty points per resubmission<Input className={fieldClass} type="number" min={0} max={30} step="any" disabled={form.attempts === '1'} value={form.penalty} onChange={event => changeForm('penalty', event.target.value)}/></label>
                 <label className="md:col-span-2">Awarding-body or centre-approved assessment policy reference<Input className={fieldClass} value={form.policy} maxLength={200} onChange={event => changeForm('policy', event.target.value)} placeholder="Approved policy reference — do not invent penalties"/></label>
               </div>
-              <Button className={buttonClass} onClick={() => void prepareBrief()}><Plus className="mr-1 size-4 shrink-0"/>Review assessment brief</Button>
+              <Button className={buttonClass} onClick={() => void prepareBrief()}><Plus className="size-4 shrink-0"/>Review assessment brief</Button>
             </fieldset>
           </section>
           <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
@@ -327,7 +326,7 @@ function BriefsWorkspace({moduleFilter}: {moduleFilter: string}) {
         onOpenAutoFocus={event => {event.preventDefault(); opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null; reviewHeading.current?.focus();}}
         onCloseAutoFocus={event => {event.preventDefault(); const target = recoveryButton.current || (opener.current?.isConnected && !opener.current.matches(':disabled') ? opener.current : workspaceHeading.current); target?.focus();}}
         onEscapeKeyDown={event => {if (operation.current) event.preventDefault();}} onInteractOutside={event => {if (operation.current) event.preventDefault();}}>
-        <DialogHeader className="min-w-0 text-left"><DialogTitle ref={reviewHeading} tabIndex={-1} className="min-w-0 pr-12 leading-snug focus:outline-none">{reviewed?.kind === 'criterion' ? 'Review assessment criterion' : 'Review unpublished assessment brief'}</DialogTitle><DialogDescription>Confirm the named module and assessment details. This saves teaching standards; it does not publish an assessment or enter student grades.</DialogDescription></DialogHeader>
+        <DialogHeader className="min-w-0 text-left"><DialogTitle ref={reviewHeading} tabIndex={-1} className="min-w-0 pr-12 leading-snug focus:outline-none">{reviewed?.kind === 'criterion' ? 'Review criterion' : 'Review brief'}</DialogTitle><DialogDescription>Confirm the named module and unpublished assessment details. This saves teaching standards; it does not publish an assessment or enter student grades.</DialogDescription></DialogHeader>
         {reviewed && <section aria-label="Reviewed assessment details" className="min-w-0 space-y-4">
           <dl className="min-w-0 space-y-3 rounded-lg border p-3">
             <div><dt className="text-muted-foreground">Teaching module</dt><dd className="font-semibold">{reviewed.moduleTitle}</dd></div>

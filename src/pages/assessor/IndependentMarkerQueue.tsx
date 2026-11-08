@@ -262,12 +262,10 @@ function MarkerWorkspace({scope,latestScope,permitted}:{scope:string;latestScope
    setAttempts(previous=>previous.map(attempt=>attempt.id===token.attempt?{...attempt,status:'human_marked'}:attempt));
    setConfirmation({review:reviewed,score:result.data});setDirty(false);
    reviewRef.current=null;setReview(null);changeSelection('');
-   toast.success('Mark saved privately for independent IQA review.');
   }catch(cause){
    if(active(token)){
     uncertainMarks.current.set(token.attempt,{review:reviewed,message:errorMessage(cause,'The mark was not confirmed.')+' Your draft and selection remain here. Check marking status before submitting again.'});
     reviewRef.current=null;setReview(null);setStatusMessage(null);
-    toast.error('Mark not confirmed. Check marking status before submitting again.');
    }
   }finally{finish(token);}
  };
@@ -356,7 +354,7 @@ function MarkerWorkspace({scope,latestScope,permitted}:{scope:string;latestScope
   {!loading&&!error&&<div className="flex min-w-0 flex-wrap gap-5">
    <section className="min-w-0 flex-[1_1_16rem] rounded-xl border bg-card px-[min(1rem,12px)] py-4 sm:p-5"><h2 className="font-semibold">Your marking queue ({actionable.length} need action)</h2>
     <label className="mt-3 block text-sm">Find an assessment<Input className="min-w-0 px-[min(0.75rem,12px)]" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Title or anonymised reference"/></label>
-    <label className="mt-3 block text-sm">Show<select className="mt-1 min-h-11 w-full min-w-0 rounded-md border bg-background px-3" value={filter} onChange={e=>setFilter(e.target.value)}><option value="action">Needs marking</option><option value="all">All allocated submissions</option></select></label>
+    <label className="mt-3 block text-sm">Show<select className="mt-1 min-h-11 w-full min-w-0 rounded-md border bg-background px-[min(0.75rem,12px)]" value={filter} onChange={e=>setFilter(e.target.value)}><option value="action">Needs marking</option><option value="all">All allocated submissions</option></select></label>
     <p className="mt-2 text-sm text-muted-foreground">{visible.length} matching · newest received first</p>
     <div className="mt-3 space-y-2">{visible.slice(page*25,page*25+25).map(a=><button key={a.id} disabled={!!busy||!!review} aria-pressed={selected===a.id} onClick={()=>select(a.id)} className={`w-full rounded-lg border px-[min(0.75rem,12px)] py-3 text-left ${selected===a.id?'border-primary bg-primary/5':''}`}>
      <p className="text-sm font-semibold">{briefs.find(b=>b.id===a.brief_id)?.title||'Assessment'}</p>
