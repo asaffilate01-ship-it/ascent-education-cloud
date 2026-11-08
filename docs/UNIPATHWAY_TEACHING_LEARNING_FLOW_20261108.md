@@ -44,6 +44,8 @@ The integration unit run passed **1,204 tests across 227 files**, an increase of
 
 Rendered review identified issues beyond document-level overflow: enlarged mobile recovery controls split common words, some reading text inherited a fixed small size, the scheduler fieldset could extend beyond its card, and the mobile menu overlapped wrapped header actions. The follow-up changes cap narrow-screen nested padding, size reading text and headings in rem units, let mobile fields grow above their 16px minimum, constrain fieldsets and reserve space for the 44px menu control. An uncertain coursework attempt also now has an uncertainty badge instead of “Ready for submission.” These findings are covered by the repeated screenshot matrix before merge.
 
+The scheduler review also found native calendar-picker icons using the light theme on dark input surfaces. Dashboard date and time controls now explicitly follow the selected colour scheme, keeping their native icons visible without replacing browser controls.
+
 The root-font check measures enlarged-text reflow; it does not replace physical-device testing or certify every platform's browser zoom behavior. Native single-line selectors may abbreviate a long selected title; the complete current lesson title remains visible in its heading.
 
 ## Acceptance boundary
