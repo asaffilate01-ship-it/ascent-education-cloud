@@ -196,14 +196,14 @@ function PaymentWorkspace({ open, onOpenChange, invoice, onRecorded, allowed: ha
   const methodLabel = (method: string) => MANUAL_PAYMENT_METHODS.find(item => item.value === method)?.label ?? method;
 
   return <Dialog open={open} onOpenChange={close}>
-    <DialogContent className="w-[calc(100vw_-_2rem)] max-w-xl max-h-[calc(100dvh_-_2rem)] overflow-y-auto rounded-xl p-4 sm:p-6 [&>button:last-child]:grid [&>button:last-child]:place-items-center [&>button:last-child]:min-h-11 [&>button:last-child]:min-w-11 [&>button:last-child]:right-1 [&>button:last-child]:top-1"
+    <DialogContent className="grid-cols-1 min-w-0 w-[calc(100vw_-_min(2rem,32px))] max-w-xl max-h-[calc(100dvh_-_2rem)] overflow-y-auto rounded-xl px-[min(1rem,16px)] py-4 [overflow-wrap:anywhere] sm:p-6 [&>button:last-child]:grid [&>button:last-child]:place-items-center [&>button:last-child]:min-h-11 [&>button:last-child]:min-w-11 [&>button:last-child]:right-1 [&>button:last-child]:top-1"
       onOpenAutoFocus={() => { opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null; }}
       onCloseAutoFocus={event => { if (opener.current?.isConnected) { event.preventDefault(); opener.current.focus(); } }}>
-      <DialogHeader className="pr-12 text-left">
-        <DialogTitle>Record student payment</DialogTitle>
+      <DialogHeader className="min-w-0 text-left">
+        <DialogTitle className="min-w-0 pr-12 leading-snug">Record student payment</DialogTitle>
         <DialogDescription>Record an existing transfer for finance verification. A pending record does not settle the invoice or reduce its balance.</DialogDescription>
       </DialogHeader>
-      <div className="min-w-0 rounded-lg border bg-muted/30 p-3 text-sm">
+      <div className="min-w-0 rounded-lg border bg-muted/30 px-[min(0.75rem,12px)] py-3 text-sm sm:px-3">
         <p className="break-words font-semibold">{context.student_name}</p>
         <p className="mt-1 break-all text-xs text-muted-foreground">Invoice reference: {context.id}</p>
         {allowed && contextBalance !== null && <p className="mt-2">{draft.receipt || reviewed ? 'Student balance at review:' : 'Student balance:'} <strong>{money(contextBalance)}</strong></p>}
@@ -211,7 +211,7 @@ function PaymentWorkspace({ open, onOpenChange, invoice, onRecorded, allowed: ha
       </div>
       {allowed && identityChanged && <p role="alert" className="text-sm text-destructive">The invoice's student details have changed. These payment details retain the originally reviewed student and reference. Check the existing record and ask finance to review the change before recording another payment.</p>}
       {!allowed ? <p role="alert">Your current account, centre and active role must be verified, with a finance officer or centre director membership, before recording a payment.</p>
-        : draft.receipt ? <section className="space-y-3" aria-labelledby="payment-receipt-heading">
+        : draft.receipt ? <section className="min-w-0 space-y-3" aria-labelledby="payment-receipt-heading">
           <h2 id="payment-receipt-heading" ref={heading} tabIndex={-1} className="font-semibold focus:outline-none">Pending payment recorded</h2>
           <p className="text-sm">{money(draft.receipt.payment.amount)} · {methodLabel(draft.receipt.payment.method)}</p>
           <p className="break-words text-sm">Transaction reference: {draft.receipt.payment.reference_number}</p>
@@ -219,7 +219,7 @@ function PaymentWorkspace({ open, onOpenChange, invoice, onRecorded, allowed: ha
           <p className="text-sm text-muted-foreground">This confirms a pending entry only. The invoice balance is unchanged until the transfer is independently verified and applied.</p>
           <div className="flex flex-wrap gap-2"><Button className="h-auto min-h-11 whitespace-normal" onClick={() => close(false)}>Done</Button><Button variant="outline" className="h-auto min-h-11 whitespace-normal" onClick={() => replaceDraft(freshDraft())}>New payment record</Button></div>
         </section>
-        : reviewed && payment ? <section className="space-y-3" aria-labelledby="payment-review-heading">
+        : reviewed && payment ? <section className="min-w-0 space-y-3" aria-labelledby="payment-review-heading">
           <h2 id="payment-review-heading" ref={heading} tabIndex={-1} className="font-semibold focus:outline-none">{draft.uncertain ? 'Payment record not confirmed' : 'Review pending payment'}</h2>
           <dl className="space-y-2 text-sm">
             <div><dt className="text-muted-foreground">Amount</dt><dd className="font-semibold">{money(payment.amount)}</dd></div>
@@ -238,15 +238,15 @@ function PaymentWorkspace({ open, onOpenChange, invoice, onRecorded, allowed: ha
           </div>
         </section>
         : !payable ? <p role="alert">This invoice is not available for a student payment. Refresh invoices to check its status and agreed student balance.</p>
-        : <form onSubmit={review} noValidate className="space-y-4">
-          <div><Label htmlFor="manual-payment-method">Payment method</Label><select id="manual-payment-method" className="mt-1 min-h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={draft.method} onChange={event => replaceDraft({ ...draftRef.current, method: event.target.value as ManualPaymentMethod })}>{MANUAL_PAYMENT_METHODS.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select></div>
-          <div><Label htmlFor="manual-payment-amount">Amount (PKR)</Label><Input id="manual-payment-amount" className="mt-1 min-h-11" type="text" inputMode="decimal" placeholder={balance?.toFixed(2)} value={draft.form.amount} onChange={event => change('amount', event.target.value)} aria-describedby="manual-payment-amount-help" /><p id="manual-payment-amount-help" className="mt-1 text-xs text-muted-foreground">Leave empty to record the full student balance. Use no more than two decimal places.</p></div>
-          <div><Label htmlFor="manual-payment-reference">Transaction reference</Label><Input id="manual-payment-reference" className="mt-1 min-h-11" required maxLength={200} value={draft.form.reference} onChange={event => change('reference', event.target.value)} /><p className="mt-1 text-xs text-muted-foreground">Use the reference on the transfer receipt.</p></div>
-          {(draft.method === 'bank_transfer' || draft.method === 'bank_alfalah') && <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div><Label htmlFor="manual-payment-bank">Bank name (optional)</Label><Input id="manual-payment-bank" className="mt-1 min-h-11" maxLength={200} value={draft.form.bankName} onChange={event => change('bankName', event.target.value)} /></div>
-            <div><Label htmlFor="manual-payment-account">Sender account (optional)</Label><Input id="manual-payment-account" className="mt-1 min-h-11" maxLength={200} value={draft.form.senderAccount} onChange={event => change('senderAccount', event.target.value)} /></div>
+        : <form onSubmit={review} noValidate className="min-w-0 space-y-4">
+          <div className="min-w-0"><Label className="block" htmlFor="manual-payment-method">Payment method</Label><select id="manual-payment-method" className="mt-1 min-h-11 w-full min-w-0 max-w-full rounded-md border border-input bg-background px-[min(0.75rem,12px)] py-2 text-sm sm:px-3" value={draft.method} onChange={event => replaceDraft({ ...draftRef.current, method: event.target.value as ManualPaymentMethod })}>{MANUAL_PAYMENT_METHODS.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select></div>
+          <div className="min-w-0"><Label className="block" htmlFor="manual-payment-amount">Amount (PKR)</Label><Input id="manual-payment-amount" className="mt-1 min-h-11 min-w-0 max-w-full px-[min(0.75rem,12px)] sm:px-3" type="text" inputMode="decimal" placeholder={balance?.toFixed(2)} value={draft.form.amount} onChange={event => change('amount', event.target.value)} aria-describedby="manual-payment-amount-help" /><p id="manual-payment-amount-help" className="mt-1 text-xs text-muted-foreground">Leave empty to record the full student balance. Use no more than two decimal places.</p></div>
+          <div className="min-w-0"><Label className="block" htmlFor="manual-payment-reference">Transaction reference</Label><Input id="manual-payment-reference" className="mt-1 min-h-11 min-w-0 max-w-full px-[min(0.75rem,12px)] sm:px-3" required maxLength={200} value={draft.form.reference} onChange={event => change('reference', event.target.value)} /><p className="mt-1 text-xs text-muted-foreground">Use the reference on the transfer receipt.</p></div>
+          {(draft.method === 'bank_transfer' || draft.method === 'bank_alfalah') && <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="min-w-0"><Label className="block" htmlFor="manual-payment-bank">Bank name (optional)</Label><Input id="manual-payment-bank" className="mt-1 min-h-11 min-w-0 max-w-full px-[min(0.75rem,12px)] sm:px-3" maxLength={200} value={draft.form.bankName} onChange={event => change('bankName', event.target.value)} /></div>
+            <div className="min-w-0"><Label className="block" htmlFor="manual-payment-account">Sender account (optional)</Label><Input id="manual-payment-account" className="mt-1 min-h-11 min-w-0 max-w-full px-[min(0.75rem,12px)] sm:px-3" maxLength={200} value={draft.form.senderAccount} onChange={event => change('senderAccount', event.target.value)} /></div>
           </div>}
-          <div><Label htmlFor="manual-payment-note">Notes (optional)</Label><Textarea id="manual-payment-note" className="mt-1" maxLength={2000} rows={2} value={draft.form.notes} onChange={event => change('notes', event.target.value)} /></div>
+          <div className="min-w-0"><Label className="block" htmlFor="manual-payment-note">Notes (optional)</Label><Textarea id="manual-payment-note" className="mt-1 min-w-0 max-w-full px-[min(0.75rem,12px)] sm:px-3" maxLength={2000} rows={2} value={draft.form.notes} onChange={event => change('notes', event.target.value)} /></div>
           {!Number(invoice.sponsor_amount) && invoice.student_id && <p className="text-xs text-muted-foreground">For a card payment, the student can open this invoice from their own Fees &amp; Payments page.</p>}
           <div className="flex flex-wrap justify-end gap-2"><Button className="h-auto min-h-11 whitespace-normal" type="button" variant="outline" onClick={() => close(false)}>Cancel</Button><Button className="h-auto min-h-11 whitespace-normal" type="submit">Review pending payment</Button></div>
         </form>}

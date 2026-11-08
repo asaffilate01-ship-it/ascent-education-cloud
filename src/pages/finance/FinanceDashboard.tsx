@@ -198,21 +198,21 @@ function FinanceWorkspace() {
             </section>
             {missingAccounts > 0 && <p role="status" className="rounded-lg border p-4 text-sm">{missingAccounts} existing student invoice(s) have no linked account. A matching name alone cannot make them visible in a learner’s fees page. Finance must review those account links.</p>}
             <section aria-label="Find invoices" className="space-y-3">
-              <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)]">
+              <div className="grid min-w-0 grid-cols-[repeat(auto-fit,minmax(min(100%,16rem),1fr))] gap-3">
                 <label className="min-w-0 text-sm font-medium" htmlFor="invoice-search">Search by learner or invoice reference
                   <span className="relative mt-1 block"><Search aria-hidden="true" className="pointer-events-none absolute left-3 top-3 size-4 text-muted-foreground"/>
                     <Input id="invoice-search" ref={searchRef} value={search} onChange={event => {setSearch(event.target.value); setPageIndex(0);}} className="pl-9" placeholder="Name or full invoice reference"/></span>
                 </label>
-                <label className="min-w-0 text-sm font-medium">Invoice status
-                  <select className="mt-1 block min-h-11 w-full min-w-0 rounded-lg border bg-background px-3 py-2" value={statusFilter} onChange={event => {setStatusFilter(event.target.value); setPageIndex(0);}}>
+                <div className="min-w-0 text-sm font-medium"><label htmlFor="finance-invoice-status">Invoice status</label>
+                  <select id="finance-invoice-status" className="mt-1 block min-h-11 w-full min-w-0 rounded-lg border bg-background px-3 py-2" value={statusFilter} onChange={event => {setStatusFilter(event.target.value); setPageIndex(0);}}>
                     <option value="all">All statuses</option>{STATUSES.map(value => <option key={value} value={value}>{value}</option>)}
                   </select>
-                </label>
-                <label className="min-w-0 text-sm font-medium">Invoice type
-                  <select className="mt-1 block min-h-11 w-full min-w-0 rounded-lg border bg-background px-3 py-2" value={typeFilter} onChange={event => {setTypeFilter(event.target.value); setPageIndex(0);}}>
+                </div>
+                <div className="min-w-0 text-sm font-medium"><label htmlFor="finance-invoice-type">Invoice type</label>
+                  <select id="finance-invoice-type" className="mt-1 block min-h-11 w-full min-w-0 rounded-lg border bg-background px-3 py-2" value={typeFilter} onChange={event => {setTypeFilter(event.target.value); setPageIndex(0);}}>
                     <option value="all">All types</option>{TYPES.map(value => <option key={value} value={value}>{value}</option>)}
                   </select>
-                </label>
+                </div>
               </div>
               <div className="flex flex-wrap gap-3">
                 <Button variant="outline" onClick={resetFilters} disabled={!search && statusFilter === 'all' && typeFilter === 'all'}>Clear invoice filters</Button>
@@ -232,7 +232,7 @@ function FinanceWorkspace() {
                     const liability = feeLiability(invoice);
                     return <li key={invoice.id} className="min-w-0 space-y-3 rounded-xl border bg-card p-4">
                       <div className="flex flex-wrap items-start justify-between gap-2"><h3 className="min-w-0 break-words font-semibold">{invoice.student_name}</h3><StatusBadge status={invoice.status} variant={statusVariant(invoice.status)}/></div>
-                      <p className="break-all text-sm text-muted-foreground">Invoice reference: {invoice.id}</p>
+                      <p className="text-sm text-muted-foreground">Invoice reference: <span className="break-all">{invoice.id}</span></p>
                       <p className="text-sm capitalize">{invoice.type} · due {dueDate(invoice.due_date)}</p>
                       <dl className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,9rem),1fr))] gap-3 text-sm">
                         <div><dt className="text-muted-foreground">{invoice.type === 'commission' ? 'Recorded amount' : 'Student share due'}</dt><dd className="mt-1 break-words font-semibold tabular-nums">{fmt(invoice.type === 'commission' ? invoice.amount : liability.studentDue)}</dd></div>
@@ -243,7 +243,8 @@ function FinanceWorkspace() {
                   })}</ul>
                   <div className="hidden rounded-xl border bg-card xl:block">
                     <div className="overflow-x-auto" role="region" aria-label="Invoice table" tabIndex={0}>
-                      <table className="w-full text-sm"><caption className="sr-only">Centre invoices, student and sponsor shares, and payment recording</caption>
+                      <table className="w-full min-w-[68rem] table-fixed text-sm"><caption className="sr-only">Centre invoices, student and sponsor shares, and payment recording</caption>
+                        <colgroup>{['24%', '9%', '14%', '14%', '15%', '24%'].map((width, index) => <col key={index} style={{width}}/>)}</colgroup>
                         <thead><tr className="border-b">{['Learner / invoice', 'Type', 'Student share due', 'Sponsor share due', 'Status / due date', 'Action'].map(label => <th key={label} scope="col" className="p-3 text-left font-semibold">{label}</th>)}</tr></thead>
                         <tbody>{visible.map(invoice => {
                           const liability = feeLiability(invoice);

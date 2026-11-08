@@ -53,6 +53,10 @@ The finance, learner and staff pages are captured at 360, 390, 768 and 1440px, t
 
 Final test counts, the checked commit, CI conclusions and actual screenshot review are recorded in the pull request after integration. The local Chromium binary could report its version but could not launch because the execution environment denied its process socket; real rendered review therefore uses retained GitHub Actions Chromium evidence.
 
+The first CI rendering exposed two dialog reflow failures at 360px with enlarged text and exact-label lookup failures on native finance/staff selectors. The selectors had accessible names, but wrapping their options inside the label made exact label-text lookup ambiguous; separate `htmlFor`/`id` associations preserve the intended names. Dialog corrections use an explicit shrinkable grid, bounded gutters and title-only close-button clearance. No containment or label assertion is weakened.
+
+Visual inspection also found the desktop invoice table compressing headings and values into individual letters at 200% text even though the page passed its overflow check. The table now keeps readable column widths inside its keyboard-focusable horizontal scroll region. Filters stack when their text requires more room, and only the invoice identifier uses character-level wrapping. The shared page heading now wraps its action beneath a title that needs more space, correcting an observed 768px enlarged-text title compression. Additional browser evidence verifies column width and access to the final action column. The default-off office gate was inspected at all eight width/mode combinations without a gate-specific clipping or action-reachability defect.
+
 ## Follow-up defects retained for a separate build
 
 - Assessment managers need the complete teaching summary, learning outcomes, evidence and rubric descriptions before publication; existing pre-filter row caps can hide older relevant briefs or attempts.

@@ -1,4 +1,4 @@
-import {useCallback,useEffect,useRef,useState} from 'react';
+import {useCallback,useEffect,useId,useRef,useState} from 'react';
 import {Link} from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {Button} from '@/components/ui/button';
@@ -56,6 +56,7 @@ export default function StaffAccessManager(){
 }
 function Workspace({isScopeCurrent}:{isScopeCurrent:()=>boolean}){
  const {user,loading:authLoading}=useAuth();
+ const fieldId=useId();
  const manager=!authLoading&&!!user&&canUseActiveRole(user,['centre_director','superadmin']);
  const platform=user?.role==='superadmin';
  const [centres,setCentres]=useState<Centre[]>([]),[centreState,setCentreState]=useState<ReadState>('idle');
@@ -240,12 +241,13 @@ function Workspace({isScopeCurrent}:{isScopeCurrent:()=>boolean}){
       <h2 className="text-lg font-semibold">Centre and staff identity</h2>
       <p className="text-muted-foreground">The Platform Owner may select a centre. Centre directors review their own centre. Each change is checked against the selected person, office role and last verified revision.</p>
       {platform&&<>
-       <label className="block min-w-0 max-w-md font-medium">Centre
-        <select className="mt-1 block min-h-11 w-full min-w-0 rounded-lg border bg-background px-3" value={tenant}
+       <div className="block min-w-0 max-w-md font-medium">
+        <label htmlFor={fieldId+'-centre'}>Centre</label>
+        <select id={fieldId+'-centre'} className="mt-1 block min-h-11 w-full min-w-0 rounded-lg border bg-background px-3" value={tenant}
          disabled={frozen||centreState!=='ready'} onChange={e=>changeCentre(e.target.value)}>
          <option value="">Choose a centre</option>{centres.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
-       </label>
+       </div>
        {centreState==='loading'&&<p role="status">Verifying available centres…</p>}
        {centreError&&<div role="alert" className="space-y-3"><p>{centreError}</p><Button className={actionClass} variant="outline" disabled={frozen} onClick={()=>setCentreRevision(value=>value+1)}>Retry centre list</Button></div>}
        {centreState==='ready'&&!centres.length&&<p>No authorised centres were returned.</p>}
@@ -263,13 +265,14 @@ function Workspace({isScopeCurrent}:{isScopeCurrent:()=>boolean}){
      {directoryError&&<div role="alert" className="space-y-3 rounded-lg border border-destructive p-4 max-sm:px-[16px]"><p>{directoryError}</p><Button className={actionClass} variant="outline" disabled={frozen} onClick={refreshDirectory}>Retry staff directory</Button></div>}
      {centreReady&&directoryState==='ready'&&<section className="min-w-0 space-y-4 rounded-xl border bg-card p-5 max-sm:px-[16px]">
       <h2 id="staff-permission-heading" tabIndex={-1} className="text-lg font-semibold">Office administrator, HR and secretary accounts</h2>
-      <label className="block min-w-0 max-w-xl font-medium">Select an account and role
-       <select value={selection} disabled={frozen} onChange={e=>choose(e.target.value)}
+      <div className="block min-w-0 max-w-xl font-medium">
+       <label htmlFor={fieldId+'-account'}>Select an account and role</label>
+       <select id={fieldId+'-account'} value={selection} disabled={frozen} onChange={e=>choose(e.target.value)}
         className="mt-1 block min-h-11 w-full min-w-0 rounded-lg border bg-background px-3">
         <option value="">Choose existing staff account</option>
         {directory.map(p=><option key={personKey(p)} value={personKey(p)}>{personName(p)} · {roleLabels[p.role]}</option>)}
        </select>
-      </label>
+      </div>
       {!directory.length&&<p className="text-muted-foreground">No verified office-role memberships were returned in this centre. Invitations must complete before a permission profile can be edited.</p>}
       {person&&<p className="text-muted-foreground">Selected: <strong className="text-foreground">{personName(person)}</strong> · {roleLabels[person.role]} · Centre: {centreName}</p>}
       {accessState==='loading'&&<p role="status">Verifying this staff member’s permission record…</p>}
@@ -294,8 +297,9 @@ function Workspace({isScopeCurrent}:{isScopeCurrent:()=>boolean}){
           <legend className="max-w-full px-1 font-semibold">{cap.label}</legend>
           <p className="mb-3 text-muted-foreground">{cap.description}</p>
           <p className="mb-3">Role default: {STAFF_DEFAULTS[person.role].includes(cap.key)?'Allowed':'Not granted'} · Draft: {choices.includes(cap.key)?'Allowed':'Denied'}</p>
-          <label className="block font-medium">Personal override
-           <select aria-label={cap.label+' permission'} className="mt-1 block min-h-11 w-full min-w-0 rounded-lg border bg-background px-3"
+          <div className="block font-medium">
+           <label htmlFor={fieldId+'-'+cap.key}>Personal override</label>
+           <select id={fieldId+'-'+cap.key} aria-label={cap.label+' permission'} className="mt-1 block min-h-11 w-full min-w-0 rounded-lg border bg-background px-3"
             value={overrides[cap.key]||'default'} onChange={e=>{
              if(operation.current||review||needsRead)return;
              const value=e.target.value;setError('');setNote('');
@@ -306,7 +310,7 @@ function Workspace({isScopeCurrent}:{isScopeCurrent:()=>boolean}){
             <option value="allow">Extra permission — allow</option>
             <option value="deny">Less access — deny</option>
            </select>
-          </label>
+          </div>
          </fieldset>)}
         </div>
        </fieldset>

@@ -97,6 +97,18 @@ it('waits for a verified centre list and offers a targeted retry when it fails',
  expect(mock.centres).toHaveBeenCalledTimes(2);expect(mock.rpc).toHaveBeenCalledWith(directoryMethod,{p_tenant:'centre-a'});
 });
 
+it('keeps exact native label text independent of the centre and account options',async()=>{
+ managerScope();mount();
+ const account=await screen.findByRole('combobox',{name:'Select an account and role'});
+ const centre=screen.getByRole('combobox',{name:'Centre'});
+ const labels=(control:HTMLElement)=>Array.from((control as HTMLSelectElement).labels||[]).map(label=>label.textContent?.trim());
+ // Playwright's exact label lookup includes descendant text, unlike its accessible-name lookup.
+ expect(labels(centre)).toEqual(['Centre']);expect(labels(account)).toEqual(['Select an account and role']);
+ await ready();
+ expect(labels(account)).toEqual(['Select an account and role']);
+ expect(labels(screen.getByLabelText('Staff directory permission'))).toEqual(['Personal override']);
+});
+
 it('ignores an old centre directory when the selected centre changes',async()=>{
  managerScope();const old=deferred();
  mock.rpc.mockImplementation((method,args)=>method===directoryMethod&&args.p_tenant==='centre-a'?old.promise:defaultRpc(method,args));

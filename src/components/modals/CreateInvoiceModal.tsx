@@ -187,18 +187,18 @@ function InvoiceWorkspace({open, onOpenChange, onCreated}: CreateInvoiceModalPro
   const busy = pending !== null;
 
   return <Dialog open={open} onOpenChange={close}>
-    <DialogContent ref={content} className="max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-lg overflow-y-auto rounded-lg p-4 text-sm sm:p-6 [&>button:last-child]:grid [&>button:last-child]:min-h-11 [&>button:last-child]:min-w-11 [&>button:last-child]:place-items-center [&>button:last-child]:right-1 [&>button:last-child]:top-1"
+    <DialogContent ref={content} className="grid-cols-1 min-w-0 max-h-[calc(100dvh-2rem)] w-[calc(100vw_-_min(2rem,32px))] max-w-lg overflow-y-auto rounded-lg px-[min(1rem,16px)] py-4 text-sm [overflow-wrap:anywhere] sm:p-6 [&>button:last-child]:grid [&>button:last-child]:min-h-11 [&>button:last-child]:min-w-11 [&>button:last-child]:place-items-center [&>button:last-child]:right-1 [&>button:last-child]:top-1"
       onOpenAutoFocus={() => {if (document.activeElement instanceof HTMLElement) opener.current = document.activeElement;}}
       onCloseAutoFocus={event => {if (opener.current?.isConnected) {event.preventDefault(); opener.current.focus();}}}
       onEscapeKeyDown={event => {if (operation.current) event.preventDefault();}}
       onInteractOutside={event => {if (operation.current) event.preventDefault();}}>
-      <DialogHeader className="pr-12 text-left">
-        <DialogTitle ref={heading} tabIndex={-1} className="leading-snug">{reviewed ? 'Review student invoice' : 'Create student invoice'}</DialogTitle>
+      <DialogHeader className="min-w-0 text-left">
+        <DialogTitle ref={heading} tabIndex={-1} className="min-w-0 pr-12 leading-snug">{reviewed ? 'Review student invoice' : 'Create student invoice'}</DialogTitle>
         <DialogDescription>Link the charge to the correct student account so it appears in their fees.</DialogDescription>
       </DialogHeader>
-      {!active ? <div className="space-y-4"><p role={authLoading ? 'status' : 'alert'}>{authLoading ? 'Verifying your finance access…' : 'Invoice creation requires verified finance officer or centre director membership in your assigned centre and an active finance, director or superadmin role. Superadmin access alone is read-only.'}</p><Button variant="outline" onClick={() => close(false)}>Close</Button></div>
+      {!active ? <div className="min-w-0 space-y-4"><p role={authLoading ? 'status' : 'alert'}>{authLoading ? 'Verifying your finance access…' : 'Invoice creation requires verified finance officer or centre director membership in your assigned centre and an active finance, director or superadmin role. Superadmin access alone is read-only.'}</p><Button variant="outline" onClick={() => close(false)}>Close</Button></div>
         : reviewed ? <section aria-label="Reviewed student invoice" className="min-w-0 space-y-4">
-          <div className="rounded-lg border p-3">
+          <div className="min-w-0 rounded-lg border px-[min(0.75rem,12px)] py-3 sm:px-3">
             <p className="font-semibold">{reviewed.student_name}</p>
             <dl className="mt-3 space-y-3">
               <div><dt className="text-muted-foreground">Student account reference</dt><dd className="break-all">{reviewed.student_id}</dd></div>
@@ -225,11 +225,11 @@ function InvoiceWorkspace({open, onOpenChange, onCreated}: CreateInvoiceModalPro
         </section> : <form onSubmit={event => void prepareReview(event)} aria-label="New student invoice" className="min-w-0 space-y-4">
           <fieldset disabled={busy} className="min-w-0 space-y-4">
             <legend className="sr-only">Invoice details</legend>
-            <div className="space-y-2">
-              <Label htmlFor={fieldId + '-search'} className="text-sm">Find a centre account</Label>
-              <Input id={fieldId + '-search'} type="search" value={search} maxLength={120} disabled={lookup !== 'ready'} onChange={event => setSearch(event.target.value)} placeholder="Name or account reference"/>
+            <div className="min-w-0 space-y-2">
+              <Label htmlFor={fieldId + '-search'} className="block text-sm">Find a centre account</Label>
+              <Input id={fieldId + '-search'} className="min-w-0 max-w-full px-[min(0.75rem,12px)] sm:px-3" type="search" value={search} maxLength={120} disabled={lookup !== 'ready'} onChange={event => setSearch(event.target.value)} placeholder="Name or account reference"/>
               <Label htmlFor={fieldId + '-student'} className="block text-sm">Student account</Label>
-              <select id={fieldId + '-student'} className="min-h-11 w-full min-w-0 rounded-md border border-input bg-background px-3 py-2 text-base" value={form.studentId} disabled={lookup !== 'ready'} required onChange={event => change('studentId', event.target.value)} aria-describedby={fieldId + '-account-status'}>
+              <select id={fieldId + '-student'} className="min-h-11 w-full min-w-0 max-w-full rounded-md border border-input bg-background px-[min(0.75rem,12px)] py-2 text-base sm:px-3" value={form.studentId} disabled={lookup !== 'ready'} required onChange={event => change('studentId', event.target.value)} aria-describedby={fieldId + '-account-status'}>
                 <option value="">Choose the student's account</option>
                 {options.map(account => <option key={account.user_id} value={account.user_id}>{account.full_name} — {account.user_id}</option>)}
               </select>
@@ -244,20 +244,20 @@ function InvoiceWorkspace({open, onOpenChange, onCreated}: CreateInvoiceModalPro
               </div>
               <p className="text-muted-foreground">The selected account's student role is checked. Course enrolment and fee approval must be checked separately.</p>
             </div>
-            <div>
-              <Label htmlFor={fieldId + '-type'} className="text-sm">Invoice type</Label>
-              <select id={fieldId + '-type'} className="mt-1 min-h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-base" value={form.type} onChange={event => change('type', event.target.value)}>
+            <div className="min-w-0">
+              <Label htmlFor={fieldId + '-type'} className="block text-sm">Invoice type</Label>
+              <select id={fieldId + '-type'} className="mt-1 min-h-11 w-full min-w-0 max-w-full rounded-md border border-input bg-background px-[min(0.75rem,12px)] py-2 text-base sm:px-3" value={form.type} onChange={event => change('type', event.target.value)}>
                 {Object.entries(STUDENT_INVOICE_TYPES).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
               </select>
               <p className="mt-2 text-muted-foreground">Commission records are managed under University Referrals.</p>
             </div>
-            <div className="grid min-w-0 gap-4 sm:grid-cols-2">
-              <div className="min-w-0"><Label htmlFor={fieldId + '-amount'} className="text-sm">Amount (PKR)</Label><Input id={fieldId + '-amount'} className="mt-1" inputMode="decimal" autoComplete="off" placeholder="1200.00" required maxLength={13} value={form.amount} onChange={event => change('amount', event.target.value)}/></div>
-              <div className="min-w-0"><Label htmlFor={fieldId + '-instalments'} className="text-sm">Instalments</Label><select id={fieldId + '-instalments'} className="mt-1 min-h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-base" value={form.instalments} onChange={event => change('instalments', event.target.value)}>
+            <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="min-w-0"><Label htmlFor={fieldId + '-amount'} className="block text-sm">Amount (PKR)</Label><Input id={fieldId + '-amount'} className="mt-1 min-w-0 max-w-full px-[min(0.75rem,12px)] sm:px-3" inputMode="decimal" autoComplete="off" placeholder="1200.00" required maxLength={13} value={form.amount} onChange={event => change('amount', event.target.value)}/></div>
+              <div className="min-w-0"><Label htmlFor={fieldId + '-instalments'} className="block text-sm">Instalments</Label><select id={fieldId + '-instalments'} className="mt-1 min-h-11 w-full min-w-0 max-w-full rounded-md border border-input bg-background px-[min(0.75rem,12px)] py-2 text-base sm:px-3" value={form.instalments} onChange={event => change('instalments', event.target.value)}>
                 <option value="1">Full payment</option><option value="2">2 payments</option><option value="4">4 payments</option><option value="6">6 payments</option>
               </select></div>
             </div>
-            <div><Label htmlFor={fieldId + '-due'} className="text-sm">Due date (optional)</Label><Input id={fieldId + '-due'} className="mt-1 [color-scheme:light] dark:[color-scheme:dark]" type="date" value={form.dueDate} onChange={event => change('dueDate', event.target.value)}/></div>
+            <div className="min-w-0"><Label htmlFor={fieldId + '-due'} className="block text-sm">Due date (optional)</Label><Input id={fieldId + '-due'} className="mt-1 min-w-0 max-w-full px-[min(0.75rem,12px)] [color-scheme:light] dark:[color-scheme:dark] sm:px-3" type="date" value={form.dueDate} onChange={event => change('dueDate', event.target.value)}/></div>
           </fieldset>
           {issue && <p role="alert" className="rounded-lg border border-destructive p-3">{issue}</p>}
           {pending === 'review' && <p role="status">Checking the student account before review…</p>}

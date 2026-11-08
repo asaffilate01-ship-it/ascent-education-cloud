@@ -2,6 +2,9 @@ import {test, expect, type Locator, type Page, type TestInfo} from '@playwright/
 import {academicRecords, tenant, user, type Row} from './support/syntheticAcademicRecords';
 import {dismissConsent, inspectLayouts} from './support/layoutEvidence';
 
+// Missing controls should fail promptly enough to retain traces before the CI job's deadline.
+test.use({actionTimeout: 15_000, navigationTimeout: 30_000});
+
 const otherCentre = '00000000-0000-4000-8000-000000000011';
 const invoiceA = '00000000-0000-4000-8000-000000000601';
 const invoiceB = '00000000-0000-4000-8000-000000000602';
@@ -17,6 +20,22 @@ function invoice(id: string, studentName = 'Synthetic learner', extra: Row = {})
 async function restoreText(page: Page) {
   await page.evaluate(() => {document.documentElement.style.fontSize = ''; document.documentElement.classList.remove('dark');});
   await page.setViewportSize({width: 390, height: 1000});
+}
+
+/** Enlarged finance columns keep readable widths; the final column remains reachable. */
+async function inspectEnlargedInvoiceTable(page: Page, info: TestInfo, name: string) {
+  const region = page.getByRole('region', {name: 'Invoice table', exact: true});
+  const columns = await region.locator('thead th').evaluateAll(headers => headers.map(header => ({
+    width: header.getBoundingClientRect().width,
+    fontSize: parseFloat(getComputedStyle(header).fontSize),
+  })));
+  expect(columns).toHaveLength(6);
+  for (const column of columns) expect(column.width).toBeGreaterThanOrEqual(column.fontSize * 5);
+  await region.evaluate(element => {element.scrollLeft = element.scrollWidth;});
+  const lastAction = region.locator('tbody tr').last().locator('td').last();
+  await lastAction.scrollIntoViewIfNeeded();
+  await expect(lastAction).toBeInViewport();
+  await page.screenshot({path: info.outputPath(`${name}-dark-200-percent-text-1440-actions.png`), animations: 'disabled'});
 }
 
 /** Dialogs must remain inside the viewport, with their final action reachable by scrolling. */
@@ -36,16 +55,23 @@ async function inspectDialog(page: Page, dialog: Locator, finalAction: string, i
       const bounds = await dialog.evaluate(element => {
         const box = element.getBoundingClientRect();
         return {inside: box.left >= -1 && box.right <= innerWidth + 1 && box.top >= -1 && box.bottom <= innerHeight + 1,
-          contains: element.scrollWidth <= element.clientWidth + 1};
+          contains: element.scrollWidth <= element.clientWidth + 1,
+          width: element.clientWidth, scrollWidth: element.scrollWidth,
+          overflowing: Array.from(element.querySelectorAll('*')).filter(child => {
+            const childBox = child.getBoundingClientRect();
+            return childBox.width > 0 && childBox.right > box.right + 1;
+          }).slice(0, 12).map(child => ({tag: child.tagName, text: child.textContent?.slice(0, 90),
+            width: Math.round(child.getBoundingClientRect().width)}))};
       });
-      expect(bounds).toEqual({inside: true, contains: true});
+      await page.screenshot({path: info.outputPath(`${name}-${enlarged ? 'dark-200-percent-text-' : ''}${width}.png`), animations: 'disabled'});
+      expect(bounds.inside, 'The complete dialog must fit within the viewport').toBe(true);
+      expect(bounds.contains, JSON.stringify(bounds)).toBe(true);
       const close = dialog.getByRole('button', {name: 'Close', exact: true});
       if (await close.count()) {
         const target = await close.boundingBox();
         expect(target?.width).toBeGreaterThanOrEqual(44);
         expect(target?.height).toBeGreaterThanOrEqual(44);
       }
-      await page.screenshot({path: info.outputPath(`${name}-${enlarged ? 'dark-200-percent-text-' : ''}${width}.png`), animations: 'disabled'});
       const action = dialog.getByRole('button', {name: finalAction, exact: true});
       await action.scrollIntoViewIfNeeded();
       await expect(action).toBeInViewport();
@@ -221,6 +247,7 @@ test('finance filtering and recovery preserve all loaded invoices and distinguis
   await expect(page.locator('ul:visible').getByText('Account link missing. Finance review required before recording a student payment.', {exact: true})).toBeVisible();
   await expect(page.getByRole('button', {name: /Record student payment for Synthetic learner 2,/})).toHaveCount(0);
   await inspectLayouts(page, info, 'finance-invoice-workspace');
+  await inspectEnlargedInvoiceTable(page, info, 'finance-invoice-workspace');
   expect(fixture.requests.filter(request => request.name === 'invoices').every(request => request.params.get('tenant_id') === `eq.${tenant}`)).toBe(true);
 });
 
@@ -236,6 +263,7 @@ test('a platform owner can review invoices without being offered legacy finance 
   await expect(page.getByRole('button', {name: 'New student invoice', exact: true})).toBeDisabled();
   await expect(page.getByRole('button', {name: /Record student payment for/})).toHaveCount(0);
   await inspectLayouts(page, info, 'platform-invoice-review');
+  await inspectEnlargedInvoiceTable(page, info, 'platform-invoice-review');
   expect(fixture.requests.some(request => request.name === 'payments' ||
     (request.name === 'profiles' && request.params.get('select') === 'user_id,full_name,tenant_id'))).toBe(false);
   expect(fixture.requests.some(request => request.name === 'invoices' && request.method === 'POST')).toBe(false);
