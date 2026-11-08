@@ -58,8 +58,17 @@ function gradleDownloadFailure(lines) {
 
 function swiftPackageDownloadFailure(lines) {
   const start = lines.indexOf(SWIFTPM_ERROR);
-  if (start < 0 || hasOtherFailure(lines.slice(0, start), line => /xcodebuild\[\d+:\d+\] Writing error result bundle to /.test(line))) return false;
+  if (start < 0) return false;
   const artifact = /failed downloading 'https:\/\/github\.com\/ionic-team\/capacitor-swift-pm\/releases\/download\/[\w.-]+\/(Capacitor|Cordova)\.xcframework\.zip' which is required by binary target '\1': badResponseStatusCode\(504\)/g;
+  for (const line of lines.slice(0, start)) {
+    const remaining = line.replace(artifact, '');
+    if (remaining !== line) {
+      // Echoed errors can precede the heading, with no newline before the next
+      // invocation. Only these exact download errors and their suffix may vanish.
+      const suffix = remaining.replace(/fatalError/g, '').trim();
+      if (suffix !== '' && suffix !== 'Command line invocation:') return false;
+    } else if (hasOtherFailure([line], entry => /xcodebuild\[\d+:\d+\] Writing error result bundle to /.test(entry))) return false;
+  }
   const tail = lines.slice(start + 1).join('\n');
   if (!artifact.test(tail)) return false;
   // Xcode repeats its download errors without line breaks before exiting74.

@@ -49,6 +49,16 @@ xcodebuild: error: Could not resolve package dependencies:
 
 failed downloading 'https://github.com/ionic-team/capacitor-swift-pm/releases/download/8.5.3/Capacitor.xcframework.zip' which is required by binary target 'Capacitor': badResponseStatusCode(504)failed downloading 'https://github.com/ionic-team/capacitor-swift-pm/releases/download/8.5.3/Cordova.xcframework.zip' which is required by binary target 'Cordova': badResponseStatusCode(504)fatalError`;
 
+// Job128698579448 attempt2 echoed download errors before the terminal heading,
+// including an unterminated fatalError immediately before this command label.
+const cachedSwiftArtifacts = swift504.split('\n').at(-1);
+const cachedSwift504 = `${cachedSwiftArtifacts}Command line invocation:
+    /Applications/Xcode_26.6.app/Contents/Developer/usr/bin/xcodebuild -resolvePackageDependencies -project ios/App/App.xcodeproj -scheme App -derivedDataPath ios/DerivedData
+
+Resolve Package Graph
+${cachedSwiftArtifacts}
+${swift504}`;
+
 const failed = (output, code = 1) => ({ output, code, signal: null });
 const silent = () => {};
 
@@ -60,6 +70,12 @@ test('accepts only the observed terminal wrapper, Kotlin and SwiftPM download fa
   const annotated = kotlin504.split('\n').map(line => `2026-11-08T09:22:28.9075456Z \u001b[31m${line}\u001b[0m`).join('\r\n');
   assert.equal(classifyNativeDownloadFailure('gradle', failed(annotated)), true);
   assert.equal(classifyNativeDownloadFailure('gradle', failed(wrapperTimeout.replace('10000ms', '60000ms'))), true);
+});
+
+test('accepts the observed echoed SwiftPM504 prefix only with a matching terminal failure', () => {
+  assert.equal(classifyNativeDownloadFailure('swiftpm', failed(cachedSwift504, 74)), true);
+  assert.equal(classifyNativeDownloadFailure('swiftpm', failed(cachedSwiftArtifacts, 74)), false);
+  assert.equal(classifyNativeDownloadFailure('swiftpm', failed(cachedSwift504, 65)), false);
 });
 
 test('rejects failed compile, signature, integrity, authentication, unknown and mixed causes', () => {
@@ -135,6 +151,29 @@ test('exhausted SwiftPM retries preserve exit74', async () => {
   assert.deepEqual(await harness.run(), { code: 74, signal: null, attempts: 3 });
   assert.equal(harness.calls.length, 3);
   assert.deepEqual(harness.delays, [10_000, 30_000]);
+});
+
+test('an echoed SwiftPM504 on attempt2 can reach the third attempt', async () => {
+  const harness = runner([failed(swift504, 74), failed(cachedSwift504, 74), { code: 0, signal: null, output: 'Resolved source packages' }], { mode: 'swiftpm' });
+  assert.deepEqual(await harness.run(), { code: 0, signal: null, attempts: 3 });
+  assert.deepEqual(harness.delays, [10_000, 30_000]);
+});
+
+test('mixed unknown,404, compiler, auth and integrity prefixes still stop on attempt2', async () => {
+  const prefixes = [
+    `${cachedSwiftArtifacts}unexpected cached diagnostic`,
+    `${cachedSwiftArtifacts}\nunknown package resolution failure`,
+    cachedSwiftArtifacts.replaceAll('badResponseStatusCode(504)', 'badResponseStatusCode(404)'),
+    `${cachedSwiftArtifacts}\nApp.swift:4:7: error: cannot find type`,
+    `${cachedSwiftArtifacts}\nAuthentication failed`,
+    `${cachedSwiftArtifacts}\nDownloaded artifact checksum mismatch`,
+  ];
+  for (const prefix of prefixes) {
+    const mixed = `${prefix}\n${swift504}`;
+    const harness = runner([failed(swift504, 74), failed(mixed, 74)], { mode: 'swiftpm' });
+    assert.deepEqual(await harness.run(), { code: 74, signal: null, attempts: 2 });
+    assert.deepEqual(harness.delays, [10_000]);
+  }
 });
 
 test('a later compiler failure never reuses an earlier network error', async () => {
