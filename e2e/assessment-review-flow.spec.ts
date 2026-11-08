@@ -118,13 +118,13 @@ test('a lecturer recovers the original brief and keeps criterion wording attache
   await start(page, `/lecturer/assessments?module=${moduleId}`);
   await page.getByLabel('Assigned teaching module', {exact: true}).selectOption(moduleId);
   await page.getByLabel('Assessment title', {exact: true}).fill('Test and explain boundary cases');
-  await page.getByLabel('Lessons taught and progress', {exact: true}).fill(teaching);
-  await page.getByLabel('Learning outcomes', {exact: true}).fill(outcomes);
-  await page.getByLabel('Student expectations', {exact: true}).fill(expectations);
-  await page.getByLabel('Required evidence and deliverables', {exact: true}).fill(evidence);
+  await page.getByRole('textbox', {name: 'Lessons taught and progress', exact: true}).fill(teaching);
+  await page.getByRole('textbox', {name: 'Learning outcomes', exact: true}).fill(outcomes);
+  await page.getByRole('textbox', {name: 'Student expectations', exact: true}).fill(expectations);
+  await page.getByRole('textbox', {name: 'Required evidence and deliverables', exact: true}).fill(evidence);
   await page.getByLabel('First submission due (Pakistan time)', {exact: true}).fill('2026-11-20T10:00');
   await page.getByLabel('Final submission cutoff (Pakistan time)', {exact: true}).fill('2026-11-25T10:00');
-  await page.getByLabel('Allowed attempts', {exact: true}).selectOption('2');
+  await page.getByRole('combobox', {name: 'Allowed attempts', exact: true}).selectOption('2');
   await page.getByLabel('Approved penalty points per resubmission', {exact: true}).fill('5');
   await page.getByLabel('Awarding-body or centre-approved assessment policy reference', {exact: true}).fill(policy);
   await page.getByRole('button', {name: 'Review assessment brief', exact: true}).click();
@@ -150,15 +150,15 @@ test('a lecturer recovers the original brief and keeps criterion wording attache
   await page.getByRole('button', {name: `Open assessment ${titleA}`, exact: true}).click();
   await page.getByLabel('Criterion code', {exact: true}).fill('LO1.P1');
   await page.getByLabel('Criterion learning outcome', {exact: true}).fill('Explain a reliable solution using evidence.');
-  await page.getByLabel('Criterion evidence standard', {exact: true}).fill('Include the source code and explain a boundary test for every input.');
-  await page.getByLabel('Criterion marking guidance', {exact: true}).fill('Award points for a correct explanation supported by repeatable test results.');
+  await page.getByRole('textbox', {name: 'Criterion evidence standard', exact: true}).fill('Include the source code and explain a boundary test for every input.');
+  await page.getByRole('textbox', {name: 'Criterion marking guidance', exact: true}).fill('Award points for a correct explanation supported by repeatable test results.');
   await page.getByLabel('Maximum points', {exact: true}).fill('50');
   await page.getByRole('button', {name: `Open assessment ${titleB}`, exact: true}).click();
   await expect(page.getByLabel('Criterion code', {exact: true})).toHaveValue('');
   await page.getByLabel('Criterion code', {exact: true}).fill('LO2.P1');
   await page.getByRole('button', {name: `Open assessment ${titleA}`, exact: true}).click();
   await expect(page.getByLabel('Criterion code', {exact: true})).toHaveValue('LO1.P1');
-  await expect(page.getByLabel('Criterion evidence standard', {exact: true})).toHaveValue('Include the source code and explain a boundary test for every input.');
+  await expect(page.getByRole('textbox', {name: 'Criterion evidence standard', exact: true})).toHaveValue('Include the source code and explain a boundary test for every input.');
   await inspectLayouts(page, info, 'lecturer-assessment-drafts');
   await restoreText(page);
   await page.getByRole('button', {name: 'Review criterion', exact: true}).click();
@@ -334,11 +334,11 @@ test('an unconfirmed human mark preserves private work and a verified zero goes 
   const feedback = 'The submission contains an ordinary example, but does not demonstrate the required boundary tests or explain the observed results. Add those checks and link your reasoning to their evidence.';
   for (const index of [0, 1]) {
     await page.getByLabel('Awarded points (not a final student grade)', {exact: true}).nth(index).fill('0');
-    await page.getByLabel('Evidence location or quoted excerpt', {exact: true}).nth(index).fill('Submitted text: one ordinary input is described without boundary cases.');
-    await page.getByLabel('Reason for your mark', {exact: true}).nth(index).fill('The evidence does not demonstrate the required tests or provide a supported explanation.');
-    await page.getByLabel('What is missing, or what evidence is fully met?', {exact: true}).nth(index).fill('Required boundary cases and the explanation of observed results are absent.');
+    await page.getByRole('textbox', {name: 'Evidence location or quoted excerpt', exact: true}).nth(index).fill('Submitted text: one ordinary input is described without boundary cases.');
+    await page.getByRole('textbox', {name: 'Reason for your mark', exact: true}).nth(index).fill('The evidence does not demonstrate the required tests or provide a supported explanation.');
+    await page.getByRole('textbox', {name: 'What is missing, or what evidence is fully met?', exact: true}).nth(index).fill('Required boundary cases and the explanation of observed results are absent.');
   }
-  await page.getByLabel('Individual written feedback', {exact: true}).fill(feedback);
+  await page.getByRole('textbox', {name: 'Individual written feedback', exact: true}).fill(feedback);
   await page.getByRole('button', {name: 'Save private draft', exact: true}).click();
   await expect(page.getByText(/Draft revision 1 saved/)).toBeVisible();
   await inspectLayouts(page, info, 'independent-marking-editor');
@@ -351,7 +351,7 @@ test('an unconfirmed human mark preserves private work and a verified zero goes 
   await inspectReview(page, review, 'Submit mark for IQA', info, 'independent-mark-review');
   await review.getByRole('button', {name: 'Submit mark for IQA', exact: true}).click();
   await expect(page.getByText('Mark not confirmed', {exact: true})).toBeVisible();
-  await expect(page.getByLabel('Individual written feedback', {exact: true})).toHaveValue(feedback);
+  await expect(page.getByRole('textbox', {name: 'Individual written feedback', exact: true})).toHaveValue(feedback);
   expect(new URL(page.url()).searchParams.get('attempt')).toBe(firstAttempt);
   expect(markingCalls).toBe(1);
   await expect(send).toBeDisabled();
