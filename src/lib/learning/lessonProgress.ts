@@ -3,10 +3,12 @@ import type { LessonProgress } from '@/lib/structuredLessons';
 import { mergeLessonProgress } from './offlineLessons';
 
 // Optimistic concurrency preserves work saved on another device while this one was offline.
-export async function persistLessonProgress(studentId: string, item: LessonProgress) {
+export async function persistLessonProgress(studentId: string, item: LessonProgress, isCurrent = () => true) {
  for (let attempt = 0; attempt < 3; attempt++) {
+  if (!isCurrent()) throw Error('Lesson access changed. Reopen this module before saving progress.');
   const current = await db.from('unipathway_lesson_progress').select('*').eq('student_id', studentId)
    .eq('lesson_id', item.lesson_id).eq('revision', item.revision).maybeSingle();
+  if (!isCurrent()) throw Error('Lesson access changed. Reopen this module before saving progress.');
   if (current.error) throw current.error;
   const merged = mergeLessonProgress(current.data ? [current.data] : [], [item])[0];
   const row = { student_id: studentId, lesson_id: item.lesson_id, revision: item.revision,

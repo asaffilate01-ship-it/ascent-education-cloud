@@ -45,7 +45,7 @@ export default function StudentLearningAgenda({tenant, student, moduleIds}: {ten
       <p className="text-xs text-muted-foreground">A separate approved class invitation and classroom permissions are still required to join. These listings do not create Teams meetings.</p>
       {!invited?<p role="status">Checking enrolled module sessions…</p>:invited.error?<p role="alert">Your enrolled module sessions could not be verified. Refresh to retry.</p>:<>
         {!invited.data.length&&<p className="text-sm text-muted-foreground">No upcoming sessions are visible for your active enrolled modules.</p>}
-        {invited.data.map(session=><article className="rounded-lg border p-3" key={session.id}><p className="font-medium">{session.title}</p><p className="text-sm text-muted-foreground">{new Date(session.starts_at).toLocaleString('en-PK',{timeZone:'Asia/Karachi'})}</p><Link className="inline-flex min-h-11 items-center text-sm font-semibold underline" to={'/student/classroom?module='+encodeURIComponent(session.module_id)}>Check classroom invitation and access →</Link></article>)}
+        {invited.data.map(session=><article className="rounded-lg border p-3" key={session.id}><p className="font-medium">{session.title}</p><p className="text-sm text-muted-foreground">{new Date(session.starts_at).toLocaleString('en-PK',{timeZone:'Asia/Karachi'})}</p><Link className="inline-flex min-h-11 items-center text-sm font-semibold underline" to={'/student/classroom?'+new URLSearchParams({module:session.module_id,session:session.id})}>Check classroom invitation and access →</Link></article>)}
       </>}
     </section>
 

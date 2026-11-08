@@ -54,7 +54,7 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
       <div className="lg:pl-60 pl-0">
         {/* Premium Top Bar */}
         <header className="sticky top-0 z-40 min-h-14 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 py-2 px-4 lg:px-6 border-b border-border/40 bg-card/90 backdrop-blur-xl shadow-sm">
-          <div className="ml-12 min-w-0 flex-[1_1_14rem] lg:ml-0">
+          <div className="ml-12 flex min-h-11 min-w-0 flex-[1_1_14rem] flex-col justify-center lg:ml-0">
             {breadcrumbs.length > 1 && (
               <nav aria-label="Breadcrumb" className="hidden min-w-0 flex-wrap md:flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5">
                 {breadcrumbs.map((bc, i) => (

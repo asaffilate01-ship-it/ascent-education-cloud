@@ -403,8 +403,13 @@
 .public-site main h2 { letter-spacing: -.025em; text-wrap: balance; }
 .public-site main h3 { text-wrap: pretty; }
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+
+/* Native calendar controls need the same theme as their dashboard surfaces. */
+#dashboard-content input:is([type="date"], [type="datetime-local"], [type="time"]) { color-scheme: light; }
+.dark #dashboard-content input:is([type="date"], [type="datetime-local"], [type="time"]) { color-scheme: dark; }
+
 @media (max-width: 767px) {
-  #dashboard-content :is(input:not([type=checkbox]):not([type=radio]), textarea, select) { font-size: 16px; }
+  #dashboard-content :is(input:not([type=checkbox]):not([type=radio]), textarea, select) { font-size: max(1rem, 16px); }
 }
 
 /* Prevent iOS focus zoom in public navigation and shared account dialogs too. */

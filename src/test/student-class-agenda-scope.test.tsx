@@ -36,7 +36,7 @@ it('shows only this centre’s active enrolled-module sessions and does not clai
  expect(screen.queryByText('Another centre class')).toBeNull();
  expect(screen.queryByText('Unassigned general class')).toBeNull();
  expect(state.moduleFilters).toEqual([['mine']]);
- expect(screen.getByRole('link',{name:/Check classroom invitation and access/})).toHaveAttribute('href','/student/classroom?module=mine');
+ expect(screen.getByRole('link',{name:/Check classroom invitation and access/})).toHaveAttribute('href','/student/classroom?module=mine&session=enrolled-session');
  expect(screen.getByText(/separate approved class invitation and classroom permissions/)).toBeInTheDocument();
 });
 it('does not fetch any centre-wide classes when no active module has been verified',async()=>{
