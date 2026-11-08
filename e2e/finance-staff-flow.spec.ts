@@ -189,6 +189,9 @@ test('manual payment recovery stays with its invoice and records evidence withou
   await inspectDialog(page, dialog, 'Record pending payment', info, 'reviewed-student-payment');
   await dialog.getByRole('button', {name: 'Record pending payment', exact: true}).click();
   await expect(dialog.getByRole('button', {name: 'Check payment record', exact: true})).toBeVisible();
+  // Recovery is reserved before sending; an enabled action establishes that the response finished.
+  await expect(dialog.getByRole('button', {name: 'Check payment record', exact: true})).toBeEnabled();
+  await expect(dialog.getByRole('alert')).toContainText('The payment record was not confirmed.');
   const paymentWrites = () => fixture.requests.filter(request => request.name === 'payments' && request.method === 'POST');
   expect(paymentWrites()).toHaveLength(1);
   const original = paymentWrites()[0].body!;
