@@ -57,6 +57,8 @@ The first CI rendering exposed two dialog reflow failures at 360px with enlarged
 
 Visual inspection also found the desktop invoice table compressing headings and values into individual letters at 200% text even though the page passed its overflow check. The table now keeps readable column widths inside its keyboard-focusable horizontal scroll region. Filters stack when their text requires more room, and only the invoice identifier uses character-level wrapping. The shared page heading now wraps its action beneath a title that needs more space, correcting an observed 768px enlarged-text title compression. Additional browser evidence verifies column width and access to the final action column. The default-off office gate was inspected at all eight width/mode combinations without a gate-specific clipping or action-reachability defect.
 
+The next Chromium run passed all 58 cases without retries. Its screenshot review confirmed the dialog, table and heading corrections and found one remaining spacing issue in the 360px enlarged finance view: card and button padding split a summary amount's final digit and the payment action's last word. Small-screen horizontal padding is capped for those cards and payment actions, preserving the existing font sizes and complete financial values.
+
 ## Follow-up defects retained for a separate build
 
 - Assessment managers need the complete teaching summary, learning outcomes, evidence and rubric descriptions before publication; existing pre-filter row caps can hide older relevant briefs or attempts.

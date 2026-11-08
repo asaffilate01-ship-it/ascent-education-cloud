@@ -154,7 +154,7 @@ function FinanceWorkspace() {
   if (!allowed) return <DashboardLayout title="Finance"><p role="alert">A verified finance or centre leadership role with an assigned centre is required.</p></DashboardLayout>;
 
   const paymentAction = (invoice: Invoice) => canRecord(invoice) ?
-    <Button variant="outline" className="w-full xl:w-auto" onClick={() => openPayment(invoice)} aria-label={'Record student payment for ' + invoice.student_name + ', invoice ' + invoice.id}>
+    <Button variant="outline" className="w-full max-sm:px-[12px] xl:w-auto" onClick={() => openPayment(invoice)} aria-label={'Record student payment for ' + invoice.student_name + ', invoice ' + invoice.id}>
       <Banknote aria-hidden="true"/>Record student payment
     </Button> : invoice.type === 'commission' ?
       <p className="text-sm text-muted-foreground">Review through commission operations.</p> : !invoice.student_id ?
@@ -189,7 +189,7 @@ function FinanceWorkspace() {
                   {label: 'Recorded payments', value: totalCollected},
                   {label: 'Overdue student invoices', value: overdue},
                   {label: 'Recorded commission invoices', value: recordedCommissions},
-                ].map(item => <div key={item.label} className="min-w-0 rounded-xl border bg-card p-4">
+                ].map(item => <div key={item.label} className="min-w-0 rounded-xl border bg-card p-4 max-sm:px-[16px]">
                   <dt className="text-sm text-muted-foreground">{item.label}</dt>
                   <dd className="mt-2 break-words text-2xl font-semibold tabular-nums">{fmt(item.value)}</dd>
                 </div>)}
@@ -230,7 +230,7 @@ function FinanceWorkspace() {
                 !filtered.length ? <div className="space-y-3 rounded-xl border bg-card p-5"><h3 className="font-semibold">No invoices match these filters</h3><p className="text-sm text-muted-foreground">Try another name or invoice reference, or clear the filters.</p><Button variant="outline" onClick={resetFilters}>Show all invoices</Button></div> : <>
                   <ul className="space-y-3 xl:hidden">{visible.map(invoice => {
                     const liability = feeLiability(invoice);
-                    return <li key={invoice.id} className="min-w-0 space-y-3 rounded-xl border bg-card p-4">
+                    return <li key={invoice.id} className="min-w-0 space-y-3 rounded-xl border bg-card p-4 max-sm:px-[16px]">
                       <div className="flex flex-wrap items-start justify-between gap-2"><h3 className="min-w-0 break-words font-semibold">{invoice.student_name}</h3><StatusBadge status={invoice.status} variant={statusVariant(invoice.status)}/></div>
                       <p className="text-sm text-muted-foreground">Invoice reference: <span className="break-all">{invoice.id}</span></p>
                       <p className="text-sm capitalize">{invoice.type} · due {dueDate(invoice.due_date)}</p>
