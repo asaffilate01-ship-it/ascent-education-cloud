@@ -23,8 +23,9 @@ const source=readFileSync('src/pages/student/LessonArchive.tsx','utf8');
 
 describe('private lesson archive with staged post-class service',()=>{
  it('does not list a centre-wide class history before backend verification',async()=>{
-  mount();await screen.findByRole('alert');
-  expect(screen.getByRole('alert')).toHaveTextContent(/could not be verified/i);
+  mount();await screen.findByRole('heading',{name:'Recordings are awaiting activation'});
+  expect(screen.queryByRole('alert')).toBeNull();
+  expect(screen.queryByRole('button',{name:'Refresh archive'})).toBeNull();
   expect(screen.getByText(/24 hours after the class has actually ended/)).toBeInTheDocument();
   expect(state.query).not.toHaveBeenCalled();
   expect(state.sign).not.toHaveBeenCalled();

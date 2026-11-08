@@ -3,13 +3,13 @@ import {act,cleanup,fireEvent,render,screen,waitFor} from '@testing-library/reac
 import {MemoryRouter} from 'react-router-dom';
 import StudentReleasedResults from '@/pages/student/StudentReleasedResults';
 import StudentCoursework from '@/pages/student/StudentCoursework';
-const mock=vi.hoisted(()=>({tables:{} as Record<string,Record<string,unknown>[]>,fail:'',failOffset:0,user:{id:'student',tenantId:'centre',role:'student'},calls:[] as {table:string;key:string;from:number}[],pending:null as null|Promise<{data:Record<string,unknown>[];error:null}>}));
+const mock=vi.hoisted(()=>({tables:{} as Record<string,Record<string,unknown>[]>,fail:'',failOffset:0,user:{id:'student',tenantId:'centre',role:'student',roles:['student']},calls:[] as {table:string;key:string;from:number}[],pending:null as null|Promise<{data:Record<string,unknown>[];error:null}>}));
 vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:mock.user})}));
 vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:{children:React.ReactNode})=><main>{children}</main>}));
 vi.mock('@/components/assessment/GuardianResultSharing',()=>({default:()=>null}));
 vi.mock('@/components/assessment/CourseworkFiles',()=>({default:()=>null}));
 vi.mock('@/lib/db',()=>({db:{from:(table:string)=>{let data=mock.tables[table]||[],key='id';const q={select:()=>q,eq:(k:string,value:unknown)=>{data=data.filter(r=>r[k]===value);return q;},in:(k:string,values:unknown[])=>{data=data.filter(r=>values.includes(r[k]));return q;},order:(k:string)=>{key=k;return q;},range:async(from:number,to:number)=>{mock.calls.push({table,key,from});if(mock.pending&&table==='unipathway_assessment_released_results')return mock.pending;if(mock.fail===table&&from>=mock.failOffset)return {data:null,error:{message:'offline'}};return {data:[...data].sort((a,b)=>String(a[key]).localeCompare(String(b[key]))).slice(from,to+1),error:null};}};return q;}}}));
-beforeEach(()=>{mock.fail='';mock.failOffset=0;mock.calls=[];mock.pending=null;mock.user={id:'student',tenantId:'centre',role:'student'};mock.tables={
+beforeEach(()=>{mock.fail='';mock.failOffset=0;mock.calls=[];mock.pending=null;mock.user={id:'student',tenantId:'centre',role:'student',roles:['student']};mock.tables={
  student_enrolments:[{id:'e',programme_id:'p',student_id:'student',tenant_id:'centre',status:'active'}],
  modules:[{id:'m',programme_id:'p',tenant_id:'centre',title:'Maths'}],
  unipathway_assessment_briefs:Array.from({length:301},(_,i)=>({id:`b${String(i).padStart(3,'0')}`,module_id:'m',tenant_id:'centre',title:`Assessment ${i}`,assessment_type:'coursework',status:'published',due_at:'2099-01-01',submission_cutoff:'2099-02-01',max_attempts:3,penalty_points_per_resubmission:5,policy_reference:'Approved policy'})),
@@ -42,7 +42,7 @@ it('ignores an old account result request completing after an account switch',as
  let finish!:(value:{data:Record<string,unknown>[];error:null})=>void;
  mock.pending=new Promise(resolve=>{finish=resolve;});const view=mount(<StudentReleasedResults/>);
  await waitFor(()=>expect(mock.calls.some(c=>c.table==='unipathway_assessment_released_results')).toBe(true));
- mock.pending=null;mock.user={id:'other-student',tenantId:'other-centre',role:'student'};
+ mock.pending=null;mock.user={id:'other-student',tenantId:'other-centre',role:'student',roles:['student']};
  view.rerender(<MemoryRouter><StudentReleasedResults/></MemoryRouter>);await screen.findByText('No released scores yet');
  await act(async()=>{finish({data:[mock.tables.unipathway_assessment_released_results[0]],error:null});});
  await waitFor(()=>expect(screen.queryByText('Assessment 0')).toBeNull());expect(screen.queryByText('Original released feedback')).toBeNull();

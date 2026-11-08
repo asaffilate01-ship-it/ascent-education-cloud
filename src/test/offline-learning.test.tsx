@@ -40,6 +40,12 @@ describe('progress reconciliation',()=>{
   mock.read.mockResolvedValue({data:null,error:{code:'42501'}});
   await expect(persistLessonProgress('student',row)).rejects.toEqual({code:'42501'});expect(mock.calls).toHaveLength(0);
  });
+ it('does not start a write when lesson access changes during its prerequisite read',async()=>{
+  let current=true,finish!:(value:{data:typeof row;error:null})=>void;
+  mock.read.mockReturnValue(new Promise(resolve=>{finish=resolve;}));
+  const saving=persistLessonProgress('student',row,()=>current);current=false;
+  finish({data:row,error:null});await expect(saving).rejects.toThrow('Lesson access changed');expect(mock.calls).toHaveLength(0);
+ });
 });
 describe('lesson authoring',()=>{
  it('loads old content for review without publishing or overwriting history',async()=>{

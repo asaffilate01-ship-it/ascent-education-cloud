@@ -62,9 +62,11 @@ describe('UniPathway invitation-only Teams classrooms and academic materials',()
   expect(live).not.toContain("status: 'available'");
  });
  it('surfaces provider/migration errors and never claims unpublished Teams recordings are playable',()=>{
-  expect(classroom).toContain("if(classes.error){setError(classes.error.message)");
+  expect(classroom).toContain('pagedRows<Session>');
+  expect(classroom).toContain('Classes could not be loaded');
+  expect(classroom).toContain('setError(true); setSessions([]); setBoards([])');
   expect(classroom).toContain('Microsoft Teams lobby, presenter and recording permissions must be configured separately.');
-  expect(scheduler).toContain('The calendar worker, Graph consent and Teams licences must be connected before delivery.');
+  expect(scheduler).toContain('Saving a class queues its invitations; Microsoft delivery is confirmed separately below.');
   expect(archive).toContain('publishedArchiveAssetAvailable(a,session)');
   expect(archive).toContain('classMediaUrl(a.storage_reference)');
   expect(media).toContain('createSignedUrl(path,120)');
