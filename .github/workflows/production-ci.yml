@@ -8,7 +8,7 @@ permissions:
   contents: read
 jobs:
   typecheck:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -16,7 +16,7 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npx tsc --noEmit -p tsconfig.app.json
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -24,7 +24,7 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run lint
   unit-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -32,8 +32,10 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run test
       - run: npm run test:worker-operations
+      - name: Native dependency retry boundaries
+        run: node --test scripts/ci/retry-native-downloads.test.mjs
   database-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -53,7 +55,7 @@ jobs:
       - name: Fresh schema and access checks (hosted extensions deferred)
         run: npm run test:fresh-schema
   edge-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -70,7 +72,7 @@ jobs:
       - run: npm run check:enquiry
       - run: npm run test:enquiry
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -85,6 +87,8 @@ jobs:
       VITE_SUPABASE_URL: https://unipathway-browser-ci.invalid
       VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_synthetic_ci_only
       VITE_TURNSTILE_SITE_KEY: ci-only-no-real-challenge
+      VITE_UNIPATHWAY_OFFICE_ACCESS_ENABLED: 'false'
+      VITE_UNIPATHWAY_STAFF_INVITES_ENABLED: 'false'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -96,7 +100,11 @@ jobs:
       - name: Chromium acceptance for public, progression and protected routes
         run: npx playwright test e2e/unipathway-ielts-admissions.spec.ts e2e/public-smoke.spec.ts e2e/assessment-evidence.spec.ts e2e/private-feedback.spec.ts e2e/centre-feedback.spec.ts e2e/course-discovery.spec.ts e2e/qualification-accessibility.spec.ts
       - name: Connected academic journey acceptance
-        run: npx playwright test e2e/ux-flow.spec.ts e2e/teaching-learning-flow.spec.ts --workers=1
+        run: npx playwright test e2e/ux-flow.spec.ts e2e/teaching-learning-flow.spec.ts e2e/staff-access-gates.spec.ts --workers=1
+      - name: Finance and staged staff permission journeys (synthetic records only)
+        env:
+          VITE_UNIPATHWAY_OFFICE_ACCESS_ENABLED: 'true'
+        run: npx playwright test e2e/finance-staff-flow.spec.ts --workers=1 --output=test-results/finance-staff
       - name: Retain UX flow screenshots and failure traces
         if: always()
         uses: actions/upload-artifact@v4

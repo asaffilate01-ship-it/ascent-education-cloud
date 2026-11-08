@@ -1,6 +1,7 @@
-import {useEffect,useRef,useState} from 'react';
+import {useCallback,useEffect,useRef,useState} from 'react';
 import {Link} from 'react-router-dom';
 import {useAuth} from '@/contexts/AuthContext';
+import {canUseActiveRole} from '@/lib/roleMembership';
 import {supabase} from '@/integrations/supabase/client';
 import {db} from '@/lib/db';
 import {pagedRows} from '@/lib/pagedRows';
@@ -10,43 +11,48 @@ import {accountRoles,parseAccountCsv,type AccountRow} from '@/lib/accountImport'
 import {accountConfirmed,accountSettled,invitationOutcome} from '@/lib/accountInvitation';
 type Invitation={id:string;email:string;full_name:string;role:string;status:string;email_sent:boolean;created_at:string;completed_at:string|null};
 export default function AccountOperations(){
- const {user}=useAuth();
- if(!user?.roles.some(r=>['centre_director','superadmin'].includes(r)))return <p>Contact your centre director to invite or import accounts.</p>;
+ const {user,loading}=useAuth();
+ const scope=[user?.id,user?.tenantId,user?.role,user?.roles?.join(','),!!loading].join(':');
+ const currentScope=useRef(scope);currentScope.current=scope;
+ if(loading)return <p role="status">Verifying your active account-management role…</p>;
+ if(!user||!canUseActiveRole(user,['centre_director','superadmin']))return <p role="alert">Use an active, verified Centre Director or Platform Owner role to invite or import accounts.</p>;
  if(!user.tenantId)return <p role="alert">Select an authorised centre before managing accounts.</p>;
- return <Workspace key={`${user.id}:${user.tenantId}:${user.roles.join(',')}`} tenant={user.tenantId} superadmin={user.roles.includes('superadmin')}/>;
+ return <Workspace key={scope} tenant={user.tenantId} superadmin={user.role==='superadmin'} isScopeCurrent={()=>currentScope.current===scope}/>;
 }
-function Workspace({tenant,superadmin}:{tenant:string;superadmin:boolean}){
+function Workspace({tenant,superadmin,isScopeCurrent}:{tenant:string;superadmin:boolean;isScopeCurrent:()=>boolean}){
  const [email,setEmail]=useState(''),[name,setName]=useState(''),[role,setRole]=useState('student'),[rows,setRows]=useState<AccountRow[]>([]),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
  const [history,setHistory]=useState<Invitation[]>([]),[historyError,setHistoryError]=useState(''),[historyLoading,setHistoryLoading]=useState(true),[refresh,setRefresh]=useState(0),[search,setSearch]=useState(''),[page,setPage]=useState(0);
  const mounted=useRef(true),running=useRef(false),paused=useRef(false),fileGeneration=useRef(0);
+ const scopeLease=useRef(isScopeCurrent);scopeLease.current=isScopeCurrent;
+ const active=useCallback(()=>mounted.current&&scopeLease.current(),[]);
  useEffect(()=>{const files=fileGeneration;mounted.current=true;return()=>{mounted.current=false;paused.current=true;files.current++;};},[]);
- useEffect(()=>{let active=true;setHistory([]);setHistoryError('');setHistoryLoading(true);setPage(0);
-  void pagedRows<Invitation>(()=>db.from('unipathway_account_invitations').select('id,email,full_name,role,status,email_sent,created_at,completed_at').eq('tenant_id',tenant),()=>active)
-   .then(data=>{if(active)setHistory(data.sort((a,b)=>b.created_at.localeCompare(a.created_at)||a.id.localeCompare(b.id)));})
-   .catch(()=>{if(active)setHistoryError('Account history could not be verified. Refresh to retry.');}).finally(()=>{if(active)setHistoryLoading(false);});
-  return()=>{active=false;};
- },[tenant,refresh]);
+ useEffect(()=>{let reading=true;const current=()=>reading&&active();setHistory([]);setHistoryError('');setHistoryLoading(true);setPage(0);
+  void pagedRows<Invitation>(()=>db.from('unipathway_account_invitations').select('id,email,full_name,role,status,email_sent,created_at,completed_at').eq('tenant_id',tenant),current)
+   .then(data=>{if(current())setHistory(data.sort((a,b)=>b.created_at.localeCompare(a.created_at)||a.id.localeCompare(b.id)));})
+   .catch(()=>{if(current())setHistoryError('Account history could not be verified. Refresh to retry.');}).finally(()=>{if(current())setHistoryLoading(false);});
+  return()=>{reading=false;};
+ },[tenant,refresh,active]);
  async function process(batch:AccountRow[]){
-  if(running.current||!mounted.current)return;fileGeneration.current++;running.current=true;paused.current=false;setBusy(true);setError('');setNotice('');
+  if(running.current||!active())return;fileGeneration.current++;running.current=true;paused.current=false;setBusy(true);setError('');setNotice('');
   const current=batch.map(r=>({...r}));setRows(current);
   try{for(let i=0;i<current.length;i++){
-   if(!mounted.current||paused.current)break;
+   if(!active()||paused.current)break;
    if(accountSettled(current[i].status))continue;
    current[i]={...current[i],status:'processing',error:undefined};setRows(current.map(r=>({...r})));
    try{
     const result=await supabase.functions.invoke('invite-staff',{body:{email:current[i].email,fullName:current[i].fullName,role:current[i].role,tenantId:tenant}});
     const status=await invitationOutcome(result);
-    if(!mounted.current)return;current[i]={...current[i],status,error:undefined};
-   }catch(e){if(!mounted.current)return;current[i]={...current[i],status:'failed',error:e instanceof Error?e.message:'Request could not be confirmed.'};paused.current=true;}
+    if(!active())return;current[i]={...current[i],status,error:undefined};
+   }catch(e){if(!active())return;current[i]={...current[i],status:'failed',error:e instanceof Error?e.message:'Request could not be confirmed.'};paused.current=true;}
    setRows(current.map(r=>({...r})));
   }
-  if(mounted.current){setNotice(paused.current?'Batch paused. Check the result, then retry or skip the affected row.':'Batch finished. Review each account result below.');setRefresh(v=>v+1);}
-  }finally{running.current=false;if(mounted.current)setBusy(false);}
+  if(active()){setNotice(paused.current?'Batch paused. Check the result, then retry or skip the affected row.':'Batch finished. Review each account result below.');setRefresh(v=>v+1);}
+  }finally{running.current=false;if(active())setBusy(false);}
  }
  async function readFile(file?:File){
   if(!file)return;const token=++fileGeneration.current;setError('');setNotice('');
-  try{if(file.size>100000)throw Error('CSV must be under 100 KB.');const parsed=parseAccountCsv(await file.text());if(mounted.current&&token===fileGeneration.current&&!running.current)setRows(parsed);}
-  catch(e){if(mounted.current&&token===fileGeneration.current&&!running.current){setRows([]);setError(e instanceof Error?e.message:'Invalid CSV.');}}
+  try{if(file.size>100000)throw Error('CSV must be under 100 KB.');const parsed=parseAccountCsv(await file.text());if(active()&&token===fileGeneration.current&&!running.current)setRows(parsed);}
+  catch(e){if(active()&&token===fileGeneration.current&&!running.current){setRows([]);setError(e instanceof Error?e.message:'Invalid CSV.');}}
  }
  const visible=history.filter(r=>`${r.email} ${r.full_name} ${r.role} ${r.status}`.toLowerCase().includes(search.toLowerCase()));
  return <section className="space-y-5"><h3 className="text-lg font-bold">Account invitations and imports</h3><p className="text-sm">New accounts receive an invitation email. Existing accounts in this centre receive the selected access role. Accounts from other centres cannot be reassigned here. Imports do not enrol learners in courses.</p>

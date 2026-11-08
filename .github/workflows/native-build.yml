@@ -7,13 +7,14 @@ on:
       - 'ios/**'
       - 'package*.json'
       - 'capacitor.config.ts'
+      - 'scripts/ci/retry-native-downloads*'
       - '.github/workflows/native-build.yml'
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   android:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
@@ -28,7 +29,7 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run build
       - run: npx cap sync android
-      - run: bash android/gradlew -p android assembleDebug
+      - run: node scripts/ci/retry-native-downloads.mjs gradle -- bash android/gradlew -p android assembleDebug
       - name: Verify release signing with disposable CI credentials
         shell: bash
         run: |
@@ -39,7 +40,7 @@ jobs:
           export UNIPATHWAY_ANDROID_KEY_ALIAS=ci-only
           trap 'rm -f "$UNIPATHWAY_ANDROID_KEYSTORE"' EXIT
           keytool -genkeypair -keystore "$UNIPATHWAY_ANDROID_KEYSTORE" -storepass "$UNIPATHWAY_ANDROID_STORE_PASSWORD" -keypass "$UNIPATHWAY_ANDROID_KEY_PASSWORD" -alias ci-only -keyalg RSA -keysize 2048 -validity 2 -dname "CN=CI Test Only" -noprompt
-          bash android/gradlew -p android bundleRelease
+          node scripts/ci/retry-native-downloads.mjs gradle -- bash android/gradlew -p android bundleRelease
           jarsigner -verify android/app/build/outputs/bundle/release/app-release.aab > "$RUNNER_TEMP/ci-signature.txt"
           grep -q 'jar verified' "$RUNNER_TEMP/ci-signature.txt"
       - uses: actions/upload-artifact@v4
@@ -58,6 +59,8 @@ jobs:
       - run: npm run build
       - run: npx cap sync ios
       - run: xcodebuild -version
+      - name: Resolve pinned simulator dependencies
+        run: node scripts/ci/retry-native-downloads.mjs swiftpm -- xcodebuild -resolvePackageDependencies -project ios/App/App.xcodeproj -scheme App -derivedDataPath ios/DerivedData
       - name: Compile unsigned simulator application
         run: xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath ios/DerivedData CODE_SIGNING_ALLOWED=NO build
       - name: Package simulator application
