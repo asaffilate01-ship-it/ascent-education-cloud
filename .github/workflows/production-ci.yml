@@ -101,6 +101,8 @@ jobs:
         run: npx playwright test e2e/unipathway-ielts-admissions.spec.ts e2e/public-smoke.spec.ts e2e/assessment-evidence.spec.ts e2e/private-feedback.spec.ts e2e/centre-feedback.spec.ts e2e/course-discovery.spec.ts e2e/qualification-accessibility.spec.ts
       - name: Connected academic journey acceptance
         run: npx playwright test e2e/ux-flow.spec.ts e2e/teaching-learning-flow.spec.ts e2e/staff-access-gates.spec.ts --workers=1
+      - name: Assessment drafting, publication and independent marking journeys
+        run: npx playwright test e2e/assessment-review-flow.spec.ts --workers=1 --output=test-results/assessment-review
       - name: Finance and staged staff permission journeys (synthetic records only)
         env:
           VITE_UNIPATHWAY_OFFICE_ACCESS_ENABLED: 'true'

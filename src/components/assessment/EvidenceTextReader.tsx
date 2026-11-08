@@ -42,7 +42,7 @@ export default function EvidenceTextReader({text,searchLabel='Find in submitted 
  },[line,needle,text]);
  return <div className="min-w-0 space-y-3">
   <label className="block text-sm font-medium" htmlFor={id}>{searchLabel}</label>
-  <Input ref={input} id={id} type="search" maxLength={120} value={query} aria-describedby={`${id}-status`} placeholder="Find a word or phrase" onChange={e=>{setQuery(e.target.value);setCursor(0);}} onKeyDown={e=>{
+  <Input ref={input} id={id} className="min-w-0 px-[min(0.75rem,12px)]" type="search" maxLength={120} value={query} aria-describedby={`${id}-status`} placeholder="Find a word or phrase" onChange={e=>{setQuery(e.target.value);setCursor(0);}} onKeyDown={e=>{
    if(e.key==='Enter'){e.preventDefault();move(e.shiftKey?-1:1);}
    if(e.key==='Escape'){e.preventDefault();e.stopPropagation();clear();}
   }}/>
@@ -53,11 +53,11 @@ export default function EvidenceTextReader({text,searchLabel='Find in submitted 
    {onSelectLine&&matches.length>0&&<Button variant="outline" onClick={()=>onSelectLine(line)}>Select matching line for citation</Button>}
   </div>
   <p id={`${id}-status`} role="status" aria-atomic="true" className="text-sm text-muted-foreground">{needle?(matches.length?`Match ${current+1} of ${matches.length} matching lines · line ${line}`:'No matching lines. Try another word or clear the search.'):`${lines.length} source ${lines.length===1?'line':'lines'}. Search does not change the evidence.`}</p>
-  <ol ref={list} tabIndex={0} className="max-h-96 overflow-auto rounded-lg border bg-secondary/20 p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" aria-label={listLabel}>
+  <ol ref={list} tabIndex={0} className="max-h-96 overflow-auto rounded-lg border bg-secondary/20 px-[min(0.75rem,12px)] py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" aria-label={listLabel}>
    {lines.map((value,i)=>{
     const number=i+1,matched=matchSet.has(number),selected=selection&&number>=selection.start&&number<=selection.end;
-    return <li key={i} ref={el=>{if(el)rows.current.set(number,el);else rows.current.delete(number);}} aria-current={needle&&number===line?'true':undefined} className={`grid grid-cols-[2.5rem_minmax(0,1fr)] gap-2 rounded px-1 py-1 text-sm ${selected?'bg-primary/10':''} ${matched?'border-l-2 border-warning':''}`}>
-     <span className="select-none text-right text-muted-foreground" aria-label={`Line ${number}`}>{number}</span><span className="whitespace-pre-wrap break-words [overflow-wrap:anywhere]">{value?fragments[i].map((part,index)=>index%2?<mark key={index} className="rounded-sm bg-primary text-primary-foreground">{part}</mark>:part):'\u00a0'}</span>
+    return <li key={i} ref={el=>{if(el)rows.current.set(number,el);else rows.current.delete(number);}} aria-current={needle&&number===line?'true':undefined} className={`grid grid-cols-[minmax(3ch,max-content)_minmax(0,1fr)] gap-[min(0.5rem,8px)] rounded px-[min(0.25rem,4px)] py-1 text-sm ${selected?'bg-primary/10':''} ${matched?'border-l-2 border-warning':''}`}>
+     <span className="select-none text-right tabular-nums text-muted-foreground" aria-label={`Line ${number}`}>{number}</span><span className="whitespace-pre-wrap break-words [overflow-wrap:anywhere]">{value?fragments[i].map((part,index)=>index%2?<mark key={index} className="rounded-sm bg-primary text-primary-foreground">{part}</mark>:part):'\u00a0'}</span>
     </li>;
    })}
   </ol>

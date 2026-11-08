@@ -15,7 +15,7 @@ function History({attempt,tenant}:{attempt:string;tenant?:string}){
  },[open,tenant,attempt,page,refresh]);
  const shown=rows.slice(0,10),current=shown.find(r=>r.id===selected),previous=shown.find(r=>r.id===compare);
  return <section className="rounded-xl border bg-card p-5 space-y-3"><h2 className="font-semibold">Submitted marking history</h2><p className="text-sm text-muted-foreground">Compare submitted decisions. Private drafts and AI suggestions are separate. Older revisions may contain totals only.</p>
- {!open?<Button variant="outline" onClick={()=>setOpen(true)}>Load submitted revisions</Button>:<>
+ {!open?<Button className="px-[min(1rem,12px)]" variant="outline" onClick={()=>setOpen(true)}>Load submitted revisions</Button>:<>
  {loading&&<p role="status">Loading revisions…</p>}{error&&<p role="alert">{error} <Button variant="outline" onClick={()=>setRefresh(x=>x+1)}>Retry history</Button></p>}
  {!loading&&!error&&<>{!shown.length?<p>No submitted mark revisions are available to this account.</p>:<>
  <div className="grid gap-3 sm:grid-cols-2"><label>Review revision<select className="mt-1 block min-h-11 w-full rounded border bg-background p-2" value={selected} onChange={e=>{setSelected(e.target.value);if(compare===e.target.value)setCompare(selected);}}>{shown.map(r=><option key={r.id} value={r.id}>Revision {r.revision} · {r.adjusted_score}/100</option>)}</select></label>
