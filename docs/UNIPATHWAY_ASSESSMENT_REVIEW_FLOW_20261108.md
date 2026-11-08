@@ -56,7 +56,7 @@ Full references remain available, long text wraps, primary actions remain reacha
 
 ## Verification record
 
-Source verification covers 1,513 application cases across 234 files: the integration run passed 1,439 cases, and the affected marking rerun passed all 94 cases (74 new and 20 also covered by the integration run). The rerun followed correction of a parser error caught while the final recovery change was being integrated. The current source passes application typechecking and the production web build.
+The complete Production CI application run passed 1,513 cases across 234 files. It also passed application typechecking, lint and the production web build. Every follow-up revision must pass these gates again; the pull request records the exact accepted revision.
 
 | Check | Source result |
 | --- | --- |
@@ -70,6 +70,8 @@ Source verification covers 1,513 application cases across 234 files: the integra
 The pull request is the release record for the exact published revision, complete current-head CI results and inspected browser artifacts. Production CI runs the entire application suite again, plus the existing database, edge, worker, native-helper and browser gates. Native builds remain a separate gate. Merge requires successful current-head checks and actual inspection of the retained screenshots; source tests alone do not satisfy browser acceptance.
 
 The four added browser journeys cover lecturer save recovery and per-brief criterion wording; a draft beyond the former 250-record limit and a submission beyond the former 300-record limit; failed versus empty visible staff directories; and an unconfirmed human mark followed by a verified zero-score submission to IQA. They use synthetic in-browser records, assert no unhandled page errors, and perform no hosted writes. Full-page evidence checks include the settled document height, while review dialogs are checked for viewport bounds and reachable final actions.
+
+Rendered review also exposed fixed-size inherited headings, narrow marking columns and a publication toast covering the next dialog's close action. Scoped rem-based workspace and dialog text, wrapping marking panes and citation controls, and retained inline management confirmations address those issues. Review disclosure checks use stable locators while sections open; the browser assertions remain unchanged.
 
 ## Delivery boundary
 

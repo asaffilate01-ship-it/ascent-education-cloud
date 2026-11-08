@@ -14,7 +14,6 @@ import {
   type ManagerAllocationReview, type ManagerAllocationTarget, type ManagerBriefStatus, type ManagerBriefSummary,
   type ManagerPublicationReview, type ManagerStaffRole,
 } from '@/lib/assessment/managerWorkspace';
-import {toast} from 'sonner';
 import {ShieldCheck} from 'lucide-react';
 
 type Phase = 'loading' | 'ready' | 'changed' | 'uncertain' | 'done' | 'error';
@@ -36,9 +35,9 @@ export default function AssessmentManager() {
   // Invalidate old callbacks at render time, including an A → B → A role/account change.
   const liveScope = useRef<string | null>(scope);
   liveScope.current = scope;
-  return <DashboardLayout title="Assessment Management and Marker Allocation" subtitle="Review lecturer briefs and allocate independent assessment">
-    {loading ? <p role="status">Verifying your assessment management access…</p>
-      : !scope ? <p role="alert" className="rounded-lg border border-destructive p-4">A verified active Programme Leader, Centre Director or Superadmin role and a current centre are required.</p>
+  return <DashboardLayout title="Assessment Review and Allocation" subtitle="Review lecturer briefs and allocate independent assessment">
+    {loading ? <p role="status" className="text-base">Verifying your assessment management access…</p>
+      : !scope ? <p role="alert" className="rounded-lg border border-destructive p-4 text-base">A verified active Programme Leader, Centre Director or Superadmin role and a current centre are required.</p>
         : <ManagerWorkspace key={scope} scope={scope} liveScope={liveScope} tenant={user.tenantId!}/>}
   </DashboardLayout>;
 }
@@ -125,7 +124,7 @@ function ManagerWorkspace({scope, liveScope, tenant}: {scope: string; liveScope:
 
   const closeReview = (open: boolean) => {
     setReviewOpen(open);
-    if (!open && !operation.current && review?.phase !== 'uncertain') {
+    if (!open && !operation.current && review?.phase !== 'uncertain' && review?.phase !== 'done') {
       reviewGeneration.current++; setReview(null);
     }
   };
@@ -164,7 +163,7 @@ function ManagerWorkspace({scope, liveScope, tenant}: {scope: string; liveScope:
           setReview({...captured, phase: 'uncertain', message: `Publication was not confirmed.${reply?.error?.message ? ' ' + reply.error.message : ''} Check publication status before trying again.`}); return;
         }
         setReview({...captured, phase: 'done', message: 'Assessment published. Enrolled students can now access the brief and its frozen rubric and policy.'});
-        toast.success(`Published “${captured.title}”.`); setBriefReload(value => value + 1);
+        setBriefReload(value => value + 1);
       } else {
         const target = await loadManagerAllocationTarget(tenant, captured.id, current);
         if (!current()) return;
@@ -194,7 +193,7 @@ function ManagerWorkspace({scope, liveScope, tenant}: {scope: string; liveScope:
           setReview({...captured, phase: 'uncertain', message: `Allocation was not confirmed.${reply?.error?.message ? ' ' + reply.error.message : ''} Check allocation status before trying again.`}); return;
         }
         setReview({...captured, phase: 'done', message: 'Independent assessor and IQA allocated to this submission. Marking and result release remain separate.'});
-        toast.success(`Allocated independent staff for “${captured.title}”, attempt ${captured.snapshot!.attempt.attempt_no}.`); setAllocationReload(value => value + 1);
+        setAllocationReload(value => value + 1);
       }
     } catch (error) {
       if (current()) setReview({...captured, phase: requested || checkOnly ? 'uncertain' : 'ready', message: requested
@@ -206,7 +205,7 @@ function ManagerWorkspace({scope, liveScope, tenant}: {scope: string; liveScope:
   };
 
   const blockers = review?.kind === 'publication' && review.snapshot && review.phase === 'ready' ? publicationBlockers(review.snapshot) : [];
-  return <div className="min-w-0 space-y-6">
+  return <div className="min-w-0 space-y-6 text-base">
     <section className="min-w-0 rounded-xl border bg-primary/5 p-[min(1rem,12px)] sm:p-4" aria-label="Assessment responsibilities">
       <h2 className="flex items-start gap-2 font-semibold"><ShieldCheck className="mt-0.5 size-5 shrink-0" aria-hidden="true"/>Review the brief, then assign independent staff</h2>
       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Lecturers author the teaching brief and rubric. Programme leadership approves publication. A separate assessor marks each submission and a different IQA reviews it. Omniqora analysis remains advisory; students receive no provisional mark.</p>
@@ -215,7 +214,7 @@ function ManagerWorkspace({scope, liveScope, tenant}: {scope: string; liveScope:
     {review && !reviewOpen && (pending || review.phase === 'uncertain' || review.phase === 'done') && <section className="min-w-0 space-y-3 rounded-xl border bg-card p-[min(1rem,12px)] sm:p-4" aria-label="Retained assessment review">
       <p className="font-semibold [overflow-wrap:anywhere]">{review.title}</p>
       <p className="text-sm" role="status">{pending ? 'The reviewed request is still in progress.' : review.phase === 'uncertain' ? 'The outcome still needs a status check. The reviewed details are kept in this workspace.' : review.message}</p>
-      <Button ref={retainedReviewAction} variant="outline" onClick={() => setReviewOpen(true)}>{review.phase === 'done' ? 'View assessment result' : 'Resume assessment review'}</Button>
+      <Button ref={retainedReviewAction} variant="outline" onClick={() => setReviewOpen(true)}>{review.phase === 'done' ? 'View confirmed update' : 'Resume assessment review'}</Button>
     </section>}
 
     <section className="min-w-0 space-y-4 rounded-xl border bg-card p-[min(1.25rem,12px)] sm:p-5" aria-labelledby="manager-briefs-heading">
@@ -277,7 +276,7 @@ function ManagerWorkspace({scope, liveScope, tenant}: {scope: string; liveScope:
     </section>
 
     <Dialog open={reviewOpen && !!review} onOpenChange={closeReview}>
-      <DialogContent ref={dialogContent} className="max-h-[calc(100dvh-24px)] w-[calc(100%-24px)] max-w-3xl grid-cols-[minmax(0,1fr)] overflow-y-auto px-[min(1.5rem,16px)] py-5 [overflow-wrap:anywhere] sm:px-6 [&>button:last-child]:right-3 [&>button:last-child]:top-3 [&>button:last-child]:flex [&>button:last-child]:min-h-11 [&>button:last-child]:min-w-11 [&>button:last-child]:items-center [&>button:last-child]:justify-center" onOpenAutoFocus={event => {event.preventDefault(); dialogHeading.current?.focus({preventScroll: true});}} onCloseAutoFocus={event => {event.preventDefault(); if (retainedReviewAction.current) retainedReviewAction.current.focus(); else if (origin.current?.isConnected && !(origin.current instanceof HTMLButtonElement && origin.current.disabled)) origin.current.focus(); else queueHeading.current?.focus();}}>
+      <DialogContent ref={dialogContent} className="max-h-[calc(100dvh-24px)] w-[calc(100%-24px)] max-w-3xl grid-cols-[minmax(0,1fr)] overflow-y-auto px-[min(1.5rem,16px)] py-5 text-base [overflow-wrap:anywhere] sm:px-6 [&>button:last-child]:right-3 [&>button:last-child]:top-3 [&>button:last-child]:flex [&>button:last-child]:min-h-11 [&>button:last-child]:min-w-11 [&>button:last-child]:items-center [&>button:last-child]:justify-center" onOpenAutoFocus={event => {event.preventDefault(); dialogHeading.current?.focus({preventScroll: true});}} onCloseAutoFocus={event => {event.preventDefault(); if (retainedReviewAction.current) retainedReviewAction.current.focus(); else if (origin.current?.isConnected && !(origin.current instanceof HTMLButtonElement && origin.current.disabled)) origin.current.focus(); else queueHeading.current?.focus();}}>
         <DialogHeader className="min-w-0 pr-[max(2rem,44px)] text-left"><DialogTitle ref={dialogHeading} tabIndex={-1} className="leading-snug">{review?.kind === 'allocation' ? 'Review allocation' : 'Review assessment'}: {review?.title}</DialogTitle><DialogDescription>{review?.kind === 'allocation' ? 'Confirm the exact submission and independent staff accounts.' : 'Review the teaching context, full rubric and published submission policy.'}</DialogDescription></DialogHeader>
         {review?.phase === 'loading' && <p role="status">Loading the selected assessment and its current records…</p>}
         {review?.snapshot && (review.kind === 'publication' ? <ManagerPublicationDetails review={review.snapshot}/> : <ManagerAllocationDetails review={review.snapshot}/>)}

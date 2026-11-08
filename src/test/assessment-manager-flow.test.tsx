@@ -129,8 +129,10 @@ it('accepts successful void publication and prevents duplicate clicks while keep
   expect(publish).toBeDisabled();
   await act(async () => response.resolve({data: null, error: null}));
   await within(dialog).findByText(/Assessment published\. Enrolled students/);
-  expect(mock.success).toHaveBeenCalledExactlyOnceWith(`Published “${brief().title}”.`);
+  expect(within(dialog).getByRole('status')).toHaveTextContent('Assessment published.');
   expect(within(dialog).queryByRole('button', {name: 'Publish reviewed assessment'})).toBeNull();
+  fireEvent.click(within(dialog).getByRole('button', {name: 'Close review'}));
+  expect(screen.getByRole('region', {name: 'Retained assessment review'})).toHaveTextContent('Assessment published.');
 });
 
 it('blocks a changed same-ID brief before RPC and requires an explicit new review', async () => {
@@ -274,7 +276,9 @@ it('excludes teacher, student and the selected marker from IQA and accepts the s
   await within(dialog).findByText(/Independent assessor and IQA allocated to this submission/);
   expect(mock.rpc).toHaveBeenCalledExactlyOnceWith('allocate_unipathway_independent_marker', {p_attempt: ATTEMPT, p_marker: MARKER, p_quality_reviewer: IQA});
   expect(within(dialog).getByText(STUDENT)).toBeInTheDocument();
-  expect(mock.success).toHaveBeenCalledTimes(1);
+  expect(within(dialog).getByRole('status')).toHaveTextContent('Independent assessor and IQA allocated');
+  fireEvent.click(within(dialog).getByRole('button', {name: 'Close review'}));
+  expect(screen.getByRole('region', {name: 'Retained assessment review'})).toHaveTextContent('Independent assessor and IQA allocated');
 });
 
 it('blocks stale staff membership and changed same-ID submission context before allocating', async () => {

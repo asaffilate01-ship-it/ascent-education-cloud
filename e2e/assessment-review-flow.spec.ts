@@ -61,7 +61,10 @@ async function start(page: Page, path: string) {
 
 /** Preserve the real dialog and scroll its final action into view at every required width. */
 async function inspectReview(page: Page, dialog: Locator, actionName: string, info: TestInfo, name: string) {
-  for (const summary of await dialog.locator('details:not([open]) > summary').all()) await summary.click();
+  // Keep the indexed matches stable as each disclosure opens.
+  for (const summary of await dialog.locator('details > summary').all()) {
+    if (!(await summary.evaluate(element => element.parentElement?.hasAttribute('open')))) await summary.click();
+  }
   for (const enlarged of [false, true]) {
     await page.evaluate(enlarged => {
       document.documentElement.classList.toggle('dark', enlarged);
