@@ -2,11 +2,11 @@ import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 import {act,cleanup,fireEvent,render,screen,within} from '@testing-library/react';
 import {MemoryRouter} from 'react-router-dom';
 import AccountOperations from '@/components/admin/AccountOperations';
-const mock=vi.hoisted(()=>({invoke:vi.fn(),rows:[] as Record<string,unknown>[],fail:false,user:{id:'admin',tenantId:'centre',roles:['centre_director']}}));
-vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:mock.user})}));
+const mock=vi.hoisted(()=>({invoke:vi.fn(),reads:vi.fn(),rows:[] as Record<string,unknown>[],fail:false,loading:false,user:{id:'admin',tenantId:'centre',role:'centre_director',roles:['centre_director']}}));
+vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:mock.user,loading:mock.loading})}));
 vi.mock('@/integrations/supabase/client',()=>({supabase:{functions:{invoke:mock.invoke}}}));
-vi.mock('@/lib/db',()=>({db:{from:()=>{let tenant='';const q={select:()=>q,eq:(_key:string,value:string)=>{tenant=value;return q;},order:()=>q,range:async(a:number,b:number)=>({data:mock.rows.filter(r=>r.tenant_id===tenant).slice(a,b+1),error:mock.fail?{message:'offline'}:null})};return q;}}}));
-beforeEach(()=>{mock.invoke.mockReset();mock.rows=[];mock.fail=false;mock.user={id:'admin',tenantId:'centre',roles:['centre_director']};});afterEach(cleanup);
+vi.mock('@/lib/db',()=>({db:{from:()=>{mock.reads();let tenant='';const q={select:()=>q,eq:(_key:string,value:string)=>{tenant=value;return q;},order:()=>q,range:async(a:number,b:number)=>({data:mock.rows.filter(r=>r.tenant_id===tenant).slice(a,b+1),error:mock.fail?{message:'offline'}:null})};return q;}}}));
+beforeEach(()=>{mock.invoke.mockReset();mock.reads.mockReset();mock.rows=[];mock.fail=false;mock.loading=false;mock.user={id:'admin',tenantId:'centre',role:'centre_director',roles:['centre_director']};});afterEach(cleanup);
 const mount=()=>render(<MemoryRouter><AccountOperations/></MemoryRouter>);
 async function batch(){const file=new File(['csv'],'accounts.csv',{type:'text/csv'});Object.defineProperty(file,'text',{value:async()=> 'email,full_name,role\none@example.com,Person One,student\ntwo@example.com,Person Two,student\nthree@example.com,Person Three,student'});fireEvent.change(screen.getByLabelText('Account CSV'),{target:{files:[file]}});await screen.findByText('Person Three');}
 const success={data:{success:true,status:'invited',emailSent:true},error:null};
@@ -26,7 +26,7 @@ it('stops after the current request when paused, then resumes pending rows',asyn
 it('does not continue a batch after the account or centre changes',async()=>{
  let finish!:(v:unknown)=>void;mock.invoke.mockReturnValueOnce(new Promise(resolve=>{finish=resolve;}));
  const view=mount();await batch();fireEvent.click(screen.getByText('Process pending / retry failed rows'));
- mock.user={id:'different-admin',tenantId:'different-centre',roles:['centre_director']};view.rerender(<MemoryRouter><AccountOperations/></MemoryRouter>);
+ mock.user={id:'different-admin',tenantId:'different-centre',role:'centre_director',roles:['centre_director']};view.rerender(<MemoryRouter><AccountOperations/></MemoryRouter>);
  await act(async()=>finish(success));expect(mock.invoke).toHaveBeenCalledTimes(1);expect(mock.invoke.mock.calls[0][1].body.tenantId).toBe('centre');expect(screen.queryByText('Person One')).toBeNull();
 });
 it('restores a saved request for review without automatically sending an invitation',async()=>{
@@ -44,4 +44,28 @@ it('skips reviewed rows without sending and leaves other rows available',async()
  mock.invoke.mockResolvedValue(success);mount();await batch();expect(mock.invoke).not.toHaveBeenCalled();
  fireEvent.click(screen.getByText('Skip two@example.com'));fireEvent.click(screen.getByText('Process pending / retry failed rows'));await screen.findByText(/Batch finished/);
  expect(mock.invoke.mock.calls.map(c=>c[1].body.email)).toEqual(['one@example.com','three@example.com']);expect(screen.getByText('2 confirmed · 1 skipped · 0 pending or needing review')).toBeInTheDocument();
+});
+
+it.each([
+ ['a lecturer role with a director membership','lecturer',['lecturer','centre_director'],false],
+ ['an unverified director role','centre_director',['lecturer'],false],
+ ['a loading account','centre_director',['centre_director'],true],
+] as const)('does not read or manage account operations with %s',(_label,role,roles,loading)=>{
+ mock.user={...mock.user,role,roles:[...roles]};mock.loading=loading;mount();
+ expect(screen.getByRole(loading?'status':'alert')).toHaveTextContent(loading?'Verifying your active':'active, verified');
+ expect(screen.queryByLabelText('Account CSV')).toBeNull();expect(mock.reads).not.toHaveBeenCalled();expect(mock.invoke).not.toHaveBeenCalled();
+});
+
+it.each(['lecturer','superadmin','auth-loading'] as const)('stops the next batch row when active scope changes to %s',async(next)=>{
+ mock.user.roles=['centre_director','lecturer','superadmin'];
+ let finish!:(value:unknown)=>void;mock.invoke.mockReturnValueOnce(new Promise(resolve=>{finish=resolve;}));
+ const view=mount();await batch();fireEvent.click(screen.getByText('Process pending / retry failed rows'));
+ if(next==='auth-loading')mock.loading=true;else mock.user={...mock.user,role:next};
+ view.rerender(<MemoryRouter><AccountOperations/></MemoryRouter>);
+ await act(async()=>finish(success));
+ expect(mock.invoke).toHaveBeenCalledTimes(1);expect(screen.queryByText('Person One')).toBeNull();expect(screen.queryByText(/Batch finished/)).toBeNull();
+ if(next==='auth-loading'){
+  mock.loading=false;await act(async()=>{view.rerender(<MemoryRouter><AccountOperations/></MemoryRouter>);});
+  expect(screen.getByLabelText('Account CSV')).toBeInTheDocument();expect(screen.queryByText('Person One')).toBeNull();
+ }
 });

@@ -10,12 +10,15 @@ export type Row = Record<string, unknown>;
 export type AcademicRead = {name: string; pathname: string; method: string; params: URLSearchParams; body: Row | null};
 type Response = {body: unknown; status?: number};
 type Rpc = (request: AcademicRead) => Response | Promise<Response>;
+type Override = (request: AcademicRead) => Response | undefined | Promise<Response | undefined>;
 
 /** In-browser fixtures only: no hosted account, provider or database is used. */
 export async function academicRecords(context: BrowserContext, role: string, tables: Record<string, Row[]>) {
   const requests: AcademicRead[] = [];
   const failures = new Set<string>();
   const rpc = new Map<string, Rpc>([['ensure_my_account', () => ({body: null})]]);
+  // Opt-in handlers keep writes and specialised reads explicit in each synthetic journey.
+  const overrides = new Map<string, Override>();
   await context.addInitScript(({user}) => {
     if (location.origin === 'null') return;
     const token = btoa(JSON.stringify({alg: 'HS256', typ: 'JWT'})) + '.' +
@@ -38,8 +41,13 @@ export async function academicRecords(context: BrowserContext, role: string, tab
     }
     if (url.pathname.endsWith('/auth/v1/user')) return respond({body: user});
     if (name === 'consent_records' && request.method() === 'POST') return respond({body: null});
+    const override = overrides.get(name);
+    if (override) {
+      const response = await override(read);
+      if (response) return respond(response);
+    }
     if (name === 'profiles') return respond({body: {full_name: role === 'student' ? 'Synthetic learner' : 'Synthetic lecturer', tenant_id: tenant}});
-    if (name === 'user_roles') return respond({body: [{role, tenant_id: tenant}]});
+    if (name === 'user_roles') return respond({body: [{role, tenant_id: role === 'superadmin' ? null : tenant}]});
     if (url.pathname.includes('/rpc/')) {
       const handler = rpc.get(name);
       return respond(handler ? await handler(read) : {status: 400, body: {message: `No synthetic RPC fixture for ${name}`}});
@@ -74,5 +82,5 @@ export async function academicRecords(context: BrowserContext, role: string, tab
       headers: {...headers, 'content-range': `${offset}-${offset + data.length - 1}/${total}`},
       body: request.method() === 'HEAD' ? '' : JSON.stringify(single ? data[0] ?? null : data)});
   });
-  return {requests, failures, rpc};
+  return {requests, failures, rpc, overrides};
 }
