@@ -209,6 +209,54 @@ test('abort before execution and during backoff cannot start another attempt', a
   assert.equal(stopped.calls.length, 1);
 });
 
+test('unterminated stdout cannot fuse with the SwiftPM stderr heading or prevent retries', async () => {
+  const terminal = `${swift504.slice(swift504.indexOf('xcodebuild: error:'))}\n`;
+  for (const diagnostic of [terminal, `2026-11-08 10:09:23.332 xcodebuild[3255:14502] Writing error result bundle to /tmp/example.xcresult\n${terminal}`]) {
+    const script = `process.stdout.write(${JSON.stringify(cachedSwiftArtifacts)});setTimeout(()=>{process.stderr.write(${JSON.stringify(diagnostic)});process.exitCode=74;},20);`;
+    const captures = [];
+    const delays = [];
+    let stdout = '';
+    let stderr = '';
+    const result = await runNativeDownloads({ mode: 'swiftpm', command: process.execPath, args: ['-e', script],
+      stdout: chunk => { stdout += chunk; }, stderr: chunk => { stderr += chunk; },
+      execute: async invocation => { const captured = await executeNativeCommand(invocation); captures.push(captured); return captured; },
+      sleep: async milliseconds => { delays.push(milliseconds); },
+    });
+    assert.equal(classifyNativeDownloadFailure('swiftpm', captures[0]), true, 'Separate streams must remain separate diagnostic lines');
+    assert.deepEqual(result, { code: 74, signal: null, attempts: 3 });
+    assert.deepEqual(delays, [10_000, 30_000]);
+    assert.equal(stdout, cachedSwiftArtifacts.repeat(3));
+    assert.equal(stderr.replace(/^\[native downloads\].*\n/gm, ''), diagnostic.repeat(3));
+  }
+});
+
+test('a stdout diagnostic fragmented around stderr output remains a complete line', async () => {
+  const terminal = `${swift504.slice(swift504.indexOf('xcodebuild: error:'))}\n`;
+  const split = cachedSwiftArtifacts.indexOf('Capacitor.xcframework.zip') + 10;
+  const script = `process.stdout.write(${JSON.stringify(cachedSwiftArtifacts.slice(0, split))});setTimeout(()=>{process.stderr.write('Resolve Package Graph\\n');setTimeout(()=>{process.stdout.write(${JSON.stringify(`${cachedSwiftArtifacts.slice(split)}\n`)});process.stderr.write(${JSON.stringify(terminal)});process.exitCode=74;},20);},20);`;
+  let stdout = '';
+  let stderr = '';
+  const result = await executeNativeCommand({ command: process.execPath, args: ['-e', script],
+    stdout: chunk => { stdout += chunk; }, stderr: chunk => { stderr += chunk; },
+  });
+  assert.equal(stdout, `${cachedSwiftArtifacts}\n`);
+  assert.equal(stderr, `Resolve Package Graph\n${terminal}`);
+  assert.ok(result.output.split('\n').includes(cachedSwiftArtifacts));
+  assert.equal(classifyNativeDownloadFailure('swiftpm', result), true);
+});
+
+test('fragmented unknown and404 diagnostics survive capture and still reject retries', async () => {
+  const terminal = `${swift504.slice(swift504.indexOf('xcodebuild: error:'))}\n`;
+  for (const diagnostic of ['unknown compiler failure', cachedSwiftArtifacts.replaceAll('badResponseStatusCode(504)', 'badResponseStatusCode(404)')]) {
+    const split = Math.floor(diagnostic.length / 2);
+    const script = `process.stdout.write(${JSON.stringify(diagnostic.slice(0, split))});setTimeout(()=>{process.stderr.write(${JSON.stringify(terminal)});setTimeout(()=>{process.stdout.write(${JSON.stringify(diagnostic.slice(split))});process.exitCode=74;},20);},20);`;
+    const result = await executeNativeCommand({ command: process.execPath, args: ['-e', script], stdout: silent, stderr: silent });
+    assert.equal(result.code, 74);
+    assert.ok(result.output.split('\n').includes(diagnostic));
+    assert.equal(classifyNativeDownloadFailure('swiftpm', result), false);
+  }
+});
+
 test('real subprocess streams both channels and preserves literal arguments, cwd, env and status', async () => {
   const cwd = await mkdtemp(join(tmpdir(), 'native-retry-'));
   try {

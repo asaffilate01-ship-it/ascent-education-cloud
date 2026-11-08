@@ -65,6 +65,8 @@ Native checks exposed a separate dependency-retrieval problem: the Gradle distri
 
 The hardened revision passed all 58 Chromium cases and compiled and packaged the iOS simulator application on its first attempt. Its remaining Linux jobs stayed unassigned for over 15 minutes while the explicitly pinned Ubuntu 24.04 browser jobs started promptly. Production, native Android and design CI now explicitly use Ubuntu 24.04 together, keeping a consistent image instead of following the moving `ubuntu-latest` label. All commands, test requirements, permissions and failure gates are preserved; staging and mobile-release workflows are outside this change. Current-head conclusions remain recorded in the pull request.
 
+A real-subprocess regression also demonstrated that directly joining stdout and stderr chunks could fuse an unterminated download diagnostic with the next stream's error heading. Diagnostic capture now assembles complete lines independently for each stream and flushes residual text when the command closes. The original output still streams immediately; the classifier, retry limit, interruption handling and command status remain unchanged. Known errors can be recognized without discarding mixed or unknown failures.
+
 ## Follow-up defects retained for a separate build
 
 - Assessment managers need the complete teaching summary, learning outcomes, evidence and rubric descriptions before publication; existing pre-filter row caps can hide older relevant briefs or attempts.

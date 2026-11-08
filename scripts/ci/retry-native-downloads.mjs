@@ -97,11 +97,22 @@ export function executeNativeCommand({ command, args, cwd, env, signal, stdout, 
     const child = spawn(command, args, { cwd, env, stdio: ['inherit', 'pipe', 'pipe'] });
     const abort = () => child.kill(signalResult(signal.reason).signal);
     signal?.addEventListener('abort', abort, { once: true });
-    for (const [stream, write] of [[child.stdout, stdout], [child.stderr, stderr]]) {
-      stream.setEncoding('utf8');
-      stream.on('data', chunk => {
-        output += chunk;
-        write(chunk);
+    const channels = [
+      { stream: child.stdout, write: stdout, pending: '' },
+      { stream: child.stderr, write: stderr, pending: '' },
+    ];
+    for (const channel of channels) {
+      channel.stream.setEncoding('utf8');
+      channel.stream.on('data', chunk => {
+        // Keep live output unchanged, but never splice another stream into an
+        // unfinished diagnostic line in the classifier's private capture.
+        channel.pending += chunk;
+        const end = channel.pending.lastIndexOf('\n');
+        if (end >= 0) {
+          output += channel.pending.slice(0, end + 1);
+          channel.pending = channel.pending.slice(end + 1);
+        }
+        channel.write(chunk);
       });
     }
     child.once('error', error => {
@@ -112,6 +123,9 @@ export function executeNativeCommand({ command, args, cwd, env, signal, stdout, 
     });
     child.once('close', (code, childSignal) => {
       signal?.removeEventListener('abort', abort);
+      for (const channel of channels) {
+        if (channel.pending) output += `${channel.pending}\n`;
+      }
       resolveResult({ ...(childSignal ? signalResult(childSignal) : { code: spawnCode ?? code ?? 1, signal: null }), output });
     });
     if (signal?.aborted) abort();
