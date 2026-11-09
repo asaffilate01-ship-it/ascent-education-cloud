@@ -67,3 +67,12 @@ describe('staged materials cannot bypass the post-class publishing and storage c
   expect(source).toContain('!classReleaseEnabled');
  });
 });
+
+it('stages independent rights review without replacing protected post-class publication',()=>{
+ expect(source).toContain("VITE_UNIPATHWAY_COURSE_REGISTRY_ENABLED");
+ expect(source).toContain("from('unipathway_material_rights')");
+ expect(source).toContain("evidence.data.review_status!=='approved'");
+ expect(source).toContain("evidence.data.rights_basis==='official_link_only'");
+ expect(source).toContain("'publish_unipathway_course_material'");
+ expect(source).not.toContain("available_at:new Date().toISOString()");
+});
