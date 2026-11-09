@@ -1,4 +1,4 @@
-import {cleanup,render,screen,waitFor} from '@testing-library/react';
+import {cleanup,render,screen,waitFor,within} from '@testing-library/react';
 import {MemoryRouter} from 'react-router-dom';
 import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 import {readFileSync} from 'node:fs';
@@ -49,8 +49,9 @@ it('shows board-version registration only for authorised centre managers after a
  vi.stubEnv('VITE_UNIPATHWAY_COURSE_REGISTRY_ENABLED','true');
  mount();
  await screen.findByRole('heading',{name:'Record a qualification specification'});
- expect(screen.getByRole('option',{name:'ATHE'})).toBeInTheDocument();
- expect(screen.getByRole('option',{name:'Cambridge International'})).toBeInTheDocument();
+ const boardField=screen.getByRole('combobox',{name:'Awarding body'});
+ expect(within(boardField).getByRole('option',{name:'ATHE'})).toBeInTheDocument();
+ expect(within(boardField).getByRole('option',{name:'Cambridge International'})).toBeInTheDocument();
  expect(screen.getByRole('heading',{name:'Review material distribution rights'})).toBeInTheDocument();
  expect(mock.tables).toEqual(expect.arrayContaining([
   'unipathway_course_specifications','unipathway_material_rights','modules'
