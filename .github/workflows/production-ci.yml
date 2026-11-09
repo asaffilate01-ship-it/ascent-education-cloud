@@ -42,6 +42,8 @@ jobs:
         with: {node-version: 24, cache: npm}
       - run: npm ci --ignore-scripts
       - run: npm run test:db
+      - name: Verify course specification and material rights RLS in two test centres
+        run: node scripts/test-unipathway-course-specification-rights-db.mjs
       - name: Cross-centre office role, invitation and tech lab RLS rehearsal
         run: node scripts/test-unipathway-office-and-tech-db.mjs
       - name: Centre physical security, visitor idempotency and two-tenant RLS rehearsal
