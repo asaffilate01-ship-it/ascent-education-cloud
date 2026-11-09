@@ -6,14 +6,14 @@ import {TeachingDesk} from '@/pages/classroom/TeamsTeachingDesk';
 const mocks=vi.hoisted(()=>({rpc:vi.fn(),from:vi.fn()}));
 vi.mock('@/lib/db',()=>({db:mocks}));
 vi.mock('@/integrations/supabase/client',()=>({supabase:{storage:{from:vi.fn()}}}));
-vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'student',tenantId:'centre',roles:['student']}})}));
+vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'teacher',tenantId:'centre',role:'lecturer',roles:['lecturer']}})}));
 vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:{children:React.ReactNode})=>children}));
 vi.mock('@/components/classroom/LectureInteractions',()=>({default:()=>null}));
 vi.mock('@/components/ielts/GuidedAudioLab',()=>({GuidedSession:()=>null}));
 const roster=[{id:'a',name:'A'},{id:'b',name:'B'},{id:'c',name:'C'}];
 const plan={can_manage:true,groups:[],roster,revision:0,instructions:'',duration_minutes:15};
 beforeEach(()=>{vi.clearAllMocks();mocks.rpc.mockResolvedValue({data:plan});mocks.from.mockImplementation((table:string)=>{
- const result={data:table==='live_class_sessions'?{id:'class',title:'Physics',status:'scheduled',join_url:'https://teams.microsoft.com/l/meetup-join/abc',starts_at:new Date().toISOString(),ends_at:new Date(Date.now()+3600000).toISOString()}:[]};
+ const result={data:table==='live_class_sessions'?{id:'class',tenant_id:'centre',title:'Physics',status:'scheduled',join_url:'https://teams.microsoft.com/l/meetup-join/abc',starts_at:new Date().toISOString(),ends_at:new Date(Date.now()+3600000).toISOString()}:[]};
  const q={select:()=>q,eq:()=>q,in:()=>q,order:()=>q,limit:()=>Promise.resolve(result),maybeSingle:()=>Promise.resolve(result)};return q;
 });});
 afterEach(cleanup);
@@ -28,6 +28,21 @@ it('saves pairs with revision check and explicitly leaves Teams assignment manua
 it('keeps failed saves visible instead of reporting live room success',async()=>{mount();fireEvent.click(await screen.findByText('Generate pairs'));mocks.rpc.mockResolvedValueOnce({error:{message:'Plan changed. Refresh before saving.'}});fireEvent.click(screen.getByText('Save teaching plan'));await screen.findByRole('alert');expect(screen.getByText('Unsaved plan changes')).toBeInTheDocument();});
 it('shows only learner instructions and no teacher controls',async()=>{mocks.rpc.mockResolvedValue({data:{...plan,can_manage:false,roster:[],groups:[{name:'Pair 1',task:'Discuss forces'}]}});mount();await screen.findByText('Discuss forces');expect(screen.queryByText('Save teaching plan')).toBeNull();expect(screen.queryByLabelText('Class instructions')).toBeNull();});
 it('fails closed on denied plan access',async()=>{mocks.rpc.mockResolvedValue({error:{message:'Class access denied'}});mount();await screen.findByRole('alert');expect(screen.queryByText('Open Teams classroom')).toBeNull();});
+it('does not fetch class details or boards when the server rejects invitation access',async()=>{
+ mocks.rpc.mockResolvedValueOnce({error:{message:'Denied by invitation RLS'}});
+ mount();
+ await screen.findByRole('alert');
+ expect(mocks.from).not.toHaveBeenCalled();
+ expect(screen.queryByText('Open Teams classroom')).toBeNull();
+});
+it('does not accept a save acknowledgement without a newer revision',async()=>{
+ mount();
+ fireEvent.click(await screen.findByText('Generate pairs'));
+ mocks.rpc.mockResolvedValueOnce({data:0});
+ fireEvent.click(screen.getByText('Save teaching plan'));
+ await screen.findByRole('alert');
+ expect(screen.getByText('Unsaved plan changes')).toBeInTheDocument();
+});
 it('does not restore a previous session after an async response arrives late',async()=>{let finish!:(v:unknown)=>void;mocks.rpc.mockReturnValueOnce(new Promise(r=>{finish=r;}));const view=mount();view.unmount();finish({data:plan});await waitFor(()=>expect(screen.queryByText('Physics')).toBeNull());});
 
 it('retires the alternate provider token endpoint without signing caller moderator claims',async()=>{
