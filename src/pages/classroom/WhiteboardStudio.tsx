@@ -6,11 +6,12 @@ import {ROLE_HOME,useAuth} from '@/contexts/AuthContext';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {toast} from 'sonner';
+import {activeClassroomCentre,activeWhiteboardManager,verifyClassroomRows} from '@/lib/classroomScope';
 import {AlertTriangle,BookOpen,Lock,PenTool,Plus,Users} from 'lucide-react';
 type Session={id:string;title:string;module_id:string|null;tenant_id:string;starts_at:string;capacity:number;organiser_user_id:string};
-type Board={id:string;title:string;session_id:string;prepared_by:string|null;locked_after_class:boolean;current_sequence:number};
+type Board={id:string;tenant_id:string;title:string;session_id:string;prepared_by:string|null;locked_after_class:boolean;current_sequence:number};
 export default function WhiteboardStudio(){
- const {user}=useAuth();return <Studio key={`${user?.id}:${user?.tenantId}:${user?.role}`}/>;
+ const {user}=useAuth();return <Studio key={`${user?.id}:${user?.tenantId}:${user?.role}:${user?.roles?.join(',')}`}/>;
 }
 function Studio(){
  const {user}=useAuth();const navigate=useNavigate();
@@ -20,7 +21,8 @@ function Studio(){
  const [selected,setSelected]=useState('');const [title,setTitle]=useState('');
  const [saving,setSaving]=useState(false);
  const [tenant,setTenant]=useState(user?.tenantId||'');
- const manager=!!user?.role&&user.roles?.includes(user.role)&&['superadmin','centre_director','programme_leader'].includes(user.role);
+ const manager=activeWhiteboardManager(user);
+ const centre=activeClassroomCentre(user);
  useEffect(()=>{
   if(!user?.id)return;
   if(user.tenantId){setTenant(user.tenantId);return;}
@@ -28,40 +30,45 @@ function Studio(){
   if(user.role==='superadmin')setTenant('');
  },[user?.id,user?.tenantId]);
  useEffect(()=>{
-  if(!tenant||!user?.id){setLoading(false);setError('Your centre could not be verified. Return to your dashboard or contact support.');return;}
+  if(!tenant||!centre||tenant!==centre||!user?.id){setSessions([]);setBoards([]);setLoading(false);setError('Your centre and selected teaching role could not be verified. Return to your dashboard or contact support.');return;}
   let active=true;setLoading(true);setError('');setSessions([]);setBoards([]);setSelected('');
   void Promise.all([
    db.from('live_class_sessions').select('id,title,module_id,tenant_id,starts_at,capacity,organiser_user_id')
     .eq('tenant_id',tenant).order('starts_at',{ascending:false}).limit(100),
-   db.from('lesson_whiteboards').select('id,title,session_id,prepared_by,locked_after_class,current_sequence')
+   db.from('lesson_whiteboards').select('id,tenant_id,title,session_id,prepared_by,locked_after_class,current_sequence')
     .eq('tenant_id',tenant).order('updated_at',{ascending:false}).limit(150),
   ]).then(([classes,whiteboards])=>{
    if(!active)return;
    const problem=classes.error||whiteboards.error;
    if(problem){setError('Whiteboards are unavailable for your centre. Your administrator needs to check classroom access and setup. You can continue using your dashboard.');setLoading(false);return;}
-   const available=manager?(classes.data||[]):(classes.data||[]).filter((s:Session)=>s.organiser_user_id===user.id);
-   setSessions(available as Session[]);setBoards((whiteboards.data||[]) as Board[]);setLoading(false);
+   const scopedSessions=verifyClassroomRows<Session>(classes.data||[],tenant);
+   const scopedBoards=verifyClassroomRows<Board>(whiteboards.data||[],tenant);
+   const available=manager?scopedSessions:scopedSessions.filter(s=>s.organiser_user_id===user.id);
+   const authorized=new Set(available.map(s=>s.id));
+   setSessions(available);setBoards(scopedBoards.filter(b=>authorized.has(b.session_id)));setLoading(false);
   }).catch(()=>{if(active){setError('The whiteboard service could not be reached. Retry or continue to your dashboard.');setLoading(false);}});
   return()=>{active=false};
- },[tenant,user?.id,manager,refresh]);
+ },[tenant,centre,user?.id,manager,refresh]);
  const availableSessions=useMemo(()=>sessions.filter(s=>s.module_id&&!boards.some(b=>b.session_id===s.id)),[sessions,boards]);
  const create=async()=>{
   const session=availableSessions.find(s=>s.id===selected);
-  if(!session||!user?.id||!title.trim()){toast.error('Choose a scheduled class and board title');return;}
+  if(!session||!user?.id||!title.trim()||!centre||session.tenant_id!==centre||
+    (!manager&&session.organiser_user_id!==user.id)){toast.error('Choose an authorised scheduled class and board title');return;}
   setSaving(true);
   const {data,error:e}=await db.from('lesson_whiteboards').insert({
    tenant_id:session.tenant_id,session_id:session.id,module_id:session.module_id,
    title:title.trim(),prepared_by:user.id,template:'blank',locked_after_class:false
-  }).select('id').single();
+  }).select('id,tenant_id,session_id').single();
   setSaving(false);
-  if(e||!data){toast.error('Permission denied or board not created: '+(e?.message||'Unknown error'));return;}
+  if(e||!data||data.tenant_id!==tenant||data.session_id!==session.id||!data.id){toast.error('Board creation could not be verified for this class and centre. Refresh the board list.');return;}
   toast.success('One shared classroom board created.');navigate('/classroom/whiteboard/'+data.id);
  };
  const lock=async(b:Board)=>{
-  if(!user?.id)return;
+  if(!user?.id||!manager||!centre||b.tenant_id!==centre)return;
   if(!window.confirm('Lock this whiteboard after the lecture? Existing recordings remain available to authorised students.'))return;
-  const {error:e}=await db.from('lesson_whiteboards').update({locked_after_class:true}).eq('id',b.id);
-  if(e){toast.error('Unable to lock board: '+e.message);return;}
+  const {data,error:e}=await db.from('lesson_whiteboards').update({locked_after_class:true})
+   .eq('id',b.id).eq('tenant_id',centre).select('id,tenant_id,locked_after_class').single();
+  if(e||!data||data.id!==b.id||data.tenant_id!==centre||data.locked_after_class!==true){toast.error('Lock confirmation could not be verified for this board and centre.');return;}
   setBoards(p=>p.map(x=>x.id===b.id?{...x,locked_after_class:true}:x));
  };
  return <DashboardLayout title="UniPathway Whiteboard Studio" subtitle="Private collaborative teaching boards for large Teams lectures">

@@ -39,16 +39,37 @@ export function restoreWhiteboardSnapshot(snapshot:unknown,events:WhiteboardEven
  }
  return shapes;
 }
+function orderedWhiteboardEvents(events:readonly WhiteboardEvent[]):WhiteboardEvent[]{
+ return [...events].filter(event=>Number.isSafeInteger(event.sequence)&&event.sequence>0&&
+  Number.isFinite(Date.parse(event.created_at))&&isWhiteboardOperation(event.operation))
+  .sort((a,b)=>a.sequence-b.sequence);
+}
 export function replayWhiteboard(events:WhiteboardEvent[],untilMs:number):WhiteboardShape[]{
- if(!events.length)return [];
- const first=new Date(events[0].created_at).getTime();
- return restoreWhiteboardSnapshot([],events.filter(e=>new Date(e.created_at).getTime()-first<=untilMs));
+ const ordered=orderedWhiteboardEvents(events);
+ if(!ordered.length||!Number.isFinite(untilMs)||untilMs<0)return [];
+ const first=Date.parse(ordered[0].created_at);
+ return restoreWhiteboardSnapshot([],ordered.filter(e=>Date.parse(e.created_at)-first<=untilMs));
 }
 export function whiteboardTimelineMs(events:WhiteboardEvent[]):number{
- if(events.length<2)return 0;
- return Math.max(0,new Date(events[events.length-1].created_at).getTime()-new Date(events[0].created_at).getTime());
+ const ordered=orderedWhiteboardEvents(events);
+ if(ordered.length<2)return 0;
+ const first=Date.parse(ordered[0].created_at);
+ return Math.max(0,...ordered.map(e=>Date.parse(e.created_at)-first));
+}
+/** Export only validated classroom strokes and text. Never add meeting links, student IDs or private metadata. */
+export function whiteboardSvg(shapes:readonly WhiteboardShape[]):string{
+ const escapeText=(value:string)=>value.replace(/&/g,'&amp;').replace(/</g,'&lt;')
+  .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+ const parts=shapes.map(shape=>{
+  if(!isWhiteboardOperation(shape))throw Error('Cannot export invalid whiteboard content');
+  if(shape.type==='text')return `<text x="${shape.x}" y="${shape.y}" fill="${shape.color}" font-family="sans-serif" font-size="27">${escapeText(shape.text)}</text>`;
+  return `<polyline points="${shape.points.map(p=>p.join(',')).join(' ')}" stroke="${shape.color}" stroke-width="${shape.width}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+ }).join('');
+ return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${WHITEBOARD_WIDTH} ${WHITEBOARD_HEIGHT}" width="${WHITEBOARD_WIDTH}" height="${WHITEBOARD_HEIGHT}"><rect width="100%" height="100%" fill="#ffffff"/>${parts}</svg>`;
 }
 export function toCanvasPoint(clientX:number,clientY:number,rect:Pick<DOMRect,'left'|'top'|'width'|'height'>):Point{
+ if(!Number.isFinite(clientX)||!Number.isFinite(clientY)||!Number.isFinite(rect.width)||
+  !Number.isFinite(rect.height)||rect.width<=0||rect.height<=0)return [0,0];
  const x=Math.max(0,Math.min(WHITEBOARD_WIDTH,Math.round((clientX-rect.left)/rect.width*WHITEBOARD_WIDTH)));
  const y=Math.max(0,Math.min(WHITEBOARD_HEIGHT,Math.round((clientY-rect.top)/rect.height*WHITEBOARD_HEIGHT)));
  return [x,y];

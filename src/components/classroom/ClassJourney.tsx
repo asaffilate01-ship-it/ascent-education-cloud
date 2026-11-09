@@ -3,9 +3,11 @@ import {useQuery} from '@tanstack/react-query';
 import {useAuth} from '@/contexts/AuthContext';
 import {db} from '@/lib/db';
 import {pakistanDay} from '@/lib/staffTasks';
+import {activeClassroomCentre,activeClassroomTeacher} from '@/lib/classroomScope';
 export default function ClassJourney({sessionId}:{sessionId:string}){
- const {user}=useAuth();const teacher=!!user?.roles.some(r=>['lecturer','programme_leader','centre_director','superadmin'].includes(r));
- const data=useQuery({queryKey:['class-context',user?.id,user?.tenantId,sessionId],enabled:!!user?.tenantId,queryFn:async()=>{const r=await db.from('live_class_sessions').select('id,title,module_id,starts_at').eq('id',sessionId).eq('tenant_id',user!.tenantId).single();if(r.error)throw r.error;return r.data as {id:string;title:string;module_id:string;starts_at:string};}});
+ const {user}=useAuth();const teacher=activeClassroomTeacher(user);const centre=activeClassroomCentre(user);
+ const data=useQuery({queryKey:['class-context',user?.id,centre,user?.role,user?.roles?.join(','),sessionId],enabled:!!centre,queryFn:async()=>{const r=await db.from('live_class_sessions').select('id,title,module_id,starts_at').eq('id',sessionId).eq('tenant_id',centre!).single();if(r.error||!r.data||r.data.id!==sessionId||r.data.tenant_id!==centre)throw Error('Class context denied');return r.data as {id:string;title:string;module_id:string;starts_at:string};}});
+ if(!centre)return <p role="alert" className="mb-4 text-sm">An active classroom role and centre assignment are required to view this class.</p>;
  if(data.isLoading)return <p role="status">Checking selected class…</p>;
  if(data.isError)return <p role="alert" className="mb-4 text-sm">Selected class context could not be verified. <button className="underline" onClick={()=>data.refetch()}>Retry</button></p>;
  const s=data.data;if(!s)return null;

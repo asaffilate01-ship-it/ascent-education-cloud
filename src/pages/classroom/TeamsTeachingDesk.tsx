@@ -1,6 +1,8 @@
 import ClassJourney from '@/components/classroom/ClassJourney';
 import TeamsLink from '@/components/native/TeamsLink';
 import {useEffect,useState} from 'react';
+import {activeClassroomCentre,activeClassroomTeacher,verifyClassroomRows} from '@/lib/classroomScope';
+import {classJoinState} from '@/lib/classroomExperience';
 import {Link,useParams} from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {Button} from '@/components/ui/button';
@@ -12,43 +14,70 @@ import TeamsRecordingStatus from '@/components/classroom/TeamsRecordingStatus';
 import LectureInteractions from '@/components/classroom/LectureInteractions';
 
 type Plan={can_manage:boolean;groups:TeachingGroup[];roster:TeachingLearner[];revision:number;instructions:string;duration_minutes:number};
-type Session={id:string;title:string;join_url:string|null;starts_at:string;ends_at:string;status:string};
+type Session={id:string;tenant_id:string;title:string;join_url:string|null;starts_at:string;ends_at:string;status:string};
 export default function TeamsTeachingDesk(){
  const {sessionId}=useParams();const {user}=useAuth();
  return <DashboardLayout title="Teams teaching desk" subtitle="Whole-class teaching, private tutor support and group work across all subjects">
   {sessionId&&<ClassJourney sessionId={sessionId}/>}
-  <Link className="underline" to={user?.roles.some(r=>['lecturer','programme_leader','centre_director','superadmin'].includes(r))?'/lecturer/classroom':'/student/classroom'}>Back to my classes</Link>
-  {sessionId&&user?<TeachingDesk key={`${sessionId}:${user.id}:${user.tenantId}`} sessionId={sessionId}/>:<p role="alert">Select an invited class first.</p>}
+  <Link className="underline" to={activeClassroomTeacher(user)?'/lecturer/classroom':'/student/classroom'}>Back to my classes</Link>
+  {sessionId&&user?<TeachingDesk key={`${sessionId}:${user.id}:${user.tenantId}:${user.role}:${user.roles?.join(',')}`} sessionId={sessionId}/>:<p role="alert">Select an invited class first.</p>}
  </DashboardLayout>;
 }
 export function TeachingDesk({sessionId}:{sessionId:string}){
+ const {user}=useAuth();const centre=activeClassroomCentre(user);
  const [plan,setPlan]=useState<Plan|null>(null),[session,setSession]=useState<Session|null>(null);
  const [groups,setGroups]=useState<TeachingGroup[]>([]),[instructions,setInstructions]=useState(''),[duration,setDuration]=useState(15),[size,setSize]=useState(2);
  const [error,setError]=useState(''),[notice,setNotice]=useState(''),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[refresh,setRefresh]=useState(0),[dirty,setDirty]=useState(false);
  const [boards,setBoards]=useState<{id:string;title:string}[]>([]),[boardError,setBoardError]=useState('');
  useEffect(()=>{
-  let active=true;setLoading(true);setError('');setPlan(null);setSession(null);setNotice('');
-  void Promise.all([
-   db.rpc('get_unipathway_teams_plan',{p_session:sessionId}),
-   db.from('live_class_sessions').select('id,title,join_url,starts_at,ends_at,status').eq('id',sessionId).maybeSingle(),
-   db.from('lesson_whiteboards').select('id,title').eq('session_id',sessionId).order('created_at',{ascending:false}).limit(20),
-  ]).then(([p,s,b])=>{
-   if(!active)return;if(p.error||s.error||!p.data||!s.data)throw new Error(p.error?.message||s.error?.message||'Class access unavailable');
-   setPlan(p.data);setSession(s.data);setGroups(p.data.groups);setInstructions(p.data.instructions);setDuration(p.data.duration_minutes);setDirty(false);
-   setBoards(b.data||[]);setBoardError(b.error?'Saved lesson boards unavailable':'');
-  }).catch(e=>{if(active)setError(e instanceof Error?e.message:'Teaching desk unavailable');}).finally(()=>{if(active)setLoading(false);});
+  let active=true;setLoading(true);setError('');setBoardError('');setBoards([]);
+  setPlan(null);setSession(null);setNotice('');
+  if(!centre||!user?.id){setError('Active classroom role and centre membership required.');setLoading(false);return()=>{active=false;};}
+  void (async()=>{
+   // The invitation-gated plan must be verified BEFORE requesting private session or board metadata.
+   const p=await db.rpc('get_unipathway_teams_plan',{p_session:sessionId});
+   if(!active)return;
+   if(p.error||!p.data||typeof p.data.can_manage!=='boolean'||
+      !Array.isArray(p.data.groups)||!Array.isArray(p.data.roster)||
+      !Number.isInteger(p.data.revision)||typeof p.data.instructions!=='string'||
+      !Number.isInteger(p.data.duration_minutes)){
+    throw Error('Your class invitation or teaching-plan permissions could not be verified.');
+   }
+   const [sess,boardsResponse]=await Promise.all([
+    db.from('live_class_sessions').select('id,tenant_id,title,join_url,starts_at,ends_at,status')
+     .eq('id',sessionId).eq('tenant_id',centre).maybeSingle(),
+    db.from('lesson_whiteboards').select('id,title,tenant_id,session_id')
+     .eq('session_id',sessionId).eq('tenant_id',centre).order('created_at',{ascending:false}).limit(20)
+   ]);
+   if(!active)return;
+   if(sess.error||!sess.data||sess.data.id!==sessionId||sess.data.tenant_id!==centre){
+    throw Error('Class session is not available to your selected centre.');
+   }
+   setPlan(p.data);setSession(sess.data);setGroups(p.data.groups);
+   setInstructions(p.data.instructions);setDuration(p.data.duration_minutes);setDirty(false);
+   if(boardsResponse.error||!Array.isArray(boardsResponse.data)){
+    setBoards([]);setBoardError('Saved classroom whiteboards are unavailable; meeting access remains separate.');
+   }else{
+    try{
+     const verified=verifyClassroomRows<{id:string;title:string;session_id:string;tenant_id:string}>(boardsResponse.data,centre);
+     if(verified.some(b=>b.session_id!==sessionId))throw Error('Other session returned');
+     setBoards(verified.map(b=>({id:b.id,title:b.title})));
+    }catch{setBoards([]);setBoardError('Saved classroom whiteboards could not be verified.');}
+   }
+  })().catch(()=>{if(active)setError('Class invitation, centre access or teaching plan could not be verified.');})
+     .finally(()=>{if(active)setLoading(false);});
   return()=>{active=false;};
- },[sessionId,refresh]);
+ },[sessionId,refresh,centre,user?.id,user?.role]);
  async function save(){
   if(!plan)return;setSaving(true);setError('');setNotice('');
   try{const r=await db.rpc('save_unipathway_teams_plan',{p_session:sessionId,p_revision:plan.revision,p_groups:groups,p_instructions:instructions,p_duration:duration});
-   if(r.error)throw new Error(r.error.message);setPlan({...plan,revision:r.data,groups,instructions,duration_minutes:duration});setDirty(false);
+   if(r.error||!Number.isInteger(r.data)||r.data<=plan.revision)throw Error('Plan receipt did not confirm a newer revision');setPlan({...plan,revision:r.data,groups,instructions,duration_minutes:duration});setDirty(false);
    setNotice('Plan saved in UniPathway. Apply the assignments in Teams Rooms; live rooms have not been changed.');
   }catch(e){setError(e instanceof Error?e.message:'Plan not saved');}finally{setSaving(false);}
  }
  function editGroups(next:TeachingGroup[]){setGroups(next);setDirty(true);setNotice('');}
  function regenerate(){try{editGroups(arrangeTeachingGroups(plan?.roster||[],size));setError('');}catch(e){setError((e as Error).message);}}
- const joinable=session&&['scheduled','live'].includes(session.status)&&Date.now()>=Date.parse(session.starts_at)-20*60_000&&Date.now()<=Date.parse(session.ends_at)+30*60_000;
+ const joinable=!!session&&classJoinState(session,Date.now())==='open'&&['scheduled','live'].includes(session.status);
  const editable=plan?.can_manage&&session&&['scheduled','live'].includes(session.status);
  return <div className="mt-5 space-y-5">
   {loading&&<p role="status">Checking class invitations and teaching plan…</p>}
