@@ -109,6 +109,7 @@ const MicrosoftAccountCentre = lazy(() => import("./pages/student/MicrosoftAccou
 const LessonArchive = lazy(() => import("./pages/student/LessonArchive"));
 const ModuleMaterials = lazy(() => import("./pages/learning/ModuleMaterials"));
 const CourseContentHub = lazy(() => import("./pages/learning/CourseContentHub"));
+const CourseSpecifications = lazy(() => import("./pages/learning/CourseSpecifications"));
 
 // Student
 const StudentDashboard = lazy(() => import("./pages/student/StudentDashboard"));
@@ -388,6 +389,7 @@ function AppRoutes() {
         <Route path="/landlord/onboarding" element={<Landlord><CentreDirectory /></Landlord>} />
         <Route path="/landlord/knowledge" element={<Landlord><KnowledgeLibrary /></Landlord>} />
         <Route path="/landlord/course-content" element={<Landlord><CourseContentHub /></Landlord>} />
+        <Route path="/landlord/specifications" element={<Landlord><CourseSpecifications /></Landlord>} />
         <Route path="/landlord/education-intelligence" element={<Landlord><EducationIntelligence /></Landlord>} />
         <Route path="/landlord/readiness" element={<Landlord><ProductionReadiness /></Landlord>} />
         <Route path="/landlord/opportunity-fund" element={<Landlord><OpportunityFundDashboard /></Landlord>} />
@@ -413,6 +415,7 @@ function AppRoutes() {
         <Route path="/director/admissions" element={<Director><AdmissionsCRM /></Director>} />
         <Route path="/director/programmes" element={<Director><ProgrammeManagement /></Director>} />
         <Route path="/director/course-content" element={<Director><CourseContentHub /></Director>} />
+        <Route path="/director/specifications" element={<Director><CourseSpecifications /></Director>} />
         <Route path="/director/syllabuses" element={<Director><CentreSyllabusPlanner /></Director>} />
         <Route path="/director/assessment-management" element={<Director><AssessmentManager /></Director>} />
         <Route path="/director/assessment-appeals" element={<Director><AssessmentAppealManagement /></Director>} />
@@ -509,6 +512,7 @@ function AppRoutes() {
         <Route path="/programme/appeals" element={<Programme><AssessmentAppealManagement /></Programme>} />
         <Route path="/programme/syllabuses" element={<Programme><CentreSyllabusPlanner /></Programme>} />
         <Route path="/programme/course-content" element={<Programme><CourseContentHub /></Programme>} />
+        <Route path="/programme/specifications" element={<Programme><CourseSpecifications /></Programme>} />
         <Route path="/programme/schedule" element={<Programme><ScheduleManager /></Programme>} />
         <Route path="/programme/moderation" element={<Programme><QADashboard /></Programme>} />
         <Route path="/programme/analytics" element={<Programme><RoleAnalyticsDashboard /></Programme>} />

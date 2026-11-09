@@ -1,6 +1,7 @@
 import {downloadPrivateMaterial} from '@/lib/learning/offlineSync';
 import {Link,useSearchParams} from 'react-router-dom';
 import ModuleJourney from '@/components/assessment/ModuleJourney';
+import MaterialRightsPanel from '@/components/learning/MaterialRightsPanel';
 import { useEffect, useRef, useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,6 +17,8 @@ import {POST_CLASS_EXPLANATION,ACCOMMODATION_EXPLANATION} from '@/lib/learning/c
 type Material={id:string;module_id:string;title:string;kind:string;object_path:string;publication_status:string;available_at:string|null;created_at:string;class_session_id:string|null};
 type ClassOption={id:string;module_id:string;title:string;ends_at:string;status:string};
 const classReleaseEnabled=import.meta.env.VITE_UNIPATHWAY_CLASS_RELEASE_ENABLED==='true';
+// Off until the independent registry and backend release guard pass staging acceptance.
+const rightsGateEnabled=import.meta.env.VITE_UNIPATHWAY_COURSE_REGISTRY_ENABLED==='true';
 type Module={id:string;title:string;lecturer_id:string|null;tenant_id:string;programme_id:string};
 const safeName=(value:string)=>value.replace(/[^a-zA-Z0-9._-]/g,'_').slice(-100);
 const kinds=['slide','worksheet','reading','homework','video','whiteboard'] as const;
@@ -29,13 +32,14 @@ function MaterialsWorkspace({moduleFilter,materialFilter}:{moduleFilter:string;m
  const [moduleId,setModuleId]=useState(moduleFilter),[kind,setKind]=useState<(typeof kinds)[number]>('reading');
  const [title,setTitle]=useState(''),[file,setFile]=useState<File|null>(null),[rightsAcknowledged,setRightsAcknowledged]=useState(false);
  const [classSessionId,setClassSessionId]=useState(''),[preparatoryOnly,setPreparatoryOnly]=useState(false);
+ const [rightsDraftId,setRightsDraftId]=useState<string|null>(null);
  const [refresh,setRefresh]=useState(0),[search,setSearch]=useState(''),[page,setPage]=useState(0);
  const mounted=useRef(true),operation=useRef(false);
  useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;};},[]);
  const staff=!!user?.role&&!!user.roles?.includes(user.role)&&['lecturer','programme_leader','centre_director','superadmin'].includes(user.role);
  const manager=!!user?.role&&!!user.roles?.includes(user.role)&&['centre_director','programme_leader','superadmin'].includes(user.role);
  const uid=user?.id;
- const reload=()=>{setItems([]);setModules([]);setClasses([]);setLoading(true);setError('');setPage(0);setRefresh(x=>x+1);};
+ const reload=()=>{setItems([]);setModules([]);setClasses([]);setRightsDraftId(null);setLoading(true);setError('');setPage(0);setRefresh(x=>x+1);};
  useEffect(()=>{
   let active=true;setItems([]);setModules([]);setClasses([]);setLoading(true);setError('');setPage(0);
   void (async()=>{try{
@@ -122,6 +126,19 @@ function MaterialsWorkspace({moduleFilter,materialFilter}:{moduleFilter:string;m
   if(!staff||operation.current||loading||error||!classReleaseEnabled)return;
   operation.current=true;setBusy(true);
   try{
+   // Existing server RPC remains the authority for roles, enrolment and 24h/12h release.
+   // Once enabled, independently approved rights are also checked before calling it.
+   if(rightsGateEnabled){
+    const evidence=await db.from('unipathway_material_rights')
+      .select('review_status,expires_at,rights_basis')
+      .eq('tenant_id',tenant).eq('material_id',m.id)
+      .eq('review_status','approved').maybeSingle();
+    const expiry=evidence.data?.expires_at ? Date.parse(evidence.data.expires_at) : null;
+    if(evidence.error||!evidence.data||evidence.data.review_status!=='approved'||
+       evidence.data.rights_basis==='official_link_only'||
+       expiry!==null&&(!Number.isFinite(expiry)||expiry<=Date.now()))
+     throw Error('Independent distribution rights have not been verified.');
+   }
    const r=await (db.rpc as any)('publish_unipathway_course_material',{p_material:m.id});
    if(!mounted.current)return;
    if(r.error||r.data?.id!==m.id||r.data?.status!=='published')throw Error('Publication was not confirmed.');
@@ -141,6 +158,7 @@ function MaterialsWorkspace({moduleFilter,materialFilter}:{moduleFilter:string;m
    <div className="mb-5 rounded-xl border bg-primary/5 p-4"><h2 className="flex gap-2 font-semibold"><ShieldCheck className="size-5"/>Protected academic materials</h2>
     <p className="mt-2 text-sm text-muted-foreground">Unpublished resources are visible only to authorised teaching staff. Released material appears only for students actively enrolled in the module's programme. Lessons, reading notes, slides and homework are grouped by your enrolled module. PDFs, images and supported videos can open in the browser; Office files may download for opening locally. Files are private with expiring access links.</p></div>
    {staff&&<section className="mb-6 space-y-3 rounded-xl border p-5"><h2 className="font-semibold"><Upload className="mr-2 inline size-4"/>Upload teaching material</h2>
+    {rightsGateEnabled&&<p className="text-sm text-muted-foreground">Qualification-source and redistribution-rights evidence requires independent manager review. A staff acknowledgement alone is not authorisation.</p>}
     <div className="grid gap-3 sm:grid-cols-2">
      <label className="text-sm font-medium">Your module<select disabled={busy||loading||!!error} value={moduleId} onChange={e=>setModuleId(e.target.value)} className="mt-1 w-full rounded-md border bg-background p-2"><option value="">Choose module</option>{modules.map(m=><option key={m.id} value={m.id}>{m.title}</option>)}</select></label>
      <label className="text-sm font-medium">Link to an individual class
@@ -173,7 +191,9 @@ function MaterialsWorkspace({moduleFilter,materialFilter}:{moduleFilter:string;m
      <p className="mt-1 text-xs text-muted-foreground">{modules.find(x=>x.id===m.module_id)?.title||'Module'} · {m.kind} · {m.publication_status}{m.class_session_id?' · Class-linked: 24h/12h release':' · Preparatory / general resource'}</p></div>
     <div className="flex flex-wrap gap-2"><Button size="sm" variant="outline" disabled={busy||!classReleaseEnabled} onClick={()=>download(m)}><Download className="mr-1 size-4"/>Open</Button>
       {!staff&&m.publication_status==='published'&&<Button size="sm" variant="outline" disabled={busy||!classReleaseEnabled} onClick={()=>void saveOffline(m)}>Save offline</Button>}
+      {staff&&rightsGateEnabled&&m.publication_status==='draft'&&<Button size="sm" variant="outline" disabled={busy||!classReleaseEnabled} onClick={()=>setRightsDraftId(rightsDraftId===m.id?null:m.id)}>Rights evidence</Button>}
       {staff&&m.publication_status==='draft'&&<Button size="sm" disabled={busy||!classReleaseEnabled} onClick={()=>publish(m)}>Publish</Button>}</div>
+     {staff&&rightsGateEnabled&&m.publication_status==='draft'&&rightsDraftId===m.id&&tenant&&<div className="w-full"><MaterialRightsPanel materialId={m.id} moduleId={m.module_id} tenantId={tenant}/></div>}
    </article>)}</div>}
    {!loading&&!error&&filtered.length>20&&<nav aria-label="Material pages" className="mt-4 flex items-center gap-3"><Button variant="outline" disabled={page===0} onClick={()=>setPage(p=>p-1)}>Previous materials</Button><span>Page {page+1} of {Math.ceil(filtered.length/20)}</span><Button variant="outline" disabled={(page+1)*20>=filtered.length} onClick={()=>setPage(p=>p+1)}>Next materials</Button></nav>}
  </DashboardLayout>;
