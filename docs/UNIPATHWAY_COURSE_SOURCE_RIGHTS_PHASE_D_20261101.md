@@ -38,3 +38,11 @@
 - New ATHE, Pearson, Cambridge and Pakistani board records do **not** extend the existing `programmes.awarding_body` enum or authorise enrolment, official exam registration or certificate issuance. A separate approved course-offer model and awarding-body contract remain required.
 - The existing private materials uploader's rights-checkbox is an acknowledgement only; it is not permanent legal evidence. The new reviewed ledger supplies that separate evidence after deployment.
 - Unapproved course materials must remain private drafts. No model-generated official learning outcomes, marking decisions, qualification approvals or legal licences.
+
+## 9 November 2026 rebase on current protected material workflow
+
+This staged rebase preserves the newer `ModuleMaterials` protections: the existing `publish_unipathway_course_material` RPC remains the **sole publication authority**; class-linked content stays under the 24-hour/12-hour post-class release policy, storage signing, active membership and centre checks. The legacy direct `UPDATE publication_status='published'` from the older branch is **not ported**.
+
+The new `VITE_UNIPATHWAY_COURSE_REGISTRY_ENABLED` gate is **off by default** and makes no registry request or live rights enforcement until the reviewed forward SQL, hardened server triggers/storage policies and authenticated two-centre tests are applied through a separate approved staging rollout. When enabled, the user-facing review also checks approved, unexpired redistribution evidence before calling the existing server RPC; this UI check is additional defence only, not a substitute for the database guards.
+
+No live schema migration, Lovable credits, production configuration change, external awarding-body integration, student record change, or production publication is part of this source phase. Independently review the staged SQL and conflicts in superseded PR #176 before any deployment.
