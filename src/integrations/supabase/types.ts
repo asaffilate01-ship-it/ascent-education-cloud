@@ -5268,6 +5268,44 @@ export type Database = {
           },
         ]
       }
+      unipathway_course_offer_reviews: {
+        Row: {
+          course_key: string
+          created_at: string
+          evidence_reference: string
+          id: string
+          reviewed_by: string
+          revision: number
+          snapshot: Json
+        }
+        Insert: {
+          course_key: string
+          created_at?: string
+          evidence_reference: string
+          id?: string
+          reviewed_by: string
+          revision: number
+          snapshot: Json
+        }
+        Update: {
+          course_key?: string
+          created_at?: string
+          evidence_reference?: string
+          id?: string
+          reviewed_by?: string
+          revision?: number
+          snapshot?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_course_offer_reviews_course_key_fkey"
+            columns: ["course_key"]
+            isOneToOne: false
+            referencedRelation: "unipathway_public_course_offers"
+            referencedColumns: ["course_key"]
+          },
+        ]
+      }
       unipathway_coursework_uploads: {
         Row: {
           attempt_id: string | null
@@ -6129,6 +6167,42 @@ export type Database = {
           },
         ]
       }
+      unipathway_public_course_offers: {
+        Row: {
+          availability: string
+          course_key: string
+          entry_requirements: string
+          fees: string
+          intake_date: string
+          published: boolean
+          revision: number
+          valid_until: string
+          verified_at: string
+        }
+        Insert: {
+          availability: string
+          course_key: string
+          entry_requirements: string
+          fees: string
+          intake_date: string
+          published?: boolean
+          revision?: number
+          valid_until: string
+          verified_at?: string
+        }
+        Update: {
+          availability?: string
+          course_key?: string
+          entry_requirements?: string
+          fees?: string
+          intake_date?: string
+          published?: boolean
+          revision?: number
+          valid_until?: string
+          verified_at?: string
+        }
+        Relationships: []
+      }
       unipathway_schedule_changes: {
         Row: {
           action: string
@@ -6731,6 +6805,7 @@ export type Database = {
         }
         Returns: string
       }
+      my_quiz_attempts: { Args: never; Returns: Json }
       publish_unipathway_assessment_brief: {
         Args: { p_brief: string }
         Returns: undefined
@@ -6826,11 +6901,29 @@ export type Database = {
         }
         Returns: undefined
       }
+      review_unipathway_course_offer: {
+        Args: {
+          p_availability: string
+          p_entry: string
+          p_evidence: string
+          p_fees: string
+          p_intake: string
+          p_key: string
+          p_publish: boolean
+          p_revision: number
+          p_until: string
+        }
+        Returns: number
+      }
       review_unipathway_learning_attempt: {
         Args: { p_attempt: string; p_feedback: string; p_outcome: string }
         Returns: undefined
       }
       same_tenant: { Args: { t: string }; Returns: boolean }
+      save_quiz_answers: {
+        Args: { p_answers: Json; p_attempt_id: string }
+        Returns: Json
+      }
       save_uni_calendar_class: {
         Args: {
           p_cancel?: boolean
@@ -6919,6 +7012,11 @@ export type Database = {
       set_unipathway_learning_share: {
         Args: { p_link: string; p_plan: string; p_share: boolean }
         Returns: undefined
+      }
+      start_quiz_attempt: { Args: { p_quiz_id: string }; Returns: Json }
+      submit_quiz_attempt: {
+        Args: { p_answers: Json; p_attempt_id: string }
+        Returns: Json
       }
       submit_unipathway_assessment: {
         Args: { p_brief: string; p_evidence: string }
@@ -7036,6 +7134,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      withdraw_unipathway_course_offer: {
+        Args: { p_evidence: string; p_key: string; p_revision: number }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role:
@@ -7056,9 +7158,6 @@ export type Database = {
         | "assessor"
         | "awarding_body_eqa"
         | "welfare_officer"
-        | "office_admin"
-        | "hr_officer"
-        | "secretary"
       application_stage:
         | "lead"
         | "contacted"
@@ -7274,9 +7373,6 @@ export const Constants = {
         "assessor",
         "awarding_body_eqa",
         "welfare_officer",
-        "office_admin",
-        "hr_officer",
-        "secretary",
       ],
       application_stage: [
         "lead",
