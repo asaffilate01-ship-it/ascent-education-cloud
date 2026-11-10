@@ -1,3 +1,4 @@
+import {matchesLocalSearch} from '@/lib/localSearch';
 import {workspacePath} from '@/lib/workspaceContext';
 import { toast } from 'sonner';
 import { useAuth, ROLE_LABELS, ROLE_HOME } from '@/contexts/AuthContext';
@@ -424,7 +425,7 @@ const conciseLabels: Record<string, string> = {
 export function getNavigationSections(role: UserRole, search = ''): NavSection[] {
   const original = NAV_CONFIG[role] || [];
   const items = original.flatMap(s => s.items).map(item => ({ ...item, label: conciseLabels[item.label] || item.label }));
-  if (search.trim()) return [{ title: 'Search results', items: items.filter(i => `${i.label} ${i.path}`.toLowerCase().includes(search.trim().toLowerCase())) }];
+  if (search.trim()) return [{ title: 'Search results', items: items.filter(i => matchesLocalSearch(`${i.label} ${i.path.replace(/[^a-z0-9]+/gi,' ')}`,search)) }];
   const paths = dailyPaths[role] || [ROLE_HOME[role], ...items.filter(i=>i.path!==ROLE_HOME[role]).slice(0,4).map(i=>i.path)];
   const everyday=paths.flatMap(path=>items.filter(i=>i.path===path)).map(item=>({...item,label:role==='student'&&item.path==='/student'?'Today':item.label}));
   return [{title:'Everyday',items:[...everyday,{label:'My workspace',icon:FolderOpen,path:'/workspace'}]},
@@ -520,7 +521,8 @@ export default function DashboardSidebar() {
 
       {/* Nav */}
       <nav aria-label="Workspace navigation" className="flex-1 overflow-y-auto py-3 px-2.5">
-        {!collapsed && <input aria-label="Find a page" placeholder="Find a page…" value={navSearch} onChange={e => setNavSearch(e.target.value)} className="mb-3 w-full rounded-lg border border-sidebar-border bg-sidebar-accent px-3 py-2 text-sm text-sidebar-foreground" />}
+        {!collapsed && <input type="search" maxLength={120} aria-label="Find a page" aria-describedby="sidebar-search-count" placeholder="Find a page…" value={navSearch} onChange={e => setNavSearch(e.target.value)} className="mb-3 w-full rounded-lg border border-sidebar-border bg-sidebar-accent px-3 py-2 text-sm text-sidebar-foreground" />}
+        <p id="sidebar-search-count" role="status" className={navSearch.trim()?'mb-2 px-3 text-xs text-sidebar-foreground/70':'sr-only'}>{navSearch.trim()? `${sections.reduce((count,section)=>count+section.items.length,0)} matching pages`:'Search your authorised workspace pages by keyword.'}</p>
         {navSearch && !sections.some(s => s.items.length) && <p className="px-3 text-sm">No matching pages. Try another name.</p>}
         {sections.map((section, si) => collapsed && si > 0 ? null : (
           <details key={`${user.role}-${si}-${navSearch}`} open={collapsed || si === 0 || !!navSearch || section.items.some(i => i.path === location.pathname)} className={si > 0 ? 'mt-5' : ''}>
