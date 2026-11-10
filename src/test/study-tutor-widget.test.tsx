@@ -15,3 +15,15 @@ it('uses the user JWT and clears conversation on account change',async()=>{
  await waitFor(()=>expect(screen.getByText('Let us practise.')).toBeInTheDocument());expect(fetcher.mock.calls[0][1].headers.Authorization).toBe('Bearer user-jwt');
  state.user={id:'other',tenantId:'centre',name:'Sara',role:'student',roles:['student']};view.rerender(<AIChatWidget/>);fireEvent.click(screen.getByRole('button',{name:'Open AI Study Tutor'}));expect(screen.queryByText('Let us practise.')).toBeNull();
 });
+
+it('opens the accessible mobile study tutor and restores keyboard focus after Escape',async()=>{
+ state.user={id:'learner',tenantId:'centre',name:'Ali',role:'student',roles:['student']};
+ const view=render(<AIChatWidget/>);
+ const trigger=screen.getByRole('button',{name:'Open AI Study Tutor'});
+ expect(trigger.className).toContain('safe-area-inset-bottom');
+ fireEvent.click(trigger);
+ expect(screen.getByRole('textbox',{name:'Ask your study tutor'})).toHaveFocus();
+ fireEvent.keyDown(screen.getByRole('dialog',{name:'AI Study Tutor'}),{key:'Escape'});
+ await waitFor(()=>expect(screen.getByRole('button',{name:'Open AI Study Tutor'})).toHaveFocus());
+ view.unmount();
+});
