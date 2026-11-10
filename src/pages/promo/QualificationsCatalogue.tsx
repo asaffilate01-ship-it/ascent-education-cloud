@@ -16,6 +16,7 @@ import Seo from '@/components/Seo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { qualificationSelection } from '@/lib/qualificationSelection';
+import {matchesLocalSearch} from '@/lib/localSearch';
 
 
 const levels = ['All', '3', '4', '5', '6'] as const;
@@ -43,7 +44,7 @@ export default function QualificationsCatalogue() {
     (body === 'All' || q.body === body) &&
     (category === 'All' || q.category === category) &&
     (level === 'All' || String(q.level) === level) &&
-    `${q.name} ${q.body} ${q.category} ${q.curriculum?.craftFocus.join(' ')||''} ${q.curriculum?.modules.map(m=>`${m.title} ${m.units.map(u=>u.title).join(' ')}`).join(' ')||''}`.toLowerCase().includes(query.trim().toLowerCase())
+    matchesLocalSearch(`${q.name} ${q.body} ${q.category} ${q.curriculum?.craftFocus.join(' ')||''} ${q.curriculum?.modules.map(m=>`${m.title} ${m.units.map(u=>u.title).join(' ')}`).join(' ')||''}`,query)
   );
   return <div className="public-site min-h-dvh bg-background">
     <Seo canonical="/qualifications" title="UK Qualification Pathways in Pakistan | UniPathway" description="Explore OTHM, Qualifi, ATHE, Pearson BTEC and VTCT Skills pathways with programme approval and admissions guidance for Pakistan."/>
