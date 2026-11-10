@@ -354,6 +354,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
 
     ]},
     { title: 'Services', items: [
+      { label: 'My Applications', icon: FileText, path: '/student/applications' },
       { label: 'Fees & Payments', icon: CreditCard, path: '/student/finance' },
       { label: 'Progression', icon: GraduationCap, path: '/student/progression' },
       { label: 'Knowledge Library', icon: BookOpen, path: '/student/knowledge' },
