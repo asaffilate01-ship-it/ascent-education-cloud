@@ -22,6 +22,9 @@ const AIChatWidget = forwardRef<HTMLDivElement>(function AIChatWidget(_props, re
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const returnFocus = useRef(false);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
@@ -32,8 +35,14 @@ const AIChatWidget = forwardRef<HTMLDivElement>(function AIChatWidget(_props, re
   const [notice, setNotice] = useState('');
   const [remaining, setRemaining] = useState<number | null>(null);
   useEffect(() => {
+    if (open) inputRef.current?.focus();
+    else if (returnFocus.current) { triggerRef.current?.focus(); returnFocus.current=false; }
+  }, [open]);
+  const closeTutor = () => { returnFocus.current=true; setOpen(false); };
+  useEffect(() => {
     requestVersion.current++;
     activeRequest.current?.abort(); activeRequest.current=null;
+    returnFocus.current=false;
     setMessages([]); setInput(''); setOpen(false); setLoading(false); setNotice(''); setRemaining(null);
     return () => { requestVersion.current++; activeRequest.current?.abort(); activeRequest.current=null; };
   }, [user?.id, user?.tenantId, user?.role, user?.roles?.join('|')]);
@@ -70,12 +79,13 @@ const AIChatWidget = forwardRef<HTMLDivElement>(function AIChatWidget(_props, re
       <AnimatePresence>
         {!open && (
           <motion.button
+            ref={triggerRef}
             initial={reduceMotion ? false : { scale: 0 }}
             animate={{ scale: 1 }}
             exit={{ scale: 0 }}
             aria-label="Open AI Study Tutor"
             onClick={() => setOpen(true)}
-            className="fixed bottom-20 lg:bottom-6 right-4 z-50 w-14 h-14 rounded-full gradient-primary text-gradient-foreground shadow-xl hover:shadow-2xl transition-all flex items-center justify-center"
+            className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] lg:bottom-6 right-3 lg:right-4 z-40 size-12 sm:size-14 rounded-full gradient-primary text-gradient-foreground shadow-xl hover:shadow-2xl transition-all flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" 
           >
             <Sparkles className="w-6 h-6" />
           </motion.button>
@@ -91,7 +101,8 @@ const AIChatWidget = forwardRef<HTMLDivElement>(function AIChatWidget(_props, re
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
             role="dialog" aria-modal="false" aria-label="AI Study Tutor"
-            className="fixed bottom-20 lg:bottom-6 right-4 z-50 w-[360px] max-w-[calc(100vw-2rem)] h-[500px] max-h-[70vh] bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+            onKeyDown={event=>{if(event.key==='Escape'){event.stopPropagation();closeTutor();}}}
+            className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] lg:bottom-6 right-3 lg:right-4 z-40 w-[360px] max-w-[calc(100vw-1.5rem)] h-[500px] max-h-[calc(100dvh-8rem-env(safe-area-inset-bottom))] lg:max-h-[70vh] bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden" 
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card">
@@ -111,7 +122,7 @@ const AIChatWidget = forwardRef<HTMLDivElement>(function AIChatWidget(_props, re
                 <button disabled={loading} onClick={() => {setMessages([]);setNotice('');}} className="min-h-11 min-w-11 rounded-lg hover:bg-accent transition-colors" title="Clear chat" aria-label="Clear tutor conversation">
                   <Trash2 className="w-3.5 h-3.5 text-muted-foreground" />
                 </button>
-                <button aria-label="Close study tutor" onClick={() => setOpen(false)} className="min-h-11 min-w-11 rounded-lg hover:bg-accent transition-colors">
+                <button aria-label="Close study tutor" onClick={closeTutor} className="min-h-11 min-w-11 rounded-lg hover:bg-accent transition-colors">
                   <X className="w-4 h-4 text-muted-foreground" />
                 </button>
               </div>
@@ -174,6 +185,7 @@ const AIChatWidget = forwardRef<HTMLDivElement>(function AIChatWidget(_props, re
                 className="flex items-center gap-2"
               >
                 <input
+                  ref={inputRef}
                   aria-label="Ask your study tutor" maxLength={2000}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
