@@ -34,7 +34,7 @@ test('ATHE titles have official sources and preserve programme filters on narrow
  const cards=page.getByRole('region',{name:'Proposed qualifications'}).getByRole('article');
  await expect(cards).toHaveCount(2);
  await expect(cards.first().getByRole('link',{name:/Check official qualification listing/})).toHaveAttribute('href',/^https:\/\/athe\.co\.uk\/qualifications\/athe-/);
- await expect(cards.first().getByRole('link',{name:'Enquire about this pathway'})).toHaveAttribute('href',/course=ATHE/);
+ await expect(cards.first().getByRole('link',{name:'Review study options & enquire'})).toHaveAttribute('href',/^\/apply\?area=qualifications&course=ATHE/);
  await page.evaluate(()=>{document.documentElement.style.fontSize='32px';});
  for(const width of [360,390,768,1440]){
   await page.setViewportSize({width,height:1000});
