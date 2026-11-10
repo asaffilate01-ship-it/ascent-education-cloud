@@ -30,6 +30,14 @@ test('ATHE titles have official sources and preserve programme filters on narrow
  await page.evaluate(()=>{document.documentElement.style.fontSize='32px';});
  for(const width of [360,390,768,1440]){
   await page.setViewportSize({width,height:1000});
-  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await expect.poll(()=>page.evaluate(()=>{
+    const width=innerWidth,scroll=document.documentElement.scrollWidth;
+    if(scroll<=width)return 'fits';
+    const overflows=Array.from(document.querySelectorAll('main *')).filter(element=>{
+      const rect=element.getBoundingClientRect();
+      return rect.width>0&&(rect.right>width+1||rect.left< -1)&&getComputedStyle(element).visibility!=='hidden';
+    }).slice(0,8).map(el=>({tag:el.tagName,css:el.className?.toString().slice(0,110),text:el.textContent?.trim().slice(0,70),right:Math.round(el.getBoundingClientRect().right)}));
+    return JSON.stringify({width,scroll,overflows});
+  })).toBe('fits');
  }
 });
