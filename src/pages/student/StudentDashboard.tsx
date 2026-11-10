@@ -157,6 +157,7 @@ function StudentDashboardContent() {
         <div className="mt-3 flex flex-wrap gap-2">
           <Link className="inline-flex min-h-11 items-center rounded-lg border bg-background px-3 py-2 text-sm font-semibold hover:bg-accent" to="/student/wellbeing">Ask the Welfare team</Link>
           <Link className="inline-flex min-h-11 items-center rounded-lg border bg-background px-3 py-2 text-sm font-semibold hover:bg-accent" to="/workspace">All student services</Link>
+          <Link className="inline-flex min-h-11 items-center rounded-lg border bg-background px-3 py-2 text-sm font-semibold hover:bg-accent" to="/student/applications">My applications</Link>
           <Link className="inline-flex min-h-11 items-center rounded-lg border bg-background px-3 py-2 text-sm font-semibold hover:bg-accent" to="/wellbeing/anonymous">Anonymous support</Link>
         </div>
         <details className="mt-3 rounded-lg border px-3 py-2">
