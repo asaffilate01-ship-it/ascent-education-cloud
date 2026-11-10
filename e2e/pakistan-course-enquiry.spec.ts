@@ -27,3 +27,21 @@ test('Pakistan course selection retains study interest through mobile enquiry fl
   await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
  }
 });
+
+test('qualification cards preserve the chosen title during an enquiry',async({context,page})=>{
+ await context.route('https://unipathway-browser-ci.invalid/**',route=>route.fulfill({
+  status:200,headers:{'access-control-allow-origin':'*','content-type':'application/json'},body:'[]',
+ }));
+ await page.setViewportSize({width:390,height:844});
+ await page.goto('/qualifications?body=OTHM&level=4&q=business');
+ const cookie=page.getByRole('dialog',{name:'Cookie preferences'});
+ if(await cookie.isVisible())await cookie.getByRole('button',{name:'Reject all'}).click();
+ const link=page.getByRole('link',{name:'Enquire about this pathway'}).first();
+ await expect(link).toBeVisible();
+ await link.click();
+ await expect(page).toHaveURL(/\/tenant\/unipathway\/contact\?/);
+ const parsed=new URL(page.url());
+ expect(parsed.searchParams.get('course')).toContain('OTHM');
+ expect(parsed.searchParams.get('course')).toContain('Business');
+ await expect(page.getByLabel('Message *')).toHaveValue(/OTHM.*Business/);
+});
