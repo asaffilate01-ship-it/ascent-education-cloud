@@ -1,7 +1,8 @@
 import PublicFooter from '@/components/PublicFooter';
 import SocialIcons from '@/components/SocialIcons';
 import PublicHero from '@/components/PublicHero';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { courseEnquiryPrefill } from '@/lib/courseInterest';
 import { Button } from '@/components/ui/button';
 import { Mail, Clock, Send, Globe } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -12,12 +13,14 @@ import { useTenantBranding } from '@/hooks/useTenantBranding';
 import Seo from '@/components/Seo';
 export default function TenantContactPage() {
   const {slug}=useParams();
-  return <ContactWorkspace key={slug||'unipathway'} slug={slug}/>;
+  const [query]=useSearchParams();
+  const interestKey=['course','area','mode','level'].map(key=>query.get(key)||'').join(':');
+  return <ContactWorkspace key={`${slug||'unipathway'}:${interestKey}`} slug={slug}/>;
 }
 function ContactWorkspace({slug}:{slug?:string}) {
   const [params] = useSearchParams();
-  const requestedCourse = (params.get('course') || '').slice(0,240);
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', subject: params.get('subject') === 'Course Enquiry' || requestedCourse ? 'Course Enquiry' : '', message: requestedCourse ? `I would like to enquire about ${requestedCourse}. Please confirm entry requirements, delivery, duration, fees and the next intake.` : '' });
+  const interest=courseEnquiryPrefill(params);
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', subject: interest.subject, message: interest.message });
   const [sending, setSending] = useState(false);
   const pending=useRef(false),alive=useRef(true);
   const [feedback,setFeedback]=useState<{kind:'success'|'error';message:string}|null>(null);
@@ -92,6 +95,7 @@ function ContactWorkspace({slug}:{slug?:string}) {
             {/* Form */}
             <form id="contact-form" aria-busy={sending} onSubmit={handleSubmit} className="scroll-mt-28 lg:col-span-2 surface-card p-4 sm:p-6">
               <h3 className="text-lg font-bold mb-4">Send us a message</h3>
+              {interest.summary&&<div className="mb-4 rounded-lg border bg-secondary/40 p-3 text-sm"><p className="font-semibold">Your selected study interest</p><p className="mt-1 break-words">{interest.summary}</p><Link className="mt-2 inline-flex min-h-11 items-center font-semibold underline underline-offset-4" to="/apply">Change study choices</Link><p className="mt-1 text-muted-foreground">Please review the prefilled message before sending. This is an enquiry, not an application or confirmed place.</p></div>}
               {feedback&&<p role={feedback.kind==='error'?'alert':'status'} className="mb-4 rounded-lg border p-3 text-sm">{feedback.message}</p>}
               <fieldset disabled={sending} className="min-w-0">
               <legend className="sr-only">Admissions enquiry details</legend>
