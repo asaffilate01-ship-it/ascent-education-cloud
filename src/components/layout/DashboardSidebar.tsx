@@ -415,6 +415,8 @@ const dailyPaths: Partial<Record<UserRole, string[]>> = {
   lecturer: ['/lecturer', '/lecturer/teaching', '/lecturer/classroom', '/lecturer/attendance', '/lecturer/assessments'],
   centre_director: ['/director', '/director/admissions', '/director/students', '/director/schedule', '/director/finance'],
   superadmin: ['/landlord', '/landlord/centres', '/landlord/users', '/landlord/readiness', '/landlord/finance'],
+  iqa_officer: ['/qa', '/qa/assessment-approval', '/qa/appeals', '/qa/moderation'],
+  assessor: ['/assessor'],
 };
 const conciseLabels: Record<string, string> = {
   'Dashboard': 'Overview', 'My Coursework & Resubmissions': 'Assignments', 'Approved Results Only': 'Results',
