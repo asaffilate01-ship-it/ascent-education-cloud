@@ -161,7 +161,7 @@ function StudentDashboardContent() {
         </div>
         <details className="mt-3 rounded-lg border px-3 py-2">
           <summary className="min-h-11 cursor-pointer py-2 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Optional revision and linked services</summary>
-          <div className="pt-3"><STEMCoachLearningAccess enrolled={enrolmentsQuery.data.length>0}/></div>
+          <div className="pt-3"><STEMCoachLearningAccess enrolled={enrolmentsQuery.data.length > 0} /></div>
         </details>
       </section>
     </DashboardLayout>
