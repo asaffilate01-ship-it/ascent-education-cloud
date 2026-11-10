@@ -15,6 +15,14 @@ for (const width of [375,1440]) test(`qualification stages and filters are acces
 });
 
 test('ATHE titles have official sources and preserve programme filters on narrow screens',async({context,page})=>{
+ // This test covers catalogue reflow, not the separately tested cookie dialogue.
+ // Set an explicit essential-only preference before first app hydration so the
+ // consent banner cannot appear after a one-time visibility check and obscure layout.
+ await context.addInitScript(()=>{
+  localStorage.setItem('cookie_consent_v2',JSON.stringify({
+    essential:true,analytics:false,marketing:false,timestamp:'2026-11-10T00:00:00.000Z',
+  }));
+ });
  await context.route('https://unipathway-browser-ci.invalid/**',route=>route.fulfill({status:200,headers:{'access-control-allow-origin':'*','content-type':'application/json'},body:'[]'}));
  await page.setViewportSize({width:390,height:844});await page.emulateMedia({reducedMotion:'reduce'});
  await page.goto('/qualifications?level=4');
