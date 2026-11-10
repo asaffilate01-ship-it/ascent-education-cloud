@@ -52,7 +52,7 @@ function Review({application,onClose,onSaved}:{application:Application;onClose:(
   }catch(e){
    if(mounted.current){
     setUncertain(true);
-    setError(e instanceof Error?e.message:'Enrolment result could not be confirmed');
+    setError(e instanceof Error?e.message:(typeof (e as {message?:unknown})?.message==='string'?(e as {message:string}).message:'Enrolment result could not be confirmed'));
    }
   }finally{
    requestLock.current=false;
