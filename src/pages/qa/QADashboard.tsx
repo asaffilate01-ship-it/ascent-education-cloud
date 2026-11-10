@@ -5,6 +5,7 @@ import {Button} from '@/components/ui/button';
 import {useAuth} from '@/contexts/AuthContext';
 import {activeRoleVerified} from '@/lib/roleMembership';
 import {db} from '@/lib/db';
+import {pagedRows,rowsByIds} from '@/lib/pagedRows';
 import {summariseAssignedIqaWorkload,type AssignedIqaSummary} from '@/lib/qa/assignedIqaWorkload';
 
 // Use a separate, active-role handoff rather than reusing the unallocated submissions list.
@@ -62,20 +63,22 @@ function IqaWorkload({reviewer,tenant}:{reviewer:string;tenant:string}){
   let active=true;
   setState({loading:true,error:'',summary:null});
   void (async()=>{
-   const result=await db.from('unipathway_assessment_allocations')
-    .select('attempt_id').eq('tenant_id',tenant).eq('qa_reviewer_id',reviewer).limit(200);
-   if(result.error)throw result.error;
-   const assigned=(result.data||[]) as Array<{attempt_id:string}>;
+   // A 200-row cap silently undercounts active IQA work. Read all allocated
+   // attempts in stable order; any failed page invalidates the entire snapshot.
+   const assigned=await pagedRows<{attempt_id:string;tenant_id:string;qa_reviewer_id:string}>(
+    ()=>db.from('unipathway_assessment_allocations')
+     .select('attempt_id,tenant_id,qa_reviewer_id')
+     .eq('tenant_id',tenant).eq('qa_reviewer_id',reviewer),
+    ()=>active,'attempt_id',
+   );
+   if(assigned.some(row=>row.tenant_id!==tenant||row.qa_reviewer_id!==reviewer))
+    throw Error('Allocation scope mismatch');
    const ids=[...new Set(assigned.map(row=>row.attempt_id))];
-   const attempts:Array<{id:string;status:string}>=[];
-   for(let offset=0;offset<ids.length;offset+=40){
-    const chunk=ids.slice(offset,offset+40);
-    const evidence=await db.from('unipathway_assessment_attempts')
-     .select('id,status').eq('tenant_id',tenant).in('id',chunk).limit(chunk.length);
-    if(evidence.error)throw evidence.error;
-    if(!active)return;
-    attempts.push(...((evidence.data||[]) as Array<{id:string;status:string}>));
-   }
+   const attempts=await rowsByIds<{id:string;status:string;tenant_id:string}>(ids,chunk=>()=>db
+    .from('unipathway_assessment_attempts')
+    .select('id,status,tenant_id').eq('tenant_id',tenant).in('id',chunk),
+    ()=>active);
+   if(attempts.some(row=>row.tenant_id!==tenant))throw Error('Attempt scope mismatch');
    const summary=summariseAssignedIqaWorkload(assigned,attempts);
    if(active)setState({loading:false,error:'',summary});
   })().catch(()=>{if(active)setState({loading:false,error:'Assigned IQA work could not be verified. No partial figures are shown.',summary:null});});
@@ -83,7 +86,7 @@ function IqaWorkload({reviewer,tenant}:{reviewer:string;tenant:string}){
  },[reviewer,tenant,refresh]);
  return <section aria-label="My assigned IQA workload" className="mb-5 rounded-xl border bg-card p-5">
   <div className="flex items-center justify-between gap-3"><h2 className="font-semibold">My allocated IQA workload</h2><Button size="sm" variant="outline" disabled={state.loading} onClick={()=>setRefresh(n=>n+1)}>Refresh</Button></div>
-  <p className="mt-2 text-sm text-muted-foreground">Read-only snapshot of up to 200 assignments for this reviewer and centre. Open the full independent QA queue below.</p>
+  <p className="mt-2 text-sm text-muted-foreground">Complete, read-only allocation snapshot for the active reviewer and centre. If any record cannot be checked, no partial totals are displayed. Open the independent QA queue below.</p>
   {state.loading&&<p role="status" className="mt-4">Verifying assigned attempts…</p>}
   {state.error&&<p role="alert" className="mt-4 text-destructive">{state.error}</p>}
   {state.summary&&<div className="mt-4 grid gap-3 sm:grid-cols-3">
