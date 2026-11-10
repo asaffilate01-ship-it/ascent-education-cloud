@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { programmePriorities, progressionDestinations } from '@/lib/programmePriorities';
 import StudySavingsCalculator from '@/components/StudySavingsCalculator';
+import {matchesLocalSearch} from '@/lib/localSearch';
 import LanguageAcademy from '@/components/tenant/LanguageAcademy';
 
 export default function StudyPriorities() {
@@ -26,7 +27,7 @@ export default function StudyPriorities() {
   const categoryFor = (id: string) => ['othm','qualifi'].includes(id) ? 'Qualifications' : ['beauty','accountancy','it'].includes(id) ? 'Professional skills' : id === 'tuition' ? 'School tuition' : ['ielts','german'].includes(id) ? 'Languages' : ['funded','international'].includes(id) ? 'Funding' : 'Careers & support';
   const updateFilter = (key: string, value: string) => { const next = new URLSearchParams(params); if (value && value !== 'All') next.set(key,value); else next.delete(key); setParams(next, {replace:true, preventScrollReset:true}); };
   const clearFilters = () => { const next = new URLSearchParams(params); next.delete('q'); next.delete('category'); setParams(next, {replace:true, preventScrollReset:true}); };
-  const visible = programmePriorities.filter(p => (category === 'All' || categoryFor(p.id) === category) && `${p.title} ${p.description}`.toLowerCase().includes(search.trim().toLowerCase()));
+  const visible = programmePriorities.filter(p => (category === 'All' || categoryFor(p.id) === category) && matchesLocalSearch(`${p.title} ${p.description}`,search));
   return <div className="public-site min-h-dvh bg-background"><Seo title="Study options — Qualifications, Accountancy & IT | UniPathway" description="Explore qualifications, IT training, subject tuition, IELTS, funded-course enquiries and international progression." canonical="/study" /><PublicNav />
     <main className="mx-auto max-w-7xl space-y-8 px-5 py-8 sm:px-8 sm:py-12">
       <PublicHero topic="study" compact><p className="text-label text-success">Your study options</p><h1 className="mt-3 text-3xl font-bold sm:text-4xl">Find the right course for you.</h1><p className="mt-4 max-w-3xl text-muted-foreground">Find tuition, qualifications, languages and professional training. Choose a learning area or search a subject. Review the details, then ask admissions about fees, entry requirements and available dates.</p></PublicHero>
