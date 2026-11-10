@@ -50,3 +50,30 @@ it('loads corrections for the displayed released attempts rather than an unrelat
  expect(filter).toHaveBeenCalledWith('unipathway_assessment_grade_amendments','attempt_id',['latest']);
  expect(screen.queryByText('72/100')).not.toBeInTheDocument();
 });
+
+it('prioritises learning, verified assessment and a compact support area without losing service routes',async()=>{
+ mocks.query.mockImplementation((table:string)=>({
+  data:table==='student_enrolments'?[{programme_id:'p1'}]:
+    table==='programmes'?[{id:'p1',title:'My programme',level:'4',awarding_body:'OTHM'}]:
+    table==='modules'?[{id:'m1',title:'My module',programme_id:'p1'}]:[],
+  loading:false,error:null,refetch:vi.fn(),
+ }));
+ mocks.from.mockImplementation(()=>{
+  const chain:Record<string,unknown>={};
+  for(const key of ['select','eq','order','limit','in','gte','range'])chain[key]=()=>chain;
+  chain.then=(resolve:(v:unknown)=>unknown,reject?:(e:unknown)=>unknown)=>
+   Promise.resolve({data:[],error:null}).then(resolve,reject);
+  return chain;
+ });
+ const {container}=render(<MemoryRouter><StudentDashboard/></MemoryRouter>);
+ const progress=screen.getByRole('heading',{name:'Your learning overview'});
+ const assessment=screen.getByRole('heading',{name:'Coursework and feedback'});
+ const support=screen.getByRole('heading',{name:'Support and additional services'});
+ expect(progress.compareDocumentPosition(assessment)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+ expect(assessment.compareDocumentPosition(support)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+ expect(screen.getByRole('link',{name:'My coursework'})).toHaveAttribute('href','/student/assignments');
+ expect(screen.getByRole('link',{name:'Approved results'})).toHaveAttribute('href','/student/grades');
+ expect(screen.getByRole('link',{name:'Ask the Welfare team'})).toHaveAttribute('href','/student/wellbeing');
+ expect(screen.getByRole('link',{name:'All student services'})).toHaveAttribute('href','/workspace');
+ expect(container.querySelector('details summary')).toHaveTextContent('Optional revision and linked services');
+});
