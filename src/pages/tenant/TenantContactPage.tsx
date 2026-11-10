@@ -11,6 +11,7 @@ import TenantNav from '@/components/TenantNav';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantBranding } from '@/hooks/useTenantBranding';
 import Seo from '@/components/Seo';
+import TurnstileChallenge from '@/components/enquiry/TurnstileChallenge';
 export default function TenantContactPage() {
   const {slug}=useParams();
   const [query]=useSearchParams();
@@ -20,6 +21,10 @@ export default function TenantContactPage() {
 function ContactWorkspace({slug}:{slug?:string}) {
   const [params] = useSearchParams();
   const interest=courseEnquiryPrefill(params);
+  const secureContact=import.meta.env.VITE_UNIPATHWAY_SECURE_CONTACT_ENABLED==='true'&&(slug||'unipathway')==='unipathway';
+  const [privacyAcknowledged,setPrivacyAcknowledged]=useState(false);
+  const [captchaToken,setCaptchaToken]=useState('');
+  const [challengeRevision,setChallengeRevision]=useState(0);
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', subject: interest.subject, message: interest.message });
   const [sending, setSending] = useState(false);
   const pending=useRef(false),alive=useRef(true);
@@ -34,22 +39,29 @@ function ContactWorkspace({slug}:{slug?:string}) {
       toast.error('Please fill in all required fields');
       return;
     }
+    if(secureContact&&!privacyAcknowledged){toast.error('Please read the privacy notice before sending.');return;}
+    if(secureContact&&!captchaToken){toast.error('Complete security verification before sending.');return;}
     pending.current=true;setSending(true);setFeedback(null);
     try {
-      const { data, error } = await supabase.functions.invoke('contact-form', {
-        body: { ...formData, tenant_slug: slug || 'unipathway' },
-      });
+      const endpoint=secureContact?'unipathway-secure-contact':'contact-form';
+      const body=secureContact
+        ? {...formData,tenant_slug:'unipathway',privacy_acknowledged:true,captcha_token:captchaToken}
+        : {...formData,tenant_slug:slug||'unipathway'};
+      const {data,error}=await supabase.functions.invoke(endpoint,{body});
       if(!alive.current)return;
-      if (error || data?.success!==true) throw new Error('Your message could not be confirmed. Please try again.');
+      if(error||(secureContact?data?.ok!==true:data?.success!==true))throw new Error('Your message could not be confirmed. Please try again.');
       const message='Message sent. Our admissions team will reply using your contact details.';
       setFeedback({kind:'success',message});toast.success(message);
       setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+      if(secureContact)setPrivacyAcknowledged(false);
     } catch {
       if(!alive.current)return;
       const message='Your message could not be confirmed. Your details are still here. Please retry or contact admissions by email.';
       setFeedback({kind:'error',message});toast.error(message);
     } finally {
-      pending.current=false;if(alive.current)setSending(false);
+      pending.current=false;
+      if(secureContact){setCaptchaToken('');setChallengeRevision(v=>v+1);}
+      if(alive.current)setSending(false);
     }
   };
 
@@ -137,7 +149,15 @@ function ContactWorkspace({slug}:{slug?:string}) {
                   placeholder="How can we help you?"
                 />
               </div>
-              <Button className="px-8" type="submit" disabled={sending}>
+              {secureContact&&<div className="mb-4 space-y-3">
+                <label className="flex min-h-11 items-start gap-3 text-sm">
+                  <input type="checkbox" required className="mt-1 size-4 shrink-0" checked={privacyAcknowledged} onChange={e=>setPrivacyAcknowledged(e.target.checked)}/>
+                  <span>I have read the <Link to="/privacy" className="font-semibold underline underline-offset-4">UniPathway privacy notice</Link> and understand that admissions will use these details to respond to my enquiry.</span>
+                </label>
+                <TurnstileChallenge onToken={setCaptchaToken} resetSignal={challengeRevision}/>
+                {!import.meta.env.VITE_TURNSTILE_SITE_KEY&&<p role="status" className="text-sm text-muted-foreground">Secure enquiry verification is not configured. Please contact admissions by email while this service is being activated.</p>}
+              </div>}
+              <Button className="px-8" type="submit" disabled={sending||(secureContact&&(!privacyAcknowledged||!captchaToken))}>
                 {sending ? 'Sending...' : <><Send className="w-4 h-4 mr-1.5" /> Send Message</>}
               </Button>
               </fieldset>

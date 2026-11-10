@@ -22,3 +22,8 @@ verify_jwt = false
 # Explicitly no user JWT: Turnstile and Edge service verify anonymous wellbeing intake.
 [functions.unipathway-anonymous-welfare]
 verify_jwt = false
+
+# Anonymous general contact is not publicly activated until Turnstile, quota RPC
+# and the frontend secure-contact flag have passed hosted acceptance.
+[functions.unipathway-secure-contact]
+verify_jwt = false
