@@ -20,7 +20,7 @@ import {matchesLocalSearch} from '@/lib/localSearch';
 
 
 const levels = ['All', '3', '4', '5', '6'] as const;
-const bodies = ['All', 'OTHM', 'Qualifi', 'Pearson BTEC'] as const;
+const bodies = ['All', 'OTHM', 'Qualifi', 'ATHE', 'Pearson BTEC'] as const;
 export default function QualificationsCatalogue() {
   const [now,setNow]=useState(Date.now());useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),30000);return()=>clearInterval(timer);},[]);
   const [offers,setOffers]=useState<CourseOffer[]>([]);const [offersError,setOffersError]=useState(false);
@@ -53,7 +53,7 @@ export default function QualificationsCatalogue() {
       <PublicHero topic="guidance">
         <p className="text-label text-success">UK & international qualifications</p>
         <h1 className="mt-3 text-3xl font-extrabold sm:text-5xl">Choose a pathway that moves you forward</h1>
-        <p className="mt-4 text-muted-foreground">Explore OTHM, Qualifi and Pearson BTEC Fine Art catalogue options alongside ATHE and VTCT Skills pathway guidance for learners in Pakistan. Options without current confirmed details are for planning only. Admissions must verify centre authorisation, entry eligibility and a place on the chosen intake before enrolment.</p>
+        <p className="mt-4 text-muted-foreground">Explore selected OTHM, Qualifi, ATHE and Pearson BTEC Fine Art qualification titles alongside VTCT Skills pathway guidance for learners in Pakistan. Options without current confirmed details are for planning only. Admissions must verify centre authorisation, entry eligibility and a place on the chosen intake before enrolment.</p>
       </PublicHero>
 <PageContents/>
       <QualificationStages/>
@@ -76,6 +76,7 @@ export default function QualificationsCatalogue() {
           <span className="text-xs font-bold text-success">{q.body} · Level {q.level}</span>
           <h2 className="mt-2 text-lg font-bold">{q.name}</h2><p className="mt-2 text-sm text-muted-foreground">{q.category}</p>
           <QualificationCurriculum qualification={q}/><div className="mt-4"><CourseAtAGlance compact course={`${q.body} ${q.name}`} entry={offer?.entry_requirements} fees={offer?.fees} intake={offer?.intake_date} delivery={q.curriculum?'Planned blended study with supervised studio and craft workshops. Practical attendance and facilities must be confirmed before enrolment.':'Planned online study with in-centre academic visits, subject to programme approval.'}/></div>
+          <a href={q.source} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex min-h-11 items-center self-start text-sm font-semibold underline underline-offset-4">Check official qualification listing <span className="sr-only">(opens in a new tab)</span></a>
           {offer&&<p className="mt-3 text-xs text-muted-foreground">{offer.availability==='open'?'Open for applications':offer.availability==='upcoming'?'Upcoming intake':'Applications closed'} · Reviewed {offer.verified_at.slice(0,10)} · Valid until {offer.valid_until.slice(0,10)}</p>}
           <Link className="mt-auto inline-flex min-h-11 items-center justify-center rounded-lg border border-primary px-4 py-2 text-sm font-semibold text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" to={`/contact?${new URLSearchParams({subject:'Course Enquiry',course:`${q.body} ${q.name}`})}#contact-form`}>Enquire about this pathway</Link>
         </article>})}
@@ -85,7 +86,7 @@ export default function QualificationsCatalogue() {
       <section className="rounded-xl border bg-secondary/40 p-6">
         <BookOpenCheck className="size-7 text-success"/><h2 className="mt-3 text-xl font-bold">Teaching, curriculum and university progression</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Approved awarding-body unit specifications and assessment rules will determine the final modules, credits, assignment briefs and delivery method. Online study may include supervised centre visits, practical sessions and examinations where permitted. Their frequency and duration must be confirmed against the current programme-specific approval before any learner commits to a course. A Level 4 or 5 diploma is not itself a UK university degree and admission or advanced standing is subject to the receiving university.</p>
-        <div className="mt-4 flex flex-wrap gap-4 text-sm text-muted-foreground"><span>OTHM · Level 3–6 diploma titles</span><span>Qualifi · Level 3–6 diploma titles</span><span>Pearson BTEC · Level 4 HNC and Level 5 HND in Fine Art, with craft-focused teaching</span></div>
+        <div className="mt-4 flex flex-wrap gap-4 text-sm text-muted-foreground"><span>OTHM · Level 3–6 diploma titles</span><span>Qualifi · Level 3–6 diploma titles</span><span>ATHE · Selected Level 3–5 qualification titles</span><span>Pearson BTEC · Level 4 HNC and Level 5 HND in Fine Art, with craft-focused teaching</span></div>
         <Button asChild className="mt-5"><Link to="/university-progression">Explore university progression <GraduationCap className="ml-2 size-4"/></Link></Button>
       </section>
     </main><PublicFooter/>
