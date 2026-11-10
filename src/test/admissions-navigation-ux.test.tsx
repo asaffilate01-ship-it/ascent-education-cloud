@@ -229,7 +229,8 @@ describe('Admissions selection boundaries', () => {
     expect(checks).toHaveLength(9);
     expect(checks.find(check => check.key === 'enrolment')?.status).toBe('review');
     expect(checks.find(check => check.key === 'funding')?.detail).toContain('do not prove funding approval or payment settlement');
-    expect(checks.find(check => check.key === 'offer')?.status).toBe('review');
+    expect(checks.find(check => check.key === 'offer')?.status).toBe('manual');
+    expect(checks.find(check => check.key === 'funding')?.status).toBe('manual');
   });
 });
 
