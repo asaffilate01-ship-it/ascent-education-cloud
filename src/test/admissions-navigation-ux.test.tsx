@@ -5,7 +5,7 @@ import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import AdmissionsCRM from '@/pages/admissions/AdmissionsCRM';
 import AdmissionsReviewDesk from '@/pages/admissions/AdmissionsReviewDesk';
 import {admissionReadiness} from '@/components/admissions/AdmissionsJourney';
-import {admissionsPath} from '@/lib/admissionsNavigation';
+import {admissionsPath,admissionRoleWorkflow} from '@/lib/admissionsNavigation';
 
 const mocks = vi.hoisted(() => ({
   user: {id: 'officer', tenantId: 'centre-a', role: 'admissions_admin', roles: ['admissions_admin']} as {id: string; tenantId?: string; role: string; roles: string[]} | null,
@@ -145,9 +145,21 @@ describe('Admissions record navigation', () => {
     expect(urlOf(eligibility).searchParams.get('application')).toBe('app-a');
     expect(urlOf(eligibility).searchParams.get('reviewSearch')).toBe('Aisha');
     expect(urlOf(screen.getByRole('link', {name: 'Open related workflow: Offer review and acceptance'})).searchParams.get('application')).toBe('app-a');
-    for (const label of ['Identity and academic evidence', 'Funding, fee schedule and payment', 'Correct modules and lecturer allocation', 'Intake dates, sessions and invitations', 'Student ID card and document issuance']) {
-      expect(urlOf(screen.getByRole('link', {name: `Open related workflow: ${label}`})).search).toBe('');
+    // This legacy document workspace does not consume the current application ID.
+    expect(urlOf(screen.getByRole('link', {name: 'Open related workflow: Identity and academic evidence'})).search).toBe('');
+    // Admissions Admin is never sent to Director-only pages and retains the exact applicant in the review desk.
+    for (const [label,section] of [
+      ['Funding, fee schedule and payment','offers'],
+      ['Correct modules and lecturer allocation','allocations'],
+      ['Intake dates, sessions and invitations','allocations'],
+      ['Student ID card and document issuance','documents'],
+    ]) {
+      const target=urlOf(screen.getByRole('link', {name: `Open related workflow: ${label}`}));
+      expect(target.pathname).toBe(`/admissions/${section}`);
+      expect(target.searchParams.get('application')).toBe('app-a');
+      expect(target.searchParams.get('reviewSearch')).toBe('Aisha');
     }
+    expect(screen.getByText(/an authorised finance officer or director must separately approve funding/)).toBeInTheDocument();
     const handover = urlOf(screen.getByRole('link', {name: 'Open related workflow: Academic enrolment'}));
     expect(handover.searchParams.get('q')).toBe('Business');
     expect(handover.searchParams.has('application')).toBe(false);
@@ -218,5 +230,29 @@ describe('Admissions selection boundaries', () => {
     expect(checks.find(check => check.key === 'enrolment')?.status).toBe('review');
     expect(checks.find(check => check.key === 'funding')?.detail).toContain('do not prove funding approval or payment settlement');
     expect(checks.find(check => check.key === 'offer')?.status).toBe('review');
+  });
+});
+
+describe('role-safe admission service handoffs',()=>{
+  it('does not send admissions staff into Director-only workflows or lose the reviewed applicant',()=>{
+    const expected:Record<string,string>={
+      '/director/funding':'/admissions/offers',
+      '/director/programmes':'/admissions/allocations',
+      '/director/schedule':'/admissions/allocations',
+      '/director/students':'/admissions/documents',
+    };
+    for(const [requested,to] of Object.entries(expected)){
+      const result=admissionRoleWorkflow(requested,'admissions_admin');
+      expect(result.path).toBe(to);
+      expect(result.handoff).toBeTruthy();
+      const url=new URL(admissionsPath(result.path,'?application=app-a&q=business&reviewSearch=Aisha','app-a'),'https://example.invalid');
+      expect(url.searchParams.get('application')).toBe('app-a');
+      expect(url.searchParams.get('q')).toBe('business');
+    }
+  });
+  it('preserves authorised director workflows and treats unknown targets conservatively',()=>{
+    expect(admissionRoleWorkflow('/director/funding','centre_director')).toEqual({path:'/director/funding',handoff:null});
+    expect(admissionRoleWorkflow('/director/schedule','centre_director')).toEqual({path:'/director/schedule',handoff:null});
+    expect(admissionRoleWorkflow('/admissions/eligibility','admissions_admin')).toEqual({path:'/admissions/eligibility',handoff:null});
   });
 });
