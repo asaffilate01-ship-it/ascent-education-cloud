@@ -1,9 +1,7 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import StatCard from '@/components/ui/StatCard';
 import { BookOpen, Video, BarChart3, TrendingUp, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { motion, useReducedMotion } from 'framer-motion';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { useAuth } from '@/contexts/AuthContext';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
@@ -15,21 +13,12 @@ import ContinueLearning from '@/components/student/ContinueLearning';
 import { rowsByIds } from '@/lib/pagedRows';
 import { formatPakistanAcademicDate } from '@/lib/assessment/courseworkQueue';
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 12 },
-  visible: (i: number) => ({
-    opacity: 1, y: 0,
-    transition: { delay: i * 0.08, duration: 0.4 },
-  }),
-};
-
 export default function StudentDashboard() {
   const {user} = useAuth();
   return <StudentDashboardContent key={`${user?.id}:${user?.tenantId}:${user?.role}:${user?.roles?.join(',')}`} />;
 }
 function StudentDashboardContent() {
   const { user } = useAuth();
-  const reducedMotion = useReducedMotion();
   const verified=!!user?.id&&!!user.tenantId&&user.role==='student'&&user.roles?.includes('student');
   const scope = [{column: 'tenant_id', operator: 'eq' as const, value: user?.tenantId}];
   const enrolmentsQuery = useSupabaseQuery('student_enrolments', {enabled: verified, filters: [...scope, {column: 'student_id', operator: 'eq', value: user?.id}, {column: 'status', operator: 'eq', value: 'active'}]});
@@ -93,34 +82,29 @@ function StudentDashboardContent() {
     <DashboardLayout title="Today" subtitle={`Welcome back, ${user?.name || 'Student'}`}>
       <ContinueLearning modules={modules} />
       <StudentLearningAgenda tenant={user.tenantId} student={user.id} moduleIds={moduleIds} />
-      <section className="mb-5 rounded-xl border bg-card p-5 space-y-3" aria-label="Student wellbeing support">
-       <h2 className="font-semibold">Wellbeing, counselling and personal support</h2>
-       <p className="text-sm text-muted-foreground">Need someone to talk to about mental health, study stress, family problems, bullying or other challenges? Choose confidential Welfare support or submit separately without identifying yourself.</p>
-       <div className="flex flex-wrap gap-2">
-        <Link className="inline-flex min-h-11 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground" to="/student/wellbeing">Ask for help</Link>
-        <Link className="inline-flex min-h-11 items-center rounded-lg border px-4 text-sm font-medium" to="/wellbeing/anonymous">Anonymous option</Link>
-       </div>
+      <section aria-labelledby="student-progress-heading" className="mb-5 rounded-xl border bg-card p-4 sm:p-5">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 id="student-progress-heading" className="text-base font-semibold">Your learning overview</h2>
+          <Link to="/student/courses" className="inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4">View my courses</Link>
+        </div>
+        <dl className="mt-3 grid grid-cols-3 gap-2" aria-label="Verified student learning summary">
+          {stats.map(({label,value,icon:Icon})=>(
+            <div key={label} className="min-w-0 rounded-lg border bg-secondary/30 p-2.5 sm:p-3">
+              <dt className="flex items-center gap-1 text-[11px] font-medium leading-4 text-muted-foreground sm:text-sm"><Icon aria-hidden="true" className="hidden size-4 shrink-0 sm:inline"/><span className="break-words">{label}</span></dt>
+              <dd className="mt-2 break-words text-lg font-bold tabular-nums sm:text-2xl">{value}</dd>
+            </div>
+          ))}
+        </dl>
+        <p className="mt-3 text-xs text-muted-foreground">The average, where available, covers only the latest 100 independently released attempts. It is not an official qualification grade.</p>
       </section>
-      <section className="mb-5 rounded-xl border bg-card p-4"><h2 className="font-semibold">Your student workspace</h2><p className="my-2 text-sm text-muted-foreground">Courses, timetable, recordings, labs, residential visits, documents, careers, fees and support.</p><Link className="font-semibold underline" to="/workspace">Open all student services</Link></section>
-
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),1fr))] gap-4 mb-6">
-        {stats.map((stat, i) => (
-          <motion.div key={stat.label} custom={i} initial={reducedMotion ? false : 'hidden'} animate={reducedMotion ? undefined : 'visible'} variants={reducedMotion ? undefined : fadeUp}>
-            <StatCard {...stat} />
-          </motion.div>
-        ))}
-      </div>
-
-      <STEMCoachLearningAccess enrolled={enrolmentsQuery.data.length > 0} />
-
-      <section className="mb-6 rounded-xl border bg-primary/5 p-4">
-        <h3 className="font-semibold">Your verified learning progress</h3>
-        <p className="mt-2 text-sm text-muted-foreground">View assignments, read released feedback or ask for a result review. Results appear after marking and quality approval.</p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <Button asChild variant="outline" size="sm"><Link to="/student/assignments">My current coursework</Link></Button>
+      <section className="mb-5 rounded-xl border bg-primary/5 p-4 sm:p-5" aria-labelledby="student-assessment-links">
+        <h2 id="student-assessment-links" className="font-semibold">Coursework and feedback</h2>
+        <p className="mt-1 text-sm text-muted-foreground">Review published coursework, independently released marks and the separate appeal process.</p>
+        <nav className="mt-3 flex flex-wrap gap-2" aria-label="Coursework and released results">
+          <Button asChild variant="outline" size="sm"><Link to="/student/assignments">My coursework</Link></Button>
           <Button asChild variant="outline" size="sm"><Link to="/student/grades">Approved results</Link></Button>
           <Button asChild variant="outline" size="sm"><Link to="/student/appeals">Grade appeals</Link></Button>
-        </div>
+        </nav>
       </section>
 
       {/* Recent Grades */}
@@ -167,6 +151,19 @@ function StudentDashboardContent() {
           </div>
         </div>
       </div>
+      <section aria-labelledby="student-support-heading" className="mt-6 rounded-xl border bg-card p-4 sm:p-5">
+        <h2 id="student-support-heading" className="font-semibold">Support and additional services</h2>
+        <p className="mt-1 text-sm text-muted-foreground">Find student services, confidential wellbeing support and other optional learning tools. Seeking support does not change your marks.</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Link className="inline-flex min-h-11 items-center rounded-lg border bg-background px-3 py-2 text-sm font-semibold hover:bg-accent" to="/student/wellbeing">Ask the Welfare team</Link>
+          <Link className="inline-flex min-h-11 items-center rounded-lg border bg-background px-3 py-2 text-sm font-semibold hover:bg-accent" to="/workspace">All student services</Link>
+          <Link className="inline-flex min-h-11 items-center rounded-lg border bg-background px-3 py-2 text-sm font-semibold hover:bg-accent" to="/wellbeing/anonymous">Anonymous support</Link>
+        </div>
+        <details className="mt-3 rounded-lg border px-3 py-2">
+          <summary className="min-h-11 cursor-pointer py-2 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Optional revision and linked services</summary>
+          <div className="pt-3"><STEMCoachLearningAccess enrolled={enrolmentsQuery.data.length>0}/></div>
+        </details>
+      </section>
     </DashboardLayout>
   );
 }
