@@ -7,13 +7,19 @@ describe('UniPathway academic and careers catalogue', () => {
   it('keeps awarding-body qualifications distinguishable and sourced', () => {
     expect(qualificationSelection.length).toBeGreaterThan(35);
     const bodies = new Set(qualificationSelection.map(q=>q.body));
-    expect([...bodies].sort()).toEqual(['OTHM','Pearson BTEC','Qualifi']);
+    expect([...bodies].sort()).toEqual(['ATHE','OTHM','Pearson BTEC','Qualifi']);
     const unique = new Set(qualificationSelection.map(q=>q.body + q.name));
     expect(unique.size).toBe(qualificationSelection.length);
     for (const qualification of qualificationSelection) {
       expect(qualification.level).toBeGreaterThanOrEqual(3);
       expect(qualification.level).toBeLessThanOrEqual(7);
-      expect(qualification.source).toBe(officialAwardingBodies[qualification.body].url);
+      if(qualification.body==='ATHE'){
+        // Each ATHE qualification must use its own versioned awarding-body
+        // listing, not a directory that could hide a withdrawn older edition.
+        expect(qualification.source.startsWith(officialAwardingBodies.ATHE.url+'athe-')).toBe(true);
+      } else {
+        expect(qualification.source).toBe(officialAwardingBodies[qualification.body].url);
+      }
     }
   });
 

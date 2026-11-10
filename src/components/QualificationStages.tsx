@@ -12,19 +12,19 @@ const stages = [
 ];
 
 export default function QualificationStages() {
-  return <section aria-labelledby="qualification-stages" className="rounded-2xl border bg-secondary/30 p-5 sm:p-8">
-    <div className="flex items-start gap-3"><GraduationCap className="mt-1 size-7 shrink-0 text-success" aria-hidden="true"/><div>
+  return <section aria-labelledby="qualification-stages" className="min-w-0 rounded-2xl border bg-secondary/30 p-5 sm:p-8 [overflow-wrap:anywhere]">
+    <div className="flex min-w-0 flex-wrap items-start gap-3 sm:flex-nowrap"><GraduationCap className="mt-1 size-7 shrink-0 text-success" aria-hidden="true"/><div className="min-w-0 flex-[1_1_12rem] [overflow-wrap:anywhere]">
       <p className="text-label text-success">Find your starting point</p>
-      <h2 id="qualification-stages" className="mt-2 text-2xl font-bold sm:text-3xl">From Level 3 to postgraduate study</h2>
+      <h2 id="qualification-stages" className="mt-2 break-words text-2xl font-bold sm:text-3xl">From Level 3 to postgraduate study</h2>
       <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">Compare stages before choosing a course. These UK level descriptions follow the England, Wales and Northern Ireland framework; Scotland uses a different framework. Your previous qualifications, subject and chosen provider determine your entry point.</p>
     </div></div>
     <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      {stages.map(stage => <article key={stage.title} className="flex flex-col rounded-xl border bg-card p-5">
+      {stages.map(stage => <article key={stage.title} className="flex min-w-0 flex-col rounded-xl border bg-card p-5 [overflow-wrap:anywhere]">
         <h3 className="font-bold">{stage.title}</h3><p className="mt-3 flex-1 text-sm leading-relaxed text-muted-foreground">{stage.text}</p>
-        <Button asChild variant="outline" className="mt-5 h-auto min-h-11 justify-between whitespace-normal text-left"><Link to={stage.to}>{stage.action}<ArrowRight aria-hidden="true" className="ml-2 size-4 shrink-0"/></Link></Button>
+        <Button asChild variant="outline" className="mt-5 h-auto min-h-11 w-full min-w-0 max-w-full justify-between whitespace-normal break-words text-left"><Link to={stage.to}>{stage.action}<ArrowRight aria-hidden="true" className="ml-2 size-4 shrink-0"/></Link></Button>
       </article>)}
     </div>
     <p className="mt-5 text-sm leading-relaxed text-muted-foreground">This is a progression guide, not a list of approved UniPathway intakes. Foundation degrees, foundation years and postgraduate routes require provider confirmation. Admission, credit transfer, Pakistani equivalence and progression are not guaranteed.</p>
-    <a href="https://www.gov.uk/what-different-qualification-levels-mean/list-of-qualification-levels" className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4" target="_blank" rel="noreferrer">Check the official UK qualification levels<span className="sr-only"> (opens in a new tab)</span></a>
+    <a href="https://www.gov.uk/what-different-qualification-levels-mean/list-of-qualification-levels" className="mt-3 block min-h-11 w-full max-w-full break-words py-2 text-sm font-semibold underline underline-offset-4" target="_blank" rel="noreferrer">Check the official UK qualification levels<span className="sr-only"> (opens in a new tab)</span></a>
   </section>;
 }
