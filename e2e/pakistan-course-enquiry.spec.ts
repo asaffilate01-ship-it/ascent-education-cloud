@@ -45,3 +45,18 @@ test('qualification cards preserve the chosen title during an enquiry',async({co
  expect(parsed.searchParams.get('course')).toContain('Business');
  await expect(page.getByLabel('Message *')).toHaveValue(/OTHM.*Business/);
 });
+
+test('study and qualification search match terms in any order on mobile',async({context,page})=>{
+ await context.route('https://unipathway-browser-ci.invalid/**',route=>route.fulfill({
+  status:200,headers:{'access-control-allow-origin':'*','content-type':'application/json'},body:'[]',
+ }));
+ await page.setViewportSize({width:375,height:812});
+ await page.goto('/study?q=Python%20machine');
+ const cookie=page.getByRole('dialog',{name:'Cookie preferences'});
+ if(await cookie.isVisible())await cookie.getByRole('button',{name:'Reject all'}).click();
+ await expect(page.getByRole('heading',{name:'AI, coding and cyber skills'})).toBeVisible();
+ await page.goto('/qualifications?body=OTHM&q=Management%20Business');
+ const cards=page.getByRole('region',{name:'Proposed qualifications'}).getByRole('article');
+ await expect(cards.first()).toBeVisible();
+ await expect(cards.first()).toContainText('Business');
+});
