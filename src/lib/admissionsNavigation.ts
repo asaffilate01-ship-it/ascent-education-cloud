@@ -42,3 +42,35 @@ export function applicationReviewAction(stage: string) {
     label: ['lost', 'deferred'].includes(stage) ? 'Review application' : 'Review documents',
   };
 }
+
+/**
+ * Admissions officers cannot navigate into Centre Director-only workflows.
+ * Keep the exact selected applicant in the existing authorised review desk
+ * while leaving actual finance, programme and ID-card decisions with their
+ * separately authorised staff. A link is not a permission grant.
+ */
+const admissionsReviewFallbacks: Record<string, {path:string;handoff:string}> = {
+  '/director/funding': {
+    path:'/admissions/offers',
+    handoff:'Review recorded fee evidence here; an authorised finance officer or director must separately approve funding or payments.',
+  },
+  '/director/programmes': {
+    path:'/admissions/allocations',
+    handoff:'Review the assigned programme and modules here; the programme team or director controls allocations.',
+  },
+  '/director/schedule': {
+    path:'/admissions/allocations',
+    handoff:'Review intake and timetable evidence here; authorised academic staff manage the schedule and invitations.',
+  },
+  '/director/students': {
+    path:'/admissions/documents',
+    handoff:'Review verified identity documents here; authorised student-services staff handle card issuance.',
+  },
+};
+export function admissionRoleWorkflow(path:string,activeRole:string):{path:string;handoff:string|null}{
+  if(activeRole==='admissions_admin'&&Object.prototype.hasOwnProperty.call(admissionsReviewFallbacks,path)){
+    const fallback=admissionsReviewFallbacks[path];
+    return {path:fallback.path,handoff:fallback.handoff};
+  }
+  return {path,handoff:null};
+}

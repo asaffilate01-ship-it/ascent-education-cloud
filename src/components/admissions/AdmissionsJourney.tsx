@@ -4,7 +4,7 @@ import {useAuth} from '@/contexts/AuthContext';
 import {db} from '@/lib/db';
 import {pagedRows,rowsByIds} from '@/lib/pagedRows';
 import {Button} from '@/components/ui/button';
-import {admissionsPath} from '@/lib/admissionsNavigation';
+import {admissionsPath,admissionRoleWorkflow} from '@/lib/admissionsNavigation';
 
 type Application={id:string;tenant_id:string;student_name:string;email:string;stage:string;user_id:string|null;
  programme_id:string|null;programme_name:string|null;intake:string|null;document_checklist:unknown};
@@ -77,12 +77,13 @@ export default function AdmissionsJourney({application}:{application:Application
   {error&&<p role="alert">{error}</p>}
   {/* Keep at most two columns, and let enlarged text raise each card's minimum width. */}
   {!loading&&!error&&<div className="grid min-w-0 grid-cols-[repeat(auto-fit,minmax(min(100%,max(18rem,calc(50%_-_0.375rem))),1fr))] gap-3">
-   {checks.map(item=><article key={item.key} className="min-w-0 rounded-xl border p-4">
+   {checks.map(item=>{const destination=admissionRoleWorkflow(item.to,user!.role);return <article key={item.key} className="min-w-0 rounded-xl border p-4">
     <h4 className="font-semibold text-sm">{item.title}</h4>
     <p className="mt-1 text-xs text-muted-foreground">{item.status==='recorded'?'Source record found · not approval':item.status==='manual'?'Manual independent decision required':'Verification outstanding'}</p>
     <p className="mt-2 text-sm leading-relaxed">{item.detail}</p>
-    <Link className="mt-3 inline-flex min-h-11 min-w-0 max-w-full items-center whitespace-normal rounded-lg border px-3 text-sm font-semibold hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" to={admissionsPath(item.to,location.search,application.id)} aria-label={`Open related workflow: ${item.title}`}>Open related workflow</Link>
-   </article>)}
+    {destination.handoff&&<p className="mt-2 text-xs leading-relaxed text-muted-foreground" role="note">{destination.handoff}</p>}
+    <Link className="mt-3 inline-flex min-h-11 min-w-0 max-w-full items-center whitespace-normal rounded-lg border px-3 text-sm font-semibold hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" to={admissionsPath(destination.path,location.search,application.id)} aria-label={`Open related workflow: ${item.title}`}>{destination.handoff?'Review applicant evidence':'Open related workflow'}</Link>
+   </article>})}
   </div>}
  </section>;
 }
