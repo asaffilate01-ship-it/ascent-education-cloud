@@ -60,7 +60,7 @@ it('does not accept another case, centre or a missing record as an enrolment con
  await choose();fireEvent.click(screen.getByRole('button',{name:'Confirm academic enrolment'}));
  await screen.findByRole('alert');
  fireEvent.click(screen.getByRole('button',{name:'Check recorded enrolment status'}));
- expect(await screen.findByRole('alert')).toHaveTextContent(/No matching active enrolment/);
+ await waitFor(()=>expect(screen.getByRole('alert')).toHaveTextContent(/No matching active enrolment/));
  expect(saved).not.toHaveBeenCalled();
 });
 it('rejects malformed admission options and does not let staff choose unverified accounts',async()=>{
