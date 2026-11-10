@@ -119,6 +119,7 @@ const LessonWorkspace = lazy(() => import('./pages/learning/LessonWorkspace'));
 const LessonBuilder = lazy(() => import('./pages/learning/LessonBuilder'));
 const ModuleOverview = lazy(() => import('./pages/learning/ModuleOverview'));
 const StudentCourses = lazy(() => import("./pages/student/StudentCourses"));
+const StudentApplications = lazy(() => import("./pages/student/StudentApplications"));
 const LearningPlans = lazy(() => import("./pages/tuition/LearningPlans"));
 const GuardianLearning = lazy(() => import("./pages/tuition/GuardianLearning"));
 const StudentCoursework = lazy(() => import("./pages/student/StudentCoursework"));
@@ -580,6 +581,7 @@ function AppRoutes() {
         <Route path="/student/module" element={<StudentR><ModuleOverview /></StudentR>} />
         <Route path="/lecturer/module" element={<LecturerR><ModuleOverview teacher /></LecturerR>} />
         <Route path="/student/courses" element={<StudentR><StudentCourses /></StudentR>} />
+        <Route path="/student/applications" element={<StudentR><StudentApplications /></StudentR>} />
         <Route path="/student/ielts" element={<StudentR><IELTSAcademy /></StudentR>} />
         <Route path="/student/classroom" element={<StudentR><LiveClassroom /></StudentR>} />
         <Route path="/student/microsoft" element={<StudentR><MicrosoftAccountCentre /></StudentR>} />
