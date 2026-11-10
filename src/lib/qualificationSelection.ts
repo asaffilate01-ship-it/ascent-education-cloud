@@ -3,7 +3,7 @@
  * of programmes for which the centre has already received delivery permission.
  */
 import {pearsonFineArtQualifications, pearsonFineArtSource} from './pearsonFineArt';
-export type AwardingBody = 'OTHM' | 'Qualifi' | 'Pearson BTEC';
+export type AwardingBody = 'OTHM' | 'Qualifi' | 'ATHE' | 'Pearson BTEC';
 export type QualificationOption = { body: AwardingBody; category: string; name: string; level: number; source: string;
   curriculum?: {
     qualificationNumber: string; credits: number; creditNote: string;
@@ -13,8 +13,9 @@ export type QualificationOption = { body: AwardingBody; category: string; name: 
 };
 const othm = 'https://othm.org.uk/qualification';
 const qualifi = 'https://qualifi.net/qualifications/';
+const athe = 'https://athe.co.uk/qualifications/';
 const options: QualificationOption[] = [];
-function add(body: Exclude<AwardingBody, 'Pearson BTEC'>, category: string, titles: [number, string][]) {
+function add(body: 'OTHM' | 'Qualifi', category: string, titles: [number, string][]) {
   const source = body === 'OTHM' ? othm : qualifi;
   for (const [level, name] of titles) options.push({body,category,name,level,source});
 }
@@ -82,10 +83,28 @@ add('Qualifi','Law, Logistics & Hospitality',[
   [4,'Level 4 Diploma in Hospitality and Tourism Management'],
   [5,'Level 5 Diploma in Hospitality and Tourism Management'],
 ]);
+// ATHE entries below are individually linked to the awarding body's published
+// qualification listing. They are not evidence that UniPathway is an approved centre.
+function addAthe(category:string,optionsAthe:[number,string,string][]){
+  for(const [level,name,slug] of optionsAthe)
+    options.push({body:'ATHE',category,name,level,source:athe+slug+'/'});
+}
+addAthe('Business',[
+  [3,'Level 3 Diploma in Business and Management (2023)','athe-level-3-diploma-in-business-and-management-2023-2'],
+  [4,'Level 4 Diploma in Business and Management (2023)','athe-level-4-diploma-in-business-and-management-2023'],
+  [5,'Level 5 Diploma in Business and Management (2023)','athe-level-5-diploma-in-business-and-management-2023'],
+]);
+addAthe('Technology & Cyber Security',[
+  [4,'Level 4 Diploma in Computing (2023)','athe-level-4-diploma-in-computing-2023'],
+  [5,'Level 5 Diploma in Computing (2024)','athe-level-5-diploma-in-computing-2024'],
+  [5,'Level 5 Extended Diploma in Computing (2024)','athe-level-5-extended-diploma-in-computing-2024'],
+  [5,'Level 5 Diploma in Computing and Advanced Statistics','athe-level-5-diploma-in-computing-and-advanced-statistics'],
+]);
 options.push(...pearsonFineArtQualifications);
 export const qualificationSelection = options;
 export const officialAwardingBodies: Record<AwardingBody,{url:string;label:string}> = {
   'Pearson BTEC': {url:pearsonFineArtSource,label:'Pearson Fine Art qualification and specification'},
   OTHM: {url:othm,label:'OTHM official qualification directory'},
   Qualifi: {url:qualifi,label:'Qualifi regulated qualification directory'},
+  ATHE: {url:athe,label:'ATHE official qualification directory'},
 };
