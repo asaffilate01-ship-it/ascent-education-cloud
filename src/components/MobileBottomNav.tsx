@@ -110,8 +110,8 @@ export const BOTTOM_NAV: Record<UserRole, BottomNavItem[]> = {
   ],
   iqa_officer: [
     { label: 'Home', icon: Home, path: '/qa' },
+    { label: 'IQA queue', icon: ClipboardCheck, path: '/qa/assessment-approval' },
     { label: 'Compliance', icon: ShieldCheck, path: '/compliance' },
-    { label: 'Review status', icon: FileText, path: '/qa/audit' },
     { label: 'Alerts', icon: Bell, path: '/notifications' },
     { label: 'Chat', icon: MessageSquare, path: '/messaging' },
   ],
