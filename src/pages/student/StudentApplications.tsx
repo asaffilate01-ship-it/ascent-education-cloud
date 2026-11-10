@@ -29,6 +29,10 @@ const readableDate=(value:string|null|undefined)=>{
 };
 
 export default function StudentApplications(){
+  const {user}=useAuth();
+  return <ApplicationsWorkspace key={[user?.id,user?.tenantId,user?.role,user?.roles?.join(',')].join(':')}/>;
+}
+function ApplicationsWorkspace(){
   const {user,loading:authLoading}=useAuth();
   const allowed=!authLoading&&!!user?.id&&!!user?.tenantId&&user.role==='student'&&user.roles?.includes('student');
   const tenant=user?.tenantId||'';
