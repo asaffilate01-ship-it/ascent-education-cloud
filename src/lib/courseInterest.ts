@@ -1,3 +1,4 @@
+import {qualificationSelection} from './qualificationSelection';
 /** Public course-interest routing. This is an enquiry, not confirmed admission. */
 export const STUDY_AREAS = [
   {id:'tuition',label:'School tuition (Years 8–12)',detail:'Matric, Intermediate and Cambridge preparation'},
@@ -22,19 +23,36 @@ export const STUDY_LEVELS = [
   {id:'level-3',label:'Level 3'},
   {id:'level-4',label:'Level 4'},
   {id:'level-5',label:'Level 5'},
+  {id:'level-6',label:'Level 6'},
   {id:'short',label:'Short or vocational course'},
   {id:'school',label:'School year or board preparation'},
 ] as const;
 
-export type CourseInterest = {area:string;mode?:string;level?:string};
+export type CourseInterest = {area:string;mode?:string;level?:string;course?:string};
 const find = <T extends {id:string}>(items:readonly T[],id:string|undefined|null):T|undefined =>
   items.find(item=>item.id===id);
 
-/** Only permit predefined course choices in URLs. Never put names or documents in query parameters. */
+/** Course titles originate in the public catalogue, not learner personal details. */
+const knownQualification = (title?: string | null) => qualificationSelection.find(
+  item => `${item.body} ${item.name}` === title
+);
+
+/** Preselect a real catalogue option and reject unrecognised URL values. */
+export function courseInterestFromParams(params: URLSearchParams): CourseInterest {
+  const qualification = knownQualification(params.get('course'));
+  const area = qualification ? 'qualifications' : find(STUDY_AREAS, params.get('area'))?.id || '';
+  const level = qualification ? `level-${qualification.level}` : find(STUDY_LEVELS, params.get('level'))?.id || 'unsure';
+  const mode = find(STUDY_MODES, params.get('mode'))?.id || 'undecided';
+  return {area, level, mode, course: qualification ? `${qualification.body} ${qualification.name}` : undefined};
+}
+
+/** Only allow fixed public course choices in URLs, never personal data. */
 export function courseInterestEnquiryUrl(interest:CourseInterest):string {
   const area=find(STUDY_AREAS,interest.area);
   if(!area)return '/contact?subject=Course+Enquiry';
   const params=new URLSearchParams({subject:'Course Enquiry',area:area.id});
+  const course=area.id==='qualifications'?knownQualification(interest.course):undefined;
+  if(course)params.set('course',`${course.body} ${course.name}`);
   const mode=find(STUDY_MODES,interest.mode);
   const level=find(STUDY_LEVELS,interest.level);
   if(mode&&mode.id!=='undecided')params.set('mode',mode.id);
