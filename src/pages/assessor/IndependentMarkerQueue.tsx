@@ -435,7 +435,9 @@ function MarkerWorkspace({scope,latestScope,permitted}:{scope:string;latestScope
    </section>
   </div>}
   <Dialog open={!!review} onOpenChange={open=>{if(!open)closeReview();}}>
-   <DialogContent className="grid-cols-1 min-w-0 w-[calc(100vw_-_min(2rem,32px))] max-w-xl max-h-[calc(100dvh_-_2rem)] overflow-y-auto rounded-xl px-[min(1rem,16px)] py-4 text-base [overflow-wrap:anywhere] sm:p-6 [&>button:last-child]:grid [&>button:last-child]:place-items-center [&>button:last-child]:min-h-11 [&>button:last-child]:min-w-11 [&>button:last-child]:right-1 [&>button:last-child]:top-1"
+   {/* This long, scrollable evidence review must have a stable viewport position at 200% text.
+       Disable transform-based modal motion, not the underlying human/IQA review safeguards. */}
+   <DialogContent style={{animation:'none',transition:'none'}} className="grid-cols-1 min-w-0 w-[calc(100vw_-_min(2rem,32px))] max-w-xl max-h-[calc(100dvh_-_2rem)] overflow-y-auto rounded-xl px-[min(1rem,16px)] py-4 text-base [overflow-wrap:anywhere] sm:p-6 [&>button:last-child]:grid [&>button:last-child]:place-items-center [&>button:last-child]:min-h-11 [&>button:last-child]:min-w-11 [&>button:last-child]:right-1 [&>button:last-child]:top-1"
     aria-busy={busy==='mark'} onEscapeKeyDown={event=>{if(operation.current)event.preventDefault();}} onInteractOutside={event=>{if(operation.current)event.preventDefault();}}
     onCloseAutoFocus={event=>{event.preventDefault();(uncertainMarks.current.has(selected)?statusButton.current:markButton.current)?.focus();}}>
     <DialogHeader className="min-w-0 text-left"><DialogTitle className="pr-12 leading-snug">Review mark</DialogTitle><DialogDescription>Check the exact submission and your private marking decision before sending it to independent IQA review.</DialogDescription></DialogHeader>
