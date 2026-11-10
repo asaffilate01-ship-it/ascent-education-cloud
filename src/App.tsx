@@ -76,6 +76,7 @@ const StudentManagement = lazy(() => import("./pages/director/StudentManagement"
 const AdmissionsCRM = lazy(() => import("./pages/admissions/AdmissionsCRM"));
 const AdmissionsReviewDesk = lazy(() => import("./pages/admissions/AdmissionsReviewDesk"));
 const QADashboard = lazy(() => import("./pages/qa/QADashboard"));
+const IqaSamplingReadiness = lazy(() => import('./pages/qa/IqaSamplingReadiness'));
 const PaymentOperations = lazy(() => import("./pages/finance/PaymentOperations"));
 const SponsorFundingDesk = lazy(() => import('./pages/funding/SponsorFundingDesk'));
 const FinanceDashboard = lazy(() => import("./pages/finance/FinanceDashboard"));
@@ -521,7 +522,7 @@ function AppRoutes() {
         <Route path="/qa" element={<QA><QADashboard /></QA>} />
         <Route path="/qa/moderation" element={<QA><QADashboard /></QA>} />
         <Route path="/qa/assessment-approval" element={<QA><QualityAssessmentApproval /></QA>} />
-        <Route path="/qa/sampling" element={<QA><QADashboard /></QA>} />
+        <Route path="/qa/sampling" element={<QA><IqaSamplingReadiness /></QA>} />
         <Route path="/qa/plagiarism" element={<QA><QADashboard /></QA>} />
         <Route path="/qa/malpractice" element={<QA><QADashboard /></QA>} />
         <Route path="/qa/appeals" element={<QA><AppealReviewerQueue /></QA>} />
