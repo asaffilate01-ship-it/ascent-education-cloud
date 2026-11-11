@@ -3,22 +3,31 @@ import {Link} from 'react-router-dom';
 import {db} from '@/lib/db';
 import {rowsByIds} from '@/lib/pagedRows';
 import {Button} from '@/components/ui/button';
-type Brief = {id: string; module_id:string; title: string; due_at: string; submission_cutoff: string};
+import {formatPakistanAcademicDate} from '@/lib/assessment/courseworkQueue';
+import {buildStudentCourseworkAgenda} from '@/lib/assessment/studentAgenda';
+type Brief = {id: string; module_id:string; title: string; due_at: string; submission_cutoff: string; max_attempts:number};
 type Attempt = {brief_id: string; attempt_no: number; status: string};
+type Released = {attempt_id:string;brief_id:string};
 type Session = {id: string; module_id: string; title: string; starts_at: string; ends_at: string};
 type Snapshot<T> = {key:string;data:T;error:boolean};
 export default function StudentLearningAgenda({tenant, student, moduleIds}: {tenant: string; student: string; moduleIds: string[]}) {
   const [refresh, setRefresh] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {const timer=window.setInterval(() => setNow(Date.now()),60000);return () => window.clearInterval(timer);},[]);
+  const refreshAgenda=()=>{setNow(Date.now());setRefresh(value=>value+1);};
   const key = JSON.stringify([tenant, student, [...new Set(moduleIds)].sort(), refresh]);
-  const [work,setWork]=useState<Snapshot<{briefs:Brief[];attempts:Attempt[]}>|null>(null);
+  const [work,setWork]=useState<Snapshot<{briefs:Brief[];attempts:Attempt[];released:Released[]}>|null>(null);
   const [classes,setClasses]=useState<Snapshot<Session[]>|null>(null);
   useEffect(() => {
     let active = true;
     void (async()=>{try{
-      const briefs=await rowsByIds<Brief>(moduleIds,ids=>()=>db.from('unipathway_assessment_briefs').select('id,module_id,title,due_at,submission_cutoff').eq('tenant_id',tenant).eq('status','published').in('module_id',ids),()=>active);
-      const attempts=await rowsByIds<Attempt>(briefs.map(b=>b.id),ids=>()=>db.from('unipathway_assessment_attempts').select('id,brief_id,attempt_no,status').eq('tenant_id',tenant).eq('student_id',student).in('brief_id',ids),()=>active);
-      if(active)setWork({key,data:{briefs,attempts},error:false});
-    }catch{if(active)setWork({key,data:{briefs:[],attempts:[]},error:true});}})();
+      const briefs=await rowsByIds<Brief>(moduleIds,ids=>()=>db.from('unipathway_assessment_briefs').select('id,module_id,title,due_at,submission_cutoff,max_attempts').eq('tenant_id',tenant).eq('status','published').in('module_id',ids),()=>active);
+      const [attempts,released]=await Promise.all([
+        rowsByIds<Attempt>(briefs.map(b=>b.id),ids=>()=>db.from('unipathway_assessment_attempts').select('id,brief_id,attempt_no,status').eq('tenant_id',tenant).eq('student_id',student).in('brief_id',ids),()=>active),
+        rowsByIds<Released>(briefs.map(b=>b.id),ids=>()=>db.from('unipathway_assessment_released_results').select('attempt_id,brief_id').eq('tenant_id',tenant).eq('student_id',student).in('brief_id',ids),()=>active,'attempt_id'),
+      ]);
+      if(active)setWork({key,data:{briefs,attempts,released},error:false});
+    }catch{if(active)setWork({key,data:{briefs:[],attempts:[],released:[]},error:true});}})();
     void (async()=>{try{
       // A centre-wide scheduled session is not by itself a learner invitation.
       // Only show RLS-authorised sessions in the learner's active enrolled modules.
@@ -33,12 +42,15 @@ export default function StudentLearningAgenda({tenant, student, moduleIds}: {ten
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
   const current=work?.key===key?work:null,invited=classes?.key===key?classes:null;
-  const latest=new Map<string,Attempt>();
-  current?.data.attempts.forEach(a=>{if(!latest.has(a.brief_id)||latest.get(a.brief_id)!.attempt_no<a.attempt_no)latest.set(a.brief_id,a);});
-  const pending=(current?.data.briefs||[]).filter(b=>!latest.has(b.id)||latest.get(b.id)?.status==='resubmission_requested')
-    .sort((a,b)=>Date.parse(a.due_at)-Date.parse(b.due_at)||a.id.localeCompare(b.id));
-  const now=Date.now(),open=pending.filter(b=>Date.parse(b.submission_cutoff)>=now),closed=pending.filter(b=>Date.parse(b.submission_cutoff)<now);
-  const task=(brief:Brief)=><article className="border rounded p-3 space-y-1" key={brief.id}><p>{brief.title}</p><p className="text-sm text-muted-foreground">Due {new Date(brief.due_at).toLocaleString('en-PK',{timeZone:'Asia/Karachi'})} · {Date.parse(brief.submission_cutoff)<now?'Submission window closed—contact your programme team':Date.parse(brief.due_at)<now?'Overdue—check submission rules':'Upcoming'}</p><Link className="text-sm underline" to={`/student/assignments?${new URLSearchParams({module:brief.module_id})}`}>Open module coursework</Link></article>;
+  // The overview uses exactly the same conservative cutoff, attempt-limit and
+  // independent-result rules as the full student coursework workspace.
+  const agenda=buildStudentCourseworkAgenda(current?.data.briefs||[],current?.data.attempts||[],current?.data.released||[],now);
+  const task=(brief:Brief,actionable:boolean)=><article className="rounded-lg border p-3 space-y-1" key={brief.id}>
+    <p className="break-words font-medium">{brief.title}</p>
+    <p className="text-sm text-muted-foreground">Due {formatPakistanAcademicDate(brief.due_at)} · Final cutoff {formatPakistanAcademicDate(brief.submission_cutoff)}</p>
+    <p className="text-xs text-muted-foreground">{actionable?(Date.parse(brief.due_at)<now?'Due date passed; verify the final submission rules.':'Submission may be available; the coursework page will verify current permission.'):'You cannot currently submit this task. Review the cutoff, remaining attempts and centre guidance.'}</p>
+    <Link className="inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4" to={'/student/assignments?'+new URLSearchParams({module:brief.module_id})}>Review module coursework</Link>
+  </article>;
   return <section className="surface-card p-5 mb-6 space-y-4" aria-label="Current learning agenda">
     <h3 className="text-lg font-bold">Your next steps</h3>
     <section className="space-y-3" aria-label="Enrolled module class agenda"><h4 className="text-sm font-semibold">Upcoming sessions in your enrolled modules · Pakistan time</h4>
@@ -51,13 +63,14 @@ export default function StudentLearningAgenda({tenant, student, moduleIds}: {ten
 
     <section className="space-y-3" aria-label="Coursework agenda"><h4 className="font-semibold">Work due · Pakistan time</h4>
       {!current?<p role="status">Loading your coursework…</p>:current.error?<p role="alert">Your coursework could not be verified. Refresh to retry.</p>:<>
-        <h4 className="text-sm font-semibold">{open.length} coursework {open.length===1?'task':'tasks'} with an open submission window</h4>
-        {!pending.length&&<p className="text-sm text-muted-foreground">No published coursework currently needs a submission.</p>}
-        {open.slice(0,5).map(task)}
-        {open.length>5&&<p className="text-sm">Showing the next five. Open coursework to review all {open.length} tasks.</p>}
-        {closed.length>0&&<details className="space-y-3"><summary className="cursor-pointer text-sm font-semibold">{closed.length} {closed.length===1?'task with a closed submission window':'tasks with closed submission windows'}</summary>{closed.slice(0,5).map(task)}{closed.length>5&&<p className="text-sm">Open coursework to review all closed tasks.</p>}</details>}
+        <p className="text-sm font-semibold">{agenda.action.length} needing action · {agenda.review.length} awaiting review · {agenda.released.length} with released feedback</p>
+        {!agenda.action.length&&<p className="text-sm text-muted-foreground">No coursework currently meets the submission-window and attempt rules. Submitted work may still await independent marking or IQA approval.</p>}
+        {agenda.action.slice(0,5).map(brief=>task(brief,true))}
+        {agenda.action.length>5&&<p className="text-sm">Showing the next five. Open coursework to review all {agenda.action.length} actionable tasks.</p>}
+        {agenda.closed.length>0&&<details className="space-y-3"><summary className="min-h-11 cursor-pointer py-2 text-sm font-semibold">{agenda.closed.length} {agenda.closed.length===1?'task cannot currently be submitted':'tasks cannot currently be submitted'}</summary>{agenda.closed.slice(0,5).map(brief=>task(brief,false))}{agenda.closed.length>5&&<p className="text-sm">Open coursework to review all {agenda.closed.length} unavailable tasks.</p>}</details>}
+        {agenda.released.length>0&&<Link className="inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4" to="/student/grades">Read independently released feedback</Link>}
       </>}
     </section>
-    <div className="flex flex-wrap gap-2"><Button variant="outline" onClick={()=>setRefresh(x=>x+1)}>Refresh agenda</Button><Button asChild variant="outline"><Link to="/student/assignments">Open coursework</Link></Button><Button asChild variant="outline"><Link to="/student/classroom">View class invitations</Link></Button><Button asChild variant="outline"><Link to="/student/materials">Materials and resources</Link></Button></div>
+    <div className="flex flex-wrap gap-2"><Button variant="outline" onClick={refreshAgenda}>Refresh agenda</Button><Button asChild variant="outline"><Link to="/student/assignments">Open coursework</Link></Button><Button asChild variant="outline"><Link to="/student/classroom">View class invitations</Link></Button><Button asChild variant="outline"><Link to="/student/materials">Materials and resources</Link></Button></div>
   </section>;
 }
