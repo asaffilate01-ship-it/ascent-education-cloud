@@ -26,3 +26,23 @@ export function pakistanTeachingDayOfWeek(at=new Date()): number {
  const day=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Karachi',weekday:'long'}).format(at);
  return ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].indexOf(day)+1;
 }
+
+/** Return the date at the centre, independent of the device's time zone. */
+export function pakistanTeachingDate(at=new Date()):string {
+ const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Karachi',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(at);
+ const value=(name:string)=>parts.find(part=>part.type===name)?.value||'';
+ return [value('year'),value('month'),value('day')].join('-');
+}
+
+/** Today-only weekly plan candidates; these are not confirmed Teams/classes/invitations. */
+export function savedTeachingPlanForPakistanDate<T extends {id:string;module_id:string;is_active:boolean;day_of_week:number;start_time:string;end_time:string;effective_from:string;effective_until:string|null}>(
+ slots:readonly T[],at=new Date(),
+):T[] {
+ const day=pakistanTeachingDayOfWeek(at),date=pakistanTeachingDate(at);
+ const isDate=(value:string)=>/^\\d{4}-\\d{2}-\\d{2}$/.test(value);
+ return slots.filter(slot=>slot.is_active&&slot.day_of_week===day
+   &&isDate(slot.effective_from)&&slot.effective_from<=date
+   &&(!slot.effective_until||(isDate(slot.effective_until)&&slot.effective_until>=date))
+   &&teachingHours([slot])>0)
+  .sort((a,b)=>a.start_time.localeCompare(b.start_time)||a.module_id.localeCompare(b.module_id)||a.id.localeCompare(b.id));
+}
