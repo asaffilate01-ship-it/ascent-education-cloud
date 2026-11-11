@@ -39,7 +39,7 @@ export function savedTeachingPlanForPakistanDate<T extends {id:string;module_id:
  slots:readonly T[],at=new Date(),
 ):T[] {
  const day=pakistanTeachingDayOfWeek(at),date=pakistanTeachingDate(at);
- const isDate=(value:string)=>/^\\d{4}-\\d{2}-\\d{2}$/.test(value);
+ const isDate=(value:string)=>/^\d{4}-\d{2}-\d{2}$/.test(value);
  return slots.filter(slot=>slot.is_active&&slot.day_of_week===day
    &&isDate(slot.effective_from)&&slot.effective_from<=date
    &&(!slot.effective_until||(isDate(slot.effective_until)&&slot.effective_until>=date))
