@@ -1,9 +1,59 @@
-import ModuleJourney from '@/components/assessment/ModuleJourney';
+import {Link} from 'react-router-dom';
+import {BookOpen,ArrowRight} from 'lucide-react';
 import {Button} from '@/components/ui/button';
-import DashboardLayout from '@/components/layout/DashboardLayout'; import StatCard from '@/components/ui/StatCard'; import StatusBadge from '@/components/ui/StatusBadge'; import {BookOpen,Users,Video,CalendarDays,ArrowRight} from 'lucide-react'; import {Link} from 'react-router-dom'; import {useSupabaseQuery} from '@/hooks/useSupabaseQuery'; import {useAuth} from '@/contexts/AuthContext'; import {DashboardSkeleton} from '@/components/ui/Skeletons';
-export default function LecturerDashboard(){const {user}=useAuth();const verified=!!user?.id&&!!user?.tenantId&&user.role==='lecturer'&&user.roles?.includes('lecturer');const {data:modules,loading,error,refetch}=useSupabaseQuery('modules',{enabled:verified,filters:[{column:'tenant_id',operator:'eq',value:user?.tenantId},{column:'lecturer_id',operator:'eq',value:user?.id}]});const mine=user?.id?modules.filter(m=>m.lecturer_id===user.id):[];const display=mine;if(!verified)return <DashboardLayout title="Teaching"><p role="alert">A centre assignment is required.</p></DashboardLayout>;if(error)return <DashboardLayout title="Teaching"><p role="alert">Your assigned modules could not be loaded.</p><Button onClick={()=>void refetch()}>Retry modules</Button></DashboardLayout>;if(loading)return <DashboardSkeleton/>;return <DashboardLayout title="Teaching" subtitle={`Welcome back, ${user?.name||'Lecturer'}`}><section className="surface-card p-5 mb-5 bg-gradient-to-br from-primary/10 via-card to-card"><p className="text-label">Teaching workspace</p><div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mt-2"><div><h2 className="text-xl font-bold">Your classes, resources and students</h2><p className="text-sm text-muted-foreground mt-1">Summative assessment is handled by the specialist marking team.</p></div><Link to="/lecturer/delivery-readiness" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold">Check teaching connections <ArrowRight className="w-4 h-4"/></Link></div></section><section aria-label="Prepare and follow up" className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{[
- ['Prepare a lesson','Schedule classes, invite learners and check your teaching plan.','/lecturer/class-scheduler'],
- ['Share materials','Publish the resources your learners need before class.','/lecturer/materials'],
- ['Review recordings','Check recorded lessons before releasing them to learners.','/lecturer/lesson-archive'],
- ['Verify Teams and labs','Check centre sessions, whiteboards, language and cloud lab connection readiness.','/lecturer/delivery-readiness'],
-].map(([title,description,to])=><Link key={to} to={to} className="rounded-xl border bg-card p-5 hover:bg-accent"><h2 className="font-semibold">{title}</h2><p className="mt-2 text-sm text-muted-foreground">{description}</p></Link>)}</section><div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5"><StatCard label="My Modules" value={display.length} icon={BookOpen}/><StatCard label="Active Modules" value={display.filter(m=>m.status==='active').length} icon={Video}/><Link to="/lecturer/students" className="surface-card p-4 text-sm">View assigned students</Link><Link to="/lecturer/class-scheduler" className="surface-card p-4 text-sm">View scheduled classes</Link></div><div className="surface-card overflow-hidden"><div className="p-4 border-b"><h3 className="font-semibold">My modules</h3></div>{!display.length&&<p className="p-4">No modules are assigned to you yet. Contact your programme leader.</p>}{display.map(m=><div key={m.id} className="p-4 border-b last:border-0 flex flex-wrap items-center gap-3"><div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><BookOpen className="w-4 h-4 text-primary"/></div><div className="flex-1 min-w-0"><Link className="font-semibold text-sm underline" to={`/lecturer/module?module=${encodeURIComponent(m.id)}`}>{m.title}</Link><p className="text-xs text-muted-foreground">{m.code||'Module'} · {m.credits||0} credits</p></div><StatusBadge status={m.status}/><div className="w-full"><ModuleJourney moduleId={m.id} teacher/></div></div>)}</div></DashboardLayout>}
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import TodayTeachingPlan from '@/components/lecturer/TodayTeachingPlan';
+import {useSupabaseQuery} from '@/hooks/useSupabaseQuery';
+import {useAuth} from '@/contexts/AuthContext';
+import {DashboardSkeleton} from '@/components/ui/Skeletons';
+
+export default function LecturerDashboard(){
+ const {user}=useAuth();
+ return <TeachingHome key={[user?.id,user?.tenantId,user?.role,user?.roles?.join(',')].join(':')}/>;
+}
+function TeachingHome(){
+ const {user}=useAuth();
+ const verified=!!user?.id&&!!user.tenantId&&user.role==='lecturer'&&user.roles?.includes('lecturer');
+ const {data,loading,error,refetch}=useSupabaseQuery('modules',{enabled:verified,filters:[{column:'tenant_id',operator:'eq',value:user?.tenantId},{column:'lecturer_id',operator:'eq',value:user?.id}],orderBy:{column:'title',ascending:true}});
+ const modules=data.filter(module=>module.tenant_id===user?.tenantId&&module.lecturer_id===user?.id);
+ const visible=modules.slice(0,4);
+ if(!verified)return <DashboardLayout title="Teaching"><p role="alert">An active lecturer role and verified centre assignment are required.</p></DashboardLayout>;
+ if(loading)return <DashboardSkeleton/>;
+ if(error)return <DashboardLayout title="Teaching"><p role="alert">Your assigned teaching modules could not be verified.</p><Button variant="outline" onClick={()=>void refetch()}>Retry modules</Button></DashboardLayout>;
+ return <DashboardLayout title="Teaching" subtitle={'Welcome back, '+(user?.name||'Lecturer')}>
+  <section className="mb-5 rounded-xl border bg-card p-4 sm:p-5" aria-labelledby="lecturer-next-steps">
+   <h2 id="lecturer-next-steps" className="text-lg font-semibold">Prepare, deliver and follow up</h2>
+   <p className="mt-2 text-sm text-muted-foreground">Classroom delivery, resources and attendance remain separate from independent summative marking and IQA approval.</p>
+   <nav aria-label="Teaching quick actions" className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+    {[
+      ['Schedule a class','/lecturer/class-scheduler'],
+      ['Open classroom','/lecturer/classroom'],
+      ['Share materials','/lecturer/materials'],
+      ['Check delivery readiness','/lecturer/delivery-readiness'],
+    ].map(([label,to])=><Link key={to} to={to} className="flex min-h-12 items-center justify-between gap-2 rounded-lg border bg-background px-3 py-3 text-sm font-semibold hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><span>{label}</span><ArrowRight className="size-4 shrink-0" aria-hidden="true"/></Link>)}
+   </nav>
+  </section>
+  <TodayTeachingPlan modules={modules}/>
+  <section className="rounded-xl border bg-card p-4 sm:p-5" aria-labelledby="lecturer-modules-title">
+   <div className="flex flex-wrap items-center justify-between gap-3">
+    <div><h2 id="lecturer-modules-title" className="text-lg font-semibold">My assigned modules</h2><p className="mt-1 text-sm text-muted-foreground">{modules.length} assigned · {modules.filter(module=>module.status==='active').length} active</p></div>
+    <Button variant="outline" asChild><Link to="/lecturer/teaching">All teaching modules</Link></Button>
+   </div>
+   {!modules.length?<p className="mt-5 text-sm text-muted-foreground">No modules are assigned to you yet. Contact your programme leader.</p>
+    :<div className="mt-4 grid gap-3 md:grid-cols-2">{visible.map(module=>{
+      const moduleParams=new URLSearchParams({module:module.id}).toString();
+      return <article key={module.id} className="min-w-0 rounded-lg border bg-background p-4">
+       <p className="text-xs font-medium text-muted-foreground">{module.code||'Module'} · {module.status}</p>
+       <h3 className="mt-2 break-words font-semibold"><Link className="underline underline-offset-4" to={'/lecturer/module?'+moduleParams}>{module.title}</Link></h3>
+       <nav className="mt-3 flex flex-wrap gap-2" aria-label={'Actions for '+module.title}>
+        <Link className="inline-flex min-h-11 items-center rounded-lg border px-3 py-2 text-sm hover:bg-accent" to={'/lecturer/lessons?'+moduleParams}>Lessons</Link>
+        <Link className="inline-flex min-h-11 items-center rounded-lg border px-3 py-2 text-sm hover:bg-accent" to={'/lecturer/assessments?'+moduleParams}>Briefs</Link>
+        <Link className="inline-flex min-h-11 items-center rounded-lg border px-3 py-2 text-sm hover:bg-accent" to={'/lecturer/materials?'+moduleParams}>Materials</Link>
+       </nav>
+      </article>;
+     })}</div>}
+   {modules.length>4&&<Link className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-semibold underline underline-offset-4" to="/lecturer/teaching">View all {modules.length} assigned modules <ArrowRight className="size-4" aria-hidden="true"/></Link>}
+  </section>
+  <p className="mt-5 flex items-center gap-2 text-sm text-muted-foreground"><BookOpen className="size-4" aria-hidden="true"/> Course and teaching information is limited to your authorised centre and assigned modules.</p>
+ </DashboardLayout>;
+}
