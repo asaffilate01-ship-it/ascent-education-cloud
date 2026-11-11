@@ -1,3 +1,4 @@
+import {useEffect,useState} from 'react';
 import {Link} from 'react-router-dom';
 import {Button} from '@/components/ui/button';
 import {useAuth} from '@/contexts/AuthContext';
@@ -10,14 +11,16 @@ type AssignedModule={id:string;title:string;code:string|null};
 export default function TodayTeachingPlan({modules}:{modules:AssignedModule[]}){
  const {user}=useAuth();
  const {myLectures,loading,error,refetch}=useScheduledLectures();
+ const [clock,setClock]=useState(()=>Date.now());
+ useEffect(()=>{const timer=window.setInterval(()=>setClock(Date.now()),60000);return()=>window.clearInterval(timer);},[]);
  const allowed=new Map(modules.map(module=>[module.id,module]));
  const authorised=!!user?.id&&!!user.tenantId&&user.role==='lecturer'&&user.roles?.includes('lecturer');
  const candidateSlots=authorised?myLectures.filter(slot=>slot.tenant_id===user.tenantId&&slot.lecturer_id===user.id&&allowed.has(slot.module_id)):[];
- const today=savedTeachingPlanForPakistanDate(candidateSlots);
+ const today=savedTeachingPlanForPakistanDate(candidateSlots,new Date(clock));
  return <section aria-labelledby="today-plan-title" className="mb-6 rounded-xl border bg-card p-4 sm:p-5">
   <div className="flex flex-wrap items-start justify-between gap-3">
    <div><h2 id="today-plan-title" className="text-lg font-semibold">Today's saved weekly plan · Pakistan time</h2>
-    <p className="mt-1 text-sm text-muted-foreground">{pakistanTeachingDate()} · These are potential teaching-plan slots, not confirmed class invitations or Teams meetings.</p>
+    <p className="mt-1 text-sm text-muted-foreground">{pakistanTeachingDate(new Date(clock))} · These are potential teaching-plan slots, not confirmed class invitations or Teams meetings.</p>
    </div>
    <Button variant="outline" size="sm" asChild><Link to="/lecturer/teaching">Full teaching timetable</Link></Button>
   </div>
