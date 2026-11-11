@@ -1,0 +1,2886 @@
+{
+  "audited_at_utc": "2026-10-30T20:13:18.543103+00:00",
+  "origin": "https://unipathway.pk",
+  "scope": "Unauthenticated HTTP responses and GitHub source catalogue only; raw H1/link counts do not describe JavaScript-rendered content. Observed request times are not Core Web Vitals.",
+  "summary": {
+    "catalogue_urls": 73,
+    "sitemap_urls": 73,
+    "http_200": 73,
+    "request_errors": 0,
+    "pages_with_metadata_issues": 0,
+    "duplicate_titles": [],
+    "duplicate_descriptions": [],
+    "missing_from_sitemap": [],
+    "extra_sitemap_urls": []
+  },
+  "robots": {
+    "requested_url": "https://unipathway.pk/robots.txt",
+    "final_url": "https://unipathway.pk/robots.txt",
+    "status": 200,
+    "content_type": "text/plain; charset=utf-8",
+    "x_robots_tag": null,
+    "hsts": "max-age=31536000; includeSubDomains",
+    "seconds_observed": 4.228,
+    "bytes": 1094,
+    "truncated": false,
+    "text": "User-agent: *\nAllow: /\n\n# Authentication\nDisallow: /login$\nDisallow: /login/\nDisallow: /register$\nDisallow: /register/\nDisallow: /forgot-password$\nDisallow: /forgot-password/\nDisallow: /reset-password$\nDisallow: /reset-password/\n\n# Private application areas\nDisallow: /landlord$\nDisallow: /landlord/\nDisallow: /director$\nDisallow: /director/\nDisallow: /admissions$\nDisallow: /admissions/\nDisallow: /lecturer$\nDisallow: /lecturer/\nDisallow: /programme$\nDisallow: /programme/\nDisallow: /qa$\nDisallow: /qa/\nDisallow: /exams$\nDisallow: /exams/\nDisallow: /finance$\nDisallow: /finance/\nDisallow: /marketing$\nDisallow: /marketing/\nDisallow: /agent$\nDisallow: /agent/\nDisallow: /student$\nDisallow: /student/\nDisallow: /parent$\nDisallow: /parent/\nDisallow: /partner$\nDisallow: /partner/\nDisallow: /employer$\nDisallow: /employer/\nDisallow: /settings$\nDisallow: /settings/\nDisallow: /notifications$\nDisallow: /notifications/\nDisallow: /messaging$\nDisallow: /messaging/\nDisallow: /verify$\nDisallow: /verify/\nDisallow: /live-classroom$\nDisallow: /live-classroom/\n\nSitemap: https://unipathway.pk/sitemap.xml\n"
+  },
+  "sitemap_response": {
+    "requested_url": "https://unipathway.pk/sitemap.xml",
+    "final_url": "https://unipathway.pk/sitemap.xml",
+    "status": 200,
+    "content_type": "application/xml",
+    "x_robots_tag": null,
+    "hsts": "max-age=31536000; includeSubDomains",
+    "seconds_observed": 3.812,
+    "bytes": 4556,
+    "truncated": false
+  },
+  "pages": [
+    {
+      "requested_url": "https://unipathway.pk/",
+      "final_url": "https://unipathway.pk/",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.203,
+      "bytes": 5358,
+      "truncated": false,
+      "title": "UniPathway | Online & In-Class Learning in Pakistan",
+      "description": [
+        "Explore tuition, languages, qualifications and skills with UniPathway. Learn online across Pakistan or attend in-class sessions at our Jhelum centre."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/"
+      ],
+      "og_url": [
+        "https://unipathway.pk/"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/education-centre",
+      "final_url": "https://unipathway.pk/education-centre",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.962,
+      "bytes": 5569,
+      "truncated": false,
+      "title": "Jhelum Centre & Pakistan-wide Online Learning | UniPathway",
+      "description": [
+        "Explore school tuition, languages and skills with online learning across Pakistan. Our first UniPathway centre in Jhelum offers in-person programme support."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/education-centre"
+      ],
+      "og_url": [
+        "https://unipathway.pk/education-centre"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/tuition",
+      "final_url": "https://unipathway.pk/tuition",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.146,
+      "bytes": 5531,
+      "truncated": false,
+      "title": "Online Tuition in Pakistan: Years 8–12 | UniPathway",
+      "description": [
+        "Explore online tuition across Pakistan for Years 8–12 in maths, English and sciences. Learn from home or discuss in-centre tuition at our first centre in Jhelum."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/tuition"
+      ],
+      "og_url": [
+        "https://unipathway.pk/tuition"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/ielts-preparation",
+      "final_url": "https://unipathway.pk/ielts-preparation",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.748,
+      "bytes": 5536,
+      "truncated": false,
+      "title": "Online IELTS Preparation in Pakistan | UniPathway",
+      "description": [
+        "Prepare for IELTS Academic or General Training online across Pakistan with guided practice and tutor support, or explore learning at our first centre in Jhelum."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/ielts-preparation"
+      ],
+      "og_url": [
+        "https://unipathway.pk/ielts-preparation"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/german-preparation",
+      "final_url": "https://unipathway.pk/german-preparation",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.808,
+      "bytes": 5530,
+      "truncated": false,
+      "title": "Online German Courses in Pakistan | UniPathway",
+      "description": [
+        "Explore online German A1–C1 language preparation across Pakistan with UniPathway, including Goethe, telc and TestDaF preparation. Check programme availability."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/german-preparation"
+      ],
+      "og_url": [
+        "https://unipathway.pk/german-preparation"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/qualifications",
+      "final_url": "https://unipathway.pk/qualifications",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.179,
+      "bytes": 5555,
+      "truncated": false,
+      "title": "UK Qualifications: Online Learning in Pakistan | UniPathway",
+      "description": [
+        "Explore planned OTHM, Qualifi and other UK qualification pathways with online learning across Pakistan. Check entry requirements and required centre visits."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/qualifications"
+      ],
+      "og_url": [
+        "https://unipathway.pk/qualifications"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/courses",
+      "final_url": "https://unipathway.pk/courses",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.802,
+      "bytes": 5514,
+      "truncated": false,
+      "title": "Courses & Diploma Pathways in Pakistan | UniPathway",
+      "description": [
+        "Browse UniPathway programmes in business, computing and accounting. Ask about entry requirements, delivery, awarding bodies and current course availability."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/courses"
+      ],
+      "og_url": [
+        "https://unipathway.pk/courses"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/tech-academy",
+      "final_url": "https://unipathway.pk/tech-academy",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.686,
+      "bytes": 5525,
+      "truncated": false,
+      "title": "Online Technology Courses in Pakistan | UniPathway",
+      "description": [
+        "Explore AI, Python, coding, cyber security, cloud and DevOps learning online across Pakistan with UniPathway. Check delivery options and programme availability."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/tech-academy"
+      ],
+      "og_url": [
+        "https://unipathway.pk/tech-academy"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/finance-academy",
+      "final_url": "https://unipathway.pk/finance-academy",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.534,
+      "bytes": 5519,
+      "truncated": false,
+      "title": "Accounting & Finance Courses in Pakistan | UniPathway",
+      "description": [
+        "Explore bookkeeping, financial accounting, modelling and IFA or ACCA preparation with UniPathway. Ask about current courses and entry requirements."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/finance-academy"
+      ],
+      "og_url": [
+        "https://unipathway.pk/finance-academy"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/creative-crafts",
+      "final_url": "https://unipathway.pk/creative-crafts",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 3.592,
+      "bytes": 5543,
+      "truncated": false,
+      "title": "Art, Crafts & Sewing Courses in Pakistan | UniPathway",
+      "description": [
+        "Learn fine art, sewing, tailoring, embroidery, ceramics and handmade product selling online across Pakistan, with supervised practical workshops in Jhelum."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/creative-crafts"
+      ],
+      "og_url": [
+        "https://unipathway.pk/creative-crafts"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/beauty-aesthetics",
+      "final_url": "https://unipathway.pk/beauty-aesthetics",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 3.939,
+      "bytes": 5486,
+      "truncated": false,
+      "title": "Beauty & Aesthetics Training Plans | UniPathway",
+      "description": [
+        "Explore planned beauty and aesthetics training at UniPathway in Pakistan. Check course availability and accreditation status before enrolling."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/beauty-aesthetics"
+      ],
+      "og_url": [
+        "https://unipathway.pk/beauty-aesthetics"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/uk",
+      "final_url": "https://unipathway.pk/uk",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 3.697,
+      "bytes": 5436,
+      "truncated": false,
+      "title": "Study in the UK from Pakistan | UniPathway",
+      "description": [
+        "Explore UK university admissions, qualification and top-up pathways, IELTS preparation and application guidance for Pakistani students with UniPathway."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/uk"
+      ],
+      "og_url": [
+        "https://unipathway.pk/uk"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/germany",
+      "final_url": "https://unipathway.pk/germany",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 7.015,
+      "bytes": 5449,
+      "truncated": false,
+      "title": "Study in Germany from Pakistan | UniPathway",
+      "description": [
+        "Explore German university pathways, language preparation, Studienkolleg and study costs with UniPathway guidance for students applying from Pakistan."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/germany"
+      ],
+      "og_url": [
+        "https://unipathway.pk/germany"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/usa",
+      "final_url": "https://unipathway.pk/usa",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.363,
+      "bytes": 5434,
+      "truncated": false,
+      "title": "Study in the USA from Pakistan | UniPathway",
+      "description": [
+        "Explore US university study options, English preparation, application evidence and arrival planning with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/usa"
+      ],
+      "og_url": [
+        "https://unipathway.pk/usa"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/canada",
+      "final_url": "https://unipathway.pk/canada",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.388,
+      "bytes": 5451,
+      "truncated": false,
+      "title": "Study in Canada from Pakistan | UniPathway",
+      "description": [
+        "Explore Canadian university study options, language preparation and application planning with UniPathway. Check each institution’s entry requirements."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/canada"
+      ],
+      "og_url": [
+        "https://unipathway.pk/canada"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/australia",
+      "final_url": "https://unipathway.pk/australia",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.339,
+      "bytes": 5469,
+      "truncated": false,
+      "title": "Study in Australia from Pakistan | UniPathway",
+      "description": [
+        "Explore Australian university pathways, English preparation, application evidence and arrival planning with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/australia"
+      ],
+      "og_url": [
+        "https://unipathway.pk/australia"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/pakistan",
+      "final_url": "https://unipathway.pk/pakistan",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.39,
+      "bytes": 5502,
+      "truncated": false,
+      "title": "Study & Skills Pathways in Pakistan | UniPathway",
+      "description": [
+        "Explore learning in Pakistan with UniPathway: school tuition, qualifications, language preparation, practical training and university progression guidance."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/pakistan"
+      ],
+      "og_url": [
+        "https://unipathway.pk/pakistan"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe",
+      "final_url": "https://unipathway.pk/europe",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.156,
+      "bytes": 5421,
+      "truncated": false,
+      "title": "Study in Europe from Pakistan | UniPathway",
+      "description": [
+        "Compare European study destinations, language preparation and university entry requirements with UniPathway guidance for students in Pakistan."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/pathways",
+      "final_url": "https://unipathway.pk/pathways",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 3.187,
+      "bytes": 5477,
+      "truncated": false,
+      "title": "Study Abroad & University Pathways | UniPathway",
+      "description": [
+        "Compare university pathways in the UK, Germany, USA, Canada and Australia. Explore qualification recognition and application guidance from Pakistan."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/pathways"
+      ],
+      "og_url": [
+        "https://unipathway.pk/pathways"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/university-progression",
+      "final_url": "https://unipathway.pk/university-progression",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 3.271,
+      "bytes": 5530,
+      "truncated": false,
+      "title": "University Progression from UK Diplomas | UniPathway",
+      "description": [
+        "Research university progression after OTHM and Qualifi qualifications. Check institution-specific recognition, entry requirements and top-up options."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/university-progression"
+      ],
+      "og_url": [
+        "https://unipathway.pk/university-progression"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/study",
+      "final_url": "https://unipathway.pk/study",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 3.317,
+      "bytes": 5454,
+      "truncated": false,
+      "title": "Online Courses in Pakistan | UniPathway",
+      "description": [
+        "Explore online courses across Pakistan: tuition, IELTS, German, technology and UK qualification pathways. Compare delivery options and required centre visits."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/study"
+      ],
+      "og_url": [
+        "https://unipathway.pk/study"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/about",
+      "final_url": "https://unipathway.pk/about",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 3.075,
+      "bytes": 5481,
+      "truncated": false,
+      "title": "About UniPathway: Online Education Across Pakistan",
+      "description": [
+        "Discover UniPathway’s Pakistan-wide online learning, tuition, skills and qualification pathways, supported by our first physical centre in Jhelum."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/about"
+      ],
+      "og_url": [
+        "https://unipathway.pk/about"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/contact",
+      "final_url": "https://unipathway.pk/contact",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.646,
+      "bytes": 5536,
+      "truncated": false,
+      "title": "Contact UniPathway: Online Pakistan & Jhelum Centre",
+      "description": [
+        "Contact UniPathway about online learning anywhere in Pakistan, tuition, IELTS and qualification pathways, or enquire about our first physical centre in Jhelum."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/contact"
+      ],
+      "og_url": [
+        "https://unipathway.pk/contact"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/school-partners",
+      "final_url": "https://unipathway.pk/school-partners",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 3.635,
+      "bytes": 5510,
+      "truncated": false,
+      "title": "School Partnerships in Pakistan | UniPathway",
+      "description": [
+        "Explore UniPathway school partnerships, tuition support and consented student referrals, with optional standalone school software. Review terms and eligibility."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/school-partners"
+      ],
+      "og_url": [
+        "https://unipathway.pk/school-partners"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/scholarships",
+      "final_url": "https://unipathway.pk/scholarships",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 2.753,
+      "bytes": 5524,
+      "truncated": false,
+      "title": "UniPathway Foundation | Reduced-Fee & Fully Funded Study",
+      "description": [
+        "Charitable education support for talented students from less privileged backgrounds in Pakistan, with reduced or fully funded fees and employer co-funding."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/scholarships"
+      ],
+      "og_url": [
+        "https://unipathway.pk/scholarships"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/funded-courses",
+      "final_url": "https://unipathway.pk/funded-courses",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 2.719,
+      "bytes": 5493,
+      "truncated": false,
+      "title": "Funded Skills & Vocational Training | UniPathway",
+      "description": [
+        "Explore Pakistan skills schemes including PSDF, NAVTTC and PITB e-Rozgaar. Check official eligibility, provider approval and funding availability."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/funded-courses"
+      ],
+      "og_url": [
+        "https://unipathway.pk/funded-courses"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/careers",
+      "final_url": "https://unipathway.pk/careers",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 2.67,
+      "bytes": 5495,
+      "truncated": false,
+      "title": "Pakistan Careers, Internships & Training | UniPathway",
+      "description": [
+        "Explore career preparation, internships and employer-training pathways in Pakistan through UniPathway. Check current opportunities and eligibility."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/careers"
+      ],
+      "og_url": [
+        "https://unipathway.pk/careers"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/student-support",
+      "final_url": "https://unipathway.pk/student-support",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 2.622,
+      "bytes": 5494,
+      "truncated": false,
+      "title": "Student Support & Study Abroad Planning | UniPathway",
+      "description": [
+        "Explore UniPathway support for study planning, accommodation, arrival essentials and career readiness in Pakistan and overseas destinations."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/student-support"
+      ],
+      "og_url": [
+        "https://unipathway.pk/student-support"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/employer-learning",
+      "final_url": "https://unipathway.pk/employer-learning",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 1.418,
+      "bytes": 5533,
+      "truncated": false,
+      "title": "Employer Training & Workforce Skills | UniPathway",
+      "description": [
+        "Explore UniPathway learning for employers, including practical skills, staff development and training pathways. Discuss your organisation’s requirements."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/employer-learning"
+      ],
+      "og_url": [
+        "https://unipathway.pk/employer-learning"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/blog",
+      "final_url": "https://unipathway.pk/blog",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 3.268,
+      "bytes": 5398,
+      "truncated": false,
+      "title": "Study Abroad & Learning Guides | UniPathway",
+      "description": [
+        "Read UniPathway guides for Pakistani students on university pathways, IELTS, German language preparation and qualification choices."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/blog"
+      ],
+      "og_url": [
+        "https://unipathway.pk/blog"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/blog/uk-student-visa-2026-checklist",
+      "final_url": "https://unipathway.pk/blog/uk-student-visa-2026-checklist",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 3.48,
+      "bytes": 5552,
+      "truncated": false,
+      "title": "UK Student Visa 2026 — Complete Checklist for Pakistani Applicants | UniPathway",
+      "description": [
+        "From CAS to maintenance funds and TB tests — the exact documents UKVI expects from Pakistani students in 2026."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/blog/uk-student-visa-2026-checklist"
+      ],
+      "og_url": [
+        "https://unipathway.pk/blog/uk-student-visa-2026-checklist"
+      ],
+      "og_image": [
+        "https://unipathway.pk/blog/uk-visa.jpg"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/blog/germany-blocked-account-sperrkonto-explained",
+      "final_url": "https://unipathway.pk/blog/germany-blocked-account-sperrkonto-explained",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 3.515,
+      "bytes": 5747,
+      "truncated": false,
+      "title": "Germany Sperrkonto (Blocked Account) — How Much You Really Need in 2026 | UniPathway",
+      "description": [
+        "The blocked account is Germany’s proof-of-funds requirement. Here is the current figure, the approved providers, and how to open one from Pakistan."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/blog/germany-blocked-account-sperrkonto-explained"
+      ],
+      "og_url": [
+        "https://unipathway.pk/blog/germany-blocked-account-sperrkonto-explained"
+      ],
+      "og_image": [
+        "https://unipathway.pk/blog/germany-sperrkonto.jpg"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/blog/ielts-vs-pte-vs-toefl-2026",
+      "final_url": "https://unipathway.pk/blog/ielts-vs-pte-vs-toefl-2026",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 3.423,
+      "bytes": 5504,
+      "truncated": false,
+      "title": "IELTS vs PTE vs TOEFL in 2026 — Which One Should You Sit? | UniPathway",
+      "description": [
+        "Cost, speed, difficulty, and UK/Germany acceptance compared side by side so you pick the right English test."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/blog/ielts-vs-pte-vs-toefl-2026"
+      ],
+      "og_url": [
+        "https://unipathway.pk/blog/ielts-vs-pte-vs-toefl-2026"
+      ],
+      "og_image": [
+        "https://unipathway.pk/blog/english-exams.jpg"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/blog/testdaf-vs-telc-vs-goethe",
+      "final_url": "https://unipathway.pk/blog/testdaf-vs-telc-vs-goethe",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 3.436,
+      "bytes": 5516,
+      "truncated": false,
+      "title": "TestDaF vs telc vs Goethe — Choosing the Right German Certificate | UniPathway",
+      "description": [
+        "Which German exam do German universities and the visa office actually want? A plain-English comparison."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/blog/testdaf-vs-telc-vs-goethe"
+      ],
+      "og_url": [
+        "https://unipathway.pk/blog/testdaf-vs-telc-vs-goethe"
+      ],
+      "og_image": [
+        "https://unipathway.pk/blog/german-exams.jpg"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/blog/choosing-otms-qualifi-iab-diploma",
+      "final_url": "https://unipathway.pk/blog/choosing-otms-qualifi-iab-diploma",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 3.287,
+      "bytes": 5528,
+      "truncated": false,
+      "title": "OTHM, QUALIFI or IAB — Which UK Awarding Body Fits Your Career? | UniPathway",
+      "description": [
+        "A quick guide to the three awarding bodies UniPathway partners with, and which pathway leads where."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/blog/choosing-otms-qualifi-iab-diploma"
+      ],
+      "og_url": [
+        "https://unipathway.pk/blog/choosing-otms-qualifi-iab-diploma"
+      ],
+      "og_image": [
+        "https://unipathway.pk/blog/diploma-guidance.jpg"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/privacy",
+      "final_url": "https://unipathway.pk/privacy",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.911,
+      "bytes": 5388,
+      "truncated": false,
+      "title": "Privacy Policy | UniPathway",
+      "description": [
+        "How UniPathway handles personal information, privacy choices and data requests. Read our privacy policy for students, applicants and website visitors."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/privacy"
+      ],
+      "og_url": [
+        "https://unipathway.pk/privacy"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/terms",
+      "final_url": "https://unipathway.pk/terms",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.873,
+      "bytes": 5243,
+      "truncated": false,
+      "title": "Terms of Service | UniPathway",
+      "description": [
+        "Read the terms governing UniPathway services, applications, course enquiries and use of this website."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/terms"
+      ],
+      "og_url": [
+        "https://unipathway.pk/terms"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/cookies",
+      "final_url": "https://unipathway.pk/cookies",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.755,
+      "bytes": 5246,
+      "truncated": false,
+      "title": "Cookie Policy | UniPathway",
+      "description": [
+        "Learn how UniPathway uses cookies and how to manage cookie preferences when using our education website."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/cookies"
+      ],
+      "og_url": [
+        "https://unipathway.pk/cookies"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/disclaimer",
+      "final_url": "https://unipathway.pk/disclaimer",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.672,
+      "bytes": 5243,
+      "truncated": false,
+      "title": "Disclaimer | UniPathway",
+      "description": [
+        "Read the scope and limitations of UniPathway education, university progression and application guidance."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/disclaimer"
+      ],
+      "og_url": [
+        "https://unipathway.pk/disclaimer"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/austria",
+      "final_url": "https://unipathway.pk/europe/austria",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.627,
+      "bytes": 5482,
+      "truncated": false,
+      "title": "Austria Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Austria, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/austria"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/austria"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/belgium",
+      "final_url": "https://unipathway.pk/europe/belgium",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.935,
+      "bytes": 5482,
+      "truncated": false,
+      "title": "Belgium Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Belgium, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/belgium"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/belgium"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/bulgaria",
+      "final_url": "https://unipathway.pk/europe/bulgaria",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.798,
+      "bytes": 5492,
+      "truncated": false,
+      "title": "Bulgaria Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Bulgaria, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/bulgaria"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/bulgaria"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/croatia",
+      "final_url": "https://unipathway.pk/europe/croatia",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.751,
+      "bytes": 5482,
+      "truncated": false,
+      "title": "Croatia Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Croatia, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/croatia"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/croatia"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/cyprus",
+      "final_url": "https://unipathway.pk/europe/cyprus",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 5.035,
+      "bytes": 5472,
+      "truncated": false,
+      "title": "Cyprus Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Cyprus, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/cyprus"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/cyprus"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/czechia",
+      "final_url": "https://unipathway.pk/europe/czechia",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.723,
+      "bytes": 5482,
+      "truncated": false,
+      "title": "Czechia Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Czechia, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/czechia"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/czechia"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/denmark",
+      "final_url": "https://unipathway.pk/europe/denmark",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.692,
+      "bytes": 5482,
+      "truncated": false,
+      "title": "Denmark Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Denmark, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/denmark"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/denmark"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/estonia",
+      "final_url": "https://unipathway.pk/europe/estonia",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.343,
+      "bytes": 5482,
+      "truncated": false,
+      "title": "Estonia Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Estonia, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/estonia"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/estonia"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/finland",
+      "final_url": "https://unipathway.pk/europe/finland",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 6.771,
+      "bytes": 5482,
+      "truncated": false,
+      "title": "Finland Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Finland, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/finland"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/finland"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/france",
+      "final_url": "https://unipathway.pk/europe/france",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.566,
+      "bytes": 5472,
+      "truncated": false,
+      "title": "France Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in France, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/france"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/france"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/germany",
+      "final_url": "https://unipathway.pk/europe/germany",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.65,
+      "bytes": 5482,
+      "truncated": false,
+      "title": "Germany Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Germany, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/germany"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/germany"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/greece",
+      "final_url": "https://unipathway.pk/europe/greece",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.675,
+      "bytes": 5472,
+      "truncated": false,
+      "title": "Greece Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Greece, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/greece"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/greece"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/hungary",
+      "final_url": "https://unipathway.pk/europe/hungary",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.483,
+      "bytes": 5482,
+      "truncated": false,
+      "title": "Hungary Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Hungary, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/hungary"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/hungary"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/ireland",
+      "final_url": "https://unipathway.pk/europe/ireland",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 6.247,
+      "bytes": 5482,
+      "truncated": false,
+      "title": "Ireland Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Ireland, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/ireland"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/ireland"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/italy",
+      "final_url": "https://unipathway.pk/europe/italy",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.681,
+      "bytes": 5462,
+      "truncated": false,
+      "title": "Italy Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Italy, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/italy"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/italy"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/latvia",
+      "final_url": "https://unipathway.pk/europe/latvia",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.656,
+      "bytes": 5472,
+      "truncated": false,
+      "title": "Latvia Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Latvia, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/latvia"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/latvia"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/lithuania",
+      "final_url": "https://unipathway.pk/europe/lithuania",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 6.37,
+      "bytes": 5502,
+      "truncated": false,
+      "title": "Lithuania Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Lithuania, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/lithuania"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/lithuania"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/luxembourg",
+      "final_url": "https://unipathway.pk/europe/luxembourg",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.543,
+      "bytes": 5512,
+      "truncated": false,
+      "title": "Luxembourg Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Luxembourg, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/luxembourg"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/luxembourg"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/malta",
+      "final_url": "https://unipathway.pk/europe/malta",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 2.923,
+      "bytes": 5462,
+      "truncated": false,
+      "title": "Malta Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Malta, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/malta"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/malta"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/netherlands",
+      "final_url": "https://unipathway.pk/europe/netherlands",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 2.785,
+      "bytes": 5522,
+      "truncated": false,
+      "title": "Netherlands Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Netherlands, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/netherlands"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/netherlands"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/poland",
+      "final_url": "https://unipathway.pk/europe/poland",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.56,
+      "bytes": 5472,
+      "truncated": false,
+      "title": "Poland Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Poland, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/poland"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/poland"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/portugal",
+      "final_url": "https://unipathway.pk/europe/portugal",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.553,
+      "bytes": 5492,
+      "truncated": false,
+      "title": "Portugal Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Portugal, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/portugal"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/portugal"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/romania",
+      "final_url": "https://unipathway.pk/europe/romania",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.728,
+      "bytes": 5482,
+      "truncated": false,
+      "title": "Romania Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Romania, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/romania"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/romania"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/slovakia",
+      "final_url": "https://unipathway.pk/europe/slovakia",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.568,
+      "bytes": 5492,
+      "truncated": false,
+      "title": "Slovakia Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Slovakia, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/slovakia"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/slovakia"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/slovenia",
+      "final_url": "https://unipathway.pk/europe/slovenia",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.398,
+      "bytes": 5492,
+      "truncated": false,
+      "title": "Slovenia Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Slovenia, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/slovenia"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/slovenia"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/spain",
+      "final_url": "https://unipathway.pk/europe/spain",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 2.891,
+      "bytes": 5462,
+      "truncated": false,
+      "title": "Spain Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Spain, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/spain"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/spain"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/sweden",
+      "final_url": "https://unipathway.pk/europe/sweden",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.574,
+      "bytes": 5472,
+      "truncated": false,
+      "title": "Sweden Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Sweden, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/sweden"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/sweden"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/iceland",
+      "final_url": "https://unipathway.pk/europe/iceland",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.703,
+      "bytes": 5482,
+      "truncated": false,
+      "title": "Iceland Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Iceland, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/iceland"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/iceland"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/norway",
+      "final_url": "https://unipathway.pk/europe/norway",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.792,
+      "bytes": 5472,
+      "truncated": false,
+      "title": "Norway Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Norway, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/norway"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/norway"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/liechtenstein",
+      "final_url": "https://unipathway.pk/europe/liechtenstein",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.48,
+      "bytes": 5542,
+      "truncated": false,
+      "title": "Liechtenstein Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Liechtenstein, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/liechtenstein"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/liechtenstein"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/north-macedonia",
+      "final_url": "https://unipathway.pk/europe/north-macedonia",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.557,
+      "bytes": 5562,
+      "truncated": false,
+      "title": "North Macedonia Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in North Macedonia, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/north-macedonia"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/north-macedonia"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/serbia",
+      "final_url": "https://unipathway.pk/europe/serbia",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.463,
+      "bytes": 5472,
+      "truncated": false,
+      "title": "Serbia Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Serbia, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/serbia"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/serbia"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/turkiye",
+      "final_url": "https://unipathway.pk/europe/turkiye",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.854,
+      "bytes": 5489,
+      "truncated": false,
+      "title": "Türkiye Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Türkiye, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/turkiye"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/turkiye"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    {
+      "requested_url": "https://unipathway.pk/europe/switzerland",
+      "final_url": "https://unipathway.pk/europe/switzerland",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.775,
+      "bytes": 5522,
+      "truncated": false,
+      "title": "Switzerland Study Guide for Pakistani Students | UniPathway",
+      "description": [
+        "Explore study options in Switzerland, language preparation and university entry requirements with UniPathway guidance for Pakistani students."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/europe/switzerland"
+      ],
+      "og_url": [
+        "https://unipathway.pk/europe/switzerland"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    }
+  ],
+  "indexing_probes": {
+    "/login": {
+      "requested_url": "https://unipathway.pk/login",
+      "final_url": "https://unipathway.pk/login",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.198,
+      "bytes": 4788,
+      "truncated": false,
+      "title": "UniPathway | Secure learning portal",
+      "description": [
+        "Sign in to access your authorised UniPathway learning and administration services."
+      ],
+      "robots": [
+        "noindex, follow"
+      ],
+      "canonicals": [],
+      "og_url": [
+        "https://unipathway.pk/login"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    "/apply": {
+      "requested_url": "https://unipathway.pk/apply",
+      "final_url": "https://unipathway.pk/apply",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.123,
+      "bytes": 5358,
+      "truncated": false,
+      "title": "UniPathway | Online & In-Class Learning in Pakistan",
+      "description": [
+        "Explore tuition, languages, qualifications and skills with UniPathway. Learn online across Pakistan or attend in-class sessions at our Jhelum centre."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/"
+      ],
+      "og_url": [
+        "https://unipathway.pk/"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    "/seo-audit-not-a-real-page-20261030": {
+      "requested_url": "https://unipathway.pk/seo-audit-not-a-real-page-20261030",
+      "final_url": "https://unipathway.pk/seo-audit-not-a-real-page-20261030",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.245,
+      "bytes": 5358,
+      "truncated": false,
+      "title": "UniPathway | Online & In-Class Learning in Pakistan",
+      "description": [
+        "Explore tuition, languages, qualifications and skills with UniPathway. Learn online across Pakistan or attend in-class sessions at our Jhelum centre."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/"
+      ],
+      "og_url": [
+        "https://unipathway.pk/"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    "/tuition/": {
+      "requested_url": "https://unipathway.pk/tuition/",
+      "final_url": "https://unipathway.pk/tuition/",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 4.087,
+      "bytes": 5531,
+      "truncated": false,
+      "title": "Online Tuition in Pakistan: Years 8–12 | UniPathway",
+      "description": [
+        "Explore online tuition across Pakistan for Years 8–12 in maths, English and sciences. Learn from home or discuss in-centre tuition at our first centre in Jhelum."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/tuition"
+      ],
+      "og_url": [
+        "https://unipathway.pk/tuition"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    }
+  },
+  "domain_variants": {
+    "http://unipathway.pk/": {
+      "requested_url": "http://unipathway.pk/",
+      "final_url": "https://unipathway.pk/",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 7.704,
+      "bytes": 5358,
+      "truncated": false,
+      "title": "UniPathway | Online & In-Class Learning in Pakistan",
+      "description": [
+        "Explore tuition, languages, qualifications and skills with UniPathway. Learn online across Pakistan or attend in-class sessions at our Jhelum centre."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/"
+      ],
+      "og_url": [
+        "https://unipathway.pk/"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    },
+    "https://www.unipathway.pk/": {
+      "requested_url": "https://www.unipathway.pk/",
+      "final_url": "https://unipathway.pk/",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "x_robots_tag": null,
+      "hsts": "max-age=31536000; includeSubDomains",
+      "seconds_observed": 8.929,
+      "bytes": 5358,
+      "truncated": false,
+      "title": "UniPathway | Online & In-Class Learning in Pakistan",
+      "description": [
+        "Explore tuition, languages, qualifications and skills with UniPathway. Learn online across Pakistan or attend in-class sessions at our Jhelum centre."
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1"
+      ],
+      "canonicals": [
+        "https://unipathway.pk/"
+      ],
+      "og_url": [
+        "https://unipathway.pk/"
+      ],
+      "og_image": [
+        "https://unipathway.pk/brand/unipathway-social.png"
+      ],
+      "lang": "en",
+      "raw_h1_count": 0,
+      "raw_link_count": 0,
+      "schema_types": [
+        "EducationalOrganization",
+        "BreadcrumbList"
+      ],
+      "schema_parse_errors": 0,
+      "issues": []
+    }
+  }
+}
