@@ -232,7 +232,7 @@ describe('released grade context', () => {
     expect(await screen.findByText('Secure approved grades are unavailable.')).toBeInTheDocument();
     expect(screen.queryByText('NaN%')).not.toBeInTheDocument();
     expect(screen.queryByText('78/100')).not.toBeInTheDocument();
-    expect(screen.getByText('Approved Average').parentElement).toHaveTextContent('—');
+    expect(screen.getByText('Approved Average').closest('div')).toHaveTextContent('—');
   });
 
   it('rejects a mismatched appeal correction rather than showing another assessment score', async () => {
@@ -260,7 +260,7 @@ describe('released grade context', () => {
   it('keeps the compact verified summary readable at zoomed mobile text sizes', async () => {
     dashboard();
     await screen.findByText('78/100');
-    const overview=screen.getByRole('term',{name:'Approved Average'}).closest('dl');
+    const overview=screen.getByText('Approved Average').closest('dl');
     expect(overview?.className).toContain('auto-fit');
     expect(overview?.className).toContain('minmax(min(100%,8rem),1fr)');
   });
