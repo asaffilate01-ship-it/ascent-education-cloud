@@ -3,23 +3,24 @@ import {MemoryRouter} from 'react-router-dom';
 import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 import StudentLearningAgenda from '@/components/student/StudentLearningAgenda';
 
-const state=vi.hoisted(()=>({sessions:[] as Record<string,unknown>[],tables:[] as string[],moduleFilters:[] as unknown[][]}));
+const state=vi.hoisted(()=>({sessions:[] as Record<string,unknown>[],tables:[] as string[],moduleFilters:[] as unknown[][],failModule:''}));
 vi.mock('@/lib/db',()=>({db:{from:(table:string)=>{
  state.tables.push(table);
  let data=table==='live_class_sessions'?[...state.sessions]:[];
+ let chunkIds:unknown[]=[];
  const q:any={
   select:()=>q,
   eq:(field:string,value:unknown)=>{data=data.filter(r=>r[field]===value);return q;},
-  in:(field:string,values:unknown[])=>{if(table==='live_class_sessions'&&field==='module_id')state.moduleFilters.push(values);data=data.filter(r=>values.includes(r[field]));return q;},
+  in:(field:string,values:unknown[])=>{if(table==='live_class_sessions'&&field==='module_id'){state.moduleFilters.push(values);chunkIds=values;}data=data.filter(r=>values.includes(r[field]));return q;},
   gte:(field:string,value:string)=>{data=data.filter(r=>String(r[field])>=value);return q;},
   order:()=>q,
   range:async(start:number,end:number)=>({data:data.slice(start,end+1),error:null}),
-  limit:async(limit:number)=>({data:data.slice(0,limit),error:null}),
+  limit:async(limit:number)=>({data:data.slice(0,limit),error:state.failModule&&chunkIds.includes(state.failModule)?{message:'Later batch denied'}:null}),
  };
  return q;
 }}}));
 beforeEach(()=>{
- state.tables=[];state.moduleFilters=[];
+ state.tables=[];state.moduleFilters=[];state.failModule='';
  state.sessions=[
   {id:'enrolled-session',module_id:'mine',tenant_id:'centre',status:'scheduled',title:'My module workshop',starts_at:'2099-01-01T08:00:00Z',ends_at:'2099-01-01T10:00:00Z'},
   {id:'peer-session',module_id:'other-module',tenant_id:'centre',status:'scheduled',title:'Other programme class',starts_at:'2099-01-01T08:00:00Z',ends_at:'2099-01-01T10:00:00Z'},
@@ -43,4 +44,32 @@ it('does not fetch any centre-wide classes when no active module has been verifi
  show([]);
  expect(await screen.findByText('No upcoming sessions are visible for your active enrolled modules.')).toBeInTheDocument();
  expect(state.tables).not.toContain('live_class_sessions');
+});
+
+it('chunks large enrolled-module histories and orders sessions across all batches',async()=>{
+ const ids=Array.from({length:121},(_,i)=>`module${i}`);
+ state.sessions=[
+  {id:'later',module_id:'module0',tenant_id:'centre',status:'scheduled',title:'Later class',starts_at:'2099-01-08T09:00:00Z',ends_at:'2099-01-08T10:00:00Z'},
+  {id:'earlier',module_id:'module120',tenant_id:'centre',status:'scheduled',title:'Earlier class',starts_at:'2099-01-02T09:00:00Z',ends_at:'2099-01-02T10:00:00Z'},
+ ];
+ show(ids);
+ expect(await screen.findByText('Earlier class')).toBeInTheDocument();
+ expect(state.moduleFilters.map(x=>x.length)).toEqual([50,50,21]);
+ const listing=screen.getByRole('region',{name:'Enrolled module class agenda'});
+ const headings=[...listing.querySelectorAll('article > p:first-child')].map(x=>x.textContent);
+ expect(headings).toEqual(['Earlier class','Later class']);
+ expect(screen.getByRole('link',{name:'Verify classroom invitation'})).toHaveAttribute(
+  'href','/student/classroom?module=module120&session=earlier');
+});
+it('does not leak an earlier batch if a later authorised class read fails',async()=>{
+ const ids=Array.from({length:61},(_,i)=>`module${i}`);
+ state.failModule='module50';
+ state.sessions=[
+  {id:'first-batch',module_id:'module0',tenant_id:'centre',status:'scheduled',title:'First batch class',starts_at:'2099-01-02T09:00:00Z',ends_at:'2099-01-02T10:00:00Z'},
+ ];
+ show(ids);
+ expect(await screen.findByText('Your enrolled module sessions could not be verified. Refresh to retry.')).toBeInTheDocument();
+ expect(state.moduleFilters.map(x=>x.length)).toEqual([50,11]);
+ expect(screen.queryByText('First batch class')).toBeNull();
+ expect(screen.queryByRole('region',{name:'Suggested study focus'})).toBeNull();
 });
