@@ -148,6 +148,22 @@ test('student resume uses the most recent current lesson and recovers after a fa
   await expect(learning).toContainText('Building reliable Python functions');
   await expect(learning).not.toContainText('Withdrawn lesson');
   await expect(page.getByRole('link', {name: 'View approved feedback for Statistical investigation'})).toHaveAttribute('href', '/student/grades?module=module-a');
+  const gradeSummary = page.locator('dl[aria-label="Verified student learning summary"]');
+  await expect(gradeSummary).toContainText('Approved Average');
+  await expect(gradeSummary).toContainText('78%');
+  // At 360px and 200% text, the summary must reflow instead of forcing 3 tiny columns.
+  await page.evaluate(() => {document.documentElement.style.fontSize = '32px';});
+  await expect(gradeSummary).toBeVisible();
+  const summaryBounds = await gradeSummary.evaluate(element => {
+    const box = element.getBoundingClientRect();
+    return {inside: box.left >= -1 && box.right <= innerWidth + 1,
+      noHorizontalOverflow: element.scrollWidth <= element.clientWidth + 1,
+      cardCount: element.children.length};
+  });
+  expect(summaryBounds.inside, JSON.stringify(summaryBounds)).toBe(true);
+  expect(summaryBounds.noHorizontalOverflow, JSON.stringify(summaryBounds)).toBe(true);
+  expect(summaryBounds.cardCount).toBe(3);
+  await page.evaluate(() => {document.documentElement.style.fontSize = '';});
   fixture.failures.add('unipathway_lesson_progress');
   await page.reload();
   await expect(learning.getByRole('alert')).toContainText('could not be verified');
