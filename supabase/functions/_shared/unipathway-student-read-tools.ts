@@ -90,6 +90,16 @@ export function studentToolEvidenceResponse(
   }
   seen.add(value.recordId);
   const allowed=AGENT_FIELDS[tool],filtered:Record<string,unknown>={};
+  if([...allowed].some(key=>!Object.prototype.hasOwnProperty.call(value,key))||
+     typeof value.title!=='string'||!value.title.trim()||
+     tool!=='list_my_programmes'&&
+      (typeof value.moduleId!=='string'||!value.moduleId.trim())||
+     tool==='list_my_coursework_deadlines'&&(
+      typeof value.dueAt!=='string'||!Number.isFinite(Date.parse(value.dueAt))||
+      typeof value.submissionCutoff!=='string'||!Number.isFinite(Date.parse(value.submissionCutoff))
+     )){
+    throw Error('Missing or incomplete student evidence metadata');
+  }
   for(const [key,field] of Object.entries(value)){
    if(!allowed.has(key)||typeof field==='object'&&field!==null||
       typeof field==='string'&&field.length>500||
