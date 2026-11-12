@@ -183,6 +183,17 @@ it('recovers a rejected preflight promise without losing the lecturer draft or l
   expect(screen.getByRole('button', {name: 'Review assessment brief'})).toBeEnabled(); expect(writes()).toEqual([]);
 });
 
+ it('uses explicit viewport bounds while preserving scrollable assessment details and actions', async () => {
+   show(); const dialog = await reviewBrief();
+   expect(dialog.getAttribute('style')).toContain('width: calc(100vw - 32px)');
+   expect(dialog.getAttribute('style')).toContain('max-height: calc(100dvh - 32px)');
+   expect(dialog.className).toContain('overflow-y-auto');
+   expect(dialog.className).toContain('overscroll-contain');
+   expect(within(dialog).getByText(form().title)).toBeInTheDocument();
+   expect(within(dialog).getByRole('button', {name: 'Save reviewed assessment brief'})).toBeEnabled();
+   expect(writes()).toHaveLength(0);
+ });
+
 it('moves keyboard focus into the named review and returns it to the initiating action without losing edits', async () => {
   show(); await ready(); fillBrief(); const button = screen.getByRole('button', {name: 'Review assessment brief'}); button.focus(); fireEvent.click(button);
   const dialog = await screen.findByRole('dialog', {name: 'Review brief'});
