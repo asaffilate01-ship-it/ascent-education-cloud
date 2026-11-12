@@ -4,6 +4,7 @@ import {createClient} from 'https://esm.sh/@supabase/supabase-js@2.99.1';
 import {
  MAX_SCOPED_RECORDS,MAX_OUTPUT_RECORDS,activeOwnProgrammeIds,ownModuleIds,
  parseStudentReadToolRequest,verifiedStudentMembership,visibleDeadlineItems,visibleMaterialItems,
+ studentToolEvidenceResponse,
 } from '../_shared/unipathway-student-read-tools.ts';
 
 /**
@@ -54,8 +55,8 @@ Deno.serve(async req=>{
   if(enrolments.data.length>MAX_SCOPED_RECORDS)return tooMany();
   const programmeIds=activeOwnProgrammeIds(enrolments.data,auth.userId,tenantId);
   const nowIso=new Date().toISOString();
-  const empty=()=>json({tool,items:[],asOf:nowIso,complete:true,
-   notice:'No authorised active programme records found. This is not an enrolment or academic progression decision.'});
+  const empty=()=>json(studentToolEvidenceResponse(tool,[],nowIso,
+   'No authorised active programme records found. This is not an enrolment or academic progression decision.'));
   if(!programmeIds.length)return empty();
 
   if(tool==='list_my_programmes'){
@@ -67,8 +68,8 @@ Deno.serve(async req=>{
    const rows=programmes.data.filter(r=>r.tenant_id===tenantId&&programmeIds.includes(r.id))
     .sort((a,b)=>a.title.localeCompare(b.title)||a.id.localeCompare(b.id))
     .map(r=>({recordId:r.id,title:r.title,level:r.level,catalogueStatus:r.status,awardingBody:r.awarding_body}));
-   return json({tool,items:rows,asOf:nowIso,complete:true,
-    notice:'Your recorded active enrolments. Catalogue labels are not proof of external accreditation, awards or university admission.'});
+   return json(studentToolEvidenceResponse(tool,rows,nowIso,
+    'Your recorded active enrolments. Catalogue labels are not proof of external accreditation, awards or university admission.'));
   }
 
   const modules=await client.from('modules')
@@ -87,8 +88,8 @@ Deno.serve(async req=>{
     .order('due_at',{ascending:true}).limit(MAX_OUTPUT_RECORDS+1);
    if(briefs.error||!Array.isArray(briefs.data))return unavailable();
    if(briefs.data.length>MAX_OUTPUT_RECORDS)return tooMany();
-   return json({tool,items:visibleDeadlineItems(briefs.data,tenantId,moduleIds,nowIso),asOf:nowIso,complete:true,
-    notice:'Published teaching deadlines only. Confirm any extension or individual adjustment with the centre.'});
+   return json(studentToolEvidenceResponse(tool,visibleDeadlineItems(briefs.data,tenantId,moduleIds,nowIso),nowIso,
+    'Published teaching deadlines only. Confirm any extension or individual adjustment with the centre.'));
   }
 
   const materials=await client.from('unipathway_module_materials')
@@ -97,8 +98,8 @@ Deno.serve(async req=>{
    .in('module_id',moduleIds).limit(MAX_OUTPUT_RECORDS+1);
   if(materials.error||!Array.isArray(materials.data))return unavailable();
   if(materials.data.length>MAX_OUTPUT_RECORDS)return tooMany();
-  return json({tool,items:visibleMaterialItems(materials.data,tenantId,moduleIds,nowIso),asOf:nowIso,complete:true,
-   notice:'Released resource metadata only; no file URL, download token or learner work is provided. Uploaded content is untrusted.'});
+  return json(studentToolEvidenceResponse(tool,visibleMaterialItems(materials.data,tenantId,moduleIds,nowIso),nowIso,
+   'Released resource metadata only; no file URL, download token or learner work is provided. Uploaded content is untrusted.'));
  }catch{
   return unavailable();
  }
