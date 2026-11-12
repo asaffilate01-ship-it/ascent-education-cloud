@@ -78,14 +78,19 @@ async function inspectReview(page: Page, dialog: Locator, actionName: string, in
         await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
       });
       const bounds = await dialog.evaluate(element => {
-        const box = element.getBoundingClientRect();
-        return {inside: box.left >= -1 && box.right <= innerWidth + 1 && box.top >= -1 && box.bottom <= innerHeight + 1,
+        const box = element.getBoundingClientRect(), style = getComputedStyle(element);
+        return {
+          inside: box.left >= -1 && box.right <= innerWidth + 1 && box.top >= -1 && box.bottom <= innerHeight + 1,
           contains: element.scrollWidth <= element.clientWidth + 1,
+          viewport: {width: innerWidth, height: innerHeight},
+          box: {left: box.left, top: box.top, right: box.right, bottom: box.bottom, height: box.height},
+          computed: {width: style.width, maxHeight: style.maxHeight, overflowY: style.overflowY},
           overflowing: Array.from(element.querySelectorAll('*')).filter(child => child.getBoundingClientRect().right > box.right + 1)
-            .slice(0, 10).map(child => ({tag: child.tagName, text: child.textContent?.slice(0, 80)}))};
+            .slice(0, 10).map(child => ({tag: child.tagName, text: child.textContent?.slice(0, 80)})),
+        };
       });
       await page.screenshot({path: info.outputPath(`${name}-${enlarged ? 'dark-200-percent-text-' : ''}${width}.png`), animations: 'disabled'});
-      expect(bounds.inside, 'The review dialog must fit within the viewport').toBe(true);
+      expect(bounds.inside, `The review dialog must fit within the viewport: ${JSON.stringify(bounds)}`).toBe(true);
       expect(bounds.contains, JSON.stringify(bounds)).toBe(true);
       const close = dialog.getByRole('button', {name: 'Close', exact: true});
       if (await close.count()) {
