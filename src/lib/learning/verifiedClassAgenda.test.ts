@@ -55,6 +55,9 @@ describe('verified student classroom agenda',()=>{
   for(const row of denied){
    await expect(loadVerifiedClassAgenda(['m1'],'centre-a',now,async()=>[row])).rejects.toThrow();
   }
+  await expect(loadVerifiedClassAgenda(['m1'],'centre-a',now,
+    async()=>Array.from({length:CLASS_AGENDA_QUERY_LIMIT+1},(_,i)=>makeSession(`oversize${i}`))
+   )).rejects.toThrow(/unbounded/);
   await expect(loadVerifiedClassAgenda(['m1'],'centre-a',Number.NaN,async()=>[])).rejects.toThrow();
   expect(()=>classAgendaModuleChunks(['m1',''])).toThrow();
  });
