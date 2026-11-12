@@ -36,7 +36,8 @@ function finiteDate(value:string):number|null {
 function verifyRows(
  raw:unknown,tenant:string,allowedModules:ReadonlySet<string>,now:number,
 ):VerifiedClassSession[] {
- if(!Array.isArray(raw))throw Error('Classroom invitation listing unavailable');
+ if(!Array.isArray(raw)||raw.length>CLASS_AGENDA_QUERY_LIMIT)
+  throw Error('Classroom invitation listing unavailable or unbounded');
  const sessions:VerifiedClassSession[]=[];
  for(const record of raw){
   if(!record||typeof record!=='object'||Array.isArray(record))
