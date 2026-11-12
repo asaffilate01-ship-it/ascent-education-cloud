@@ -113,7 +113,7 @@ export function studentToolEvidenceResponse(
   safeItems.push(filtered);
  }
  return {
-  tool,items:safeItems,asOf,complete:true as const,
+  schemaVersion:'2026-11-12-v1' as const,tool,items:safeItems,asOf,complete:true as const,
   sourceRefs:safeItems.map(item=>({recordType:AGENT_SOURCE_TABLE[tool],recordId:item.recordId as string})),
   trust:'untrusted-record-metadata' as const,
   notice,
