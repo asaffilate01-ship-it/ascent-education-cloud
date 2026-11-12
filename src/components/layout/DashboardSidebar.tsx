@@ -424,14 +424,79 @@ const conciseLabels: Record<string, string> = {
   'Recorded Lesson Archive': 'Recordings', 'Coursework Briefs & Rubrics': 'Assignment briefs',
   'Teaching Rubrics (not marking)': 'Teaching rubrics', 'Managed AWS Labs': 'Managed labs',
 };
+/** Task-first grouping is presentation-only. Every role-authorised destination stays in
+ * NAV_CONFIG and in the local workspace search; no permissions are granted here.
+ * Unknown/new paths appear under Other services until deliberately classified.
+ */
+const TASK_GROUPS: Partial<Record<UserRole, ReadonlyArray<{title:string;paths:readonly string[]}>>> = {
+  student: [
+    {title:'Learn & practise',paths:[
+      '/student/classroom','/student/lesson-archive','/student/materials','/student/library',
+      '/student/quizzes','/student/forums','/student/ielts','/student/labs',
+      '/student/managed-labs','/student/microsoft','/student/knowledge','/coding',
+    ]},
+    {title:'Assessments & feedback',paths:['/student/appeals','/student/gradebook']},
+    {title:'Progress & planning',paths:[
+      '/student/learning-plan','/student/attendance','/calendar','/student/timeline',
+      '/student/progression','/student/family-sharing',
+    ]},
+    {title:'Support & opportunities',paths:[
+      '/student/finance','/student/applications','/student/wellbeing','/health',
+      '/student/career','/student/placements','/student/opportunities',
+      '/student/global-progression','/student/international-applications',
+      '/transport','/residential','/onboarding','/my-activity','/communications','/messaging',
+    ]},
+  ],
+  lecturer: [
+    {title:'Plan & teach',paths:[
+      '/lecturer/class-scheduler','/lecturer/delivery-readiness','/lecturer/class-release',
+      '/lecturer/learning-plans','/lecturer/materials','/lecturer/course-content',
+      '/lecturer/lesson-archive','/lecturer/whiteboards','/lecturer/labs',
+      '/lecturer/managed-labs','/lecturer/ielts','/lecturer/quizzes','/lecturer/forums',
+      '/lesson-plans','/calendar',
+    ]},
+    {title:'Assess & feedback',paths:[
+      '/lecturer/marking','/lecturer/gradebook','/lecturer/report-cards',
+      '/lecturer/attendance-corrections','/lecturer/assessment-appeals',
+    ]},
+    {title:'Students & communication',paths:[
+      '/lecturer/students','/lecturer/guardian-support','/lecturer/placements',
+      '/lecturer/analytics','/communications','/messaging','/my-activity',
+      '/onboarding/lecturer',
+    ]},
+  ],
+};
+
+function groupedSpecialistSections(role:UserRole,items:NavItem[]):NavSection[]|null{
+  const groups=TASK_GROUPS[role];
+  if(!groups)return null;
+  const remaining=new Map(items.map(item=>[item.path,item]));
+  const result:NavSection[]=groups.map(group=>{
+    const ordered:NavItem[]=[];
+    for(const path of group.paths){
+      const item=remaining.get(path);
+      if(item){ordered.push(item);remaining.delete(path);}
+    }
+    return {title:group.title,items:ordered};
+  }).filter(section=>section.items.length>0);
+  if(remaining.size)result.push({title:'Other services',items:[...remaining.values()]});
+  return result;
+}
+
 export function getNavigationSections(role: UserRole, search = ''): NavSection[] {
   const original = NAV_CONFIG[role] || [];
   const items = original.flatMap(s => s.items).map(item => ({ ...item, label: conciseLabels[item.label] || item.label }));
   if (search.trim()) return [{ title: 'Search results', items: items.filter(i => matchesLocalSearch(`${i.label} ${i.path.replace(/[^a-z0-9]+/gi,' ')}`,search)) }];
   const paths = dailyPaths[role] || [ROLE_HOME[role], ...items.filter(i=>i.path!==ROLE_HOME[role]).slice(0,4).map(i=>i.path)];
   const everyday=paths.flatMap(path=>items.filter(i=>i.path===path)).map(item=>({...item,label:role==='student'&&item.path==='/student'?'Today':item.label}));
-  return [{title:'Everyday',items:[...everyday,{label:'My workspace',icon:FolderOpen,path:'/workspace'}]},
-    ...original.map(section=>({title:section.title||'Specialist tools',items:section.items.filter(i=>!paths.includes(i.path)).map(i=>({...i,label:conciseLabels[i.label]||i.label}))})).filter(s=>s.items.length)];
+  const focused:NavSection={title:'Everyday',items:[...everyday,{label:'My workspace',icon:FolderOpen,path:'/workspace'}]};
+  const additional=items.filter(item=>!paths.includes(item.path));
+  const grouped=groupedSpecialistSections(role,additional);
+  if(grouped)return [focused,...grouped];
+  return [focused,...original.map(section=>({
+    title:section.title||'Specialist tools',
+    items:section.items.filter(i=>!paths.includes(i.path)).map(i=>({...i,label:conciseLabels[i.label]||i.label})),
+  })).filter(section=>section.items.length)];
 }
 
 export { NAV_CONFIG };

@@ -17,3 +17,20 @@ it('keeps coursework available when class invitations fail',async()=>{failure='l
 it('keeps class invitations available when coursework verification fails',async()=>{failure='unipathway_assessment_attempts';mount();await screen.findByRole('alert');expect(await screen.findByText(/Invited English class/)).toBeInTheDocument();expect(screen.queryByText(/No coursework currently meets/)).toBeNull();});
 it('keeps open tasks ahead of a backlog of closed tasks',async()=>{tables.unipathway_assessment_attempts=[];tables.unipathway_assessment_briefs=[...Array.from({length:6},(_,i)=>({id:`closed${i}`,module_id:'module',title:`Closed ${i}`,due_at:'2020-01-01',submission_cutoff:'2020-01-02',max_attempts:2})),{id:'open',module_id:'module',title:'Still open',due_at:'2099-01-01',submission_cutoff:'2099-01-02',max_attempts:2}];mount();await screen.findByText('Still open');expect(screen.getByText('1 needing action · 0 awaiting review · 0 with released feedback')).toBeInTheDocument();expect(screen.getByText('6 tasks cannot currently be submitted')).toBeInTheDocument();});
 it('bounds module filters for large enrolment histories',async()=>{tables.unipathway_assessment_briefs=[];const ids=Array.from({length:121},(_,i)=>`module${i}`);render(<MemoryRouter><StudentLearningAgenda tenant="centre" student="learner" moduleIds={ids}/></MemoryRouter>);await screen.findByText(/No coursework currently meets/);const filters=mocks.filters.mock.calls.filter(c=>c[0]==='unipathway_assessment_briefs'&&c[1]==='in');expect(filters.map(c=>c[3].length)).toEqual([50,50,21]);});
+
+it('offers source-linked coursework guidance only after fully verified reads',async()=>{
+ tables.live_class_sessions=[];
+ mount();
+ await screen.findByText('Published coursework');
+ const focus=await screen.findByRole('region',{name:'Suggested study focus'});
+ expect(focus).toHaveTextContent('Published coursework brief');
+ expect(screen.getByRole('link',{name:'Review coursework and submit eligibility'})).toHaveAttribute('href','/student/assignments?module=module');
+ expect(focus).not.toHaveTextContent('Official grade');
+});
+it('never produces a study suggestion while one authorised source fails',async()=>{
+ failure='live_class_sessions';mount();
+ await screen.findByRole('alert');
+ expect(await screen.findByText('Published coursework')).toBeInTheDocument();
+ expect(screen.queryByRole('region',{name:'Suggested study focus'})).toBeNull();
+});
+ 
