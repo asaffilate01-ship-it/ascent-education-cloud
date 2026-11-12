@@ -55,6 +55,8 @@ it('keeps expandable specialist sections comfortably touch-sized and keyboard-vi
  expect(summaries.length).toBeGreaterThanOrEqual(2);
  for(const summary of summaries){
   expect(summary.className).toContain('min-h-11');
+  expect(summary.className).toContain('py-3');
+  expect(summary.className).not.toContain('flex');
   expect(summary.className).toContain('focus-visible:ring-2');
  }
 });
