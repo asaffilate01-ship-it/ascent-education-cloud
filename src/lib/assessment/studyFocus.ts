@@ -45,7 +45,7 @@ export function chooseStudentStudyFocus<T extends AgendaBrief>(
  if(next){
   const due=validTime(next.due_at);
   return {
-   kind:'coursework',title:next.title,
+   kind:'coursework',title:`Next coursework: ${next.title}`,
    detail:due!==null&&due<now
     ? 'The due date has passed but the recorded final cutoff may remain open. Check the submission rules and your remaining attempts.'
     : 'This published brief is listed as actionable. The coursework page must verify the current window, attempts and permissions before submission.',
