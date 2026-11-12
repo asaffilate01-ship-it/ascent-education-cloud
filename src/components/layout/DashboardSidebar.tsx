@@ -580,7 +580,7 @@ export default function DashboardSidebar() {
         <button
           onClick={() => setMobileOpen(false)}
           aria-label="Close navigation"
-          className="lg:hidden p-1 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/50"
+          className="lg:hidden inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg hover:bg-sidebar-accent text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
         >
           <X className="w-4 h-4" />
         </button>
@@ -595,7 +595,7 @@ export default function DashboardSidebar() {
           <details key={`${user.role}-${si}-${navSearch}`} open={collapsed || si === 0 || !!navSearch || section.items.some(i => i.path === location.pathname)} className={si > 0 ? 'mt-5' : ''}>
             {(
 
-              <summary className="text-xs font-semibold text-sidebar-foreground/70 px-3 mb-1.5">
+              <summary className="flex min-h-11 cursor-pointer items-center rounded-lg px-3 text-xs font-semibold text-sidebar-foreground/70 hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring">
                 {section.title || 'Navigation'}
               </summary>
             )}
@@ -677,6 +677,7 @@ export default function DashboardSidebar() {
       <button
         aria-label="Open navigation"
         aria-expanded={mobileOpen}
+        aria-controls="unipathway-dashboard-nav"
         onClick={() => { setCollapsed(false); setMobileOpen(true); }}
         className="lg:hidden fixed top-3 left-3 z-50 inline-flex min-h-11 min-w-11 items-center justify-center p-2 rounded-lg bg-card/90 backdrop-blur-sm shadow-surface-md border border-border/50 hover:bg-card transition-default"
       >
@@ -692,10 +693,10 @@ export default function DashboardSidebar() {
       )}
 
       {/* Sidebar */}
-      <aside ref={asideRef} role={mobileOpen ? "dialog" : undefined} aria-modal={mobileOpen || undefined} aria-label="Dashboard navigation"
+      <aside id="unipathway-dashboard-nav" ref={asideRef} role={mobileOpen ? "dialog" : undefined} aria-modal={mobileOpen || undefined} aria-label="Dashboard navigation"
         className={`fixed left-0 top-0 h-dvh bg-sidebar text-sidebar-foreground flex flex-col z-50 transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)]
           ${collapsed ? 'w-16' : 'w-60'}
-          ${mobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'}
+          ${mobileOpen ? 'translate-x-0 shadow-2xl visible' : '-translate-x-full invisible lg:translate-x-0 lg:visible'}
         `}
       >
         {sidebarContent}
