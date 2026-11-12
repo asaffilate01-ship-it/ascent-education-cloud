@@ -54,3 +54,58 @@ export function visibleMaterialItems(rows:readonly Material[],tenantId:string,mo
   .slice(0,MAX_OUTPUT_RECORDS)
   .map(r=>({recordId:r.id,moduleId:r.module_id,title:r.title,kind:r.kind}));
 }
+
+/**
+ * Source evidence envelope for a future read-only agent / MCP v2 adapter.
+ * These records are UNTRUSTED metadata, not instructions, published grades,
+ * access tokens, or authorization for any follow-on tool action.
+ *
+ * Only the authenticated Edge executor may call this after scoped RLS reads.
+ */
+const AGENT_SOURCE_TABLE: Record<StudentReadTool,string>={
+ list_my_programmes:'programmes',
+ list_my_coursework_deadlines:'unipathway_assessment_briefs',
+ list_my_published_materials:'unipathway_module_materials',
+};
+const AGENT_FIELDS:Record<StudentReadTool,ReadonlySet<string>>={
+ list_my_programmes:new Set(['recordId','title','level','catalogueStatus','awardingBody']),
+ list_my_coursework_deadlines:new Set(['recordId','moduleId','title','dueAt','submissionCutoff']),
+ list_my_published_materials:new Set(['recordId','moduleId','title','kind']),
+};
+export function studentToolEvidenceResponse(
+ tool:StudentReadTool,items:readonly Record<string,unknown>[],asOf:string,notice:string,
+){
+ if(!STUDENT_READ_TOOLS.includes(tool)||!Array.isArray(items)||items.length>MAX_OUTPUT_RECORDS||
+   !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(asOf)||
+   !Number.isFinite(Date.parse(asOf))||typeof notice!=='string'||notice.length>500){
+   throw Error('Invalid or incomplete student evidence result');
+ }
+ const seen=new Set<string>();
+ const safeItems:Record<string,unknown>[]=[];
+ for(const value of items){
+  if(!value||typeof value!=='object'||Array.isArray(value)||
+     typeof value.recordId!=='string'||!/^[a-zA-Z0-9_-]{1,100}$/.test(value.recordId)||
+     seen.has(value.recordId)){
+    throw Error('Invalid student evidence reference');
+  }
+  seen.add(value.recordId);
+  const allowed=AGENT_FIELDS[tool],filtered:Record<string,unknown>={};
+  for(const [key,field] of Object.entries(value)){
+   if(!allowed.has(key)||typeof field==='object'&&field!==null||
+      typeof field==='string'&&field.length>500||
+      typeof field==='number'&&!Number.isFinite(field)){
+    throw Error('Unsupported or sensitive student evidence field');
+   }
+   if(field!==undefined && field!==null && !['string','number','boolean'].includes(typeof field))
+    throw Error('Unsupported student evidence type');
+   filtered[key]=field??null;
+  }
+  safeItems.push(filtered);
+ }
+ return {
+  tool,items:safeItems,asOf,complete:true as const,
+  sourceRefs:safeItems.map(item=>({recordType:AGENT_SOURCE_TABLE[tool],recordId:item.recordId as string})),
+  trust:'untrusted-record-metadata' as const,
+  notice,
+ };
+}
