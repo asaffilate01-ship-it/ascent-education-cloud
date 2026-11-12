@@ -197,7 +197,7 @@ describe('released grade context', () => {
     tables.programmes = [{ id: 'programme', tenant_id: 'centre', title: 'Programme' }];
     tables.modules = [{ ...modules[0], tenant_id: 'centre', programme_id: 'programme' }];
     tables.unipathway_assessment_released_results = [{ attempt_id: 'released', brief_id: 'brief', student_id: 'learner', tenant_id: 'centre', final_score: 72, released_at: '2026-11-06T09:00:00Z' }];
-    tables.unipathway_assessment_grade_amendments = [{ attempt_id: 'released', student_id: 'learner', tenant_id: 'centre', corrected_final_score: 78 }];
+    tables.unipathway_assessment_grade_amendments = [{ attempt_id: 'released', brief_id: 'brief', student_id: 'learner', tenant_id: 'centre', corrected_final_score: 78 }];
     tables.unipathway_assessment_briefs = [
       { id: 'brief', module_id: 'module', tenant_id: 'centre', title: 'Statistical investigation' },
       { id: 'private-brief', module_id: 'module', tenant_id: 'centre', title: 'Unreleased private assessment' },
@@ -222,6 +222,47 @@ describe('released grade context', () => {
     expect(await screen.findByText('78/100')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'View approved feedback for this coursework' })).toHaveAttribute('href', '/student/grades');
     expect(screen.queryByText('Statistical investigation')).not.toBeInTheDocument();
+  });
+
+  it('shows an explicit unknown average, not NaN, for invalid or cross-centre released evidence', async () => {
+    tables.unipathway_assessment_released_results = [
+      { ...tables.unipathway_assessment_released_results[0], final_score: Number.NaN },
+    ];
+    dashboard();
+    expect(await screen.findByText('Secure approved grades are unavailable.')).toBeInTheDocument();
+    expect(screen.queryByText('NaN%')).not.toBeInTheDocument();
+    expect(screen.queryByText('78/100')).not.toBeInTheDocument();
+    expect(screen.getByText('Approved Average').parentElement).toHaveTextContent('—');
+  });
+
+  it('rejects a mismatched appeal correction rather than showing another assessment score', async () => {
+    tables.unipathway_assessment_grade_amendments = [
+      { ...tables.unipathway_assessment_grade_amendments[0], brief_id: 'different-brief' },
+    ];
+    dashboard();
+    expect(await screen.findByText('Secure approved grades are unavailable.')).toBeInTheDocument();
+    expect(screen.queryByText('78/100')).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', {name: 'Statistical investigation'})).toBeNull();
+  });
+
+  it('shows a legitimate zero-point independent appeal correction and its status', async () => {
+    tables.unipathway_assessment_grade_amendments = [
+      { ...tables.unipathway_assessment_grade_amendments[0], corrected_final_score: 0 },
+    ];
+    dashboard();
+    expect(await screen.findByText('0/100')).toBeInTheDocument();
+    expect(screen.getByText('0%')).toBeInTheDocument();
+    expect(screen.getByText(/independently amended after appeal/)).toBeInTheDocument();
+    expect(screen.getByRole('link', {name:'View approved feedback for Statistical investigation'}))
+      .toHaveAttribute('href','/student/grades?module=module');
+  });
+
+  it('keeps the compact verified summary readable at zoomed mobile text sizes', async () => {
+    dashboard();
+    await screen.findByText('78/100');
+    const overview=screen.getByRole('term',{name:'Approved Average'}).closest('dl');
+    expect(overview?.className).toContain('auto-fit');
+    expect(overview?.className).toContain('minmax(min(100%,8rem),1fr)');
   });
 
   it('does not show partially verified grades when the assessment metadata request fails', async () => {
