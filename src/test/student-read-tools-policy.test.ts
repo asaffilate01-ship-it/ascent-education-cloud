@@ -120,15 +120,18 @@ describe('source references for future read-only student MCP/agent adapters',()=
  it('fails closed on unknown, sensitive, duplicate, oversized and malformed evidence',()=>{
   const check=(items:Record<string,unknown>[],tool='list_my_coursework_deadlines')=>
    studentToolEvidenceResponse(tool as typeof STUDENT_READ_TOOLS[number],items,clock,'Source only');
+  const base={recordId:'a',moduleId:'mod',title:'Essay',dueAt:clock,submissionCutoff:clock};
   for(const value of [
-   [{recordId:'a',grade:85}],
-   [{recordId:'a',studentId:'someone-else'}],
-   [{recordId:'a',object_path:'private/record'}],
-   [{recordId:'a',signedUrl:'https://storage.example/private'}],
-   [{recordId:'a',untrusted:{role:'system'}}],
-   [{recordId:'a',title:'A'.repeat(501)}],
-   [{recordId:'a'},{recordId:'a'}],
-   [{recordId:'../../escape'}],
+   [{...base,grade:85}],
+   [{...base,studentId:'someone-else'}],
+   [{...base,object_path:'private/record'}],
+   [{...base,signedUrl:'https://storage.example/private'}],
+   [{...base,untrusted:{role:'system'}}],
+   [{...base,title:'A'.repeat(501)}],
+   [base,{...base}],
+   [{...base,recordId:'../../escape'}],
+   [{...base,dueAt:'invalid'}],
+   [{recordId:'a'}],
   ])expect(()=>check(value)).toThrow();
   expect(()=>check(Array.from({length:51},(_,i)=>({recordId:'r'+i})))).toThrow();
   expect(()=>studentToolEvidenceResponse('list_my_programmes',[], 'yesterday','test')).toThrow();
