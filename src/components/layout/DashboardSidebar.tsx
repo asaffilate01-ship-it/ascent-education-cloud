@@ -595,7 +595,7 @@ export default function DashboardSidebar() {
           <details key={`${user.role}-${si}-${navSearch}`} open={collapsed || si === 0 || !!navSearch || section.items.some(i => i.path === location.pathname)} className={si > 0 ? 'mt-5' : ''}>
             {(
 
-              <summary className="flex min-h-11 cursor-pointer items-center rounded-lg px-3 text-xs font-semibold text-sidebar-foreground/70 hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring">
+              <summary className="min-h-11 cursor-pointer rounded-lg px-3 py-3 text-xs font-semibold text-sidebar-foreground/70 hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring">
                 {section.title || 'Navigation'}
               </summary>
             )}
