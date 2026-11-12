@@ -42,7 +42,7 @@ it('loads corrections for the displayed released attempts rather than an unrelat
   const chain:Record<string,unknown>={};
   for(const key of ['select','eq','order','limit','gte','range'])chain[key]=()=>chain;
   chain.in=(...args:unknown[])=>{filter(table,...args);return chain;};
-  chain.then=(resolve:(v:unknown)=>unknown)=>Promise.resolve(resolve({data:table==='unipathway_assessment_released_results'?[{attempt_id:'latest',brief_id:'brief',final_score:72,released_at:'2026-10-24'}]:table==='unipathway_assessment_grade_amendments'?[{attempt_id:'latest',corrected_final_score:78}]:[],error:null}));
+  chain.then=(resolve:(v:unknown)=>unknown)=>Promise.resolve(resolve({data:table==='unipathway_assessment_released_results'?[{attempt_id:'latest',brief_id:'brief',tenant_id:'centre',student_id:'learner',final_score:72,released_at:'2026-10-24'}]:table==='unipathway_assessment_grade_amendments'?[{attempt_id:'latest',brief_id:'brief',tenant_id:'centre',student_id:'learner',corrected_final_score:78}]:[],error:null}));
   return chain;
  });
  render(<MemoryRouter><StudentDashboard/></MemoryRouter>);

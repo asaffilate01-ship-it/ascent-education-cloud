@@ -12,6 +12,7 @@ import STEMCoachLearningAccess from '@/components/student/STEMCoachLearningAcces
 import ContinueLearning from '@/components/student/ContinueLearning';
 import { rowsByIds } from '@/lib/pagedRows';
 import { formatPakistanAcademicDate } from '@/lib/assessment/courseworkQueue';
+import { verifiedReleasedOverview, type ReleasedOverview } from '@/lib/assessment/releasedOverview';
 
 export default function StudentDashboard() {
   const {user} = useAuth();
@@ -26,37 +27,33 @@ function StudentDashboardContent() {
   const programmesQuery = useSupabaseQuery('programmes', {enabled: verified && programmeIds.length > 0, filters: [...scope, {column: 'id', operator: 'in', value: programmeIds}]});
   const modulesQuery = useSupabaseQuery('modules', {enabled: verified && programmeIds.length > 0, filters: [...scope, {column: 'programme_id', operator: 'in', value: programmeIds}]});
   const moduleIds = modulesQuery.data.map(row => row.id);
-  type Approved={attempt_id:string;brief_id:string;final_score:number;released_at:string};
-  type Amendment={attempt_id:string;corrected_final_score:number};
-  type ReleasedBrief={id:string;module_id:string;title:string};
-  const [approved,setApproved]=useState<Approved[]>([]);
-  const [corrections,setCorrections]=useState<Amendment[]>([]);
-  const [releasedBriefs,setReleasedBriefs]=useState<ReleasedBrief[]>([]);
+  type ReleasedBrief={id:string;tenant_id:string;module_id:string;title:string};
+  const [gradeSummary,setGradeSummary]=useState<ReleasedOverview>({average:null,results:[],total:0});
   const [gradeRefresh,setGradeRefresh]=useState(0);
   const [gradeError,setGradeError]=useState('');
   const [gradeLoading,setGradeLoading]=useState(true);
   useEffect(()=>{
-   if(!verified){setGradeLoading(false);setApproved([]);setCorrections([]);setReleasedBriefs([]);setGradeError('');return;}
-   let live=true;setGradeLoading(true);setGradeError('');setApproved([]);setCorrections([]);setReleasedBriefs([]);
+   if(!verified){setGradeLoading(false);setGradeSummary({average:null,results:[],total:0});setGradeError('');return;}
+   let live=true;setGradeLoading(true);setGradeError('');setGradeSummary({average:null,results:[],total:0});
    void (async()=>{
     const a=await db.from('unipathway_assessment_released_results')
-      .select('attempt_id,brief_id,final_score,released_at')
+      .select('attempt_id,brief_id,tenant_id,student_id,final_score,released_at')
       .eq('student_id',user.id).eq('tenant_id',user.tenantId).order('released_at',{ascending:false}).limit(100);
     if(a.error||!Array.isArray(a.data))throw Error('Released results could not be verified');
     if(!live)return;
-    const ids=(a.data||[]).map((row:Approved)=>row.attempt_id);
+    const ids=(a.data||[]).map((row:{attempt_id:string})=>row.attempt_id);
     const b=ids.length?await db.from('unipathway_assessment_grade_amendments')
-      .select('attempt_id,corrected_final_score')
+      .select('attempt_id,brief_id,tenant_id,student_id,corrected_final_score')
       .eq('student_id',user.id).eq('tenant_id',user.tenantId).in('attempt_id',ids).limit(100):{data:[],error:null};
 
     if(!live)return;
     if(b.error||!Array.isArray(b.data))throw Error('Released corrections could not be verified');
-    const briefs=await rowsByIds<ReleasedBrief>((a.data as Approved[]).map(row=>row.brief_id),briefIds=>()=>
-      db.from('unipathway_assessment_briefs').select('id,module_id,title').eq('tenant_id',user.tenantId).in('id',briefIds),()=>live);
+    const briefs=await rowsByIds<ReleasedBrief>((a.data as {brief_id:string}[]).map(row=>row.brief_id),briefIds=>()=>
+      db.from('unipathway_assessment_briefs').select('id,tenant_id,module_id,title').eq('tenant_id',user.tenantId).in('id',briefIds),()=>live);
     if(!live)return;
-    setApproved(a.data as Approved[]);setCorrections(b.data as Amendment[]);setReleasedBriefs(briefs);
-    setGradeLoading(false);
-   })().catch(()=>{if(live){setApproved([]);setCorrections([]);setReleasedBriefs([]);setGradeError('Secure approved grades are unavailable.');setGradeLoading(false);}});
+    const checked=verifiedReleasedOverview(a.data,b.data,briefs,user.id,user.tenantId);
+    setGradeSummary(checked);setGradeLoading(false);
+   })().catch(()=>{if(live){setGradeSummary({average:null,results:[],total:0});setGradeError('Secure approved grades are unavailable.');setGradeLoading(false);}});
    return()=>{live=false;};
   },[verified,user?.id,user?.tenantId,gradeRefresh]);
   const {data: modules} = modulesQuery;
@@ -64,9 +61,7 @@ function StudentDashboardContent() {
   const queries = [enrolmentsQuery, programmesQuery, modulesQuery];
   const loading = queries.some(query => query.loading);
 
-  const approvedAverage = approved.length>0
-    ? Math.round(approved.reduce((sum,g)=>sum+Number(corrections.find(x=>x.attempt_id===g.attempt_id)?.corrected_final_score??g.final_score),0)/approved.length)
-    : null;
+  const approvedAverage=gradeSummary.average;
 
   if (!verified) return <DashboardLayout title="Today"><p role="alert">An active, verified Student role and assigned centre are required. No learning data is loaded.</p></DashboardLayout>;
   if (loading) return <DashboardSkeleton />;
@@ -87,7 +82,7 @@ function StudentDashboardContent() {
           <h2 id="student-progress-heading" className="text-base font-semibold">Your learning overview</h2>
           <Link to="/student/courses" className="inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4">View my courses</Link>
         </div>
-        <dl className="mt-3 grid grid-cols-3 gap-2" aria-label="Verified student learning summary">
+        <dl className="mt-3 grid min-w-0 gap-2 [grid-template-columns:repeat(auto-fit,minmax(min(100%,8rem),1fr))]" aria-label="Verified student learning summary">
           {stats.map(({label,value,icon:Icon})=>(
             <div key={label} className="min-w-0 rounded-lg border bg-secondary/30 p-2.5 sm:p-3">
               <dt className="flex items-center gap-1 text-[11px] font-medium leading-4 text-muted-foreground sm:text-sm"><Icon aria-hidden="true" className="hidden size-4 shrink-0 sm:inline"/><span className="break-words">{label}</span></dt>
@@ -116,20 +111,18 @@ function StudentDashboardContent() {
           <div className="space-y-3">
             {gradeError&&<div><p role="alert">{gradeError}</p><Button className="min-h-11" onClick={()=>setGradeRefresh(x=>x+1)}>Retry approved grades</Button></div>}
             {gradeLoading&&<p role="status" className="text-sm text-muted-foreground">Verifying independent marks…</p>}
-            {!gradeError&&!gradeLoading&&approved.slice(0,5).map(g=>{
-             const score=corrections.find(x=>x.attempt_id===g.attempt_id)?.corrected_final_score??g.final_score;
-             const brief=releasedBriefs.find(item=>item.id===g.brief_id);
-             const module=modules.find(item=>item.id===brief?.module_id);
-             const feedbackPath=brief?.module_id?`/student/grades?${new URLSearchParams({module:brief.module_id})}`:'/student/grades';
-             return <article key={g.attempt_id} className="flex flex-wrap items-start justify-between gap-3 border-b border-border/30 py-2 last:border-0">
-               <div className="min-w-0 flex-[1_1_14rem]"><h4 className="break-words text-sm font-medium">{brief?.title||'Approved coursework'}</h4>
+            {!gradeError&&!gradeLoading&&gradeSummary.results.slice(0,5).map(g=>{
+             const module=modules.find(item=>item.id===g.moduleId);
+             const feedbackPath=g.moduleId?`/student/grades?${new URLSearchParams({module:g.moduleId})}`:'/student/grades';
+             return <article key={g.attemptId} className="flex flex-wrap items-start justify-between gap-3 border-b border-border/30 py-2 last:border-0">
+               <div className="min-w-0 flex-[1_1_14rem]"><h4 className="break-words text-sm font-medium">{g.briefTitle||'Approved coursework'}</h4>
                 {module&&<p className="mt-1 break-words text-xs text-muted-foreground">{module.title}</p>}
-                <p className="mt-1 text-xs text-muted-foreground">Released {formatPakistanAcademicDate(g.released_at)}</p>
-                <Link className="inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4" to={feedbackPath}>View approved feedback<span className="sr-only"> for {brief?.title||'this coursework'}</span></Link></div>
-               <span className="ml-auto shrink-0 whitespace-nowrap text-sm font-bold text-primary">{score}/100</span>
+                <p className="mt-1 text-xs text-muted-foreground">Released {formatPakistanAcademicDate(g.releasedAt)}{g.amended?' · independently amended after appeal':''}</p>
+                <Link className="inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4" to={feedbackPath}>View approved feedback<span className="sr-only"> for {g.briefTitle||'this coursework'}</span></Link></div>
+               <span className="ml-auto shrink-0 whitespace-nowrap text-sm font-bold text-primary">{g.score}/100</span>
               </article>;
             })}
-            {!gradeError&&!gradeLoading&&approved.length===0&&<p className="py-4 text-center text-sm text-muted-foreground">No independently released grades yet</p>}
+            {!gradeError&&!gradeLoading&&gradeSummary.total===0&&<p className="py-4 text-center text-sm text-muted-foreground">No independently released grades yet</p>}
           </div>
         </div>
 
