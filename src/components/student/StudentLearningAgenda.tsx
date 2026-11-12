@@ -6,10 +6,14 @@ import {Button} from '@/components/ui/button';
 import {formatPakistanAcademicDate} from '@/lib/assessment/courseworkQueue';
 import {buildStudentCourseworkAgenda} from '@/lib/assessment/studentAgenda';
 import {chooseStudentStudyFocus} from '@/lib/assessment/studyFocus';
+import {
+ CLASS_AGENDA_QUERY_LIMIT,loadVerifiedClassAgenda,visibleVerifiedClassAgenda,
+ type VerifiedClassSession,
+} from '@/lib/learning/verifiedClassAgenda';
 type Brief = {id: string; module_id:string; title: string; due_at: string; submission_cutoff: string; max_attempts:number};
 type Attempt = {brief_id: string; attempt_no: number; status: string};
 type Released = {attempt_id:string;brief_id:string};
-type Session = {id: string; module_id: string; title: string; starts_at: string; ends_at: string};
+type Session = VerifiedClassSession;
 type Snapshot<T> = {key:string;data:T;error:boolean};
 export default function StudentLearningAgenda({tenant, student, moduleIds}: {tenant: string; student: string; moduleIds: string[]}) {
   const [refresh, setRefresh] = useState(0);
@@ -33,10 +37,18 @@ export default function StudentLearningAgenda({tenant, student, moduleIds}: {ten
       // A centre-wide scheduled session is not by itself a learner invitation.
       // Only show RLS-authorised sessions in the learner's active enrolled modules.
       if(!moduleIds.length){if(active)setClasses({key,data:[],error:false});return;}
-      const r=await db.from('live_class_sessions').select('id,module_id,title,starts_at,ends_at').eq('tenant_id',tenant).in('module_id',moduleIds).in('status',['scheduled','live'])
-        .gte('ends_at',new Date().toISOString()).order('starts_at').order('id').limit(5);
-      if(r.error||!Array.isArray(r.data))throw Error('Unavailable');
-      if(active)setClasses({key,data:r.data,error:false});
+      const asOf=Date.now();
+      const sessions=await loadVerifiedClassAgenda(moduleIds,tenant,asOf,async ids=>{
+        const r=await db.from('live_class_sessions')
+          .select('id,tenant_id,module_id,status,title,starts_at,ends_at')
+          .eq('tenant_id',tenant).in('module_id',[...ids]).in('status',['scheduled','live'])
+          .gte('ends_at',new Date(asOf).toISOString())
+          .order('starts_at',{ascending:true}).order('id',{ascending:true})
+          .limit(CLASS_AGENDA_QUERY_LIMIT);
+        if(r.error||!Array.isArray(r.data))throw Error('Classroom service unavailable');
+        return r.data;
+      },()=>active);
+      if(active)setClasses({key,data:sessions,error:false});
     }catch{if(active)setClasses({key,data:[],error:true});}})();
     return () => {active = false;};
   // key contains the complete request scope, with module order normalised.
@@ -46,10 +58,11 @@ export default function StudentLearningAgenda({tenant, student, moduleIds}: {ten
   // The overview uses exactly the same conservative cutoff, attempt-limit and
   // independent-result rules as the full student coursework workspace.
   const agenda=buildStudentCourseworkAgenda(current?.data.briefs||[],current?.data.attempts||[],current?.data.released||[],now);
+  const visibleClasses=invited&&!invited.error?visibleVerifiedClassAgenda(invited.data,now):[];
   // Guidance is calculated only after BOTH authorised reads have completed.
   // A stale, partial or denied response cannot become reassuring advice.
   const focus=current&&!current.error&&invited&&!invited.error
-    ?chooseStudentStudyFocus(agenda,invited.data,moduleIds,now):null;
+    ?chooseStudentStudyFocus(agenda,visibleClasses,moduleIds,now):null;
   const task=(brief:Brief,actionable:boolean)=><article className="rounded-lg border p-3 space-y-1" key={brief.id}>
     <p className="break-words font-medium">{brief.title}</p>
     <p className="text-sm text-muted-foreground">Due {formatPakistanAcademicDate(brief.due_at)} · Final cutoff {formatPakistanAcademicDate(brief.submission_cutoff)}</p>
@@ -68,8 +81,9 @@ export default function StudentLearningAgenda({tenant, student, moduleIds}: {ten
     <section className="space-y-3" aria-label="Enrolled module class agenda"><h4 className="text-sm font-semibold">Upcoming sessions in your enrolled modules · Pakistan time</h4>
       <p className="text-xs text-muted-foreground">A separate approved class invitation and classroom permissions are still required to join. These listings do not create Teams meetings.</p>
       {!invited?<p role="status">Checking enrolled module sessions…</p>:invited.error?<p role="alert">Your enrolled module sessions could not be verified. Refresh to retry.</p>:<>
-        {!invited.data.length&&<p className="text-sm text-muted-foreground">No upcoming sessions are visible for your active enrolled modules.</p>}
-        {invited.data.map(session=><article className="rounded-lg border p-3" key={session.id}><p className="font-medium">{session.title}</p><p className="text-sm text-muted-foreground">{new Date(session.starts_at).toLocaleString('en-PK',{timeZone:'Asia/Karachi'})}</p><Link className="inline-flex min-h-11 items-center text-sm font-semibold underline" to={'/student/classroom?'+new URLSearchParams({module:session.module_id,session:session.id})}>Check classroom invitation and access →</Link></article>)}
+        {!visibleClasses.length&&<p className="text-sm text-muted-foreground">No upcoming sessions are visible for your active enrolled modules.</p>}
+        {visibleClasses.map(session=><article className="rounded-lg border p-3" key={session.id}><p className="font-medium">{session.title}</p><p className="text-sm text-muted-foreground">{new Date(session.starts_at).toLocaleString('en-PK',{timeZone:'Asia/Karachi'})}</p><Link className="inline-flex min-h-11 items-center text-sm font-semibold underline" to={'/student/classroom?'+new URLSearchParams({module:session.module_id,session:session.id})}>Check classroom invitation and access →</Link></article>)}
+        {visibleClasses.length===5&&invited.data.length>5&&<p className="text-sm text-muted-foreground">Showing the next five sessions. Open the classroom to check all permitted sessions.</p>}
       </>}
     </section>
 
