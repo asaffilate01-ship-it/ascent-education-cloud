@@ -99,6 +99,7 @@ describe('source references for future read-only student MCP/agent adapters',()=
   const result=studentToolEvidenceResponse('list_my_coursework_deadlines',[
    {recordId:'brief-1',moduleId:'module-1',title:'Essay',dueAt:'2026-11-13T09:00:00Z',submissionCutoff:'2026-11-14T09:00:00Z'},
   ],clock,'Published coursework only.');
+  expect(result.schemaVersion).toBe('2026-11-12-v1');
   expect(result.complete).toBe(true);
   expect(result.trust).toBe('untrusted-record-metadata');
   expect(result.sourceRefs).toEqual([{recordType:'unipathway_assessment_briefs',recordId:'brief-1'}]);
