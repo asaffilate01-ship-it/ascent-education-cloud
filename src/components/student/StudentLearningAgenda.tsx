@@ -5,6 +5,7 @@ import {rowsByIds} from '@/lib/pagedRows';
 import {Button} from '@/components/ui/button';
 import {formatPakistanAcademicDate} from '@/lib/assessment/courseworkQueue';
 import {buildStudentCourseworkAgenda} from '@/lib/assessment/studentAgenda';
+import {chooseStudentStudyFocus} from '@/lib/assessment/studyFocus';
 type Brief = {id: string; module_id:string; title: string; due_at: string; submission_cutoff: string; max_attempts:number};
 type Attempt = {brief_id: string; attempt_no: number; status: string};
 type Released = {attempt_id:string;brief_id:string};
@@ -45,6 +46,10 @@ export default function StudentLearningAgenda({tenant, student, moduleIds}: {ten
   // The overview uses exactly the same conservative cutoff, attempt-limit and
   // independent-result rules as the full student coursework workspace.
   const agenda=buildStudentCourseworkAgenda(current?.data.briefs||[],current?.data.attempts||[],current?.data.released||[],now);
+  // Guidance is calculated only after BOTH authorised reads have completed.
+  // A stale, partial or denied response cannot become reassuring advice.
+  const focus=current&&!current.error&&invited&&!invited.error
+    ?chooseStudentStudyFocus(agenda,invited.data,moduleIds,now):null;
   const task=(brief:Brief,actionable:boolean)=><article className="rounded-lg border p-3 space-y-1" key={brief.id}>
     <p className="break-words font-medium">{brief.title}</p>
     <p className="text-sm text-muted-foreground">Due {formatPakistanAcademicDate(brief.due_at)} · Final cutoff {formatPakistanAcademicDate(brief.submission_cutoff)}</p>
@@ -53,6 +58,13 @@ export default function StudentLearningAgenda({tenant, student, moduleIds}: {ten
   </article>;
   return <section className="surface-card p-5 mb-6 space-y-4" aria-label="Current learning agenda">
     <h3 className="text-lg font-bold">Your next steps</h3>
+    {focus&&<section aria-label="Suggested study focus" className="rounded-xl border border-primary/20 bg-primary/5 p-4 sm:p-5 space-y-2">
+      <p className="text-xs font-semibold text-muted-foreground">Suggested focus · {focus.evidence}</p>
+      <h4 className="text-base font-semibold break-words">{focus.title}</h4>
+      <p className="text-sm leading-relaxed">{focus.detail}</p>
+      <p className="text-xs text-muted-foreground">Based only on your authorised academic records. Check the linked workspace for current permissions; this is not a grade, class invitation or award decision.</p>
+      <Link to={focus.href} className="inline-flex min-h-11 items-center rounded-lg border bg-card px-3 py-2 text-sm font-semibold underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{focus.actionLabel}</Link>
+    </section>}
     <section className="space-y-3" aria-label="Enrolled module class agenda"><h4 className="text-sm font-semibold">Upcoming sessions in your enrolled modules · Pakistan time</h4>
       <p className="text-xs text-muted-foreground">A separate approved class invitation and classroom permissions are still required to join. These listings do not create Teams meetings.</p>
       {!invited?<p role="status">Checking enrolled module sessions…</p>:invited.error?<p role="alert">Your enrolled module sessions could not be verified. Refresh to retry.</p>:<>
