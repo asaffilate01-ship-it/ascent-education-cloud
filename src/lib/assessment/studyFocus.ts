@@ -1,4 +1,5 @@
 import type {AgendaBrief} from '@/lib/assessment/studentAgenda';
+import {prioritiseActionableCoursework} from '@/lib/assessment/deadlineGuidance';
 
 type Agenda<T extends AgendaBrief>={action:readonly T[];review:readonly T[];released:readonly T[];closed:readonly T[]};
 type ClassListing={id:string;module_id:string;title:string;starts_at:string;ends_at:string};
@@ -26,8 +27,11 @@ export function chooseStudentStudyFocus<T extends AgendaBrief>(
  if(!Number.isFinite(now))return null;
  const allowed=new Set(allowedModuleIds.filter(Boolean));
  if(!allowed.size)return null;
- const next=agenda.action.find(brief=>allowed.has(brief.module_id)&&
-  !!brief.id&&validTime(brief.submission_cutoff)!==null&&validTime(brief.submission_cutoff)!>=now);
+ const next=prioritiseActionableCoursework(agenda.action.filter(brief=>{
+  const due=validTime(brief.due_at),cutoff=validTime(brief.submission_cutoff);
+  return allowed.has(brief.module_id)&&!!brief.id&&due!==null&&cutoff!==null&&
+   due<=cutoff&&cutoff>=now;
+ }),now)[0];
  const upcoming=classes.filter(session=>allowed.has(session.module_id)&&!!session.id&&
    !!session.title.trim()&&validTime(session.starts_at)!==null&&
    validTime(session.ends_at)!==null&&validTime(session.ends_at)!>=now)
