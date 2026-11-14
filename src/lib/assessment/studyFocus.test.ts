@@ -19,7 +19,7 @@ describe('study focus uses only verified learner records',()=>{
   expect(item?.href).toBe('/student/classroom?module=m1&session=physics');
  });
  it('prioritises a currently closing brief over a class later',()=>{
-  const agenda={...empty(),action:[brief('urgent','2026-11-12T09:15:00Z')]};
+  const agenda={...empty(),action:[{...brief('urgent','2026-11-12T09:15:00Z'),due_at:'2026-11-12T08:30:00Z'}]};
   expect(chooseStudentStudyFocus(agenda,[session('later')],['m1'],now)).toMatchObject({
    kind:'coursework',href:'/student/assignments?module=m1',
   });
