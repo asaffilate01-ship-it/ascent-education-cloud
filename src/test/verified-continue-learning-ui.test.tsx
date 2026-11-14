@@ -8,6 +8,7 @@ const state=vi.hoisted(()=>({
  tables:{} as Record<string,Record<string,unknown>[]>,
  calls:[] as Array<[string,string,string,unknown]>,
  ignoreOwnerFilter:false,
+ ignoreLessonCentreFilter:false,
  failedTable:'',
 }));
 
@@ -18,7 +19,8 @@ vi.mock('@/lib/db',()=>({db:{from:(table:string)=>{
   select:()=>q,
   eq:(column:string,value:unknown)=>{
    state.calls.push([table,'eq',column,value]);
-   if(!(table==='unipathway_lesson_progress'&&column==='student_id'&&state.ignoreOwnerFilter))
+   if(!((table==='unipathway_lesson_progress'&&column==='student_id'&&state.ignoreOwnerFilter)||
+     (table==='unipathway_lessons'&&column==='tenant_id'&&state.ignoreLessonCentreFilter)))
     data=data.filter(row=>row[column]===value);
    return q;
   },
@@ -49,7 +51,7 @@ const mount=()=>render(<MemoryRouter><ContinueLearning modules={[module]}/></Mem
 beforeEach(()=>{
  state.user={id:'student-one',tenantId:'centre-a',role:'student',roles:['student'],name:'Learner'};
  state.tables={unipathway_lessons:[lesson],unipathway_lesson_progress:[progress]};
- state.calls=[];state.ignoreOwnerFilter=false;state.failedTable='';
+ state.calls=[];state.ignoreOwnerFilter=false;state.ignoreLessonCentreFilter=false;state.failedTable='';
 });
 afterEach(cleanup);
 
@@ -74,6 +76,7 @@ it('does not show an incorrect resume link when a returned row belongs to anothe
 
 it('does not read progress from a lesson that fails centre verification',async()=>{
  state.tables.unipathway_lessons=[{...lesson,tenant_id:'other-centre'}];
+ state.ignoreLessonCentreFilter=true; // Simulate an inconsistent backend response.
  mount();
  await screen.findByRole('alert');
  expect(state.calls.some(call=>call[0]==='unipathway_lesson_progress')).toBe(false);
