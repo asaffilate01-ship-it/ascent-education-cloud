@@ -6,6 +6,7 @@ import {Button} from '@/components/ui/button';
 import {formatPakistanAcademicDate} from '@/lib/assessment/courseworkQueue';
 import {buildStudentCourseworkAgenda} from '@/lib/assessment/studentAgenda';
 import {chooseStudentStudyFocus} from '@/lib/assessment/studyFocus';
+import {courseworkDeadlineGuidance,prioritiseActionableCoursework} from '@/lib/assessment/deadlineGuidance';
 import {
  CLASS_AGENDA_QUERY_LIMIT,loadVerifiedClassAgenda,visibleVerifiedClassAgenda,
  type VerifiedClassSession,
@@ -58,17 +59,24 @@ export default function StudentLearningAgenda({tenant, student, moduleIds}: {ten
   // The overview uses exactly the same conservative cutoff, attempt-limit and
   // independent-result rules as the full student coursework workspace.
   const agenda=buildStudentCourseworkAgenda(current?.data.briefs||[],current?.data.attempts||[],current?.data.released||[],now);
+  const orderedAction=prioritiseActionableCoursework(agenda.action,now);
   const visibleClasses=invited&&!invited.error?visibleVerifiedClassAgenda(invited.data,now):[];
   // Guidance is calculated only after BOTH authorised reads have completed.
   // A stale, partial or denied response cannot become reassuring advice.
   const focus=current&&!current.error&&invited&&!invited.error
     ?chooseStudentStudyFocus(agenda,visibleClasses,moduleIds,now):null;
-  const task=(brief:Brief,actionable:boolean)=><article className="rounded-lg border p-3 space-y-1" key={brief.id}>
+  const task=(brief:Brief,actionable:boolean)=>{
+    const timing=courseworkDeadlineGuidance(brief,now);
+    return <article className="rounded-lg border p-3 space-y-1" key={brief.id}>
     <p className="break-words font-medium">{brief.title}</p>
     <p className="text-sm text-muted-foreground">Due {formatPakistanAcademicDate(brief.due_at)} · Final cutoff {formatPakistanAcademicDate(brief.submission_cutoff)}</p>
-    <p className="text-xs text-muted-foreground">{actionable?(Date.parse(brief.due_at)<now?'Due date passed; verify the final submission rules.':'Submission may be available; the coursework page will verify current permission.'):'You cannot currently submit this task. Review the cutoff, remaining attempts and centre guidance.'}</p>
+    {actionable&&<p className={`text-sm leading-relaxed ${timing.priority==='final-cutoff'||timing.priority==='verify'?'text-destructive':'text-muted-foreground'}`}>
+      <span className="font-semibold">{timing.label}.</span> {timing.detail}
+    </p>}
+    <p className="text-xs text-muted-foreground">{actionable?'A displayed deadline does not confirm permission to submit. The coursework page rechecks current eligibility.':'You cannot currently submit this task. Review the cutoff, remaining attempts and centre guidance.'}</p>
     <Link className="inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4" to={'/student/assignments?'+new URLSearchParams({module:brief.module_id})}>Review module coursework</Link>
   </article>;
+  };
   return <section className="surface-card p-5 mb-6 space-y-4" aria-label="Current learning agenda">
     <h3 className="text-lg font-bold">Your next steps</h3>
     {focus&&<section aria-label="Suggested study focus" className="rounded-xl border border-primary/20 bg-primary/5 p-4 sm:p-5 space-y-2">
@@ -91,8 +99,8 @@ export default function StudentLearningAgenda({tenant, student, moduleIds}: {ten
       {!current?<p role="status">Loading your coursework…</p>:current.error?<p role="alert">Your coursework could not be verified. Refresh to retry.</p>:<>
         <p className="text-sm font-semibold">{agenda.action.length} needing action · {agenda.review.length} awaiting review · {agenda.released.length} with released feedback</p>
         {!agenda.action.length&&<p className="text-sm text-muted-foreground">No coursework currently meets the submission-window and attempt rules. Submitted work may still await independent marking or IQA approval.</p>}
-        {agenda.action.slice(0,5).map(brief=>task(brief,true))}
-        {agenda.action.length>5&&<p className="text-sm">Showing the next five. Open coursework to review all {agenda.action.length} actionable tasks.</p>}
+        {orderedAction.slice(0,5).map(brief=>task(brief,true))}
+        {agenda.action.length>5&&<p className="text-sm">Showing the five most time-sensitive tasks. Open coursework to review all {agenda.action.length} actionable tasks.</p>}
         {agenda.closed.length>0&&<details className="space-y-3"><summary className="min-h-11 cursor-pointer py-2 text-sm font-semibold">{agenda.closed.length} {agenda.closed.length===1?'task cannot currently be submitted':'tasks cannot currently be submitted'}</summary>{agenda.closed.slice(0,5).map(brief=>task(brief,false))}{agenda.closed.length>5&&<p className="text-sm">Open coursework to review all {agenda.closed.length} unavailable tasks.</p>}</details>}
         {agenda.released.length>0&&<Link className="inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4" to="/student/grades">Read independently released feedback</Link>}
       </>}
