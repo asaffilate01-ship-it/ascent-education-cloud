@@ -33,4 +33,36 @@ it('never produces a study suggestion while one authorised source fails',async()
  expect(await screen.findByText('Published coursework')).toBeInTheDocument();
  expect(screen.queryByRole('region',{name:'Suggested study focus'})).toBeNull();
 });
- 
+
+it('shows and prioritises the recorded final cutoff over routine coursework without granting submission',async()=>{
+ const asIso=(milliseconds:number)=>new Date(Date.now()+milliseconds).toISOString();
+ const hour=60*60*1000,day=24*hour;
+ tables.live_class_sessions=[];
+ tables.unipathway_assessment_attempts=[];
+ tables.unipathway_assessment_briefs=[
+  {id:'later',module_id:'module',title:'Routine essay',due_at:asIso(3*day),submission_cutoff:asIso(4*day),max_attempts:2},
+  {id:'due',module_id:'module',title:'Due tomorrow',due_at:asIso(12*hour),submission_cutoff:asIso(2*day),max_attempts:2},
+  {id:'urgent',module_id:'module',title:'Urgent coursework',due_at:asIso(-hour),submission_cutoff:asIso(hour),max_attempts:2},
+ ];
+ mount();
+ await screen.findByText('Urgent coursework');
+ const section=screen.getByRole('region',{name:'Coursework agenda'});
+ const titles=[...section.querySelectorAll('article')].map(article=>article.querySelector('p')?.textContent);
+ expect(titles).toEqual(['Urgent coursework','Due tomorrow','Routine essay']);
+ expect(section).toHaveTextContent('Final cutoff within 2 hours');
+ expect(section).toHaveTextContent('Due within 24 hours');
+ expect(section).toHaveTextContent('A displayed deadline does not confirm permission to submit.');
+ const focus=await screen.findByRole('region',{name:'Suggested study focus'});
+ expect(focus).toHaveTextContent('Urgent coursework');
+});
+it('shows uncertain assessment dates without fabricating a study-focus recommendation',async()=>{
+ tables.live_class_sessions=[];tables.unipathway_assessment_attempts=[];
+ tables.unipathway_assessment_briefs=[{
+  id:'bad-due',module_id:'module',title:'Brief with unverified due date',
+  due_at:'invalid',submission_cutoff:new Date(Date.now()+5*86400000).toISOString(),max_attempts:2,
+ }];
+ mount();
+ await screen.findByText('Brief with unverified due date');
+ expect(screen.getByText(/Check assessment dates/)).toBeInTheDocument();
+ expect(screen.queryByRole('region',{name:'Suggested study focus'})).toBeNull();
+});
