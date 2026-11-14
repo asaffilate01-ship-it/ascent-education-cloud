@@ -127,9 +127,9 @@ test('student resume uses the most recent current lesson and recovers after a fa
     programmes: [{id: 'programme-a', tenant_id: tenant, title: 'Computing', awarding_body: 'OTHM', level: '5'}],
     modules: [{id: 'module-a', tenant_id: tenant, programme_id: 'programme-a', title: 'Programming and problem solving', code: 'PRG01', status: 'active'}],
     unipathway_lessons: [
-      {id: 'lesson-one', tenant_id: tenant, module_id: 'module-a', title: 'First published lesson', position: 0, status: 'published', revision: 1},
-      {id: 'lesson-resume', tenant_id: tenant, module_id: 'module-a', title: 'Building reliable Python functions', position: 1, status: 'published', revision: 2},
-      {id: 'lesson-withdrawn', tenant_id: tenant, module_id: 'module-a', title: 'Withdrawn lesson', position: 2, status: 'draft', revision: 1},
+      {id: 'lesson-one', tenant_id: tenant, module_id: 'module-a', title: 'First published lesson', position: 1, status: 'published', revision: 1},
+      {id: 'lesson-resume', tenant_id: tenant, module_id: 'module-a', title: 'Building reliable Python functions', position: 2, status: 'published', revision: 2},
+      {id: 'lesson-withdrawn', tenant_id: tenant, module_id: 'module-a', title: 'Withdrawn lesson', position: 3, status: 'draft', revision: 1},
     ],
     unipathway_lesson_progress: [
       {lesson_id: 'lesson-one', student_id: user.id, revision: 1, completed: true, position_seconds: 300, updated_at: '2026-11-05T10:00:00Z'},

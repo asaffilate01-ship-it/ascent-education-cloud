@@ -7,6 +7,7 @@ import { db } from '@/lib/db';
 import { rowsByIds } from '@/lib/pagedRows';
 import type { LessonProgress } from '@/lib/structuredLessons';
 import { chooseContinueLesson, continueLessonPath, currentLessonCompletion, type ContinueLesson, type ContinueReason } from '@/lib/learning/continueLearning';
+import { verifyContinueLearningSnapshot, type OwnedLearningProgress } from '@/lib/learning/verifiedContinueLearning';
 
 type Module = { id: string; title: string; code?: string | null };
 type Snapshot = { key: string; lessons: ContinueLesson[]; progress: LessonProgress[]; error: boolean };
@@ -34,12 +35,16 @@ export default function ContinueLearning({ modules }: { modules: Module[] }) {
         const rows = await rowsByIds<ContinueLesson>(moduleIds, ids => () => db.from('unipathway_lessons')
           .select('id,module_id,tenant_id,title,position,status,revision')
           .eq('tenant_id', user.tenantId).eq('status', 'published').in('module_id', ids), () => active);
-        const lessons = rows.filter(lesson => lesson.tenant_id === user.tenantId &&
-          lesson.status === 'published' && moduleIds.includes(lesson.module_id));
-        const progress = await rowsByIds<LessonProgress>(lessons.map(lesson => lesson.id), ids => () =>
-          db.from('unipathway_lesson_progress').select('lesson_id,revision,position_seconds,completed,updated_at')
+        const scope = {studentId:user.id,tenantId:user.tenantId,moduleIds};
+        // Verify lesson ownership and published revision BEFORE reading progress.
+        const authorised = verifyContinueLearningSnapshot(rows, [], scope);
+        const progressRows = await rowsByIds<OwnedLearningProgress>(authorised.lessons.map(lesson => lesson.id), ids => () =>
+          db.from('unipathway_lesson_progress').select('student_id,lesson_id,revision,position_seconds,completed,updated_at')
             .eq('student_id', user.id).in('lesson_id', ids).order('revision'), () => active, 'lesson_id');
-        if (active) setSnapshot({ key, lessons, progress, error: false });
+        // A foreign, duplicate, malformed or future-revision progress row
+        // invalidates this card rather than producing an incorrect resume link.
+        const checked = verifyContinueLearningSnapshot(authorised.lessons, progressRows, scope);
+        if (active) setSnapshot({ key, ...checked, error: false });
       } catch {
         if (active) setSnapshot({ key, lessons: [], progress: [], error: true });
       }
@@ -71,6 +76,7 @@ export default function ContinueLearning({ modules }: { modules: Module[] }) {
           <h3 className="mt-2 break-words text-xl font-semibold">{target.lesson.title}</h3>
           <p className="mt-1 break-words text-sm text-muted-foreground">{module?.title}{module?.code ? ` · ${module.code}` : ''}</p>
           <p className="mt-3 text-sm text-muted-foreground">{detail.description}</p>
+          <p className="mt-2 text-xs text-muted-foreground">Verified against your active enrolled modules and this account's saved learning progress. The lesson checks access again when opened.</p>
           {target.saved && <p className="mt-2 text-xs text-muted-foreground">Last synced <time dateTime={target.saved.updated_at}>{new Date(target.saved.updated_at).toLocaleString('en-PK', { timeZone: 'Asia/Karachi', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}</time> · Pakistan time</p>}
         </div>
         <div className="flex min-w-0 flex-col items-start gap-2 md:items-end"><Button className="min-h-11" asChild><Link to={continueLessonPath(target.lesson)}>{detail.action}<ArrowRight className="size-4" aria-hidden="true" /></Link></Button>
