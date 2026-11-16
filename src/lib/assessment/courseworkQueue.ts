@@ -2,6 +2,8 @@
  * Student coursework queue: guidance only. Authorised RPCs remain the source
  * of truth for cutoffs, attempt limits and independent IQA release.
  */
+import {parseAcademicInstant} from '@/lib/academicTime';
+
 export type CourseworkStage = 'action' | 'review' | 'released' | 'closed';
 export type CourseworkView = 'all' | CourseworkStage;
 export type QueueAttempt = {status: string};
@@ -20,8 +22,8 @@ export function courseworkQueueState(
   brief: {submission_cutoff: string; max_attempts: number},
   attempts: readonly QueueAttempt[], hasReleasedFeedback: boolean, now = Date.now(),
 ): {stage: CourseworkStage; maySubmit: boolean} {
-  const cutoff = Date.parse(brief.submission_cutoff);
-  const available = Number.isFinite(cutoff) && Number.isFinite(now) && now <= cutoff;
+  const cutoff = parseAcademicInstant(brief.submission_cutoff);
+  const available = cutoff !== null && Number.isFinite(now) && now <= cutoff;
   const underLimit = Number.isSafeInteger(brief.max_attempts)
     && brief.max_attempts > 0 && attempts.length < brief.max_attempts;
   // Attempts must be ordered by attempt_no, newest first.
@@ -39,7 +41,6 @@ const pkFormatter = new Intl.DateTimeFormat('en-GB', {
 });
 /** Explicit centre-local time prevents a UK device changing the displayed deadline. */
 export function formatPakistanAcademicDate(value: string | null | undefined): string {
-  if (!value) return 'Date unavailable';
-  const date = new Date(value);
-  return Number.isFinite(date.getTime()) ? pkFormatter.format(date) + ' PKT' : 'Date unavailable';
+  const instant = parseAcademicInstant(value);
+  return instant === null ? 'Date unavailable' : pkFormatter.format(new Date(instant)) + ' PKT';
 }
