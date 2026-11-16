@@ -1,5 +1,6 @@
 import type {AgendaBrief} from '@/lib/assessment/studentAgenda';
 import {prioritiseActionableCoursework} from '@/lib/assessment/deadlineGuidance';
+import {parseAcademicInstant} from '@/lib/academicTime';
 
 type Agenda<T extends AgendaBrief>={action:readonly T[];review:readonly T[];released:readonly T[];closed:readonly T[]};
 type ClassListing={id:string;module_id:string;title:string;starts_at:string;ends_at:string};
@@ -12,7 +13,7 @@ export type StudyFocus=Readonly<{
  href:string;
 }>;
 
-const validTime=(value:string)=>{const time=Date.parse(value);return Number.isFinite(time)?time:null;};
+const validTime=parseAcademicInstant;
 const moduleRoute=(path:string,moduleId:string,extra?:Record<string,string>)=>
   path+'?'+new URLSearchParams({module:moduleId,...extra}).toString();
 
