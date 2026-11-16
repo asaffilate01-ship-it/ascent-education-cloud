@@ -1,3 +1,5 @@
+import {parseAcademicInstant} from '@/lib/academicTime';
+
 /**
  * Read-only, clock-aware guidance for the learner's verified published briefs.
  * Dates are stored as instants and displayed elsewhere in Asia/Karachi.
@@ -14,11 +16,7 @@ export type DeadlineGuidance=Readonly<{
 
 const HOUR=60*60*1000;
 const DAY=24*HOUR;
-const millis=(value:unknown):number|null=>{
- if(typeof value!=='string'||!value.trim())return null;
- const time=Date.parse(value);
- return Number.isFinite(time)?time:null;
-};
+const millis=parseAcademicInstant;
 
 /** Guidance only. The authorised coursework route rechecks the server window. */
 export function courseworkDeadlineGuidance(brief:DeadlineBrief,now:number):DeadlineGuidance{

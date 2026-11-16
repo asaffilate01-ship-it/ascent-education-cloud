@@ -1,4 +1,5 @@
 import {courseworkQueueState} from './courseworkQueue';
+import {parseAcademicInstant} from '@/lib/academicTime';
 
 export type AgendaBrief={id:string;module_id:string;title:string;due_at:string;submission_cutoff:string;max_attempts:number};
 export type AgendaAttempt={brief_id:string;attempt_no:number;status:string};
@@ -20,7 +21,7 @@ export function buildStudentCourseworkAgenda<T extends AgendaBrief>(
   const state=courseworkQueueState(brief,byBrief.get(brief.id)||[],releasedIds.has(brief.id),now);
   result[state.stage].push(brief);
  }
- const due=(value:string)=>{const date=Date.parse(value);return Number.isFinite(date)?date:Number.POSITIVE_INFINITY;};
+ const due=(value:string)=>parseAcademicInstant(value)??Number.POSITIVE_INFINITY;
  for(const list of Object.values(result))list.sort((a,b)=>due(a.due_at)-due(b.due_at)||a.id.localeCompare(b.id));
  return result;
 }

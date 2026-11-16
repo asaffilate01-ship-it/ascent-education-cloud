@@ -1,3 +1,5 @@
+import {parseAcademicInstant} from '@/lib/academicTime';
+
 /**
  * Student dashboard class listings are a read-only hint, never an invitation.
  * Every query must use the caller's RLS-scoped Supabase client, the verified
@@ -27,11 +29,7 @@ export function classAgendaModuleChunks(moduleIds:readonly string[]):string[][] 
  return chunks;
 }
 
-function finiteDate(value:string):number|null {
- if(typeof value!=='string'||!value.trim())return null;
- const time=Date.parse(value);
- return Number.isFinite(time)?time:null;
-}
+const finiteDate=parseAcademicInstant;
 
 function verifyRows(
  raw:unknown,tenant:string,allowedModules:ReadonlySet<string>,now:number,
@@ -77,7 +75,7 @@ export async function loadVerifiedClassAgenda(
    seen.add(item.id);sessions.push(item);
   }
  }
- return sessions.sort((a,b)=>Date.parse(a.starts_at)-Date.parse(b.starts_at)||
+ return sessions.sort((a,b)=>finiteDate(a.starts_at)!-finiteDate(b.starts_at)!||
    a.id.localeCompare(b.id)).slice(0,CLASS_AGENDA_QUERY_LIMIT);
 }
 
