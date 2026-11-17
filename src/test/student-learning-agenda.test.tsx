@@ -5,7 +5,16 @@ import StudentLearningAgenda from '@/components/student/StudentLearningAgenda';
 const mocks=vi.hoisted(()=>({from:vi.fn(),filters:vi.fn()}));
 vi.mock('@/lib/db',()=>({db:{from:mocks.from}}));
 let tables:Record<string,unknown[]>;let failure:string;
-beforeEach(()=>{failure='';tables={unipathway_assessment_briefs:[{id:'b1',module_id:'module',title:'Published coursework',due_at:'2099-01-01',submission_cutoff:'2099-01-02',max_attempts:2},{id:'b2',module_id:'module',title:'Submitted work',due_at:'2099-01-01',submission_cutoff:'2099-01-02',max_attempts:2}],unipathway_assessment_attempts:[{brief_id:'b2',attempt_no:1,status:'submitted'}],live_class_sessions:[{id:'s',tenant_id:'centre',module_id:'module',status:'scheduled',title:'Invited English class',starts_at:'2099-01-01',ends_at:'2099-01-02'}]};mocks.from.mockImplementation(table=>{const q:Record<string,unknown>={};for(const method of ['select','eq','in','gte','order','range','limit'])q[method]=(...args:unknown[])=>{mocks.filters(table,method,...args);return q;};q.then=(resolve:(value:unknown)=>void)=>Promise.resolve(resolve({data:tables[table]||[],error:table===failure?{message:'denied'}:null}));return q;});});
+beforeEach(()=>{failure='';tables={unipathway_assessment_briefs:[{id:'b1',module_id:'module',title:'Published coursework',due_at:'2099-01-01',submission_cutoff:'2099-01-02',max_attempts:2},{id:'b2',module_id:'module',title:'Submitted work',due_at:'2099-01-01',submission_cutoff:'2099-01-02',max_attempts:2}],unipathway_assessment_attempts:[{brief_id:'b2',attempt_no:1,status:'submitted'}],live_class_sessions:[{id:'s',tenant_id:'centre',module_id:'module',status:'scheduled',title:'Invited English class',starts_at:'2099-01-01',ends_at:'2099-01-02'}]};mocks.from.mockImplementation(table=>{const q:Record<string,unknown>={};for(const method of ['select','eq','in','gte','order','range','limit'])q[method]=(...args:unknown[])=>{mocks.filters(table,method,...args);return q;};q.then=(resolve:(value:unknown)=>void)=>{
+ const data=(tables[table]||[]).map((value,index)=>{
+  const row=value as Record<string,unknown>;
+  if(table==='unipathway_assessment_briefs')return {tenant_id:'centre',status:'published',...row};
+  if(table==='unipathway_assessment_attempts')return {id:`attempt-${index}`,tenant_id:'centre',student_id:'learner',...row};
+  if(table==='unipathway_assessment_released_results')return {tenant_id:'centre',student_id:'learner',...row};
+  return row;
+ });
+ return Promise.resolve(resolve({data,error:table===failure?{message:'denied'}:null}));
+};return q;});});
 afterEach(()=>{cleanup();vi.clearAllMocks();});
 const mount=()=>render(<MemoryRouter><StudentLearningAgenda tenant="centre" student="learner" moduleIds={['module']}/></MemoryRouter>);
 it('shows published pending work and invited classes without legacy tasks',async()=>{mount();await screen.findByText('Published coursework');expect(screen.queryByText('Submitted work')).not.toBeInTheDocument();expect(screen.getByText(/Invited English class/)).toBeInTheDocument();expect(mocks.filters).toHaveBeenCalledWith('unipathway_assessment_briefs','eq','status','published');expect(mocks.filters).toHaveBeenCalledWith('unipathway_assessment_briefs','in','module_id',['module']);expect(mocks.filters).toHaveBeenCalledWith('unipathway_assessment_attempts','eq','student_id','learner');});
@@ -65,4 +74,43 @@ it('shows uncertain assessment dates without fabricating a study-focus recommend
  await screen.findByText('Brief with unverified due date');
  expect(screen.getByText(/Check assessment dates/)).toBeInTheDocument();
  expect(screen.queryByRole('region',{name:'Suggested study focus'})).toBeNull();
+});
+
+it('rejects a returned cross-centre brief before reading its assessment attempts',async()=>{
+ tables.unipathway_assessment_briefs=[{id:'foreign-brief',tenant_id:'another-centre',module_id:'module',title:'Foreign brief',due_at:'2099-01-01',submission_cutoff:'2099-01-02',max_attempts:2}];
+ mount();
+ expect(await screen.findByText('Your coursework could not be verified. Refresh to retry.')).toBeInTheDocument();
+ expect(screen.queryByText('Foreign brief')).not.toBeInTheDocument();
+ expect(mocks.from.mock.calls.some(call=>call[0]==='unipathway_assessment_attempts')).toBe(false);
+ expect(screen.queryByRole('region',{name:'Suggested study focus'})).toBeNull();
+});
+
+it('blocks coursework recommendations if a returned attempt belongs to a different learner',async()=>{
+ tables.live_class_sessions=[];
+ tables.unipathway_assessment_attempts=[{id:'foreign-attempt',brief_id:'b1',attempt_no:1,status:'resubmission_requested',student_id:'different-student'}];
+ mount();
+ expect(await screen.findByText('Your coursework could not be verified. Refresh to retry.')).toBeInTheDocument();
+ expect(screen.queryByText('Published coursework')).not.toBeInTheDocument();
+ expect(screen.queryByRole('region',{name:'Suggested study focus'})).toBeNull();
+});
+
+it('rejects a released row whose attempt belongs to another brief rather than claiming approved feedback',async()=>{
+ tables.live_class_sessions=[];
+ tables.unipathway_assessment_attempts=[{id:'attempt-one',brief_id:'b1',attempt_no:1,status:'human_marked'}];
+ tables.unipathway_assessment_released_results=[{attempt_id:'attempt-one',brief_id:'b2'}];
+ mount();
+ expect(await screen.findByText('Your coursework could not be verified. Refresh to retry.')).toBeInTheDocument();
+ expect(screen.queryByText(/with released feedback/)).not.toBeInTheDocument();
+ expect(screen.queryByRole('link',{name:'Read independently released feedback'})).not.toBeInTheDocument();
+});
+
+it('blocks duplicate attempt numbers that could misstate remaining submissions',async()=>{
+ tables.live_class_sessions=[];
+ tables.unipathway_assessment_attempts=[
+  {id:'attempt-one',brief_id:'b1',attempt_no:1,status:'submitted'},
+  {id:'attempt-two',brief_id:'b1',attempt_no:1,status:'resubmission_requested'},
+ ];
+ mount();
+ expect(await screen.findByText('Your coursework could not be verified. Refresh to retry.')).toBeInTheDocument();
+ expect(screen.queryByText(/needing action/)).not.toBeInTheDocument();
 });
