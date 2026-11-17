@@ -73,11 +73,11 @@ describe('Phase 10: verified academic authoring and scheduling timestamps', () =
     expect(verifiedScheduledClasses([good, newer], scope.tenantId, modules).map(c => c.id))
       .toEqual([newer.id, good.id]);
     for (const bad of [
-      {...good, tenant_id: id(98)},
-      {...good, module_id: id(99)},
-      {...good, starts_at: '2030-12-01T09:00:00'},
-      {...good, starts_at: '2030-02-30T04:00:00Z'},
-      {...good, ends_at: '2030-12-01T03:00:00Z'},
+      {...good, id: id(12), tenant_id: id(98)},
+      {...good, id: id(13), module_id: id(99)},
+      {...good, id: id(14), starts_at: '2030-12-01T09:00:00'},
+      {...good, id: id(15), starts_at: '2030-02-30T04:00:00Z'},
+      {...good, id: id(16), ends_at: '2030-12-01T03:00:00Z'},
     ]) expect(() => verifiedScheduledClasses([good, bad], scope.tenantId, modules)).toThrow(/verified/);
     expect(() => verifiedScheduledClasses([good, good], scope.tenantId, modules)).toThrow(/verified/);
   });
