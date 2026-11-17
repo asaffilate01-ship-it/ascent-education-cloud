@@ -1,4 +1,5 @@
 import {CALENDAR_TIME_ZONE, calendarInputToIso} from '@/lib/academicCalendar';
+import {parseZonedAcademicTimestamp} from '@/lib/academicTime';
 
 export type ClassCandidate = {id: string; name: string};
 export type ClassCandidates = {students: ClassCandidate[]; organisers: ClassCandidate[]};
@@ -15,14 +16,43 @@ export function readClassCandidates(value: unknown): ClassCandidates | null {
 
 /** Display the stored instant in Pakistan; editing must never reinterpret UTC as device-local time. */
 export function pakistanClassInput(value: string): string {
-  const date = new Date(value);
-  if (!Number.isFinite(date.getTime())) return '';
+  const time = parseZonedAcademicTimestamp(value);
+  if (time === null) return '';
+  const date = new Date(time);
   const parts = new Intl.DateTimeFormat('en-GB', {
     timeZone: CALENDAR_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit',
     hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
   }).formatToParts(date);
   const part = (type: string) => parts.find(item => item.type === type)?.value || '';
   return `${part('year')}-${part('month')}-${part('day')}T${part('hour')}:${part('minute')}`;
+}
+
+type SavedClassTime = Readonly<{
+  id: string; tenant_id: string; module_id: string; starts_at: string; ends_at: string;
+}>;
+
+/**
+ * Classes must come from the current centre's authorised modules and have
+ * unambiguous, ordered time bounds before they can appear in the edit/cancel
+ * list. An invalid row blocks the entire snapshot, not just one visible item.
+ */
+export function verifiedScheduledClasses<T extends SavedClassTime>(
+  rows: readonly T[], tenantId: string, moduleIds: ReadonlySet<string>,
+): T[] {
+  const seen = new Set<string>();
+  const verified = rows.map(row => {
+    const start = parseZonedAcademicTimestamp(row?.starts_at);
+    const end = parseZonedAcademicTimestamp(row?.ends_at);
+    if (!row || typeof row.id !== 'string' || !row.id || seen.has(row.id)
+      || row.tenant_id !== tenantId || !moduleIds.has(row.module_id)
+      || start === null || end === null || end <= start) {
+      throw Error('Class timetable records could not be verified. Refresh before scheduling or editing.');
+    }
+    seen.add(row.id);
+    return {row, start};
+  });
+  return verified.sort((a, b) => b.start - a.start || a.row.id.localeCompare(b.row.id))
+    .map(entry => entry.row);
 }
 
 export type ClassTimeErrors = Partial<Record<'start' | 'end', string>>;

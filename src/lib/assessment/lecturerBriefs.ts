@@ -1,4 +1,5 @@
 import {calendarInputToIso} from '@/lib/academicCalendar';
+import {parseZonedAcademicTimestamp} from '@/lib/academicTime';
 
 export type LecturerScope = {userId: string; tenantId: string};
 export type TeachingModule = {id: string; title: string; tenant_id: string; lecturer_id: string};
@@ -38,7 +39,7 @@ function decimal(value: unknown): number | null {
     : typeof value === 'string' && /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(value) ? Number(value) : NaN;
   return Number.isFinite(number) ? number : null;
 }
-const timestamp = (value: unknown): value is string => typeof value === 'string' && /T.*(?:Z|[+-]\d{2}:\d{2})$/.test(value) && Number.isFinite(Date.parse(value));
+const timestamp = (value: unknown): value is string => typeof value === 'string' && parseZonedAcademicTimestamp(value) !== null;
 
 export function teachingModule(value: unknown, scope: LecturerScope): TeachingModule | null {
   const row = object(value);
@@ -52,7 +53,7 @@ export function lecturerBrief(value: unknown, scope: LecturerScope, moduleIds: r
     || typeof row.module_id !== 'string' || !moduleIds.includes(row.module_id) || !text(row.title, 5, 180)
     || !['draft', 'published', 'archived'].includes(String(row.status))
     || !['coursework', 'homework', 'practical'].includes(String(row.assessment_type))
-    || !timestamp(row.due_at) || !timestamp(row.submission_cutoff) || Date.parse(row.submission_cutoff) < Date.parse(row.due_at)
+    || !timestamp(row.due_at) || !timestamp(row.submission_cutoff) || parseZonedAcademicTimestamp(row.submission_cutoff)! < parseZonedAcademicTimestamp(row.due_at)!
     || typeof row.max_attempts !== 'number' || !Number.isInteger(row.max_attempts) || row.max_attempts < 1 || row.max_attempts > 5
     || !text(row.policy_reference, 4) || !text(row.rubric_version)) return null;
   const penalty = decimal(row.penalty_points_per_resubmission);
@@ -121,7 +122,7 @@ export function reviewLecturerCriterion(form: CriterionForm, brief: LecturerBrie
 export function confirmedLecturerCreation(value: unknown, payload: NewLecturerBrief | LecturerCriterion): boolean {
   const row = object(value);
   return !!row && Object.entries(payload).every(([key, expected]) => {
-    if (key === 'due_at' || key === 'submission_cutoff') return timestamp(row[key]) && Date.parse(row[key] as string) === Date.parse(expected as string);
+    if (key === 'due_at' || key === 'submission_cutoff') return timestamp(row[key]) && parseZonedAcademicTimestamp(row[key]) === parseZonedAcademicTimestamp(expected);
     if (key === 'max_points' || key === 'penalty_points_per_resubmission') return decimal(row[key]) === expected;
     return row[key] === expected;
   });

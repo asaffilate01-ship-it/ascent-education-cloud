@@ -13,7 +13,7 @@ import {
 import {pakistanClassTime} from '@/lib/classroomExperience';
 import {calendarInputToIso} from '@/lib/academicCalendar';
 import {canUseActiveRole} from '@/lib/roleMembership';
-import {confirmedClassSave, pakistanClassInput, readClassCandidates, validateClassTimes, type ClassTimeErrors} from '@/lib/liveClassScheduling';
+import {confirmedClassSave, pakistanClassInput, readClassCandidates, validateClassTimes, verifiedScheduledClasses, type ClassTimeErrors} from '@/lib/liveClassScheduling';
 
 type TeachingModule = {id: string; title: string; tenant_id: string; lecturer_id: string | null};
 type Class = {id: string; tenant_id: string; module_id: string; organiser_user_id: string; title: string; starts_at: string; ends_at: string; status: string; teams_sync_status: string; join_url: string | null};
@@ -70,8 +70,7 @@ function Scheduler() {
         .select('id,tenant_id,module_id,organiser_user_id,title,starts_at,ends_at,status,teams_sync_status,join_url')
         .eq('tenant_id', user!.tenantId).in('module_id', ids).order('starts_at', {ascending: false}).order('id')));
     }
-    const classes = sessions.filter(item => item.tenant_id === user!.tenantId && moduleIds.has(item.module_id))
-      .sort((a, b) => Date.parse(b.starts_at) - Date.parse(a.starts_at) || a.id.localeCompare(b.id));
+    const classes = verifiedScheduledClasses(sessions, user!.tenantId, moduleIds);
     const classIds = new Set(classes.map(item => item.id)), jobs: Job[] = [], invites: Invitation[] = [];
     for (let offset = 0; offset < classes.length; offset += 100) {
       const ids = classes.slice(offset, offset + 100).map(item => item.id);

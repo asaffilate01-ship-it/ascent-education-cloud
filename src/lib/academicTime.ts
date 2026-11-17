@@ -38,3 +38,14 @@ export function parseAcademicInstant(input: unknown): number | null {
   const milliseconds = Date.parse(plain ? value + 'T00:00:00Z' : value);
   return Number.isFinite(milliseconds) ? milliseconds : null;
 }
+
+/**
+ * Persisted assessment deadlines and live-class bounds require a precise
+ * timezone-qualified timestamp. The legacy date-only UTC fallback above is
+ * for display of older academic date fields, never an editable class/brief.
+ */
+export function parseZonedAcademicTimestamp(input: unknown): number | null {
+  return typeof input === 'string' && input.includes('T')
+    ? parseAcademicInstant(input)
+    : null;
+}
