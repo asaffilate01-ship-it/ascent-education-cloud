@@ -277,3 +277,15 @@ it('pages assigned classes before verifying cancellation even when another modul
   expect(screen.getByText('Assigned 209')).toBeInTheDocument();
   expect(mock.from.mock.calls.filter(call => call[0] === 'live_class_sessions').length).toBeGreaterThanOrEqual(4);
 });
+
+it('blocks edit and cancellation when saved class time has no timezone, with an explicit retry', async () => {
+  existingClass();
+  mock.tables.live_class_sessions[0].starts_at = '2030-12-01T09:00:00';
+  show();
+  const alert = await screen.findByRole('alert');
+  expect(alert).toHaveTextContent('Class timetable records could not be verified.');
+  expect(screen.getByRole('button', {name: 'Retry scheduling'})).toBeInTheDocument();
+  expect(screen.queryByRole('button', {name: 'Edit class / invitees: Existing writing class'})).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', {name: 'Cancel Existing writing class'})).not.toBeInTheDocument();
+  expect(savedCalls()).toHaveLength(0);
+});
