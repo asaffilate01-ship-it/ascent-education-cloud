@@ -5,6 +5,7 @@ import {rowsByIds} from '@/lib/pagedRows';
 import {Button} from '@/components/ui/button';
 import {formatPakistanAcademicDate} from '@/lib/assessment/courseworkQueue';
 import {buildStudentCourseworkAgenda} from '@/lib/assessment/studentAgenda';
+import {verifyStudentAgendaBriefs,verifyStudentAgendaEvidence} from '@/lib/assessment/verifiedStudentAgenda';
 import {chooseStudentStudyFocus} from '@/lib/assessment/studyFocus';
 import {courseworkDeadlineGuidance,prioritiseActionableCoursework} from '@/lib/assessment/deadlineGuidance';
 import {
@@ -27,12 +28,23 @@ export default function StudentLearningAgenda({tenant, student, moduleIds}: {ten
   useEffect(() => {
     let active = true;
     void (async()=>{try{
-      const briefs=await rowsByIds<Brief>(moduleIds,ids=>()=>db.from('unipathway_assessment_briefs').select('id,module_id,title,due_at,submission_cutoff,max_attempts').eq('tenant_id',tenant).eq('status','published').in('module_id',ids),()=>active);
+      // Query filters and RLS are the authority; verify returned provenance before
+      // selecting any dependent IDs or suggesting student submission actions.
+      const scope={tenantId:tenant,studentId:student,moduleIds};
+      const rawBriefs=await rowsByIds<unknown>(moduleIds,ids=>()=>db.from('unipathway_assessment_briefs')
+        .select('id,tenant_id,module_id,title,status,due_at,submission_cutoff,max_attempts')
+        .eq('tenant_id',tenant).eq('status','published').in('module_id',ids),()=>active);
+      if(!active)return;
+      const briefs=verifyStudentAgendaBriefs(rawBriefs,scope);
       const [attempts,released]=await Promise.all([
-        rowsByIds<Attempt>(briefs.map(b=>b.id),ids=>()=>db.from('unipathway_assessment_attempts').select('id,brief_id,attempt_no,status').eq('tenant_id',tenant).eq('student_id',student).in('brief_id',ids),()=>active),
-        rowsByIds<Released>(briefs.map(b=>b.id),ids=>()=>db.from('unipathway_assessment_released_results').select('attempt_id,brief_id').eq('tenant_id',tenant).eq('student_id',student).in('brief_id',ids),()=>active,'attempt_id'),
+        rowsByIds<unknown>(briefs.map(b=>b.id),ids=>()=>db.from('unipathway_assessment_attempts')
+          .select('id,tenant_id,student_id,brief_id,attempt_no,status')
+          .eq('tenant_id',tenant).eq('student_id',student).in('brief_id',ids),()=>active),
+        rowsByIds<unknown>(briefs.map(b=>b.id),ids=>()=>db.from('unipathway_assessment_released_results')
+          .select('attempt_id,tenant_id,student_id,brief_id')
+          .eq('tenant_id',tenant).eq('student_id',student).in('brief_id',ids),()=>active,'attempt_id'),
       ]);
-      if(active)setWork({key,data:{briefs,attempts,released},error:false});
+      if(active)setWork({key,data:verifyStudentAgendaEvidence(briefs,attempts,released,scope),error:false});
     }catch{if(active)setWork({key,data:{briefs:[],attempts:[],released:[]},error:true});}})();
     void (async()=>{try{
       // A centre-wide scheduled session is not by itself a learner invitation.
