@@ -28,6 +28,7 @@ describe('Phase 11: verified calendar projections for UK and Pakistan devices', 
       expect(eventDateSummary(bad)).toBe('Date unavailable');
     }
     expect(calendarDay('2030-12-01T09:00:00')).toBe('');
+    expect(eventOccursOnDay(event('2030-12-01', '2030-12-01'), '2030-12-01')).toBe(false);
     expect(calendarDay('2030-02-30')).toBe('');
   });
 
