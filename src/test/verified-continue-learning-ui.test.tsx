@@ -64,6 +64,23 @@ it('resumes only a verified, student-owned current revision and links to that ex
  expect(state.calls).toContainEqual(['unipathway_lessons','eq','tenant_id','centre-a']);
 });
 
+it('resumes the latest verified instant across UTC and Pakistan offset records',async()=>{
+ state.tables.unipathway_lessons=[lesson,{...lesson,id:'lesson-b',title:'Cloud documents',position:2}];
+ state.tables.unipathway_lesson_progress=[
+  {...progress,updated_at:'2026-11-17T14:30:00+05:00'},
+  {...progress,lesson_id:'lesson-b',updated_at:'2026-11-17T10:00:00Z'},
+ ];
+ mount();
+ const link=await screen.findByRole('link',{name:/Resume lesson/});
+ expect(link).toHaveAttribute('href','/student/lessons?module=module-a&lesson=lesson-b');
+ expect(screen.getByText('Cloud documents')).toBeInTheDocument();
+});
+it('does not offer Resume for timezone-free saved progress returned by a backend',async()=>{
+ state.tables.unipathway_lesson_progress=[{...progress,updated_at:'2026-11-14T12:00:00'}];
+ mount();
+ expect(await screen.findByRole('alert')).toHaveTextContent('could not be verified');
+ expect(screen.queryByRole('link',{name:/Resume lesson/})).toBeNull();
+});
 it('does not show an incorrect resume link when a returned row belongs to another student',async()=>{
  state.ignoreOwnerFilter=true;
  state.tables.unipathway_lesson_progress=[{...progress,student_id:'another-student'}];
