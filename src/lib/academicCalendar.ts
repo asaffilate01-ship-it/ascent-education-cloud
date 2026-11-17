@@ -58,9 +58,13 @@ function verifiedEventBounds(event: Pick<AcademicEvent, 'start_date' | 'end_date
   return start === null || end === null || end < start ? null : {start, end};
 }
 
-export function eventOccursOnDay(event: Pick<AcademicEvent, 'start_date' | 'end_date'>, day: string): boolean {
-  const startInstant = parseAcademicInstant(event.start_date);
-  const endInstant = parseAcademicInstant(event.end_date || event.start_date);
+export function eventOccursOnDay(
+  event: Pick<AcademicEvent, 'start_date' | 'end_date'> & Partial<Pick<AcademicEvent, 'all_day'>>,
+  day: string,
+): boolean {
+  const parse = event.all_day === false ? parseZonedAcademicTimestamp : parseAcademicInstant;
+  const startInstant = parse(event.start_date);
+  const endInstant = parse(event.end_date || event.start_date);
   if (startInstant === null || endInstant === null || endInstant < startInstant) return false;
   const start = calendarDay(new Date(startInstant)), end = calendarDay(new Date(endInstant));
   return Boolean(start && end && day >= start && day <= end);
