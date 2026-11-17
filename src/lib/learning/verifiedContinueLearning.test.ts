@@ -57,6 +57,15 @@ describe('source-verified continue learning',()=>{
   expect(()=>verifyContinueLearningSnapshot([lesson(),lesson()],[],scope)).toThrow(/Published lesson/);
   expect(()=>verifyContinueLearningSnapshot([lesson()],[progress(),progress()],scope)).toThrow(/ownership/);
  });
+ it('accepts a zoned progress update and rejects ambiguous or impossible saved timestamps',()=>{
+  const checked=verifyContinueLearningSnapshot([lesson()],[progress({updated_at:'2026-11-13T14:30:00+05:00'})],scope);
+  expect(checked.progress[0].updated_at).toBe('2026-11-13T14:30:00+05:00');
+  for(const bad of [
+   '2026-11-13', '2026-11-13T09:30:00', '13 Nov 2026 09:30',
+   '2026-02-30T10:00:00Z', '2026-11-13T09:30:00+15:00',
+  ])expect(()=>verifyContinueLearningSnapshot([lesson()],[progress({updated_at:bad})],scope))
+   .toThrow(/progress failed/);
+ });
  it('permits multiple historical revisions but refuses duplicate (lesson,revision) records',()=>{
   const checked=verifyContinueLearningSnapshot([lesson()],[progress({revision:1}),progress()],scope);
   expect(checked.progress).toHaveLength(2);

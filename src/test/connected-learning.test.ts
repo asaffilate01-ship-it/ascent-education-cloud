@@ -6,6 +6,19 @@ describe('connected learning',()=>{
  it('resumes a pending activity rather than the first module',()=>{
   const lessons=[lesson('b',2),lesson('a',1)];expect(nextLesson(lessons,[{lesson_id:'b',revision:1,position_seconds:45,completed:false,updated_at:'2026-10-25'}])?.id).toBe('b');
  });
+ it('orders saved lesson instants, not their different timezone text representations',()=>{
+  const lessons=[lesson('a',1),lesson('b',2)];
+  expect(nextLesson(lessons,[
+   {lesson_id:'a',revision:1,position_seconds:12,completed:false,updated_at:'2026-11-17T14:30:00+05:00'},
+   {lesson_id:'b',revision:1,position_seconds:34,completed:false,updated_at:'2026-11-17T10:00:00Z'},
+  ])?.id).toBe('b');
+ });
+ it('does not treat malformed or device-local saved dates as completed progress',()=>{
+  const lessons=[lesson('a',1),lesson('b',2)];
+  expect(nextLesson(lessons,[
+   {lesson_id:'a',revision:1,position_seconds:50,completed:true,updated_at:'2026-02-30T09:00:00Z'},
+  ])?.id).toBe('a');
+ });
  it('requires current-version completion',()=>{
   expect(nextLesson([lesson('a',1,2),lesson('b',2)],[{lesson_id:'a',revision:1,position_seconds:0,completed:true,updated_at:'2026-10-25'}])?.id).toBe('a');
  });

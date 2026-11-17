@@ -1,4 +1,5 @@
 import type { Lesson, LessonProgress } from '@/lib/structuredLessons';
+import {parseAcademicInstant} from '@/lib/academicTime';
 
 export const PACK_TTL = 24 * 60 * 60 * 1000;
 export const PACK_LIMIT = 10;
@@ -28,14 +29,23 @@ export async function restoreOfflineReader():Promise<LearningAccount|null>{
 export const accountKey = (account: LearningAccount) => `${account.tenantId}:${account.id}`;
 const packKey = (account: LearningAccount, module: string) => `${accountKey(account)}:${module}`;
 const sameRevision = (a: LessonProgress, b: LessonProgress) => a.lesson_id === b.lesson_id && a.revision === b.revision;
+function progressInstant(item: LessonProgress): number {
+ // Retain the UTC-midnight date-only fallback for older offline packs; new
+ // writes use ISO UTC. Never prefer an unparseable saved value in a sync.
+ const instant = parseAcademicInstant(item.updated_at);
+ if (instant === null) throw Error('Saved progress timestamp could not be verified. Reconnect and retry.');
+ return instant;
+}
 export function mergeLessonProgress(remote: LessonProgress[], local: LessonProgress[]) {
- const result = [...remote];
+ const result = remote.map(item => {progressInstant(item);return item;});
  for (const item of local) {
+  const localInstant = progressInstant(item);
   const index = result.findIndex(p => sameRevision(p, item));
   if (index < 0) result.push(item);
   else {
    const previous = result[index];
-   result[index] = { ...(previous.updated_at > item.updated_at ? previous : item), completed: previous.completed || item.completed };
+   const remoteInstant = progressInstant(previous);
+   result[index] = { ...(remoteInstant > localInstant ? previous : item), completed: previous.completed || item.completed };
   }
  }
  return result;

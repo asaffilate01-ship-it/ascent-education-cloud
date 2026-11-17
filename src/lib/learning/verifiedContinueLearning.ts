@@ -1,5 +1,6 @@
 import type {LessonProgress} from '@/lib/structuredLessons';
 import type {ContinueLesson} from '@/lib/learning/continueLearning';
+import {parseZonedAcademicTimestamp} from '@/lib/academicTime';
 
 export type OwnedLearningProgress=LessonProgress & {student_id:string};
 export type VerifiedContinueSnapshot=Readonly<{
@@ -21,7 +22,8 @@ function integer(value:unknown,min:number,max=Number.MAX_SAFE_INTEGER):value is 
  return typeof value==='number'&&Number.isSafeInteger(value)&&value>=min&&value<=max;
 }
 function validDate(value:unknown):value is string{
- return typeof value==='string'&&value.trim().length>0&&Number.isFinite(Date.parse(value));
+ // A saved progress update is a precise instant, not a device-local date.
+ return typeof value==='string'&&parseZonedAcademicTimestamp(value)!==null;
 }
 
 /**
