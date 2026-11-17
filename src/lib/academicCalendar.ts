@@ -1,4 +1,5 @@
 import type { Tables } from '@/integrations/supabase/types';
+import {parseAcademicInstant, parseZonedAcademicTimestamp} from '@/lib/academicTime';
 
 export type AcademicEvent = Tables<'academic_events'>;
 export const CALENDAR_TIME_ZONE = 'Asia/Karachi';
@@ -9,23 +10,27 @@ const dayFormatter = new Intl.DateTimeFormat('en-CA', {
 
 /** Calendar days are always Pakistan days, independent of the device time zone. */
 export function calendarDay(value: string | Date = new Date()): string {
-  const date = typeof value === 'string' ? new Date(value) : value;
-  if (!Number.isFinite(date.getTime())) return '';
-  const parts = dayFormatter.formatToParts(date);
+  const instant = typeof value === 'string' ? parseAcademicInstant(value) : value.getTime();
+  if (instant === null || !Number.isFinite(instant)) return '';
+  const parts = dayFormatter.formatToParts(new Date(instant));
   return ['year', 'month', 'day'].map(type => parts.find(part => part.type === type)?.value).join('-');
 }
 
 export function calendarDayLabel(day: string, long = false): string {
+  const instant = parseZonedAcademicTimestamp(`${day}T12:00:00+05:00`);
+  if (instant === null) return 'Date unavailable';
   return new Intl.DateTimeFormat('en-GB', {
     timeZone: CALENDAR_TIME_ZONE, weekday: long ? 'long' : undefined,
     day: 'numeric', month: long ? 'long' : 'short', year: 'numeric',
-  }).format(new Date(`${day}T12:00:00+05:00`));
+  }).format(new Date(instant));
 }
 
 export function calendarMonthLabel(month: string): string {
+  const instant = parseZonedAcademicTimestamp(`${month}-01T12:00:00+05:00`);
+  if (instant === null) return 'Date unavailable';
   return new Intl.DateTimeFormat('en-GB', {
     timeZone: CALENDAR_TIME_ZONE, month: 'long', year: 'numeric',
-  }).format(new Date(`${month}-01T12:00:00+05:00`));
+  }).format(new Date(instant));
 }
 
 export function shiftCalendarMonth(month: string, offset: number): string {
@@ -45,30 +50,47 @@ export function calendarMonthDays(month: string): { day: string; currentMonth: b
   });
 }
 
-export function eventOccursOnDay(event: Pick<AcademicEvent, 'start_date' | 'end_date'>, day: string): boolean {
-  const start = calendarDay(event.start_date);
-  const end = calendarDay(event.end_date || event.start_date);
+/** Reject corrupt or ambiguous event bounds before providing upcoming/summary guidance. */
+function verifiedEventBounds(event: Pick<AcademicEvent, 'start_date' | 'end_date' | 'all_day'>):
+  {start: number; end: number} | null {
+  const parse = event.all_day ? parseAcademicInstant : parseZonedAcademicTimestamp;
+  const start = parse(event.start_date), end = parse(event.end_date || event.start_date);
+  return start === null || end === null || end < start ? null : {start, end};
+}
+
+export function eventOccursOnDay(
+  event: Pick<AcademicEvent, 'start_date' | 'end_date'> & Partial<Pick<AcademicEvent, 'all_day'>>,
+  day: string,
+): boolean {
+  const parse = event.all_day === false ? parseZonedAcademicTimestamp : parseAcademicInstant;
+  const startInstant = parse(event.start_date);
+  const endInstant = parse(event.end_date || event.start_date);
+  if (startInstant === null || endInstant === null || endInstant < startInstant) return false;
+  const start = calendarDay(new Date(startInstant)), end = calendarDay(new Date(endInstant));
   return Boolean(start && end && day >= start && day <= end);
 }
 
 export function eventIsUpcomingOrOngoing(event: Pick<AcademicEvent, 'start_date' | 'end_date' | 'all_day'>, now = new Date()): boolean {
-  const end = event.end_date || event.start_date;
-  return event.all_day ? calendarDay(end) >= calendarDay(now) : Date.parse(end) >= now.getTime();
+  const bounds = verifiedEventBounds(event);
+  if (!bounds || !Number.isFinite(now.getTime())) return false;
+  return event.all_day ? calendarDay(new Date(bounds.end)) >= calendarDay(now) : bounds.end >= now.getTime();
 }
 
 export function eventDateSummary(event: Pick<AcademicEvent, 'start_date' | 'end_date' | 'all_day'>): string {
-  const startDay = calendarDay(event.start_date);
-  const endDay = calendarDay(event.end_date || event.start_date);
+  const bounds = verifiedEventBounds(event);
+  if (!bounds) return 'Date unavailable';
+  const startDay = calendarDay(new Date(bounds.start));
+  const endDay = calendarDay(new Date(bounds.end));
   if (!startDay || !endDay) return 'Date unavailable';
   const startLabel = calendarDayLabel(startDay);
   const endLabel = calendarDayLabel(endDay);
   if (event.all_day) return `${startLabel}${endDay !== startDay ? ` – ${endLabel}` : ''} · All day`;
-  const time = (value: string) => new Intl.DateTimeFormat('en-PK', {
+  const time = (instant: number) => new Intl.DateTimeFormat('en-PK', {
     timeZone: CALENDAR_TIME_ZONE, hour: 'numeric', minute: '2-digit',
-  }).format(new Date(value));
+  }).format(new Date(instant));
   const end = event.end_date && event.end_date !== event.start_date
-    ? ` – ${endDay !== startDay ? `${endLabel}, ` : ''}${time(event.end_date)}` : '';
-  return `${startLabel} · ${time(event.start_date)}${end}`;
+    ? ` – ${endDay !== startDay ? `${endLabel}, ` : ''}${time(bounds.end)}` : '';
+  return `${startLabel} · ${time(bounds.start)}${end}`;
 }
 
 /** Interpret the labelled date/time inputs as Pakistan time; never browser-local time. */
