@@ -58,3 +58,28 @@ it('offers a task-led Today sidebar for students without losing the original spe
  expect(all).toContain('/workspace');
  expect(new Set(all).size).toBe(all.length);
 });
+
+it('groups centre-director tasks while preserving every authorised destination and global search',()=>{
+ const sections=getNavigationSections('centre_director');
+ const titles=sections.map(section=>section.title);
+ expect(titles[0]).toBe('Everyday');
+ for(const area of ['Admissions & learners','Teaching & quality','Staff & centre operations','Partners & funding','Systems & communications'])
+  expect(titles).toContain(area);
+ const paths=sections.flatMap(section=>section.items.map(item=>item.path));
+ const originalPaths=NAV_CONFIG.centre_director.flatMap(section=>section.items.map(item=>item.path));
+ expect(paths.slice().sort()).toEqual([...originalPaths,'/workspace'].sort());
+ expect(new Set(paths).size).toBe(paths.length);
+ expect(sections.find(section=>section.title==='Admissions & learners')?.items.map(item=>item.path))
+  .toContain('/director/programmes');
+ expect(sections.find(section=>section.title==='Teaching & quality')?.items.map(item=>item.path))
+  .toContain('/director/assessment-management');
+ expect(sections.find(section=>section.title==='Staff & centre operations')?.items.map(item=>item.path))
+  .toContain('/director/staff-access');
+ expect(sections.find(section=>section.title==='Partners & funding')?.items.map(item=>item.path))
+  .toContain('/director/employers');
+ expect(sections.find(section=>section.title==='Systems & communications')?.items.map(item=>item.path))
+  .toContain('/director/microsoft-education');
+ expect(getNavigationSections('centre_director','attendance corrections')[0].items.map(item=>item.path))
+  .toContain('/director/attendance-corrections');
+ expect(getNavigationSections('centre_director','student coursework')[0].items).toEqual([]);
+});

@@ -429,6 +429,36 @@ const conciseLabels: Record<string, string> = {
  * Unknown/new paths appear under Other services until deliberately classified.
  */
 const TASK_GROUPS: Partial<Record<UserRole, ReadonlyArray<{title:string;paths:readonly string[]}>>> = {
+  centre_director: [
+    {title:'Admissions & learners',paths:[
+      '/director/guardian-support','/director/programmes','/director/students',
+      '/director/agents','/director/application-support','/director/ielts',
+      '/director/syllabuses','/director/opportunity-fund',
+    ]},
+    {title:'Teaching & quality',paths:[
+      '/director/course-content','/director/specifications','/director/assessment-management',
+      '/director/assessment-appeals','/director/quality','/director/attendance-corrections',
+      '/director/class-release','/director/exam-plans','/director/exam-rosters',
+      '/director/beauty-accreditation','/lesson-plans','/ai-recommendations',
+    ]},
+    {title:'Staff & centre operations',paths:[
+      '/director/staff','/director/staff-access','/director/compliance',
+      '/calendar','/leave','/transport','/health','/residential',
+      '/director/residential-planner','/security','/security/operations',
+      '/director/reports','/audit',
+    ]},
+    {title:'Partners & funding',paths:[
+      '/director/placements','/director/employers','/director/education-partnerships',
+      '/director/global-partners','/director/education-intelligence',
+      '/director/funding','/director/finance',
+    ]},
+    {title:'Systems & communications',paths:[
+      '/director/managed-labs','/director/tech-lab-access','/director/microsoft-education',
+      '/director/knowledge','/ai-course-builder','/predictive-analytics',
+      '/documents','/email-campaigns','/director/domains','/director/page-builder',
+      '/director/branding','/director/settings','/communications','/messaging',
+    ]},
+  ],
   student: [
     {title:'Learn',paths:[
       '/student/classroom','/student/lesson-archive','/student/materials','/student/library',
