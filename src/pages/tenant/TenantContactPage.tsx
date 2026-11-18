@@ -2,7 +2,7 @@ import PublicFooter from '@/components/PublicFooter';
 import SocialIcons from '@/components/SocialIcons';
 import PublicHero from '@/components/PublicHero';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { courseEnquiryPrefill } from '@/lib/courseInterest';
+import { courseEnquiryPrefill, courseInterestEditUrl } from '@/lib/courseInterest';
 import { Button } from '@/components/ui/button';
 import { Mail, Clock, Send, Globe } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -106,8 +106,8 @@ function ContactWorkspace({slug}:{slug?:string}) {
 
             {/* Form */}
             <form id="contact-form" aria-busy={sending} onSubmit={handleSubmit} className="scroll-mt-28 lg:col-span-2 surface-card p-4 sm:p-6">
-              <h3 className="text-lg font-bold mb-4">Send us a message</h3>
-              {interest.summary&&<div className="mb-4 rounded-lg border bg-secondary/40 p-3 text-sm"><p className="font-semibold">Your selected study interest</p><p className="mt-1 break-words">{interest.summary}</p><Link className="mt-2 inline-flex min-h-11 items-center font-semibold underline underline-offset-4" to="/apply">Change study choices</Link><p className="mt-1 text-muted-foreground">Please review the prefilled message before sending. This is an enquiry, not an application or confirmed place.</p></div>}
+              <h3 className="text-lg font-bold mb-4">{interest.summary?'Review your course enquiry':'Send us a message'}</h3>
+              {interest.summary&&<div className="mb-4 rounded-lg border bg-secondary/40 p-3 text-sm"><p className="font-semibold">Your selected study interest</p><p className="mt-1 break-words">{interest.summary}</p><Link className="mt-2 inline-flex min-h-11 items-center font-semibold underline underline-offset-4" to={courseInterestEditUrl(params)}>Change study choices</Link><p className="mt-1 text-muted-foreground">Please review the course, level and study format in your message before sending. Admissions must confirm approval, fees and the next available intake. This is an enquiry, not an application or confirmed place.</p></div>}
               {feedback&&<p role={feedback.kind==='error'?'alert':'status'} className="mb-4 rounded-lg border p-3 text-sm">{feedback.message}</p>}
               <fieldset disabled={sending} className="min-w-0">
               <legend className="sr-only">Admissions enquiry details</legend>

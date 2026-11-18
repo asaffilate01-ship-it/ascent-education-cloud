@@ -36,14 +36,24 @@ test('qualification cards preserve the chosen title during an enquiry',async({co
  await page.goto('/qualifications?body=OTHM&level=4&q=business');
  const cookie=page.getByRole('dialog',{name:'Cookie preferences'});
  if(await cookie.isVisible())await cookie.getByRole('button',{name:'Reject all'}).click();
- const link=page.getByRole('link',{name:'Enquire about this pathway'}).first();
+ const link=page.getByRole('link',{name:'Review study options & enquire'}).first();
  await expect(link).toBeVisible();
  await link.click();
+ await expect(page).toHaveURL(/\/apply\?/);
+ await expect(page.getByText('Selected qualification',{exact:true})).toBeVisible();
+ await page.getByLabel('Preferred study format').selectOption('online');
+ await page.getByRole('button',{name:'Continue to course enquiry'}).click();
  await expect(page).toHaveURL(/\/tenant\/unipathway\/contact\?/);
  const parsed=new URL(page.url());
  expect(parsed.searchParams.get('course')).toContain('OTHM');
  expect(parsed.searchParams.get('course')).toContain('Business');
  await expect(page.getByLabel('Message *')).toHaveValue(/OTHM.*Business/);
+ await expect(page.getByRole('heading',{name:'Review your course enquiry'})).toBeVisible();
+ await page.getByRole('link',{name:'Change study choices'}).click();
+ await expect(page.getByLabel('Preferred level')).toHaveValue('level-4');
+ await expect(page.getByLabel('Preferred study format')).toHaveValue('online');
+ await expect(page.getByLabel('Preferred level')).toBeDisabled();
+ await expect(page.getByText(parsed.searchParams.get('course')!,{exact:true})).toBeVisible();
 });
 
 test('study and qualification search match terms in any order on mobile',async({context,page})=>{

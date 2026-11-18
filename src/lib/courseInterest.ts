@@ -2,7 +2,7 @@ import {qualificationSelection} from './qualificationSelection';
 /** Public course-interest routing. This is an enquiry, not confirmed admission. */
 export const STUDY_AREAS = [
   {id:'tuition',label:'School tuition (Years 8–12)',detail:'Matric, Intermediate and Cambridge preparation'},
-  {id:'qualifications',label:'UK qualification pathways (Levels 2–5)',detail:'Check the specific qualification, approval and entry requirements'},
+  {id:'qualifications',label:'UK qualification pathways (confirm your level)',detail:'Check the specific qualification, approval and entry requirements'},
   {id:'vocational',label:'Vocational, SIA and CPD enquiries',detail:'Practical and short-course options, subject to location and approval'},
   {id:'technology',label:'Technology and digital skills',detail:'Programming, AI, cybersecurity and cloud'},
   {id:'accounting',label:'Accounting and finance',detail:'Bookkeeping, finance and professional exam preparation'},
@@ -60,12 +60,22 @@ export function courseInterestEnquiryUrl(interest:CourseInterest):string {
   return `/contact?${params.toString()}#contact-form`;
 }
 
+/** Return to the chooser with only allowlisted study choices, never form personal data. */
+export function courseInterestEditUrl(params: URLSearchParams): string {
+  const interest = courseInterestFromParams(params);
+  if (!interest.area) return '/apply';
+  const enquiry = new URL(courseInterestEnquiryUrl(interest), 'https://example.invalid');
+  enquiry.searchParams.delete('subject');
+  return `/apply?${enquiry.searchParams.toString()}`;
+}
+
 /** Existing catalogue course links may supply a title; preserve them without claiming enrolment. */
 export function courseEnquiryPrefill(params:URLSearchParams):{message:string;summary:string;subject:string} {
   const course=(params.get('course')||'').replace(/\s+/g,' ').trim().slice(0,240);
   const area=find(STUDY_AREAS,params.get('area'));
   const mode=find(STUDY_MODES,params.get('mode'));
-  const level=find(STUDY_LEVELS,params.get('level'));
+  const qualification=knownQualification(course);
+  const level=find(STUDY_LEVELS,qualification?`level-${qualification.level}`:params.get('level'));
   const subject=params.get('subject')==='Course Enquiry'||course||area?'Course Enquiry':'';
   if(!course&&!area)return {message:'',summary:'',subject};
   const summary=course||area!.label;
