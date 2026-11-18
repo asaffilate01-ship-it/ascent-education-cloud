@@ -114,3 +114,35 @@ it('blocks duplicate attempt numbers that could misstate remaining submissions',
  expect(await screen.findByText('Your coursework could not be verified. Refresh to retry.')).toBeInTheDocument();
  expect(screen.queryByText(/needing action/)).not.toBeInTheDocument();
 });
+
+it('separates submitted work awaiting human review from independently released feedback',async()=>{
+ tables.live_class_sessions=[];
+ tables.unipathway_assessment_briefs=[
+  {id:'pending',module_id:'module',title:'Submitted portfolio',due_at:'2099-01-01',submission_cutoff:'2099-01-02',max_attempts:2},
+  {id:'approved',module_id:'module',title:'Approved project',due_at:'2099-01-01',submission_cutoff:'2099-01-02',max_attempts:2},
+ ];
+ tables.unipathway_assessment_attempts=[
+  {id:'pending-attempt',brief_id:'pending',attempt_no:1,status:'submitted'},
+  {id:'approved-attempt',brief_id:'approved',attempt_no:1,status:'human_marked'},
+ ];
+ tables.unipathway_assessment_released_results=[{attempt_id:'approved-attempt',brief_id:'approved'}];
+ mount();
+ const waiting=await screen.findByRole('region',{name:'Awaiting assessment'});
+ const released=screen.getByRole('region',{name:'Released feedback'});
+ expect(waiting).toHaveTextContent('Submitted portfolio');
+ expect(waiting).toHaveTextContent('not a final grade');
+ expect(waiting).not.toHaveTextContent('Approved project');
+ expect(released).toHaveTextContent('Approved project');
+ expect(released).not.toHaveTextContent('Submitted portfolio');
+ expect(screen.getByRole('link',{name:'Check assessment status for Submitted portfolio'})).toHaveAttribute('href','/student/assignments?module=module');
+ expect(screen.getByRole('link',{name:'Read released feedback for Approved project'})).toHaveAttribute('href','/student/grades?module=module');
+});
+it('hides all coursework actions when a server record skips a numbered submission attempt',async()=>{
+ tables.live_class_sessions=[];
+ tables.unipathway_assessment_attempts=[{id:'skipped-attempt',brief_id:'b1',attempt_no:2,status:'submitted'}];
+ mount();
+ expect(await screen.findByText('Your coursework could not be verified. Refresh to retry.')).toBeInTheDocument();
+ expect(screen.queryByRole('region',{name:'Awaiting assessment'})).toBeNull();
+ expect(screen.queryByRole('region',{name:'Released feedback'})).toBeNull();
+ expect(screen.queryByRole('link',{name:'Review module coursework'})).toBeNull();
+});
