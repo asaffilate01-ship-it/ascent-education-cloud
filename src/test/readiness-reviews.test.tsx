@@ -1,13 +1,19 @@
 import {render,screen,cleanup,fireEvent,waitFor} from '@testing-library/react';
 import {afterEach,beforeEach,it,expect,vi} from 'vitest';
-const mocks=vi.hoisted(()=>({rows:vi.fn(),rpc:vi.fn(),roles:['centre_director'],role:'centre_director'}));
+const mocks=vi.hoisted(()=>({rows:vi.fn(),rpc:vi.fn(),roles:['centre_director'],role:'centre_director',history:vi.fn()}));
 vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'staff-1',tenantId:'centre-1',role:mocks.role,roles:mocks.roles}})}));
-vi.mock('@/integrations/supabase/client',()=>({supabase:{rpc:(...args:unknown[])=>mocks.rpc(...args)}}));
+vi.mock('@/integrations/supabase/client',()=>({supabase:{
+ rpc:(...args:unknown[])=>mocks.rpc(...args),
+ from:()=>{
+  const query:any={select:()=>query,eq:()=>query,order:()=>query,limit:()=>mocks.history()};
+  return query;
+ },
+}}));
 vi.mock('@/components/assessment/CourseOfferEditor',()=>({default:()=> <p>Course offer editor authorised</p>}));
 vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:{children:React.ReactNode})=><main>{children}</main>}));
 vi.mock('@/lib/workflowRows',()=>({workflowRows:(...args:unknown[])=>mocks.rows(...args)}));
 import ProductionReadiness from '@/pages/superadmin/ProductionReadiness';
-afterEach(cleanup);beforeEach(()=>{vi.clearAllMocks();mocks.roles=['centre_director'];mocks.role='centre_director';mocks.rows.mockImplementation(async(_db,table)=>({data:table==='production_readiness_checks'?[{
+afterEach(cleanup);beforeEach(()=>{vi.clearAllMocks();mocks.roles=['centre_director'];mocks.role='centre_director';mocks.history.mockResolvedValue({data:[],error:null});mocks.rows.mockImplementation(async(_db,table)=>({data:table==='production_readiness_checks'?[{
  id:'check-1',tenant_id:'centre-1',check_key:'full_migration_replay',category:'security',
  status:'pending',revision:4,evidence_reference:null,checked_at:null,
  checked_by:null,notes:null,valid_until:null,
@@ -75,4 +81,22 @@ it('rejects unverified active roles even when the role string is leadership',()=
  render(<ProductionReadiness/>);
  expect(screen.getByRole('alert')).toHaveTextContent('active, verified centre leadership role');
  expect(mocks.rows).not.toHaveBeenCalled();
+});
+
+it('clears previously accepted audit history when a new history response fails centre verification',async()=>{
+ const prior={
+  id:'history-one',tenant_id:'centre-1',check_id:'check-1',
+  revision:2,old_status:'pending',new_status:'pass',
+  evidence_reference:'approved-review-42',notes:null,valid_until:null,
+  reviewed_by:'reviewer-one',created_at:'2026-11-18T12:00:00Z',
+ };
+ mocks.history.mockResolvedValueOnce({data:[prior],error:null})
+  .mockResolvedValueOnce({data:[{...prior,tenant_id:'other-centre'}],error:null});
+ render(<ProductionReadiness/>);
+ await screen.findByText('Record a review');
+ fireEvent.click(screen.getByRole('button',{name:'Load latest 20 reviews'}));
+ expect(await screen.findByText(/Revision 2: pending/)).toBeInTheDocument();
+ fireEvent.click(screen.getByRole('button',{name:'Load latest 20 reviews'}));
+ expect(await screen.findByRole('alert')).toHaveTextContent('Review history unavailable');
+ expect(screen.queryByText(/Revision 2: pending/)).toBeNull();
 });
