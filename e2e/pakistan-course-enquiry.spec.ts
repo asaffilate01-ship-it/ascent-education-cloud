@@ -85,6 +85,13 @@ test('selected qualification review and edit keep context across responsive layo
  await expect(page.getByRole('heading',{name:'Review your course enquiry'})).toBeVisible();
  await expect(page.getByLabel('Message *')).toHaveValue(/OTHM Level 4 Diploma in Business Management/);
  await inspectLayouts(page,info,'course-enquiry-review');
+ // Enlarged mobile labels must wrap at words, not into vertical letter fragments.
+ await page.setViewportSize({width:360,height:1000});
+ const submitLabel=page.getByRole('button',{name:'Send Message'}).locator('span');
+ await expect.poll(()=>submitLabel.evaluate(node=>{
+  const style=getComputedStyle(node);
+  return node.getBoundingClientRect().height/parseFloat(style.lineHeight);
+ })).toBeLessThanOrEqual(2.1);
  const edit=page.getByRole('link',{name:'Change study choices'});
  await edit.focus();
  await expect(edit).toBeFocused();

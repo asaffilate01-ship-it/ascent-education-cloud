@@ -157,8 +157,8 @@ function ContactWorkspace({slug}:{slug?:string}) {
                 <TurnstileChallenge onToken={setCaptchaToken} resetSignal={challengeRevision}/>
                 {!import.meta.env.VITE_TURNSTILE_SITE_KEY&&<p role="status" className="text-sm text-muted-foreground">Secure enquiry verification is not configured. Please contact admissions by email while this service is being activated.</p>}
               </div>}
-              <Button className="px-8" type="submit" disabled={sending||(secureContact&&(!privacyAcknowledged||!captchaToken))}>
-                {sending ? 'Sending...' : <><Send className="w-4 h-4 mr-1.5" /> Send Message</>}
+              <Button className="w-full px-3 sm:w-auto sm:px-8" type="submit" disabled={sending||(secureContact&&(!privacyAcknowledged||!captchaToken))}>
+                {sending ? 'Sending...' : <><Send aria-hidden="true" className="hidden w-4 h-4 mr-1.5 sm:block" /><span className="whitespace-normal [overflow-wrap:normal]">Send Message</span></>}
               </Button>
               </fieldset>
             </form>
