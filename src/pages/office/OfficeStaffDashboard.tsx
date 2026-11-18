@@ -1,31 +1,15 @@
+import {validOfficeSnapshot,type OfficeData} from '@/lib/officeWorkspaceSnapshot';
 import {useCallback,useEffect,useState} from 'react';
 import {Link} from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {Button} from '@/components/ui/button';
 import {useAuth} from '@/contexts/AuthContext';
 import {supabase} from '@/integrations/supabase/client';
-import {STAFF_ROLES,STAFF_CAPABILITIES,staffRoleValid,UNIPATHWAY_SIGN_IN,type StaffCapability} from '@/lib/staffPermissionProfiles';
+import {STAFF_CAPABILITIES,staffRoleValid,UNIPATHWAY_SIGN_IN,type StaffCapability} from '@/lib/staffPermissionProfiles';
 import AddStaffModal from '@/components/modals/AddStaffModal';
 
-type OfficePerson={id:string;name:string|null;email:string|null;role:string};
-type OfficeTask={id:string;title:string;status:string;priority:string;dueOn:string|null};
-type OfficeSchedule={id:string;day:number;start:string;end:string;room:string|null;module:string};
-type OfficeData={
- centreId:string;role:string;capabilities:string[];revision:number;
- overrides:Record<string,string>;tasks:OfficeTask[];staff:OfficePerson[];
- schedule:OfficeSchedule[];leaveSummary:{pending?:number;approved?:number;rejected?:number};
- invitationGateway:string;labProvider:string;
-};
 const enabled=import.meta.env.VITE_UNIPATHWAY_OFFICE_ACCESS_ENABLED==='true';
 const inviteEnabled=import.meta.env.VITE_UNIPATHWAY_STAFF_INVITES_ENABLED==='true';
-function validSnapshot(v:unknown,centre:string,role:string):v is OfficeData{
- if(!v||typeof v!=='object'||Array.isArray(v))return false;
- const row=v as Partial<OfficeData>;
- return row.centreId===centre&&row.role===role&&Array.isArray(row.capabilities)&&
-  row.capabilities.every(c=>STAFF_CAPABILITIES.some(x=>x.key===c))&&
-  Array.isArray(row.tasks)&&Array.isArray(row.staff)&&Array.isArray(row.schedule)&&
-  row.leaveSummary!==null&&typeof row.leaveSummary==='object';
-}
 export default function OfficeStaffDashboard(){
  const {user}=useAuth();
  return <StaffWorkspace key={[user?.id,user?.tenantId,user?.role,user?.roles?.join(',')].join(':')}/>;
@@ -41,7 +25,7 @@ function StaffWorkspace(){
   if(!authorised||!enabled){setLoading(false);return;}
   try{
    const result=await (supabase.rpc as any)('get_my_unipathway_office_workspace',{p_role:role});
-   if(result.error||!validSnapshot(result.data,tenant,role))throw Error('The server did not confirm this centre and active staff role.');
+   if(result.error||!validOfficeSnapshot(result.data,tenant,role))throw Error('The server did not confirm this centre and active staff role.');
    if(active())setData(result.data);
   }catch{if(active())setError('Your assigned role, centre and personal permissions could not be verified. Protected data is unavailable.');}
   finally{if(active())setLoading(false);}
@@ -99,7 +83,7 @@ function StaffWorkspace(){
      {allowed('view_leave_summary')&&<section className="rounded-xl border bg-card p-5 space-y-3">
       <h2 className="font-semibold">HR leave summary</h2>
       <p className="text-sm text-muted-foreground">Aggregate status only. No personal leave reasons, medical records or employment decisions are disclosed.</p>
-      <p className="text-sm">Pending: {data.leaveSummary.pending??0} · Approved: {data.leaveSummary.approved??0} · Rejected: {data.leaveSummary.rejected??0}</p>
+      <p className="text-sm">Pending: {data.leaveSummary.pending} · Approved: {data.leaveSummary.approved} · Rejected: {data.leaveSummary.rejected}</p>
      </section>}
      {allowed('prepare_compliance')&&<section className="rounded-xl border bg-card p-5">
       <h2 className="font-semibold">Prepare teaching and compliance evidence</h2>
