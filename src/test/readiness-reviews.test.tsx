@@ -97,6 +97,6 @@ it('clears previously accepted audit history when a new history response fails c
  fireEvent.click(screen.getByRole('button',{name:'Load latest 20 reviews'}));
  expect(await screen.findByText(/Revision 2: pending/)).toBeInTheDocument();
  fireEvent.click(screen.getByRole('button',{name:'Load latest 20 reviews'}));
- expect(await screen.findByRole('alert')).toHaveTextContent('Review history unavailable');
+ expect(await screen.findByText('Review history unavailable. Retry.')).toBeInTheDocument();
  expect(screen.queryByText(/Revision 2: pending/)).toBeNull();
 });
