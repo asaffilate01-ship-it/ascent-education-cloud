@@ -12,8 +12,8 @@ import {evidenceCurrent,integrationCurrent,readinessGaps,type ReadinessCheck} fr
 import {localDateTime,supportDueValue} from '@/lib/supportDesk';
 const db:SupabaseClient=supabase;
 export default function ProductionReadiness(){
- const {user}=useAuth();const allowed=user?.roles.some(r=>['superadmin','centre_director'].includes(r));
- return <DashboardLayout title="Production Readiness" subtitle="Launch decisions require recorded operational evidence">{allowed&&user?.tenantId?<>{user.roles.includes('superadmin')&&<CourseOfferEditor/>}<Workspace key={`${user.tenantId}-${user.id}`} tenant={user.tenantId}/><ConnectionCoverage/></>:<p>Centre leadership access required.</p>}</DashboardLayout>;
+ const {user}=useAuth();const allowed=!!user&&['superadmin','centre_director'].includes(user.role)&&user.roles?.includes(user.role)===true;
+ return <DashboardLayout title="Production Readiness" subtitle="Launch decisions require recorded operational evidence">{allowed&&user?.tenantId?<>{user.role==='superadmin'&&<CourseOfferEditor/>}<Workspace key={`${user.tenantId}-${user.id}-${user.role}`} tenant={user.tenantId}/><ConnectionCoverage/></>:<p role="alert">An active, verified centre leadership role is required. Switch back to an authorised role to review launch evidence.</p>}</DashboardLayout>;
 }
 function Workspace({tenant}:{tenant:string}){
  const [integrations,setIntegrations]=useState<EducationTables['production_integrations']['Row'][]>([]),[checks,setChecks]=useState<ReadinessCheck[]>([]);
