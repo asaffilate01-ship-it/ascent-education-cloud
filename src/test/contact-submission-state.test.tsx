@@ -63,3 +63,16 @@ it('does not claim secure contact succeeded from a malformed persistence receipt
  expect(screen.getByLabelText('Full Name *')).toHaveValue('Synthetic Learner');
  expect(screen.queryByText('Message sent. Our admissions team will reply using your contact details.')).toBeNull();
 });
+
+it('shows a dedicated enquiry review and an allowlisted edit link without sending anything',()=>{
+ const params=new URLSearchParams({area:'qualifications',course:'OTHM Level 4 Diploma in Business Management',level:'level-4',mode:'online',email:'private@example.invalid'});
+ render(<MemoryRouter initialEntries={['/contact?'+params]}><TenantContactPage/></MemoryRouter>);
+ expect(screen.getByRole('heading',{name:'Review your course enquiry'})).toBeInTheDocument();
+ const edit=screen.getByRole('link',{name:'Change study choices'}).getAttribute('href')!;
+ const restored=new URL(edit,'https://example.invalid');
+ expect(restored.searchParams.get('course')).toBe('OTHM Level 4 Diploma in Business Management');
+ expect(restored.searchParams.get('level')).toBe('level-4');
+ expect(restored.searchParams.get('mode')).toBe('online');
+ expect(restored.searchParams.has('email')).toBe(false);
+ expect(state.invoke).not.toHaveBeenCalled();
+});

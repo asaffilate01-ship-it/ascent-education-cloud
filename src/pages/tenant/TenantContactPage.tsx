@@ -2,7 +2,7 @@ import PublicFooter from '@/components/PublicFooter';
 import SocialIcons from '@/components/SocialIcons';
 import PublicHero from '@/components/PublicHero';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { courseEnquiryPrefill } from '@/lib/courseInterest';
+import { courseEnquiryPrefill, courseInterestEditUrl } from '@/lib/courseInterest';
 import { Button } from '@/components/ui/button';
 import { Mail, Clock, Send, Globe } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -80,9 +80,9 @@ function ContactWorkspace({slug}:{slug?:string}) {
             <p className="mt-4 text-sm text-muted-foreground">Use the form below for general questions. Please do not include identity documents or bank details.</p>
           </PublicHero></div>
 
-          <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
+          <div className="grid min-w-0 grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Contact Info */}
-            <div className="space-y-4">
+            <div className="min-w-0 space-y-4">
               {[
                 { icon: Mail, label: 'Email', value: 'admissions@unipathway.pk' },
                 { icon: Globe, label: 'Website', value: 'www.unipathway.pk' },
@@ -92,7 +92,7 @@ function ContactWorkspace({slug}:{slug?:string}) {
                   <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                     <item.icon className="w-4 h-4 text-primary" />
                   </div>
-                  <div>
+                  <div className="min-w-0 [overflow-wrap:anywhere]">
                     <p className="text-xs font-semibold text-muted-foreground uppercase">{item.label}</p>
                     <p className="text-sm">{item.icon === Mail ? <a className="inline-flex min-h-11 items-center underline underline-offset-4" href={`mailto:${item.value}`}>{item.value}</a> : item.value}</p>
                   </div>
@@ -105,28 +105,28 @@ function ContactWorkspace({slug}:{slug?:string}) {
             </div>
 
             {/* Form */}
-            <form id="contact-form" aria-busy={sending} onSubmit={handleSubmit} className="scroll-mt-28 lg:col-span-2 surface-card p-4 sm:p-6">
-              <h3 className="text-lg font-bold mb-4">Send us a message</h3>
-              {interest.summary&&<div className="mb-4 rounded-lg border bg-secondary/40 p-3 text-sm"><p className="font-semibold">Your selected study interest</p><p className="mt-1 break-words">{interest.summary}</p><Link className="mt-2 inline-flex min-h-11 items-center font-semibold underline underline-offset-4" to="/apply">Change study choices</Link><p className="mt-1 text-muted-foreground">Please review the prefilled message before sending. This is an enquiry, not an application or confirmed place.</p></div>}
+            <form id="contact-form" aria-busy={sending} onSubmit={handleSubmit} className="scroll-mt-28 min-w-0 lg:col-span-2 surface-card p-4 sm:p-6">
+              <h3 className="text-lg font-bold mb-4">{interest.summary?'Review your course enquiry':'Send us a message'}</h3>
+              {interest.summary&&<div className="mb-4 rounded-lg border bg-secondary/40 p-3 text-sm"><p className="font-semibold">Your selected study interest</p><p className="mt-1 break-words">{interest.summary}</p><Link className="mt-2 inline-flex min-h-11 items-center font-semibold underline underline-offset-4" to={courseInterestEditUrl(params)}>Change study choices</Link><p className="mt-1 text-muted-foreground">Please review the course, level and study format in your message before sending. Admissions must confirm approval, fees and the next available intake. This is an enquiry, not an application or confirmed place.</p></div>}
               {feedback&&<p role={feedback.kind==='error'?'alert':'status'} className="mb-4 rounded-lg border p-3 text-sm">{feedback.message}</p>}
               <fieldset disabled={sending} className="min-w-0">
               <legend className="sr-only">Admissions enquiry details</legend>
-              <div className="grid sm:grid-cols-2 gap-4 mb-4">
+              <div className="grid min-w-0 grid-cols-1 sm:grid-cols-2 gap-4 mb-4 [&>div]:min-w-0">
                 <div>
                   <label htmlFor="contact-name" className="text-label mb-1.5 block">Full Name *</label>
-                  <input id="contact-name" name="name" required autoComplete="name" value={formData.name} onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))} className="w-full bg-secondary text-base sm:text-sm px-3 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-primary/20" placeholder="Your name" />
+                  <input id="contact-name" name="name" required autoComplete="name" value={formData.name} onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))} className="w-full min-w-0 max-w-full bg-secondary text-base sm:text-sm px-3 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-primary/20" placeholder="Your name" />
                 </div>
                 <div>
                   <label htmlFor="contact-email" className="text-label mb-1.5 block">Email *</label>
-                  <input id="contact-email" name="email" required autoComplete="email" type="email" value={formData.email} onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))} className="w-full bg-secondary text-base sm:text-sm px-3 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-primary/20" placeholder="you@example.com" />
+                  <input id="contact-email" name="email" required autoComplete="email" type="email" value={formData.email} onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))} className="w-full min-w-0 max-w-full bg-secondary text-base sm:text-sm px-3 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-primary/20" placeholder="you@example.com" />
                 </div>
                 <div>
                   <label htmlFor="contact-phone" className="text-label mb-1.5 block">Phone / WhatsApp (Pakistan)</label>
-                  <input id="contact-phone" name="phone" type="tel" autoComplete="tel" value={formData.phone} onChange={(e) => setFormData(p => ({ ...p, phone: e.target.value }))} className="w-full bg-secondary text-base sm:text-sm px-3 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-primary/20" placeholder="+92" />
+                  <input id="contact-phone" name="phone" type="tel" autoComplete="tel" value={formData.phone} onChange={(e) => setFormData(p => ({ ...p, phone: e.target.value }))} className="w-full min-w-0 max-w-full bg-secondary text-base sm:text-sm px-3 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-primary/20" placeholder="+92" />
                 </div>
                 <div>
                   <label htmlFor="contact-subject" className="text-label mb-1.5 block">Subject</label>
-                  <select id="contact-subject" name="subject" value={formData.subject} onChange={(e) => setFormData(p => ({ ...p, subject: e.target.value }))} className="w-full bg-secondary text-base sm:text-sm px-3 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-primary/20">
+                  <select id="contact-subject" name="subject" value={formData.subject} onChange={(e) => setFormData(p => ({ ...p, subject: e.target.value }))} className="w-full min-w-0 max-w-full bg-secondary text-base sm:text-sm px-3 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-primary/20">
                     <option value="">Select a topic</option>
                     <option>Course Enquiry</option>
                     <option>Admissions Enquiry</option>
@@ -145,7 +145,7 @@ function ContactWorkspace({slug}:{slug?:string}) {
                   value={formData.message}
                   onChange={(e) => setFormData(p => ({ ...p, message: e.target.value }))}
                   rows={5}
-                  className="w-full bg-secondary text-base sm:text-sm px-3 py-2.5 rounded-lg outline-none resize-none focus:ring-2 focus:ring-primary/20"
+                  className="w-full min-w-0 max-w-full bg-secondary text-base sm:text-sm px-3 py-2.5 rounded-lg outline-none resize-none focus:ring-2 focus:ring-primary/20"
                   placeholder="How can we help you?"
                 />
               </div>
@@ -157,8 +157,8 @@ function ContactWorkspace({slug}:{slug?:string}) {
                 <TurnstileChallenge onToken={setCaptchaToken} resetSignal={challengeRevision}/>
                 {!import.meta.env.VITE_TURNSTILE_SITE_KEY&&<p role="status" className="text-sm text-muted-foreground">Secure enquiry verification is not configured. Please contact admissions by email while this service is being activated.</p>}
               </div>}
-              <Button className="px-8" type="submit" disabled={sending||(secureContact&&(!privacyAcknowledged||!captchaToken))}>
-                {sending ? 'Sending...' : <><Send className="w-4 h-4 mr-1.5" /> Send Message</>}
+              <Button className="w-full px-3 sm:w-auto sm:px-8" type="submit" disabled={sending||(secureContact&&(!privacyAcknowledged||!captchaToken))}>
+                {sending ? 'Sending...' : <><Send aria-hidden="true" className="hidden w-4 h-4 mr-1.5 sm:block" /><span className="whitespace-normal [overflow-wrap:normal]">Send Message</span></>}
               </Button>
               </fieldset>
             </form>

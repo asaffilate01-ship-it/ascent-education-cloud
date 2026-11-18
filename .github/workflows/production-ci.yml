@@ -118,6 +118,16 @@ jobs:
         run: npx playwright test e2e/browser-startup-diagnostics.spec.ts --workers=1
       - name: Chromium acceptance for public, progression and protected routes
         run: npx playwright test e2e/unipathway-ielts-admissions.spec.ts e2e/public-smoke.spec.ts e2e/assessment-evidence.spec.ts e2e/private-feedback.spec.ts e2e/centre-feedback.spec.ts e2e/course-discovery.spec.ts e2e/qualification-accessibility.spec.ts
+      - name: Pakistan course enquiry selection, review and responsive editing (synthetic only)
+        run: npx playwright test e2e/pakistan-course-enquiry.spec.ts --workers=1 --output=test-results/course-enquiry
+      - name: Retain course enquiry responsive evidence before other suites clean output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unipathway-course-enquiry-browser-evidence
+          path: test-results/course-enquiry/
+          retention-days: 14
+          if-no-files-found: error
       - name: Connected academic journey acceptance
         run: npx playwright test e2e/ux-flow.spec.ts e2e/teaching-learning-flow.spec.ts e2e/staff-access-gates.spec.ts --workers=1
       - name: Assessment drafting, publication and independent marking journeys

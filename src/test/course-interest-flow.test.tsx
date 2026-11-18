@@ -2,7 +2,7 @@ import {cleanup,fireEvent,render,screen} from '@testing-library/react';
 import {MemoryRouter,Route,Routes,useLocation} from 'react-router-dom';
 import {afterEach,expect,it,vi} from 'vitest';
 import ApplyStart from '@/pages/promo/ApplyStart';
-import {courseEnquiryPrefill,courseInterestEnquiryUrl} from '@/lib/courseInterest';
+import {courseEnquiryPrefill,courseInterestEnquiryUrl,courseInterestEditUrl,courseInterestFromParams} from '@/lib/courseInterest';
 
 vi.mock('@/components/PublicNav',()=>({default:()=>null}));
 vi.mock('@/components/PublicFooter',()=>({default:()=>null}));
@@ -57,4 +57,25 @@ it('creates a readable, advisory enquiry and preserves legacy published course l
  const legacy=courseEnquiryPrefill(new URLSearchParams('course=Sewing'));
  expect(legacy.message).toContain('Sewing');
  expect(courseEnquiryPrefill(new URLSearchParams('subject=Other')).message).toBe('');
+});
+
+it('preserves an exact catalogue selection when editing without reflecting personal or arbitrary URL values',()=>{
+ const title='OTHM Level 4 Diploma in Business Management';
+ const params=new URLSearchParams({area:'qualifications',course:title,level:'level-6',mode:'blended',email:'private@example.invalid',message:'private draft',availability:'open'});
+ const edit=courseInterestEditUrl(params);
+ const restored=courseInterestFromParams(new URL(edit,'https://example.invalid').searchParams);
+ expect(restored).toEqual({area:'qualifications',course:title,level:'level-4',mode:'blended'});
+ expect(edit).not.toContain('private');
+ expect(edit).not.toContain('availability');
+ expect(courseEnquiryPrefill(params).message).toContain('Level 4');
+ expect(courseEnquiryPrefill(params).message).not.toContain('Level 6');
+ expect(courseInterestEditUrl(new URLSearchParams('course=unrecognised&area=forged'))).toBe('/apply');
+});
+it('restores general study preferences and offers Level 6 without a conflicting range label',()=>{
+ const url=courseInterestEditUrl(new URLSearchParams('area=qualifications&level=level-6&mode=online'));
+ render(<MemoryRouter initialEntries={[url]}><ApplyStart/></MemoryRouter>);
+ expect(screen.getByLabelText(/What would you like to study/)).toHaveValue('qualifications');
+ expect(screen.getByLabelText('Preferred level')).toHaveValue('level-6');
+ expect(screen.getByLabelText('Preferred study format')).toHaveValue('online');
+ expect(screen.getByRole('option',{name:'UK qualification pathways (confirm your level)'})).toBeInTheDocument();
 });
