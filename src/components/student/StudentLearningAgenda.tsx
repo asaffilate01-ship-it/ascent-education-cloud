@@ -114,7 +114,25 @@ export default function StudentLearningAgenda({tenant, student, moduleIds}: {ten
         {orderedAction.slice(0,5).map(brief=>task(brief,true))}
         {agenda.action.length>5&&<p className="text-sm">Showing the five most time-sensitive tasks. Open coursework to review all {agenda.action.length} actionable tasks.</p>}
         {agenda.closed.length>0&&<details className="space-y-3"><summary className="min-h-11 cursor-pointer py-2 text-sm font-semibold">{agenda.closed.length} {agenda.closed.length===1?'task cannot currently be submitted':'tasks cannot currently be submitted'}</summary>{agenda.closed.slice(0,5).map(brief=>task(brief,false))}{agenda.closed.length>5&&<p className="text-sm">Open coursework to review all {agenda.closed.length} unavailable tasks.</p>}</details>}
-        {agenda.released.length>0&&<Link className="inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4" to="/student/grades">Read independently released feedback</Link>}
+        {agenda.review.length>0&&<section aria-label="Awaiting assessment" className="space-y-2">
+          <h5 className="text-sm font-semibold">Awaiting human assessment or IQA</h5>
+          <p className="text-xs text-muted-foreground">A submitted attempt is not a final grade. Human assessment and independent quality approval remain separate.</p>
+          {agenda.review.slice(0,3).map(brief=><article key={brief.id} className="rounded-lg border p-3 space-y-1">
+            <p className="break-words text-sm font-medium">{brief.title}</p>
+            <Link className="inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4" to={'/student/assignments?'+new URLSearchParams({module:brief.module_id})}>Check assessment status for {brief.title}</Link>
+          </article>)}
+          {agenda.review.length>3&&<p className="text-xs text-muted-foreground">Showing three submitted tasks. Open coursework to review all {agenda.review.length} tasks awaiting review.</p>}
+        </section>}
+        {agenda.released.length>0&&<section aria-label="Released feedback" className="space-y-2">
+          <h5 className="text-sm font-semibold">Independently released feedback</h5>
+          <p className="text-xs text-muted-foreground">Only released outcomes are available in your grades workspace. Open the record to check any approved corrections.</p>
+          {agenda.released.slice(0,3).map(brief=><article key={brief.id} className="rounded-lg border p-3 space-y-1">
+            <p className="break-words text-sm font-medium">{brief.title}</p>
+            <Link className="inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4" to={'/student/grades?'+new URLSearchParams({module:brief.module_id})}>Read released feedback for {brief.title}</Link>
+          </article>)}
+          {agenda.released.length>3&&<p className="text-xs text-muted-foreground">Showing three released tasks. Open grades to review all {agenda.released.length} released tasks.</p>}
+          <Link className="inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4" to="/student/grades">Read independently released feedback</Link>
+        </section>}
       </>}
     </section>
     <div className="flex flex-wrap gap-2"><Button variant="outline" onClick={refreshAgenda}>Refresh agenda</Button><Button asChild variant="outline"><Link to="/student/assignments">Open coursework</Link></Button><Button asChild variant="outline"><Link to="/student/classroom">View class invitations</Link></Button><Button asChild variant="outline"><Link to="/student/materials">Materials and resources</Link></Button></div>
