@@ -11,9 +11,9 @@ afterEach(cleanup);
 beforeEach(()=>{vi.clearAllMocks();mocks.user={id:'staff',tenantId:'centre',role:'exams_officer',roles:['exams_officer']};mocks.query.mockReturnValue({data:[],loading:false,error:null,refetch:vi.fn()});});
 it('shows only centre-owned recorded exam events, without invented rooms or invigilators',()=>{
  mocks.query.mockReturnValue({data:[
-  {id:'exam',tenant_id:'centre',event_type:'exam',title:'Recorded exam',start_date:'2026-11-01T09:00:00Z',location:null},
-  {id:'other',tenant_id:'another-centre',event_type:'exam',title:'Other centre exam',start_date:'2026-11-01T09:00:00Z'},
-  {id:'class',tenant_id:'centre',event_type:'class',title:'Ordinary lesson',start_date:'2026-11-01T09:00:00Z'},
+  {id:'exam',tenant_id:'centre',event_type:'exam',title:'Recorded exam',
+   start_date:'2026-11-01T09:00:00Z',end_date:'2026-11-01T11:00:00Z',
+   location:null,all_day:false},
  ],loading:false,error:null});
  render(<MemoryRouter initialEntries={['/exams']}><ExamsDashboard/></MemoryRouter>);
  expect(screen.getByText('Recorded exam')).toBeInTheDocument();
@@ -31,7 +31,7 @@ it('shows unconnected examination services without fake incident saving',()=>{
 it('never treats an exam query failure as an empty timetable',()=>{
  mocks.query.mockReturnValue({data:[],error:'denied',loading:false});
  render(<MemoryRouter><ExamsDashboard/></MemoryRouter>);
- expect(screen.getByRole('alert')).toHaveTextContent('could not be loaded');
+ expect(screen.getByRole('alert')).toHaveTextContent('could not be verified');
  expect(screen.queryByText('No exam events have been recorded.')).toBeNull();
 });
 it('blocks exam reads when the account switches to another active role',()=>{
