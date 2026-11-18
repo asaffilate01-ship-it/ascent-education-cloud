@@ -26,13 +26,13 @@ describe('Focused workspace navigation',()=>{
  it('organises learner pages around learning, assessment, progress and support without losing specialist tools',()=>{
   const sections=getNavigationSections('student');
   expect(sections.map(s=>s.title)).toEqual([
-   'Everyday','Learn & practise','Assessments & feedback','Progress & planning','Support & opportunities',
+   'Today','Learn','Assessments','Progress','Support',
   ]);
   expect(sections[0].items.map(i=>i.path)).toContain('/student');
-  expect(sections.find(s=>s.title==='Learn & practise')?.items.map(i=>i.path)).toContain('/student/materials');
-  expect(sections.find(s=>s.title==='Assessments & feedback')?.items.map(i=>i.path)).toContain('/student/appeals');
-  expect(sections.find(s=>s.title==='Progress & planning')?.items.map(i=>i.path)).toContain('/student/attendance');
-  expect(sections.find(s=>s.title==='Support & opportunities')?.items.map(i=>i.path)).toContain('/student/wellbeing');
+  expect(sections.find(s=>s.title==='Learn')?.items.map(i=>i.path)).toContain('/student/materials');
+  expect(sections.find(s=>s.title==='Assessments')?.items.map(i=>i.path)).toContain('/student/appeals');
+  expect(sections.find(s=>s.title==='Progress')?.items.map(i=>i.path)).toContain('/student/attendance');
+  expect(sections.find(s=>s.title==='Support')?.items.map(i=>i.path)).toContain('/student/wellbeing');
  });
  it('separates teaching, marking and learner communication but keeps every lecturer route available',()=>{
   const sections=getNavigationSections('lecturer');
@@ -45,4 +45,16 @@ describe('Focused workspace navigation',()=>{
   expect(sections.find(s=>s.title==='Students & communication')?.items.map(i=>i.path)).toContain('/lecturer/students');
   expect(getNavigationSections('lecturer','whiteboard')[0].items.map(i=>i.path)).toContain('/lecturer/whiteboards');
  });
- 
+
+it('offers a task-led Today sidebar for students without losing the original specialist routes',()=>{
+ const sections=getNavigationSections('student');
+ expect(sections[0].title).toBe('Today');
+ expect(sections[0].items.find(item=>item.path==='/student')?.label).toBe('Today');
+ expect(sections.find(section=>section.title==='Assessments')?.items.map(item=>item.path)).toContain('/student/appeals');
+ const all=sections.flatMap(section=>section.items.map(item=>item.path));
+ expect(all).toContain('/student/assignments');
+ expect(all).toContain('/student/grades');
+ expect(all).toContain('/student/finance');
+ expect(all).toContain('/workspace');
+ expect(new Set(all).size).toBe(all.length);
+});
