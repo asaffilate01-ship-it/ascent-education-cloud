@@ -90,4 +90,18 @@ describe('Phase 13: evidence-bound student coursework dashboard',()=>{
   expect(attempts[0].attempt_no).toBe(1);
   expect(checked.released).toHaveLength(0);
  });
+ it('fails closed on missing attempts, out-of-policy numbers and unsubmitted draft records',()=>{
+  expect(()=>verify([brief()],[attempt({attempt_no:2})])).toThrow(/Incomplete coursework attempt history/);
+  expect(()=>verify([brief({max_attempts:1})],[attempt({attempt_no:2})])).toThrow(/verification/);
+  expect(()=>verify([brief()],[attempt({status:'draft'})])).toThrow(/verification/);
+  expect(()=>verify([brief({max_attempts:3})],[
+   attempt(),attempt({id:'attempt-three',attempt_no:3}),
+  ])).toThrow(/Incomplete coursework attempt history/);
+  const checked=verify([brief({max_attempts:3})],[
+   attempt(),attempt({id:'attempt-two',attempt_no:2}),
+   attempt({id:'attempt-three',attempt_no:3}),
+  ]);
+  expect(checked.attempts.map(row=>row.attempt_no)).toEqual([1,2,3]);
+ });
+
 });

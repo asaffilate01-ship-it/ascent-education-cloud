@@ -61,6 +61,7 @@ export function verifyStudentAgendaEvidence(
 ):{briefs:VerifiedStudentBrief[];attempts:VerifiedStudentAttempt[];released:VerifiedStudentRelease[]}{
  const verifiedBriefs=verifyStudentAgendaBriefs(briefs,scope);
  const briefIds=new Set(verifiedBriefs.map(brief=>brief.id));
+ const attemptLimits=new Map(verifiedBriefs.map(brief=>[brief.id,brief.max_attempts]));
  const attemptsById=new Map<string,VerifiedStudentAttempt>();
  const numbers=new Set<string>();
  const attempts=rows(rawAttempts).map(row=>{
@@ -68,8 +69,9 @@ export function verifyStudentAgendaEvidence(
      !briefIds.has(row.brief_id)||row.tenant_id!==scope.tenantId||
      row.student_id!==scope.studentId||
      typeof row.attempt_no!=='number'||!Number.isSafeInteger(row.attempt_no)||
-     row.attempt_no<1||typeof row.status!=='string'||!row.status.trim()||
-     row.status.length>80)
+     row.attempt_no<1||row.attempt_no>(attemptLimits.get(row.brief_id as string)??0)||
+     typeof row.status!=='string'||!row.status.trim()||
+     row.status.length>80||row.status==='draft')
    throw Error('Assessment attempt failed student ownership or brief verification');
   const tuple=`${row.brief_id}:${row.attempt_no}`;
   if(numbers.has(tuple))throw Error('Duplicate coursework attempt number');
@@ -78,6 +80,19 @@ export function verifyStudentAgendaEvidence(
   attemptsById.set(attempt.id,attempt);
   return attempt;
  });
+ // An incomplete attempt history must not imply an unused attempt or allow
+ // the overview to recommend submission under a corrupt sequence.
+ const history=new Map<string,number[]>();
+ for(const item of attempts){
+  const numbers=history.get(item.brief_id)||[];
+  numbers.push(item.attempt_no);
+  history.set(item.brief_id,numbers);
+ }
+ for(const numbers of history.values()){
+  numbers.sort((a,b)=>a-b);
+  if(numbers.some((number,index)=>number!==index+1))
+   throw Error('Incomplete coursework attempt history');
+ }
  const releaseIds=new Set<string>();
  const released=rows(rawReleased).map(row=>{
   const attempt=ident(row.attempt_id)?attemptsById.get(row.attempt_id):undefined;

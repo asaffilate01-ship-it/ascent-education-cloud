@@ -17,7 +17,7 @@ beforeEach(()=>{failure='';tables={unipathway_assessment_briefs:[{id:'b1',module
 };return q;});});
 afterEach(()=>{cleanup();vi.clearAllMocks();});
 const mount=()=>render(<MemoryRouter><StudentLearningAgenda tenant="centre" student="learner" moduleIds={['module']}/></MemoryRouter>);
-it('shows published pending work and invited classes without legacy tasks',async()=>{mount();await screen.findByText('Published coursework');expect(screen.queryByText('Submitted work')).not.toBeInTheDocument();expect(screen.getByText(/Invited English class/)).toBeInTheDocument();expect(mocks.filters).toHaveBeenCalledWith('unipathway_assessment_briefs','eq','status','published');expect(mocks.filters).toHaveBeenCalledWith('unipathway_assessment_briefs','in','module_id',['module']);expect(mocks.filters).toHaveBeenCalledWith('unipathway_assessment_attempts','eq','student_id','learner');});
+it('shows actionable coursework, submitted review and invited classes',async()=>{mount();await screen.findByText('Published coursework');expect(screen.getByRole('region',{name:'Awaiting assessment'})).toHaveTextContent('Submitted work');expect(screen.getByText(/Invited English class/)).toBeInTheDocument();expect(mocks.filters).toHaveBeenCalledWith('unipathway_assessment_briefs','eq','status','published');expect(mocks.filters).toHaveBeenCalledWith('unipathway_assessment_briefs','in','module_id',['module']);expect(mocks.filters).toHaveBeenCalledWith('unipathway_assessment_attempts','eq','student_id','learner');});
 it('shows marker-requested resubmissions and marks closed windows',async()=>{tables.unipathway_assessment_attempts=[{brief_id:'b1',attempt_no:1,status:'resubmission_requested'}];tables.unipathway_assessment_briefs=[{id:'b1',module_id:'module',title:'Revision needed',due_at:'2020-01-01',submission_cutoff:'2020-01-02',max_attempts:2}];mount();await screen.findByText('Revision needed');expect(screen.getByText(/You cannot currently submit this task/)).toBeInTheDocument();});
 it('reports failure without empty-work reassurance and recovers',async()=>{failure='live_class_sessions';mount();await screen.findByRole('alert');expect(screen.queryByText(/No coursework currently meets/)).not.toBeInTheDocument();failure='';fireEvent.click(screen.getByText('Refresh agenda'));await screen.findByText('Published coursework');});
 it('clears previous records when account scope changes',async()=>{const view=mount();await screen.findByText('Published coursework');failure='unipathway_assessment_briefs';view.rerender(<MemoryRouter><StudentLearningAgenda tenant="other" student="other-learner" moduleIds={['other-module']}/></MemoryRouter>);expect(screen.queryByText('Published coursework')).not.toBeInTheDocument();await screen.findByText('Your coursework could not be verified. Refresh to retry.');await screen.findByText('Your enrolled module sessions could not be verified. Refresh to retry.');expect(screen.queryByText('Invited English class')).toBeNull();expect(screen.queryByRole('region',{name:'Suggested study focus'})).toBeNull();await waitFor(()=>expect(mocks.filters).toHaveBeenCalledWith('live_class_sessions','eq','tenant_id','other'));});
@@ -113,4 +113,36 @@ it('blocks duplicate attempt numbers that could misstate remaining submissions',
  mount();
  expect(await screen.findByText('Your coursework could not be verified. Refresh to retry.')).toBeInTheDocument();
  expect(screen.queryByText(/needing action/)).not.toBeInTheDocument();
+});
+
+it('separates submitted work awaiting human review from independently released feedback',async()=>{
+ tables.live_class_sessions=[];
+ tables.unipathway_assessment_briefs=[
+  {id:'pending',module_id:'module',title:'Submitted portfolio',due_at:'2099-01-01',submission_cutoff:'2099-01-02',max_attempts:2},
+  {id:'approved',module_id:'module',title:'Approved project',due_at:'2099-01-01',submission_cutoff:'2099-01-02',max_attempts:2},
+ ];
+ tables.unipathway_assessment_attempts=[
+  {id:'pending-attempt',brief_id:'pending',attempt_no:1,status:'submitted'},
+  {id:'approved-attempt',brief_id:'approved',attempt_no:1,status:'human_marked'},
+ ];
+ tables.unipathway_assessment_released_results=[{attempt_id:'approved-attempt',brief_id:'approved'}];
+ mount();
+ const waiting=await screen.findByRole('region',{name:'Awaiting assessment'});
+ const released=screen.getByRole('region',{name:'Released feedback'});
+ expect(waiting).toHaveTextContent('Submitted portfolio');
+ expect(waiting).toHaveTextContent('not a final grade');
+ expect(waiting).not.toHaveTextContent('Approved project');
+ expect(released).toHaveTextContent('Approved project');
+ expect(released).not.toHaveTextContent('Submitted portfolio');
+ expect(screen.getByRole('link',{name:'Check assessment status for Submitted portfolio'})).toHaveAttribute('href','/student/assignments?module=module');
+ expect(screen.getByRole('link',{name:'Read released feedback for Approved project'})).toHaveAttribute('href','/student/grades?module=module');
+});
+it('hides all coursework actions when a server record skips a numbered submission attempt',async()=>{
+ tables.live_class_sessions=[];
+ tables.unipathway_assessment_attempts=[{id:'skipped-attempt',brief_id:'b1',attempt_no:2,status:'submitted'}];
+ mount();
+ expect(await screen.findByText('Your coursework could not be verified. Refresh to retry.')).toBeInTheDocument();
+ expect(screen.queryByRole('region',{name:'Awaiting assessment'})).toBeNull();
+ expect(screen.queryByRole('region',{name:'Released feedback'})).toBeNull();
+ expect(screen.queryByRole('link',{name:'Review module coursework'})).toBeNull();
 });
