@@ -7,7 +7,18 @@ on:
 permissions:
   contents: read
 jobs:
+  manifest-preflight:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 24}
+      - name: Check direct dependencies and package-lock before npm ci
+        run: node scripts/ci/verify-root-lockfile.mjs
+      - name: Check manifest preflight regression cases
+        run: node --test scripts/ci/verify-root-lockfile.test.mjs
   typecheck:
+    needs: manifest-preflight
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -16,6 +27,7 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npx tsc --noEmit -p tsconfig.app.json
   lint:
+    needs: manifest-preflight
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -24,6 +36,7 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run lint
   unit-tests:
+    needs: manifest-preflight
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -35,6 +48,7 @@ jobs:
       - name: Native dependency retry boundaries
         run: node --test scripts/ci/retry-native-downloads.test.mjs
   database-tests:
+    needs: manifest-preflight
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -57,6 +71,7 @@ jobs:
       - name: Fresh schema and access checks (hosted extensions deferred)
         run: npm run test:fresh-schema
   edge-tests:
+    needs: manifest-preflight
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -74,6 +89,7 @@ jobs:
       - run: npm run check:enquiry
       - run: npm run test:enquiry
   build:
+    needs: manifest-preflight
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -82,6 +98,7 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run build
   browser-acceptance:
+    needs: manifest-preflight
     # Playwright 1.58.2 does not support the Ubuntu 26.04 ubuntu-latest image.
     runs-on: ubuntu-24.04
     timeout-minutes: 15
