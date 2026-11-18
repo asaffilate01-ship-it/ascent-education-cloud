@@ -20,7 +20,7 @@
 
 ## Phase 2 — acceptance test identities
 
-The academic gate requires **17 role identities in tenant A plus 2 additional learner identities** for same-tenant and cross-tenant negative tests. All must have unique passwords, correctly scoped Supabase `user_roles` and `profiles` records.
+The academic gate requires **21 role identities in tenant A plus 2 additional learner identities** for same-tenant and cross-tenant negative tests. All must have unique passwords, correctly scoped Supabase `user_roles` and `profiles` records.
 
 | Fixture key | Required role | Staging email |
 |---|---|---|
@@ -85,7 +85,7 @@ The expected scoped roles should be singular for testing. The superadmin role mu
 }
 ```
 
-The example shows structure only; it is **intentionally incomplete**. Populate **all 19 `accounts` entries** and the listed object references, after seeding the isolated environment. Store the complete JSON as `UNIPATHWAY_STAGING_ACADEMIC_FIXTURES_JSON` secret in the protected GitHub staging environment. Do not copy the example password into any account.
+The example shows structure only; it is **intentionally incomplete**. Populate **all 23 `accounts` entries** and the listed object references, after seeding the isolated environment. Store the complete JSON as `UNIPATHWAY_STAGING_ACADEMIC_FIXTURES_JSON` secret in the protected GitHub staging environment. Do not copy the example password into any account.
 
 Additional protected values:
 
@@ -101,7 +101,7 @@ Additional protected values:
 Trigger **UniPathway Staging Acceptance (Manual)** using the exact confirmation `UNIPATHWAY_STAGING_ONLY`. The workflow performs two **read-only** suites:
 
 1. Existing IELTS/audio/progression student A/B isolation tests.
-2. New academic acceptance: 17 named roles and tenant alignment, unauthorised same-tenant class access, revoked class, other-tenant boards, unpublished module materials, time-limited signed file access, lecturer vs independent assessor visibility, private AI drafts, provisional vs released grades, employer/university/parent restrictions and LMS code evidence isolation.
+2. New academic acceptance: 21 named roles and tenant alignment, unauthorised same-tenant class access, revoked class, other-tenant boards, unpublished module materials, time-limited signed file access, lecturer vs independent assessor visibility, private AI drafts, provisional vs released grades, employer/university/parent restrictions and LMS code evidence isolation.
 
 If an API table is absent, an account fails login, storage is missing, a role has wrong tenant scope or an expected private resource is readable, **the run fails**. A denied request due to a missing table is never considered an RLS pass.
 
@@ -119,7 +119,11 @@ The suite calls `auth.signInWithPassword`, **SELECT only** and Storage `createSi
 ## Pass criteria
 
 - GitHub source CI green on exact merge commit.
-- Staging readiness: all 17 named test roles mapped and working; 2 separate tenants; API/Storage negative tests pass.
+- Staging readiness: all 21 named test roles mapped and working; 2 separate tenants; API/Storage negative tests pass.
 - Live Microsoft/AWS features off until their separate integration gates are complete.
 - Academic leadership signs off on curriculum and awarding-body specific grading/appeal policies.
 - Production DB migrations and live publish are approved as independent change events.
+
+
+## November 18 coverage update
+The source-only academic gate now requires 21 named roles plus two learner isolation identities (23 accounts). Add office (`office_admin`, dev.office@educloud.test), hr (`hr_officer`, dev.hr@educloud.test), secretary (`secretary`, dev.secretary@educloud.test), and security (`security_officer`, dev.security@educloud.test), each centre-A scoped with a unique protected password. Bootstrap plan includes these identities; apply still requires all existing staging safeguards. No accounts have been provisioned by this change. The four additional roles must fail reads of private AI drafts, provisional marks and cross-centre coursework. This expands Auth/RLS coverage, not browser or complete role functionality acceptance. Missing fixtures fail closed.

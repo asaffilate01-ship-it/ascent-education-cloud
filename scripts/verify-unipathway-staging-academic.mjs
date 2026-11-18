@@ -25,7 +25,11 @@ const EXPECTED={
  assessor:['assessor','dev.asses@educloud.test'],
  eqa:['awarding_body_eqa','dev.eqa@educloud.test'],
  welfare:['welfare_officer','dev.welf@educloud.test'],
- parent:['parent_guardian','dev.parent@educloud.test']
+ parent:['parent_guardian','dev.parent@educloud.test'],
+ office:['office_admin','dev.office@educloud.test'],
+ hr:['hr_officer','dev.hr@educloud.test'],
+ secretary:['secretary','dev.secretary@educloud.test'],
+ security:['security_officer','dev.security@educloud.test']
 };
 const mustEnv=(key)=>{
  const value=process.env[key];
@@ -115,8 +119,15 @@ async function checkSigned(client,path,allow,label){
  checks++;
 }
 try{
- // Auth logins run sequentially to avoid rate-limiting 19 simultaneous sign-ins.
+ // Auth logins run sequentially to avoid rate-limiting 23 simultaneous sign-ins.
  for(const name of [...Object.keys(EXPECTED),'studentB','uninvitedStudentA'])await connect(name);
+ // Non-academic staff must not see private assessment evidence or another centre's resources.
+ for(const name of ['office','hr','secretary','security']){
+  const staff=tokens.get(name);
+  await readTable(staff,'unipathway_assessment_ai_drafts','id',objects.studentAIRecommendationA,false,name+' private AI draft');
+  await readTable(staff,'unipathway_assessment_human_marks','attempt_id',objects.studentHumanMarkA,false,name+' provisional mark');
+  await readTable(staff,'unipathway_assessment_attempts','id',objects.studentAttemptB,false,name+' cross-centre coursework');
+ }
  const a=tokens.get('student'),b=tokens.get('studentB'),peer=tokens.get('uninvitedStudentA');
  const lecturer=tokens.get('lecturer'),marker=tokens.get('assessor'),qa=tokens.get('qa');
  const programme=tokens.get('programme'),director=tokens.get('director');

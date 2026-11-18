@@ -29,6 +29,10 @@ export const ROLE_FIXTURES=Object.freeze([
  {key:'eqa',role:'awarding_body_eqa',email:'dev.eqa@educloud.test'},
  {key:'welfare',role:'welfare_officer',email:'dev.welf@educloud.test'},
  {key:'parent',role:'parent_guardian',email:'dev.parent@educloud.test'},
+ {key:'office',role:'office_admin',email:'dev.office@educloud.test'},
+ {key:'hr',role:'hr_officer',email:'dev.hr@educloud.test'},
+ {key:'secretary',role:'secretary',email:'dev.secretary@educloud.test'},
+ {key:'security',role:'security_officer',email:'dev.security@educloud.test'},
  {key:'studentB',role:'student',email:'dev.studentb@educloud.test',tenantKey:'b'},
  {key:'uninvitedStudentA',role:'student',email:'dev.uninvited@educloud.test',tenantKey:'a'},
 ]);
@@ -36,7 +40,7 @@ const TAG='unipathway-staging-fixture-v1';
 function getCredentials(env){
  let values;
  try{values=JSON.parse(String(env.STAGING_ROLE_CREDENTIALS_JSON||''));}
- catch{throw Error('Protected STAGING_ROLE_CREDENTIALS_JSON must be provided for 19 test identities');}
+ catch{throw Error('Protected STAGING_ROLE_CREDENTIALS_JSON must be provided for 23 test identities');}
  if(!values||typeof values!=='object')throw Error('Invalid credential object');
  const passwords=[];
  for(const x of ROLE_FIXTURES){

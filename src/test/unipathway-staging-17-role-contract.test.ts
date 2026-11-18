@@ -11,7 +11,7 @@ const sidebar=file('src/components/layout/DashboardSidebar.tsx');
 const publicNav=file('src/components/PublicNav.tsx');
 
 const roles=['superadmin','director','admissions','lecturer','programme','qa','exams',
- 'finance','marketing','agent','student','unipartner','employer','assessor','eqa','welfare','parent'];
+ 'finance','marketing','agent','student','unipartner','employer','assessor','eqa','welfare','parent','office','hr','secretary','security'];
 
 function isKnownRoute(dest:string,actualRoutes:string[]){
  const path=dest.split(/[?#]/)[0];
@@ -22,12 +22,20 @@ function isKnownRoute(dest:string,actualRoutes:string[]){
 }
 
 describe('protected UniPathway academic staging acceptance',()=>{
- it('requires all 17 roles plus two student isolation fixtures',()=>{
+ it('requires all 21 roles plus two student isolation fixtures',()=>{
   for(const role of roles)expect(academic).toMatch(new RegExp('\\b'+role+':\\['));
   expect(academic).toContain("'studentB','uninvitedStudentA'");
   expect(academic).toContain('profiles');
   expect(academic).toContain('user_roles');
   expect(academic).toContain('assert.equal(matches.length,1');
+ });
+ it('keeps staging role coverage in sync with every application role',()=>{
+  const types=file('src/types/platform.ts').split('export type UserRole =')[1].split(';')[0];
+  const appRoles=[...types.matchAll(/'([^']+)'/g)].map(m=>m[1]).sort();
+  const tested=[...academic.matchAll(/\w+:\['([^']+)'/g)].map(m=>m[1]).sort();
+  expect(tested).toEqual(appRoles);
+  for(const key of ['office','hr','secretary','security']) expect(academic).toContain(key);
+  expect(academic).toContain("name+' provisional mark'");
  });
  it('refuses ambiguous production project, missing confirmation and malformed staging URL',()=>{
   expect(academic).toContain("acknowledge!=='UNIPATHWAY_STAGING_ONLY'");
