@@ -51,7 +51,7 @@ describe('UniPathway office roles and per-person permissions',()=>{
   const manager=readFileSync('src/pages/office/StaffAccessManager.tsx','utf8');
   expect(dashboard).toContain('VITE_UNIPATHWAY_OFFICE_ACCESS_ENABLED');
   expect(dashboard).toContain('get_my_unipathway_office_workspace');
-  expect(dashboard).toContain('row.centreId===centre');
+  expect(readFileSync('src/lib/officeWorkspaceSnapshot.ts','utf8')).toContain('row.centreId===centre');
   expect(manager).toContain('set_unipathway_staff_access');
   expect(manager).toContain('p_expected_revision:current.revision');
   expect(manager).toContain('data.centreId!==tenant');
