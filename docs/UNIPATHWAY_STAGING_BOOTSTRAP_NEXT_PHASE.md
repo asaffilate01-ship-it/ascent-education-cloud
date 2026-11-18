@@ -38,12 +38,12 @@ Configure these encrypted **environment secrets**:
 | `UNIPATHWAY_STAGING_URL` | `https://STAGING_REF.supabase.co/` |
 | `UNIPATHWAY_STAGING_DATABASE_URL` | Direct PostgreSQL `db.STAGING_REF.supabase.co`, read-only preflight only |
 | `UNIPATHWAY_STAGING_SERVICE_ROLE_KEY` | Staging-only admin account/tenant creation; never place into browser or repository |
-| `UNIPATHWAY_STAGING_ROLE_CREDENTIALS_JSON` | An object of 19 different 24+ character passwords keyed by fixture role |
+| `UNIPATHWAY_STAGING_ROLE_CREDENTIALS_JSON` | An object of 23 distinct 24–128 character passwords without whitespace, keyed by the exact fixture keys below |
 | `UNIPATHWAY_STAGING_ANON_KEY` | Public API key for authenticated browser/account tests |
 | `UNIPATHWAY_STAGING_FIXTURES_JSON` | Existing IELTS/progression two-tenant fixture IDs and authorised test credentials |
 | `UNIPATHWAY_STAGING_ACADEMIC_FIXTURES_JSON` | 21 named accounts, two isolation students and the synthetic protected LMS resource IDs |
 
-**Fixture keys:** `superadmin`, `director`, `admissions`, `lecturer`, `programme`, `qa`, `exams`, `finance`, `marketing`, `agent`, `student`, `unipartner`, `employer`, `assessor`, `eqa`, `welfare`, `parent`, `studentB`, `uninvitedStudentA`.
+**Fixture keys:** `superadmin`, `director`, `admissions`, `lecturer`, `programme`, `qa`, `exams`, `finance`, `marketing`, `agent`, `student`, `unipartner`, `employer`, `assessor`, `eqa`, `welfare`, `parent`, `office`, `hr`, `secretary`, `security`, `studentB`, `uninvitedStudentA`.
 
 Do not print the JSON password values in CI logs. Do not reuse a password across roles. Credential generation should happen through a secure password manager; the bootstrap script intentionally refuses shared passwords.
 
@@ -52,7 +52,7 @@ Do not print the JSON password values in CI logs. Do not reuse a password across
 - `node scripts/plan-unipathway-migrations.mjs --json`: local offline source inventory; no network.
 - `node scripts/plan-unipathway-migrations.mjs --staging --strict --json`: metadata-only read-only direct PostgreSQL access to the verified staging project, fails on known SQL issues/missing role safety.
 - `node scripts/init-unipathway-staging-tenants.mjs --plan`: requires staging project identity environment, but no secrets or DB writes.
-- `node scripts/bootstrap-unipathway-staging-accounts.mjs --plan`: provides 19 expected role records without requiring a service key.
+- `node scripts/bootstrap-unipathway-staging-accounts.mjs --plan`: provides 23 expected account records without requiring a service key.
 - Both `--apply` operations require `STAGING_RUN_ACK=UNIPATHWAY_STAGING_ONLY`, `UNIPATHWAY_STAGING_WRITE_ACK=I_APPROVE_ISOLATED_STAGING_FIXTURES`, `APP_ENV=staging`, `UNIPATHWAY_ISOLATED_STAGING_SEED=true`, matching verified host/ref and protected service key.
 - The old `seed-dev-users` Edge Function is **disabled with 410** in source because it used a shared password and an unverified first-tenant fallback.
 
@@ -60,7 +60,7 @@ Do not print the JSON password values in CI logs. Do not reuse a password across
 
 An isolated project can have **real hosting charges**, and creating one must be separately approved once pricing is known. The current tools cannot infer that a named Lovable QA project is a complete independent Supabase deployment. Do not create a new paid Supabase project, AWS resource or Microsoft subscription without the user's explicit approval of any nonzero cost.
 
-**Current completion definition:** reproducible source migration inventory, read-only staging metadata comparison, protected two-tenant fixture creation, separate role credentials and a documented handoff to existing 17-role acceptance. The next stage after provisioning is a full schema rehearsal and per-role test-session recording.
+**Current completion definition:** reproducible source migration inventory, read-only staging metadata comparison, protected two-tenant fixture creation, separate role credentials and a documented handoff to 21-role acceptance (23 accounts). The next stage after provisioning is a full schema rehearsal and per-role test-session recording.
 
 
 ## November 18 coverage update

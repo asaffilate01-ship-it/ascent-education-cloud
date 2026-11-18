@@ -20,7 +20,7 @@
 
 ## Phase 2 — acceptance test identities
 
-The academic gate requires **21 role identities in tenant A plus 2 additional learner identities** for same-tenant and cross-tenant negative tests. All must have unique passwords, correctly scoped Supabase `user_roles` and `profiles` records.
+The academic gate requires **21 role identities (20 scoped to tenant A and one global superadmin) plus 2 additional learner identities** for same-tenant and cross-tenant negative tests. All must have unique passwords, correctly scoped Supabase `user_roles` and `profiles` records.
 
 | Fixture key | Required role | Staging email |
 |---|---|---|
@@ -41,8 +41,12 @@ The academic gate requires **21 role identities in tenant A plus 2 additional le
 | eqa | awarding_body_eqa | dev.eqa@educloud.test |
 | welfare | welfare_officer | dev.welf@educloud.test |
 | parent | parent_guardian | dev.parent@educloud.test |
-| studentB | student, tenant B | unique local test address |
-| uninvitedStudentA | student, tenant A but not enrolled for tested modules | unique local test address |
+| office | office_admin | dev.office@educloud.test |
+| hr | hr_officer | dev.hr@educloud.test |
+| secretary | secretary | dev.secretary@educloud.test |
+| security | security_officer | dev.security@educloud.test |
+| studentB | student, tenant B | dev.studentb@educloud.test |
+| uninvitedStudentA | student, tenant A but not enrolled for tested modules | dev.uninvited@educloud.test |
 
 The expected scoped roles should be singular for testing. The superadmin role must be global; do not assume a global admin's profile tenant enables ordinary staff permissions. All test data is fictitious.
 

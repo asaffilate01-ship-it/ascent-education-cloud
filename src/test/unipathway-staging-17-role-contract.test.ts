@@ -37,6 +37,30 @@ describe('protected UniPathway academic staging acceptance',()=>{
   for(const key of ['office','hr','secretary','security']) expect(academic).toContain(key);
   expect(academic).toContain("name+' provisional mark'");
  });
+ it('keeps both operator runbooks aligned with bootstrap fixture keys and credentials',()=>{
+  const bootstrap=file('scripts/bootstrap-unipathway-staging-accounts.mjs');
+  const fixtures=[...bootstrap.matchAll(/\{key:'([^']+)',role:'([^']+)',email:'([^']+)'/g)]
+   .map(([,key,role,email])=>({key,role,email}));
+  expect(fixtures).toHaveLength(23);
+  const acceptance=file('docs/UNIPATHWAY_STAGING_17_ROLE_ACCEPTANCE_20261020.md');
+  const rows=acceptance.split('\n').filter(line=>/^\| \w+ \|/.test(line))
+   .map(line=>line.split('|').slice(1,-1).map(cell=>cell.trim()));
+  expect(rows).toHaveLength(fixtures.length);
+  for(const fixture of fixtures){
+   const row=rows.find(([key])=>key===fixture.key);
+   expect(row).toBeDefined();
+   expect(row?.[1].split(',')[0]).toBe(fixture.role);
+   expect(row?.[2]).toBe(fixture.email);
+  }
+  const runbook=file('docs/UNIPATHWAY_STAGING_BOOTSTRAP_NEXT_PHASE.md');
+  const keyLine=runbook.split('\n').find(line=>line.startsWith('**Fixture keys:**'))!;
+  expect([...keyLine.matchAll(/`([^`]+)`/g)].map(m=>m[1]))
+   .toEqual(fixtures.map(fixture=>fixture.key));
+  expect(runbook).toContain('23 distinct 24–128 character passwords without whitespace');
+  expect(runbook).toContain('provides 23 expected account records');
+  expect(runbook).toContain('21-role acceptance (23 accounts)');
+  expect(acceptance).toContain('all 23 `accounts` entries');
+ });
  it('refuses ambiguous production project, missing confirmation and malformed staging URL',()=>{
   expect(academic).toContain("acknowledge!=='UNIPATHWAY_STAGING_ONLY'");
   expect(academic).toContain('ref===productionRef');
