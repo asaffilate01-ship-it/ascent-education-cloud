@@ -18,7 +18,7 @@ it('has no dead application routes in any role directory',()=>{const app=readFil
 it('combines service-area and text filters, announces counts and restores focus when cleared',()=>{
  render(<MemoryRouter initialEntries={['/workspace?module=math']}><RoleWorkspace/></MemoryRouter>);
  const input=screen.getByLabelText('Find a service');
- fireEvent.change(screen.getByLabelText('Service area'),{target:{value:'Study'}});
+ fireEvent.change(screen.getByLabelText('Service area'),{target:{value:'Learn'}});
  fireEvent.change(input,{target:{value:'  MATERIALS  '}});
  expect(screen.getByRole('link',{name:/Materials and recorded lessons/})).toHaveAttribute('href','/student/library?module=math');
  expect(screen.getByRole('status')).toHaveTextContent(/^1 of/);
@@ -31,7 +31,7 @@ it('combines service-area and text filters, announces counts and restores focus 
 });
 it('clears both service filters when the active role changes',()=>{
  const view=render(<MemoryRouter><RoleWorkspace/></MemoryRouter>);
- fireEvent.change(screen.getByLabelText('Service area'),{target:{value:'Study'}});
+ fireEvent.change(screen.getByLabelText('Service area'),{target:{value:'Learn'}});
  fireEvent.change(screen.getByLabelText('Find a service'),{target:{value:'classes'}});
  mock.role='parent_guardian';view.rerender(<MemoryRouter><RoleWorkspace/></MemoryRouter>);
  expect(screen.getByLabelText('Find a service')).toHaveValue('');
@@ -55,4 +55,21 @@ it('focuses service discovery with slash outside editable fields, without interr
  input.blur();
  fireEvent.keyDown(input,{key:'/'});
  expect(input).not.toHaveFocus();
+});
+
+it('keeps a unique, complete five-area student directory with a direct Today dashboard link',()=>{
+ const groups=workspaceCatalog.student;
+ expect(groups.map(group=>group.title)).toEqual(['Today','Learn','Assessments','Progress','Support']);
+ const paths=groups.flatMap(group=>group.items.map(item=>item.to));
+ expect(paths).toContain('/student');
+ expect(paths).toContain('/student/assignments');
+ expect(paths).toContain('/student/grades');
+ expect(paths).toContain('/student/support');
+ expect(paths).toContain('/verify');
+ expect(new Set(paths).size).toBe(paths.length);
+ render(<MemoryRouter><RoleWorkspace/></MemoryRouter>);
+ expect(screen.getByRole('link',{name:/Your learning dashboard/})).toHaveAttribute('href','/student');
+ fireEvent.change(screen.getByLabelText('Service area'),{target:{value:'Assessments'}});
+ expect(screen.getByRole('link',{name:/Grades, marks and feedback/})).toBeInTheDocument();
+ expect(screen.queryByRole('link',{name:/Fees, paid/})).toBeNull();
 });
