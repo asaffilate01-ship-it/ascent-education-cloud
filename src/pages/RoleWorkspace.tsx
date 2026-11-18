@@ -10,9 +10,16 @@ import {useAuth,ROLE_HOME,ROLE_LABELS} from '@/contexts/AuthContext';
 import {Input} from '@/components/ui/input';
 import {workspaceCatalog} from '@/lib/workspaceCatalog';
 import {workspaceServiceMatches} from '@/lib/workspaceDirectory';
+import {activeRoleVerified} from '@/lib/roleMembership';
 export default function RoleWorkspace(){
  const {user}=useAuth();
- return <Workspace key={`${user?.id}:${user?.tenantId}:${user?.role}`}/>;
+ // /workspace is shared by all roles; never show another role's tools when
+ // its membership has been withdrawn or the active claim is inconsistent.
+ if(!user?.id||!activeRoleVerified(user))
+  return <DashboardLayout title="My workspace" subtitle="Role-verified services">
+   <p role="alert" className="rounded-xl border bg-card p-5 text-sm">Your active workspace role could not be verified. Switch to a role currently assigned to your account or contact your centre administrator. No role-specific services are shown.</p>
+  </DashboardLayout>;
+ return <Workspace key={`${user.id}:${user.tenantId}:${user.role}:${user.roles.join(',')}`}/>;
 }
 function Workspace(){
  const {user}=useAuth();const location=useLocation();const [search,setSearch]=useState(''),[area,setArea]=useState('all');

@@ -510,10 +510,11 @@ export default function DashboardSidebar() {
   const navigate = useNavigate();
   const asideRef = useRef<HTMLElement>(null);
 
-  // Close mobile menu on route change
+  // Same-URL role switches (e.g. /office shared by secretary and HR) must not
+  // preserve a previous role's search, open drawer or keyboard focus.
   useEffect(() => {
     setMobileOpen(false); setNavSearch('');
-  }, [location.pathname]);
+  }, [location.pathname, user?.id, user?.tenantId, user?.role, user?.roles?.join(',')]);
 
   useEffect(() => {
     if (!mobileOpen) return;
@@ -550,7 +551,7 @@ export default function DashboardSidebar() {
     };
   }, [mobileOpen]);
 
-  if (!user) return null;
+  if (!user || !Array.isArray(user.roles) || !user.roles.includes(user.role)) return null;
 
   const sections = getNavigationSections(user.role, navSearch);
   const isLandlord = user.role === 'superadmin';

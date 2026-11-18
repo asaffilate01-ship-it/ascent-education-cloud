@@ -4,12 +4,12 @@ import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 import {readFileSync} from 'node:fs';
 import RoleWorkspace from '@/pages/RoleWorkspace';
 import {workspaceCatalog} from '@/lib/workspaceCatalog';
-const mock=vi.hoisted(()=>({role:'student'}));
-vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'user',tenantId:'centre',role:mock.role}}),ROLE_HOME:{student:'/student',lecturer:'/lecturer',parent_guardian:'/parent',centre_director:'/director',superadmin:'/landlord'},ROLE_LABELS:{student:'Student',lecturer:'Lecturer',parent_guardian:'Parent'}}));
+const mock=vi.hoisted(()=>({role:'student',assignedRoles:null as string[]|null}));
+vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'user',tenantId:'centre',role:mock.role,roles:mock.assignedRoles||[mock.role]}}),ROLE_HOME:{student:'/student',lecturer:'/lecturer',parent_guardian:'/parent',centre_director:'/director',superadmin:'/landlord'},ROLE_LABELS:{student:'Student',lecturer:'Lecturer',parent_guardian:'Parent'}}));
 vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:{children:React.ReactNode})=><main>{children}</main>}));
 vi.mock('@/components/StaffTaskBoard',()=>({default:()=>null}));
 vi.mock('@/components/WorkspaceActions',()=>({default:()=>null}));
-afterEach(cleanup);beforeEach(()=>{mock.role='student';});
+afterEach(cleanup);beforeEach(()=>{mock.role='student';mock.assignedRoles=null;});
 it('connects the full student service directory to real routes',()=>{render(<MemoryRouter><RoleWorkspace/></MemoryRouter>);expect(screen.getByRole('link',{name:/Fees, paid and outstanding/})).toHaveAttribute('href','/student/finance');expect(screen.getByRole('link',{name:/Identity and certificates/})).toHaveAttribute('href','/onboarding');expect(screen.queryByRole('link',{name:/Platform accounts/})).toBeNull();fireEvent.change(screen.getByLabelText('Find a service'),{target:{value:'residential'}});expect(screen.getByRole('link',{name:/Residential periods/})).toHaveAttribute('href','/residential');expect(screen.queryByRole('link',{name:/Fees, paid/})).toBeNull();});
 it('resets role-specific services and search when switching roles',()=>{const view=render(<MemoryRouter><RoleWorkspace/></MemoryRouter>);fireEvent.change(screen.getByLabelText('Find a service'),{target:{value:'fees'}});mock.role='lecturer';view.rerender(<MemoryRouter><RoleWorkspace/></MemoryRouter>);expect(screen.queryByRole('link',{name:/Fees, paid/})).toBeNull();expect(screen.getByRole('link',{name:/Coursework briefs/})).toHaveAttribute('href','/lecturer/assessments');});
 it('keeps parent navigation limited to separately shared areas',()=>{mock.role='parent_guardian';render(<MemoryRouter><RoleWorkspace/></MemoryRouter>);expect(screen.getByRole('link',{name:/Results and progress/})).toHaveAttribute('href','/parent/progress');expect(screen.queryByRole('link',{name:/Identity and certificates/})).toBeNull();expect(screen.queryByRole('link',{name:/Fees, paid/})).toBeNull();});
@@ -72,4 +72,22 @@ it('keeps a unique, complete five-area student directory with a direct Today das
  fireEvent.change(screen.getByLabelText('Service area'),{target:{value:'Assessments'}});
  expect(screen.getByRole('link',{name:/Grades, marks and feedback/})).toBeInTheDocument();
  expect(screen.queryByRole('link',{name:/Fees, paid/})).toBeNull();
+});
+
+it('hides the service directory and staff actions when an active role is no longer assigned',()=>{
+ mock.role='centre_director';mock.assignedRoles=['student'];
+ render(<MemoryRouter initialEntries={['/workspace']}><RoleWorkspace/></MemoryRouter>);
+ expect(screen.getByRole('alert')).toHaveTextContent('active workspace role could not be verified');
+ expect(screen.queryByRole('link',{name:/Back to my dashboard/})).toBeNull();
+ expect(screen.queryByLabelText('Find a service')).toBeNull();
+ expect(screen.queryByRole('link',{name:/Fees, paid/})).toBeNull();
+});
+it('restores the assigned role directory after a verified role selection',()=>{
+ mock.role='centre_director';mock.assignedRoles=['student'];
+ const view=render(<MemoryRouter initialEntries={['/workspace']}><RoleWorkspace/></MemoryRouter>);
+ expect(screen.getByRole('alert')).toHaveTextContent('could not be verified');
+ mock.assignedRoles=['student','centre_director'];
+ view.rerender(<MemoryRouter initialEntries={['/workspace']}><RoleWorkspace/></MemoryRouter>);
+ expect(screen.queryByRole('alert')).toBeNull();
+ expect(screen.getByRole('heading',{name:'Find your next task'})).toBeInTheDocument();
 });

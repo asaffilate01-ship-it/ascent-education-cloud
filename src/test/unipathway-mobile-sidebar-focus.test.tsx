@@ -16,7 +16,7 @@ vi.mock('@/contexts/AuthContext',async original=>({
 import DashboardSidebar from '@/components/layout/DashboardSidebar';
 
 const mount=()=>render(<MemoryRouter initialEntries={['/student']}><DashboardSidebar/></MemoryRouter>);
-beforeEach(()=>vi.clearAllMocks());
+beforeEach(()=>{vi.clearAllMocks();state.user.roles=['student'];state.user.tenantId='centre-qa';});
 afterEach(cleanup);
 
 it('keeps the closed mobile drawer invisible while leaving desktop navigation available',()=>{
@@ -59,4 +59,21 @@ it('keeps expandable specialist sections comfortably touch-sized and keyboard-vi
   expect(summary.className).not.toContain('flex');
   expect(summary.className).toContain('focus-visible:ring-2');
  }
+});
+
+it('does not expose navigation for a role missing from verified memberships',()=>{
+ state.user.roles=['lecturer'];
+ mount();
+ expect(screen.queryByRole('navigation',{name:'Workspace navigation'})).toBeNull();
+ expect(screen.queryByRole('button',{name:'Open navigation'})).toBeNull();
+});
+
+it('clears stale navigation search when the assigned centre changes without a route change',async()=>{
+ const view=mount();
+ const input=screen.getByRole('searchbox',{name:'Find a page'});
+ fireEvent.change(input,{target:{value:'materials'}});
+ expect(input).toHaveValue('materials');
+ state.user.tenantId='centre-two';
+ view.rerender(<MemoryRouter initialEntries={['/student']}><DashboardSidebar/></MemoryRouter>);
+ await waitFor(()=>expect(screen.getByRole('searchbox',{name:'Find a page'})).toHaveValue(''));
 });
