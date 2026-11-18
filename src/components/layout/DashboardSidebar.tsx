@@ -430,17 +430,17 @@ const conciseLabels: Record<string, string> = {
  */
 const TASK_GROUPS: Partial<Record<UserRole, ReadonlyArray<{title:string;paths:readonly string[]}>>> = {
   student: [
-    {title:'Learn & practise',paths:[
+    {title:'Learn',paths:[
       '/student/classroom','/student/lesson-archive','/student/materials','/student/library',
       '/student/quizzes','/student/forums','/student/ielts','/student/labs',
       '/student/managed-labs','/student/microsoft','/student/knowledge','/coding',
     ]},
-    {title:'Assessments & feedback',paths:['/student/appeals','/student/gradebook']},
-    {title:'Progress & planning',paths:[
+    {title:'Assessments',paths:['/student/appeals','/student/gradebook']},
+    {title:'Progress',paths:[
       '/student/learning-plan','/student/attendance','/calendar','/student/timeline',
       '/student/progression','/student/family-sharing',
     ]},
-    {title:'Support & opportunities',paths:[
+    {title:'Support',paths:[
       '/student/finance','/student/applications','/student/wellbeing','/health',
       '/student/career','/student/placements','/student/opportunities',
       '/student/global-progression','/student/international-applications',
@@ -489,7 +489,7 @@ export function getNavigationSections(role: UserRole, search = ''): NavSection[]
   if (search.trim()) return [{ title: 'Search results', items: items.filter(i => matchesLocalSearch(`${i.label} ${i.path.replace(/[^a-z0-9]+/gi,' ')}`,search)) }];
   const paths = dailyPaths[role] || [ROLE_HOME[role], ...items.filter(i=>i.path!==ROLE_HOME[role]).slice(0,4).map(i=>i.path)];
   const everyday=paths.flatMap(path=>items.filter(i=>i.path===path)).map(item=>({...item,label:role==='student'&&item.path==='/student'?'Today':item.label}));
-  const focused:NavSection={title:'Everyday',items:[...everyday,{label:'My workspace',icon:FolderOpen,path:'/workspace'}]};
+  const focused:NavSection={title:role==='student'?'Today':'Everyday',items:[...everyday,{label:'My workspace',icon:FolderOpen,path:'/workspace'}]};
   const additional=items.filter(item=>!paths.includes(item.path));
   const grouped=groupedSpecialistSections(role,additional);
   if(grouped)return [focused,...grouped];
