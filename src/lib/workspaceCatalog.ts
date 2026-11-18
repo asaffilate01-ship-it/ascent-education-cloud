@@ -13,38 +13,39 @@ export const workspaceCatalog:Record<string,WorkspaceGroup[]>={
  ])],
  security_officer:[group('Security',[['CCTV live and playback','/security','View authorised cameras and request time-limited playback.']])],
  student:[
-  group('Study',[
-   ['Courses, modules and subjects','/student/courses','Your enrolled programmes and module learning journeys.'],
+  group('Today',[
+   ['Your learning dashboard','/student','Your current courses, coursework, classes and next steps, based on your verified student access.'],
    ['Timetable and academic calendar','/student/timeline','Saved teaching plans and academic dates; check class invitations for live sessions.'],
    ['In-class and remote classes','/student/classroom','Your invited classes and Teams access.'],
-   ['Attendance','/student/attendance','Recorded marks, date filters and correction guidance.'],
+   ['Assignments and submissions','/student/assignments','Assigned coursework, deadlines, submitted evidence and attempt history.'],
+  ]),
+  group('Learn',[
+   ['Courses, modules and subjects','/student/courses','Your enrolled programmes and module learning journeys.'],
    ['Materials and recorded lessons','/student/library','Authorised course resources and released recordings.'],
    ['Guides and knowledge','/student/knowledge','Published learning and progression guidance.'],
-  ]),
-  group('Coursework and progress',[
-   ['Assignments and submissions','/student/assignments','Assigned coursework, deadlines, submitted evidence and attempt history.'],
-   ['Grades, marks and feedback','/student/grades','Released results, approved corrections and guardian-sharing choices.'],
-   ['Learning plans','/student/learning-plan','Tutor-reviewed practice and progress.'],
-   ['Result reviews and appeals','/student/appeals','Request a review through the assessment appeal process.'],
-  ]),
-  group('Labs and residential visits',[
    ['Language learning','/student/ielts','IELTS practice and language activities available to your account.'],
    ['Tech and practical labs','/student/labs','Published lab tasks, assigned runs and authorised launch requests.'],
    ['Managed lab access','/student/managed-labs','Allocated managed environments; availability depends on provisioning.'],
-   ['Residential periods','/residential','Published visit dates, sessions and your booking status.'],
+   ['Microsoft account','/student/microsoft','Account provisioning and classroom handoff status.'],
   ]),
-  group('Documents and career',[
-   ['Identity and certificates','/onboarding','Upload CNIC/passport and qualification evidence for centre review. This is not live NADRA verification.'],
+  group('Assessments',[
+   ['Grades, marks and feedback','/student/grades','Released results, approved corrections and guardian-sharing choices.'],
+   ['Result reviews and appeals','/student/appeals','Request a review through the assessment appeal process.'],
+  ]),
+  group('Progress',[
+   ['Attendance','/student/attendance','Recorded marks, date filters and correction guidance.'],
+   ['Learning plans','/student/learning-plan','Tutor-reviewed practice and progress.'],
    ['CV and career preparation','/student/career','Create a downloadable CV text draft and explore progression guidance.'],
    ['My placements','/student/placements','Scheduled workplace learning, supervised hours and completion decisions.'],
    ['Jobs and internships','/student/opportunities','Published opportunities and your applications; a placement requires separate confirmation.'],
    ['Certificate verification','/verify','Check a certificate reference; this does not issue a certificate.'],
   ]),
-  group('Fees and support',[
+  group('Support',[
    ['Fees, paid and outstanding','/student/finance','Recorded invoices and balances; unbilled course fees require finance confirmation.'],
    ['Student support','/student/support','Contact your centre about study, documents or arrangements.'],
    ['Confidential wellbeing and counselling','/student/wellbeing','Mental health, academic, personal or other support, with a separate anonymous option.'],
-   ['Microsoft account','/student/microsoft','Account provisioning and classroom handoff status.'],
+   ['Identity and certificates','/onboarding','Upload CNIC/passport and qualification evidence for centre review. This is not live NADRA verification.'],
+   ['Residential periods','/residential','Published visit dates, sessions and your booking status.'],
   ]),
  ],
  lecturer:[group('Teaching and learners',[
