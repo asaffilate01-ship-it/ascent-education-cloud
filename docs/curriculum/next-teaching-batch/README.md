@@ -1,6 +1,6 @@
 # UniPathway | Next teaching batch
 
-**Staff review draft · original materials · formative use.** This batch adds 50 teachable sessions, not complete syllabuses, published lessons, learner placements or formally approved assessments. Each pack includes a worked example, a practice task and feedback guidance or answers. Use the lesson codes and levels as internal draft labels; they do not establish accreditation or equivalence.
+**Staff review draft · original materials · formative use.** This batch adds 68 teachable sessions, not complete syllabuses, published lessons, learner placements or formally approved assessments. Each pack includes a worked example, a practice task and feedback guidance or answers. Use the lesson codes and levels as internal draft labels; they do not establish accreditation or equivalence.
 
 | Pack | Lessons | Who it is for | Review before use |
 | --- | ---: | --- | --- |
@@ -8,6 +8,8 @@
 | [Business management, health and social care](business-and-care.md) | 8 | Vocational Levels 2–5 | Confirm centre approval and unit outcomes. Use fictional care cases and local policies, not this pack, for operational decisions. |
 | [Grades 8–12 school subjects](pakistan-school-subjects.md) | 30 | Technology, physics, chemistry, biology, mathematics and English | Select the exact grade, board, year, subject combination, language of instruction and textbook or syllabus before assigning lessons. Check Cambridge and local board routes independently. |
 | [IELTS and language practice](ielts-and-languages.md) | 6 | IELTS plus German, French, Italian and Spanish, including practical family and relocation scenarios | Confirm the learner’s destination and route, and whether they need an exam, a particular skill, or general language practice. Do not turn preparation into a visa eligibility claim. |
+
+The four starter packs total 50 lessons. See [the follow-on lessons](follow-on-workshops.md) for 18 more: three accountancy/ACCA, four business and care, six school subjects and five language lessons. The school roadmap is separate and does not count toward the 68.
 
 ## From draft to course
 
