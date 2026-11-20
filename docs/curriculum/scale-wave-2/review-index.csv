@@ -1,0 +1,59 @@
+id,title,source,review_status,release_status
+W2-SCH-01,Reconstruct a missing frequency,school.md,drafted,not_published
+W2-SCH-02,Analyse prices after a fixed fee,school.md,drafted,not_published
+W2-SCH-03,Link a source’s purpose to its usefulness,school.md,drafted,not_published
+W2-SCH-04,Compare friction in a distance trial,school.md,drafted,not_published
+W2-SCH-05,Track the same sample before and after drying,school.md,drafted,not_published
+W2-SCH-06,Find the downstream effect of a reservoir change,school.md,drafted,not_published
+W2-SCH-07,Read wave speed from a diagram,school.md,drafted,not_published
+W2-SCH-08,Compare interval slopes with unequal time windows,school.md,drafted,not_published
+W2-SCH-09,Test whether a seedling sample represents a park,school.md,drafted,not_published
+W2-SCH-10,Measure a return bearing,school.md,drafted,not_published
+W2-SCH-11,Select a test that distinguishes two rule models,school.md,drafted,not_published
+W2-SCH-12,Compare two descriptions of the same place,school.md,drafted,not_published
+W2-ACC-01,Reconciling the till and cash book,acca.md,drafted,not_published
+W2-ACC-02,Checking a weighted average unit cost,acca.md,drafted,not_published
+W2-ACC-03,Finding an amount charged to the wrong period,acca.md,drafted,not_published
+W2-ACC-04,Selecting a pricing floor for a short-run order,acca.md,drafted,not_published
+W2-ACC-05,Distinguishing a collecting agent from a customer,acca.md,drafted,not_published
+W2-ACC-06,Keeping a residual-income project in view,acca.md,drafted,not_published
+W2-ACC-07,Building a consolidation adjustment for unsold stock,acca.md,drafted,not_published
+W2-ACC-08,Selecting a procedure for an omitted-liability risk,acca.md,drafted,not_published
+W2-ACC-09,Calculating the cost of skipping a prompt-payment discount,acca.md,drafted,not_published
+W2-ACC-10,Deciding who can accept a launch risk,acca.md,drafted,not_published
+W2-ACC-11,Measuring exchange movements on an unpaid invoice,acca.md,drafted,not_published
+W2-ACC-12,Finding a launch decision's probability threshold,acca.md,drafted,not_published
+W2-VOC-01,Turn a complaint into a service action,vocational.md,drafted,not_published
+W2-VOC-02,Compare contribution under a bottleneck,vocational.md,drafted,not_published
+W2-VOC-03,Find the critical path for a service rollout,vocational.md,drafted,not_published
+W2-VOC-04,Match a credit note to an invoice,vocational.md,drafted,not_published
+W2-VOC-05,Correct an accrual across reporting periods,vocational.md,drafted,not_published
+W2-VOC-06,Separate price and usage variances,vocational.md,drafted,not_published
+W2-VOC-07,Make a non-sensitive handover actionable,vocational.md,drafted,not_published
+W2-VOC-08,Apply minimum-necessary information sharing in a simulation,vocational.md,drafted,not_published
+W2-VOC-09,Design a continuity plan for a non-clinical community service,vocational.md,drafted,not_published
+W2-VOC-10,Validate a data import without silently losing rows,vocational.md,drafted,not_published
+W2-VOC-11,Make dashboard freshness visible,vocational.md,drafted,not_published
+W2-VOC-12,Design an auditable backfill for a reporting field,vocational.md,drafted,not_published
+W2-LAN-01,Explain the sequence in a process diagram,languages.md,drafted,not_published
+W2-LAN-02,State what happened and what you want done,languages.md,drafted,not_published
+W2-LAN-03,Hear one instruction and check the meeting point,languages.md,drafted,not_published
+W2-LAN-04,Discuss a change and reach agreement,languages.md,drafted,not_published
+W2-LAN-05,Make a request and respond,languages.md,drafted,not_published
+W2-LAN-06,Ask which document to bring,languages.md,drafted,not_published
+W2-LAN-07,Complete a form and write a short invitation,languages.md,drafted,not_published
+W2-LAN-08,Say what you missed and ask for a simple recap,languages.md,drafted,not_published
+W2-LAN-09,Find groceries by quantity and unit,languages.md,drafted,not_published
+W2-LAN-10,Report a missed delivery in a short message,languages.md,drafted,not_published
+W2-LAN-11,Ask how to borrow a book,languages.md,drafted,not_published
+W2-LAN-12,Compare two community classes,languages.md,drafted,not_published
+W2-LAB-01,Rotate and reflect a bitmap,labs.md,drafted,not_published
+W2-LAB-02,Simulate an exhibit with a truth table,labs.md,drafted,not_published
+W2-LAB-03,Calculate elapsed time across midnight,labs.md,drafted,not_published
+W2-LAB-04,Fit a raster under a payload cap,labs.md,drafted,not_published
+W2-LAB-05,Trace states in a print-proof workflow,labs.md,drafted,not_published
+W2-LAB-06,Scale a diagram without stretching it,labs.md,drafted,not_published
+W2-LAB-07,Turn a long table into a cross-tab,labs.md,drafted,not_published
+W2-LAB-08,Reconcile two versions of a data format,labs.md,drafted,not_published
+W2-LAB-09,Find the critical path in a work plan,labs.md,drafted,not_published
+W2-LAB-10,Test a service change under two acceptance thresholds,labs.md,drafted,not_published
