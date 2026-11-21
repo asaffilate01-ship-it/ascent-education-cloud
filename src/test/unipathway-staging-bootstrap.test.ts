@@ -15,14 +15,14 @@ function run(script:string,args:string[],env:Record<string,string>={}){
  });
 }
 describe('UniPathway no-cost, isolation-first staging bootstrap',()=>{
- it('describes 17 named roles plus two isolation students without creating accounts',()=>{
+ it('describes 21 named roles plus two isolation students without creating accounts',()=>{
   const result=run('bootstrap-unipathway-staging-accounts.mjs',['--plan']);
   expect(result.status).toBe(0);
   const plan=JSON.parse(result.stdout);
   expect(plan.mode).toBe('plan');
   expect(plan.writes).toBe(0);
-  expect(plan.accounts).toHaveLength(19);
-  expect(new Set(plan.accounts.map((x:{email:string})=>x.email)).size).toBe(19);
+  expect(plan.accounts).toHaveLength(23);
+  expect(new Set(plan.accounts.map((x:{email:string})=>x.email)).size).toBe(23);
   expect(plan.accounts.find((x:{fixture:string})=>x.fixture==='superadmin').scope).toBe('global');
   expect(plan.accounts.find((x:{fixture:string})=>x.fixture==='studentB').scope).toBe('tenantB');
   expect(result.stdout).not.toContain('password');

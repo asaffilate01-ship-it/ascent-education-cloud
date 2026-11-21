@@ -11,7 +11,7 @@ const sidebar=file('src/components/layout/DashboardSidebar.tsx');
 const publicNav=file('src/components/PublicNav.tsx');
 
 const roles=['superadmin','director','admissions','lecturer','programme','qa','exams',
- 'finance','marketing','agent','student','unipartner','employer','assessor','eqa','welfare','parent'];
+ 'finance','marketing','agent','student','unipartner','employer','assessor','eqa','welfare','parent','office','hr','secretary','security'];
 
 function isKnownRoute(dest:string,actualRoutes:string[]){
  const path=dest.split(/[?#]/)[0];
@@ -22,12 +22,44 @@ function isKnownRoute(dest:string,actualRoutes:string[]){
 }
 
 describe('protected UniPathway academic staging acceptance',()=>{
- it('requires all 17 roles plus two student isolation fixtures',()=>{
+ it('requires all 21 roles plus two student isolation fixtures',()=>{
   for(const role of roles)expect(academic).toMatch(new RegExp('\\b'+role+':\\['));
   expect(academic).toContain("'studentB','uninvitedStudentA'");
   expect(academic).toContain('profiles');
   expect(academic).toContain('user_roles');
   expect(academic).toContain('assert.equal(matches.length,1');
+ });
+ it('keeps staging role coverage in sync with every application role',()=>{
+  const types=file('src/types/platform.ts').split('export type UserRole =')[1].split(';')[0];
+  const appRoles=[...types.matchAll(/'([^']+)'/g)].map(m=>m[1]).sort();
+  const tested=[...academic.matchAll(/\w+:\['([^']+)'/g)].map(m=>m[1]).sort();
+  expect(tested).toEqual(appRoles);
+  for(const key of ['office','hr','secretary','security']) expect(academic).toContain(key);
+  expect(academic).toContain("name+' provisional mark'");
+ });
+ it('keeps both operator runbooks aligned with bootstrap fixture keys and credentials',()=>{
+  const bootstrap=file('scripts/bootstrap-unipathway-staging-accounts.mjs');
+  const fixtures=[...bootstrap.matchAll(/\{key:'([^']+)',role:'([^']+)',email:'([^']+)'/g)]
+   .map(([,key,role,email])=>({key,role,email}));
+  expect(fixtures).toHaveLength(23);
+  const acceptance=file('docs/UNIPATHWAY_STAGING_17_ROLE_ACCEPTANCE_20261020.md');
+  const rows=acceptance.split('\n').filter(line=>/^\| \w+ \|/.test(line))
+   .map(line=>line.split('|').slice(1,-1).map(cell=>cell.trim()));
+  expect(rows).toHaveLength(fixtures.length);
+  for(const fixture of fixtures){
+   const row=rows.find(([key])=>key===fixture.key);
+   expect(row).toBeDefined();
+   expect(row?.[1].split(',')[0]).toBe(fixture.role);
+   expect(row?.[2]).toBe(fixture.email);
+  }
+  const runbook=file('docs/UNIPATHWAY_STAGING_BOOTSTRAP_NEXT_PHASE.md');
+  const keyLine=runbook.split('\n').find(line=>line.startsWith('**Fixture keys:**'))!;
+  expect([...keyLine.matchAll(/`([^`]+)`/g)].map(m=>m[1]))
+   .toEqual(fixtures.map(fixture=>fixture.key));
+  expect(runbook).toContain('23 distinct 24–128 character passwords without whitespace');
+  expect(runbook).toContain('provides 23 expected account records');
+  expect(runbook).toContain('21-role acceptance (23 accounts)');
+  expect(acceptance).toContain('all 23 `accounts` entries');
  });
  it('refuses ambiguous production project, missing confirmation and malformed staging URL',()=>{
   expect(academic).toContain("acknowledge!=='UNIPATHWAY_STAGING_ONLY'");
