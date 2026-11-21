@@ -27,7 +27,11 @@ function ClassPicker({tenant}:{tenant:string}){
 export function GuidedSession({session}:{session:string}){
  const [state,setState]=useState<AudioState|null>(null),[manager,setManager]=useState(false),[enabled,setEnabled]=useState(false),[volume,setVolume]=useState(.5),[error,setError]=useState(''),[busy,setBusy]=useState(false),[ready,setReady]=useState(false),[url,setUrl]=useState('');
  const audio=useRef<HTMLAudioElement>(null), active=useRef(true),pollToken=useRef(0),snapshot=useRef<{state:AudioState;server:number;received:number}|null>(null),source=useRef(''),expires=useRef(0),requestBusy=useRef(false);
+ const refreshed=useRef(''),mediaSource=useRef('');
  const enabledRef=useRef(false);enabledRef.current=enabled;
+ function setMediaSource(next:string){mediaSource.current=next;setUrl(next);}
+ function clearSource(){audio.current?.pause();snapshot.current=null;source.current='';refreshed.current='';setMediaSource('');}
+
  async function load(){
   if(requestBusy.current)return;requestBusy.current=true;const token=++pollToken.current;
   let timeout:ReturnType<typeof setTimeout>|undefined;
@@ -37,25 +41,57 @@ export function GuidedSession({session}:{session:string}){
    if(result.error||!result.data||typeof result.data.can_manage!=='boolean'||!Number.isFinite(Date.parse(result.data.server_now)))throw Error('Unavailable');
    const next=result.data.state as AudioState|null;
    setManager(result.data.can_manage);setReady(true);
-   if(!next){setState(null);snapshot.current=null;audio.current?.pause();setUrl('');source.current='';return;}
+   if(!next){setState(null);clearSource();return;}
    if(next.session_id!==session||!Number.isFinite(Number(next.position_seconds))||!Number.isFinite(Date.parse(next.updated_at)))throw Error('Invalid state');
-   snapshot.current={state:next,server:Date.parse(result.data.server_now),received:Date.now()};setState(next);
-   if(source.current!==next.storage_path||expires.current<Date.now()){
-    const signed=await supabase.storage.from('guided-class-audio').createSignedUrl(next.storage_path,90);
+   const nextSnapshot={state:next,server:Date.parse(result.data.server_now),received:Date.now()};
+   const newTrack=source.current!==next.storage_path;
+   if(newTrack)clearSource();
+   else snapshot.current=nextSnapshot;
+   if(newTrack||expires.current<=Date.now()){
+    clearTimeout(timeout);
+    const signed=await Promise.race([
+     supabase.storage.from('guided-class-audio').createSignedUrl(next.storage_path,90),
+     new Promise<never>((_,reject)=>{timeout=setTimeout(()=>reject(Error('Audio link timed out')),10000);}),
+    ]);
     if(!active.current||token!==pollToken.current)return;
     if(signed.error||!signed.data?.signedUrl)throw Error('Audio unavailable');
-    source.current=next.storage_path;expires.current=Date.now()+60000;setUrl(signed.data.signedUrl);
+    source.current=next.storage_path;expires.current=Date.now()+60000;refreshed.current=signed.data.signedUrl;
    }
+   snapshot.current=nextSnapshot;setState(next);
+   // Renew authorization without replacing the source while the tutor is playing.
+   // A pause or media error can use the latest authorized link instead.
+   if(!mediaSource.current||!next.playing)setMediaSource(refreshed.current);
    setError('');
-  }catch{if(active.current&&token===pollToken.current){audio.current?.pause();snapshot.current=null;setState(null);setUrl('');source.current='';setManager(false);setReady(false);setError('Audio access or connection failed. Playback is paused while reconnecting.');}}
+  }catch{if(active.current&&token===pollToken.current){clearSource();setState(null);setManager(false);setReady(false);setError('Audio access or connection failed. Playback is paused while reconnecting.');}}
   finally{clearTimeout(timeout);requestBusy.current=false;}
  }
  function targetPosition(){const s=snapshot.current;return s?Number(s.state.position_seconds)+(s.state.playing?Math.max(0,(s.server+Date.now()-s.received-Date.parse(s.state.updated_at))/1000):0):0;}
  function follow(){
   const el=audio.current,s=snapshot.current;if(!el||!s||!enabledRef.current)return;
-  const target=Number(s.state.position_seconds)+(s.state.playing?Math.max(0,(s.server+Date.now()-s.received-Date.parse(s.state.updated_at))/1000):0);
-  if(el.readyState>=1){const position=Number.isFinite(el.duration)?Math.min(target,el.duration):target;if(Math.abs(el.currentTime-position)>1.5)el.currentTime=position;}
-  if(s.state.playing){if(el.paused)void el.play().catch(()=>{if(active.current){setEnabled(false);setError('Your browser paused audio. Press Enable class audio to resume.');}});}else el.pause();
+  if(!s.state.playing)el.pause();
+  if(el.readyState<1||!mediaSource.current||el.getAttribute('src')!==mediaSource.current)return;
+  const target=targetPosition();
+  const duration=Number.isFinite(el.duration)?el.duration:null;
+  // An already-playing listener may finish the tail; a late or ended one must not replay it.
+  if(s.state.playing&&duration!==null&&target>=duration)return;
+  const position=duration===null?target:Math.min(target,duration);
+  if(Math.abs(el.currentTime-position)>1.5||(!s.state.playing&&position===0&&el.currentTime!==0))el.currentTime=position;
+  else if(el.ended)return;
+  const attemptedSource=mediaSource.current;
+  if(s.state.playing&&el.paused)void el.play().catch(()=>{
+   if(active.current&&mediaSource.current===attemptedSource&&snapshot.current?.state.playing&&enabledRef.current){
+    setEnabled(false);setError('Your browser paused audio. Press Enable class audio to resume.');
+   }
+  });
+ }
+ function recoverMedia(){
+  audio.current?.pause();
+  if(!snapshot.current||audio.current?.getAttribute('src')!==mediaSource.current)return;
+  if(refreshed.current&&expires.current>Date.now()&&refreshed.current!==mediaSource.current){
+   setMediaSource(refreshed.current);return;
+  }
+  clearSource();setEnabled(false);
+  setError('Unable to play shared audio. Check your connection and enable audio again.');
  }
  useEffect(()=>{active.current=true;void load();const timer=setInterval(()=>void load(),3000);const sync=setInterval(()=>follow(),1000);return()=>{active.current=false;pollToken.current++;clearInterval(timer);clearInterval(sync);audio.current?.pause();};
  // Session is keyed by the parent; refs provide current playback state.
@@ -84,7 +120,7 @@ export function GuidedSession({session}:{session:string}){
  {error&&<p role="alert">{error}</p>}{!ready&&!error&&<p role="status">Checking class audio…</p>}
  {ready&&!state&&<p>The tutor has not shared an audio recording yet.</p>}
  {state&&<><h4 className="font-semibold">{state.title}</h4><p className="text-sm">Tutor playback: {state.playing?'playing':'paused'}</p>
- <audio ref={audio} src={url||undefined} preload="auto" onLoadedMetadata={follow} onError={()=>{audio.current?.pause();setEnabled(false);source.current='';setError('Unable to play shared audio. Check your connection and enable audio again.');}}/>
+ <audio ref={audio} src={url||undefined} preload="auto" onLoadedMetadata={follow} onError={recoverMedia}/>
  <Button variant="outline" onClick={()=>{if(enabled){setEnabled(false);audio.current?.pause();}else{enabledRef.current=true;setEnabled(true);setError('');follow();}}}>{enabled?'Leave class audio':'Enable class audio'}</Button>
  <label className="block text-sm">Class volume<input aria-label="Class volume" type="range" min="0" max="1" step=".05" value={volume} onChange={e=>setVolume(Number(e.target.value))}/></label></>}
  {manager&&<div className="space-y-2 border-t pt-3"><p className="text-sm">Tutor controls · Share only recordings you own or are licensed to distribute.</p><label className="block text-sm">Share class audio<input aria-label="Share class audio" type="file" accept="audio/*" disabled={busy} onChange={e=>{void upload(e.target.files?.[0]);e.target.value='';}}/></label>
