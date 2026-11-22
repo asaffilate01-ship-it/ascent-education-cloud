@@ -20,3 +20,4 @@
 - [x] Surface sewing, crafts and creative enterprise as its own public page with navigation, homepage, footer, sitemap and search metadata.
 - [x] Name and describe the new public page as art, crafts and sewing so fine art is discoverable in navigation, homepage, metadata and keywords.
 - [x] Reduce oversized site icons and homepage imagery; desktop/mobile image loading and course navigation verified, seven related tests passed; publish the lighter site.
+- [x] Audit all 17 role dashboards (desktop + phone), lessons, live/recorded classes, language lab and tech labs; findings in docs/DASHBOARD_AUDIT_20261122.md.
