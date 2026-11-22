@@ -292,6 +292,85 @@ export type Database = {
           },
         ]
       }
+      attendance_corrections: {
+        Row: {
+          attendance_date: string
+          created_at: string
+          id: string
+          module_id: string
+          original_method: string | null
+          original_status: Database["public"]["Enums"]["attendance_status"]
+          reason: string
+          record_id: string
+          requested_by: string
+          requested_status: Database["public"]["Enums"]["attendance_status"]
+          review_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          state: string
+          student_id: string
+          tenant_id: string
+        }
+        Insert: {
+          attendance_date: string
+          created_at?: string
+          id: string
+          module_id: string
+          original_method?: string | null
+          original_status: Database["public"]["Enums"]["attendance_status"]
+          reason: string
+          record_id: string
+          requested_by: string
+          requested_status: Database["public"]["Enums"]["attendance_status"]
+          review_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          state?: string
+          student_id: string
+          tenant_id: string
+        }
+        Update: {
+          attendance_date?: string
+          created_at?: string
+          id?: string
+          module_id?: string
+          original_method?: string | null
+          original_status?: Database["public"]["Enums"]["attendance_status"]
+          reason?: string
+          record_id?: string
+          requested_by?: string
+          requested_status?: Database["public"]["Enums"]["attendance_status"]
+          review_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          state?: string
+          student_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_corrections_record_id_fkey"
+            columns: ["record_id"]
+            isOneToOne: false
+            referencedRelation: "attendance_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_corrections_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_corrections_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       attendance_records: {
         Row: {
           created_at: string
@@ -299,6 +378,7 @@ export type Database = {
           id: string
           method: string | null
           module_id: string | null
+          recorded_by: string | null
           status: Database["public"]["Enums"]["attendance_status"]
           student_id: string
           tenant_id: string
@@ -309,6 +389,7 @@ export type Database = {
           id?: string
           method?: string | null
           module_id?: string | null
+          recorded_by?: string | null
           status?: Database["public"]["Enums"]["attendance_status"]
           student_id: string
           tenant_id: string
@@ -319,6 +400,7 @@ export type Database = {
           id?: string
           method?: string | null
           module_id?: string | null
+          recorded_by?: string | null
           status?: Database["public"]["Enums"]["attendance_status"]
           student_id?: string
           tenant_id?: string
@@ -466,6 +548,7 @@ export type Database = {
       }
       classroom_recordings: {
         Row: {
+          class_release_session_id: string | null
           created_at: string
           description: string | null
           duration_seconds: number | null
@@ -483,6 +566,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          class_release_session_id?: string | null
           created_at?: string
           description?: string | null
           duration_seconds?: number | null
@@ -500,6 +584,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          class_release_session_id?: string | null
           created_at?: string
           description?: string | null
           duration_seconds?: number | null
@@ -517,6 +602,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "classroom_recordings_class_release_session_id_fkey"
+            columns: ["class_release_session_id"]
+            isOneToOne: false
+            referencedRelation: "live_class_sessions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "classroom_recordings_session_id_fkey"
             columns: ["session_id"]
@@ -1245,6 +1337,315 @@ export type Database = {
           },
         ]
       }
+      ielts_mock_rehearsals: {
+        Row: {
+          assessed_at: string | null
+          assessed_by: string | null
+          assigned_by: string
+          created_at: string
+          delivery: string
+          id: string
+          listening_correct: number | null
+          listening_questions: number | null
+          reading_correct: number | null
+          reading_questions: number | null
+          rehearsal_type: string
+          scheduled_at: string
+          speaking_observations: string | null
+          status: string
+          student_id: string
+          tenant_id: string
+          track: string
+          tutor_next_steps: string | null
+          updated_at: string
+          writing_observations: string | null
+        }
+        Insert: {
+          assessed_at?: string | null
+          assessed_by?: string | null
+          assigned_by: string
+          created_at?: string
+          delivery: string
+          id?: string
+          listening_correct?: number | null
+          listening_questions?: number | null
+          reading_correct?: number | null
+          reading_questions?: number | null
+          rehearsal_type: string
+          scheduled_at: string
+          speaking_observations?: string | null
+          status?: string
+          student_id: string
+          tenant_id: string
+          track: string
+          tutor_next_steps?: string | null
+          updated_at?: string
+          writing_observations?: string | null
+        }
+        Update: {
+          assessed_at?: string | null
+          assessed_by?: string | null
+          assigned_by?: string
+          created_at?: string
+          delivery?: string
+          id?: string
+          listening_correct?: number | null
+          listening_questions?: number | null
+          reading_correct?: number | null
+          reading_questions?: number | null
+          rehearsal_type?: string
+          scheduled_at?: string
+          speaking_observations?: string | null
+          status?: string
+          student_id?: string
+          tenant_id?: string
+          track?: string
+          tutor_next_steps?: string | null
+          updated_at?: string
+          writing_observations?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ielts_mock_rehearsals_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ielts_mock_rehearsals_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ielts_practice_submissions: {
+        Row: {
+          answer_text: string
+          id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          skill: string
+          student_id: string
+          submitted_at: string
+          teacher_band: number | null
+          teacher_feedback: string | null
+          tenant_id: string
+          track: string
+          unit_week: number
+        }
+        Insert: {
+          answer_text: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          skill: string
+          student_id: string
+          submitted_at?: string
+          teacher_band?: number | null
+          teacher_feedback?: string | null
+          tenant_id: string
+          track: string
+          unit_week: number
+        }
+        Update: {
+          answer_text?: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          skill?: string
+          student_id?: string
+          submitted_at?: string
+          teacher_band?: number | null
+          teacher_feedback?: string | null
+          tenant_id?: string
+          track?: string
+          unit_week?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ielts_practice_submissions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ielts_practice_submissions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ielts_speaking_recordings: {
+        Row: {
+          consent_at: string
+          created_at: string
+          duration_seconds: number
+          fluency_band: number | null
+          grammar_band: number | null
+          id: string
+          lexical_band: number | null
+          mime_type: string
+          prompt_key: string
+          pronunciation_band: number | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          storage_path: string
+          student_id: string
+          teacher_feedback: string | null
+          tenant_id: string
+          track: string
+        }
+        Insert: {
+          consent_at: string
+          created_at?: string
+          duration_seconds: number
+          fluency_band?: number | null
+          grammar_band?: number | null
+          id?: string
+          lexical_band?: number | null
+          mime_type: string
+          prompt_key: string
+          pronunciation_band?: number | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          storage_path: string
+          student_id: string
+          teacher_feedback?: string | null
+          tenant_id: string
+          track: string
+        }
+        Update: {
+          consent_at?: string
+          created_at?: string
+          duration_seconds?: number
+          fluency_band?: number | null
+          grammar_band?: number | null
+          id?: string
+          lexical_band?: number | null
+          mime_type?: string
+          prompt_key?: string
+          pronunciation_band?: number | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          storage_path?: string
+          student_id?: string
+          teacher_feedback?: string | null
+          tenant_id?: string
+          track?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ielts_speaking_recordings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ielts_speaking_recordings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ielts_study_plans: {
+        Row: {
+          id: string
+          started_at: string
+          student_id: string
+          study_goal: string
+          target_band: number
+          tenant_id: string
+          track: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          started_at?: string
+          student_id: string
+          study_goal?: string
+          target_band?: number
+          tenant_id: string
+          track: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          started_at?: string
+          student_id?: string
+          study_goal?: string
+          target_band?: number
+          tenant_id?: string
+          track?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ielts_study_plans_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ielts_study_plans_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ielts_unit_completions: {
+        Row: {
+          completed_at: string
+          id: string
+          student_id: string
+          tenant_id: string
+          track: string
+          unit_week: number
+        }
+        Insert: {
+          completed_at?: string
+          id?: string
+          student_id: string
+          tenant_id: string
+          track: string
+          unit_week: number
+        }
+        Update: {
+          completed_at?: string
+          id?: string
+          student_id?: string
+          tenant_id?: string
+          track?: string
+          unit_week?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ielts_unit_completions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ielts_unit_completions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoices: {
         Row: {
           amount: number
@@ -1756,6 +2157,59 @@ export type Database = {
           },
         ]
       }
+      lesson_ai_packs: {
+        Row: {
+          glossary: Json
+          id: string
+          key_concepts: Json
+          quiz: Json
+          reviewed_at: string | null
+          reviewed_by: string | null
+          revision_questions: Json
+          session_id: string
+          source_artifact_ids: string[]
+          status: string
+          summary: string | null
+          tenant_id: string
+        }
+        Insert: {
+          glossary?: Json
+          id?: string
+          key_concepts?: Json
+          quiz?: Json
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          revision_questions?: Json
+          session_id: string
+          source_artifact_ids?: string[]
+          status?: string
+          summary?: string | null
+          tenant_id: string
+        }
+        Update: {
+          glossary?: Json
+          id?: string
+          key_concepts?: Json
+          quiz?: Json
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          revision_questions?: Json
+          session_id?: string
+          source_artifact_ids?: string[]
+          status?: string
+          summary?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_ai_packs_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: true
+            referencedRelation: "live_class_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_plans: {
         Row: {
           activities: string | null
@@ -1838,6 +2292,336 @@ export type Database = {
           },
         ]
       }
+      lesson_whiteboard_operations: {
+        Row: {
+          actor_id: string
+          board_id: string
+          created_at: string
+          id: string
+          operation: Json
+          sequence: number
+          session_id: string
+          tenant_id: string
+        }
+        Insert: {
+          actor_id: string
+          board_id: string
+          created_at?: string
+          id?: string
+          operation: Json
+          sequence: number
+          session_id: string
+          tenant_id: string
+        }
+        Update: {
+          actor_id?: string
+          board_id?: string
+          created_at?: string
+          id?: string
+          operation?: Json
+          sequence?: number
+          session_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_whiteboard_operations_board_id_fkey"
+            columns: ["board_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_whiteboards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_whiteboard_operations_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "live_class_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_whiteboard_snapshots: {
+        Row: {
+          board_id: string
+          created_at: string
+          created_by: string
+          session_id: string
+          shapes: Json
+          tenant_id: string
+          through_sequence: number
+        }
+        Insert: {
+          board_id: string
+          created_at?: string
+          created_by: string
+          session_id: string
+          shapes: Json
+          tenant_id: string
+          through_sequence: number
+        }
+        Update: {
+          board_id?: string
+          created_at?: string
+          created_by?: string
+          session_id?: string
+          shapes?: Json
+          tenant_id?: string
+          through_sequence?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_whiteboard_snapshots_board_id_fkey"
+            columns: ["board_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_whiteboards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_whiteboard_snapshots_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "live_class_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_whiteboard_view_receipts: {
+        Row: {
+          board_id: string
+          first_opened_at: string
+          last_opened_at: string
+          session_id: string
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          board_id: string
+          first_opened_at?: string
+          last_opened_at?: string
+          session_id: string
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          board_id?: string
+          first_opened_at?: string
+          last_opened_at?: string
+          session_id?: string
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_whiteboard_view_receipts_board_id_fkey"
+            columns: ["board_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_whiteboards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_whiteboard_view_receipts_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "live_class_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_whiteboards: {
+        Row: {
+          content_reference: string | null
+          created_at: string
+          current_sequence: number
+          id: string
+          locked_after_class: boolean
+          microsoft_whiteboard_reference: string | null
+          module_id: string | null
+          prepared_by: string | null
+          session_id: string | null
+          template: string
+          tenant_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content_reference?: string | null
+          created_at?: string
+          current_sequence?: number
+          id?: string
+          locked_after_class?: boolean
+          microsoft_whiteboard_reference?: string | null
+          module_id?: string | null
+          prepared_by?: string | null
+          session_id?: string | null
+          template?: string
+          tenant_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content_reference?: string | null
+          created_at?: string
+          current_sequence?: number
+          id?: string
+          locked_after_class?: boolean
+          microsoft_whiteboard_reference?: string | null
+          module_id?: string | null
+          prepared_by?: string | null
+          session_id?: string | null
+          template?: string
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_whiteboards_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_whiteboards_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "live_class_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_class_artifacts: {
+        Row: {
+          artifact_type: string
+          available_at: string | null
+          created_at: string
+          id: string
+          metadata: Json
+          provider_reference: string | null
+          publication_status: string
+          session_id: string
+          storage_reference: string | null
+          tenant_id: string
+        }
+        Insert: {
+          artifact_type: string
+          available_at?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          provider_reference?: string | null
+          publication_status?: string
+          session_id: string
+          storage_reference?: string | null
+          tenant_id: string
+        }
+        Update: {
+          artifact_type?: string
+          available_at?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          provider_reference?: string | null
+          publication_status?: string
+          session_id?: string
+          storage_reference?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_class_artifacts_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "live_class_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_class_attendance: {
+        Row: {
+          attendance_minutes: number
+          engagement: Json
+          id: string
+          joined_at: string | null
+          left_at: string | null
+          provider_participant_id: string | null
+          session_id: string
+          student_id: string | null
+          tenant_id: string
+        }
+        Insert: {
+          attendance_minutes?: number
+          engagement?: Json
+          id?: string
+          joined_at?: string | null
+          left_at?: string | null
+          provider_participant_id?: string | null
+          session_id: string
+          student_id?: string | null
+          tenant_id: string
+        }
+        Update: {
+          attendance_minutes?: number
+          engagement?: Json
+          id?: string
+          joined_at?: string | null
+          left_at?: string | null
+          provider_participant_id?: string | null
+          session_id?: string
+          student_id?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_class_attendance_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "live_class_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_class_hand_requests: {
+        Row: {
+          raised_at: string
+          responded_at: string | null
+          responded_by: string | null
+          session_id: string
+          status: string
+          student_id: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          raised_at?: string
+          responded_at?: string | null
+          responded_by?: string | null
+          session_id: string
+          status?: string
+          student_id: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          raised_at?: string
+          responded_at?: string | null
+          responded_by?: string | null
+          session_id?: string
+          status?: string
+          student_id?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_class_hand_requests_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "live_class_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       live_class_invitations: {
         Row: {
           created_at: string
@@ -1879,17 +2663,164 @@ export type Database = {
           },
         ]
       }
+      live_class_moderation_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json
+          moderator_user_id: string
+          notes: string | null
+          session_id: string
+          student_id: string | null
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json
+          moderator_user_id: string
+          notes?: string | null
+          session_id: string
+          student_id?: string | null
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json
+          moderator_user_id?: string
+          notes?: string | null
+          session_id?: string
+          student_id?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_class_moderation_events_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "live_class_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_class_published_answers: {
+        Row: {
+          answer_text: string
+          id: string
+          published_at: string
+          published_by: string
+          question_text: string
+          session_id: string
+          source_question_id: string
+          tenant_id: string
+        }
+        Insert: {
+          answer_text: string
+          id?: string
+          published_at?: string
+          published_by: string
+          question_text: string
+          session_id: string
+          source_question_id: string
+          tenant_id: string
+        }
+        Update: {
+          answer_text?: string
+          id?: string
+          published_at?: string
+          published_by?: string
+          question_text?: string
+          session_id?: string
+          source_question_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_class_published_answers_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "live_class_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_class_published_answers_source_question_id_fkey"
+            columns: ["source_question_id"]
+            isOneToOne: true
+            referencedRelation: "live_class_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_class_questions: {
+        Row: {
+          answer: string | null
+          answered_at: string | null
+          answered_by: string | null
+          body: string
+          created_at: string
+          id: string
+          session_id: string
+          status: string
+          student_id: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          answer?: string | null
+          answered_at?: string | null
+          answered_by?: string | null
+          body: string
+          created_at?: string
+          id?: string
+          session_id: string
+          status?: string
+          student_id: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          answer?: string | null
+          answered_at?: string | null
+          answered_by?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          session_id?: string
+          status?: string
+          student_id?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_class_questions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "live_class_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       live_class_sessions: {
         Row: {
+          actual_ended_at: string | null
+          artifact_sync_status: string
           attendee_camera_default: boolean
           attendee_mic_default: boolean
+          breakout_enabled: boolean
           capacity: number
           class_mode: string
           cohort_reference: string | null
           created_at: string
+          end_evidence_reference: string | null
           ends_at: string
           id: string
           join_url: string | null
+          lesson_pack_status: string
           moderator_user_ids: string[]
           module_id: string | null
           organiser_user_id: string
@@ -1899,6 +2830,7 @@ export type Database = {
           provider_meeting_id: string | null
           qna_enabled: boolean
           recording_enabled: boolean
+          schedule_source: string
           starts_at: string
           status: string
           teams_sync_status: string
@@ -1908,15 +2840,20 @@ export type Database = {
           whiteboard_enabled: boolean
         }
         Insert: {
+          actual_ended_at?: string | null
+          artifact_sync_status?: string
           attendee_camera_default?: boolean
           attendee_mic_default?: boolean
+          breakout_enabled?: boolean
           capacity?: number
           class_mode?: string
           cohort_reference?: string | null
           created_at?: string
+          end_evidence_reference?: string | null
           ends_at: string
           id?: string
           join_url?: string | null
+          lesson_pack_status?: string
           moderator_user_ids?: string[]
           module_id?: string | null
           organiser_user_id: string
@@ -1926,6 +2863,7 @@ export type Database = {
           provider_meeting_id?: string | null
           qna_enabled?: boolean
           recording_enabled?: boolean
+          schedule_source?: string
           starts_at: string
           status?: string
           teams_sync_status?: string
@@ -1935,15 +2873,20 @@ export type Database = {
           whiteboard_enabled?: boolean
         }
         Update: {
+          actual_ended_at?: string | null
+          artifact_sync_status?: string
           attendee_camera_default?: boolean
           attendee_mic_default?: boolean
+          breakout_enabled?: boolean
           capacity?: number
           class_mode?: string
           cohort_reference?: string | null
           created_at?: string
+          end_evidence_reference?: string | null
           ends_at?: string
           id?: string
           join_url?: string | null
+          lesson_pack_status?: string
           moderator_user_ids?: string[]
           module_id?: string | null
           organiser_user_id?: string
@@ -1953,6 +2896,7 @@ export type Database = {
           provider_meeting_id?: string | null
           qna_enabled?: boolean
           recording_enabled?: boolean
+          schedule_source?: string
           starts_at?: string
           status?: string
           teams_sync_status?: string
@@ -5274,6 +6218,55 @@ export type Database = {
           },
         ]
       }
+      unipathway_class_release_decisions: {
+        Row: {
+          approved_at: string
+          approved_by: string
+          session_id: string
+          tenant_id: string
+          urgent: boolean
+          urgent_reason: string
+        }
+        Insert: {
+          approved_at?: string
+          approved_by: string
+          session_id: string
+          tenant_id: string
+          urgent?: boolean
+          urgent_reason: string
+        }
+        Update: {
+          approved_at?: string
+          approved_by?: string
+          session_id?: string
+          tenant_id?: string
+          urgent?: boolean
+          urgent_reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_class_release_decisions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: true
+            referencedRelation: "live_class_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_class_release_decisions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_class_release_decisions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       unipathway_course_offer_reviews: {
         Row: {
           course_key: string
@@ -5781,6 +6774,44 @@ export type Database = {
           },
         ]
       }
+      unipathway_guided_audio: {
+        Row: {
+          playing: boolean
+          position_seconds: number
+          revision: number
+          session_id: string
+          storage_path: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          playing?: boolean
+          position_seconds?: number
+          revision?: number
+          session_id: string
+          storage_path: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          playing?: boolean
+          position_seconds?: number
+          revision?: number
+          session_id?: string
+          storage_path?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_guided_audio_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: true
+            referencedRelation: "live_class_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       unipathway_learning_attempts: {
         Row: {
           feedback: string | null
@@ -6129,6 +7160,7 @@ export type Database = {
       unipathway_module_materials: {
         Row: {
           available_at: string | null
+          class_session_id: string | null
           created_at: string
           created_by: string
           id: string
@@ -6141,6 +7173,7 @@ export type Database = {
         }
         Insert: {
           available_at?: string | null
+          class_session_id?: string | null
           created_at?: string
           created_by: string
           id?: string
@@ -6153,6 +7186,7 @@ export type Database = {
         }
         Update: {
           available_at?: string | null
+          class_session_id?: string | null
           created_at?: string
           created_by?: string
           id?: string
@@ -6164,6 +7198,13 @@ export type Database = {
           title?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "unipathway_module_materials_class_session_id_fkey"
+            columns: ["class_session_id"]
+            isOneToOne: false
+            referencedRelation: "live_class_sessions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "unipathway_module_materials_module_id_fkey"
             columns: ["module_id"]
@@ -6208,6 +7249,98 @@ export type Database = {
           verified_at?: string
         }
         Relationships: []
+      }
+      unipathway_recording_jobs: {
+        Row: {
+          attempts: number
+          error_code: string | null
+          finished_at: string | null
+          lease_id: string | null
+          lease_until: string | null
+          requested_at: string
+          requested_by: string | null
+          result_count: number
+          session_id: string
+          status: string
+        }
+        Insert: {
+          attempts?: number
+          error_code?: string | null
+          finished_at?: string | null
+          lease_id?: string | null
+          lease_until?: string | null
+          requested_at?: string
+          requested_by?: string | null
+          result_count?: number
+          session_id: string
+          status?: string
+        }
+        Update: {
+          attempts?: number
+          error_code?: string | null
+          finished_at?: string | null
+          lease_id?: string | null
+          lease_until?: string | null
+          requested_at?: string
+          requested_by?: string | null
+          result_count?: number
+          session_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_recording_jobs_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: true
+            referencedRelation: "live_class_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_recording_reviews: {
+        Row: {
+          artifact_id: string
+          id: string
+          new_status: string
+          previous_status: string
+          reviewed_at: string
+          reviewer_id: string
+          session_id: string
+        }
+        Insert: {
+          artifact_id: string
+          id?: string
+          new_status: string
+          previous_status: string
+          reviewed_at?: string
+          reviewer_id: string
+          session_id: string
+        }
+        Update: {
+          artifact_id?: string
+          id?: string
+          new_status?: string
+          previous_status?: string
+          reviewed_at?: string
+          reviewer_id?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_recording_reviews_artifact_id_fkey"
+            columns: ["artifact_id"]
+            isOneToOne: false
+            referencedRelation: "live_class_artifacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_recording_reviews_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "live_class_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       unipathway_schedule_changes: {
         Row: {
@@ -6350,6 +7483,44 @@ export type Database = {
             columns: ["task_id"]
             isOneToOne: false
             referencedRelation: "unipathway_staff_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_teams_teaching_plans: {
+        Row: {
+          duration_minutes: number
+          groups: Json
+          instructions: string
+          revision: number
+          session_id: string
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          duration_minutes?: number
+          groups?: Json
+          instructions?: string
+          revision?: number
+          session_id: string
+          updated_at?: string
+          updated_by: string
+        }
+        Update: {
+          duration_minutes?: number
+          groups?: Json
+          instructions?: string
+          revision?: number
+          session_id?: string
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_teams_teaching_plans_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: true
+            referencedRelation: "live_class_sessions"
             referencedColumns: ["id"]
           },
         ]
@@ -6599,9 +7770,24 @@ export type Database = {
         }
         Returns: undefined
       }
+      answer_unipathway_class_question: {
+        Args: { p_answer: string; p_publish?: boolean; p_question: string }
+        Returns: undefined
+      }
+      append_unipathway_whiteboard_operation: {
+        Args: { p_board: string; p_operation: Json }
+        Returns: {
+          created_at: string
+          sequence: number
+        }[]
+      }
       approve_unipathway_appeal_policy: {
         Args: { p_brief: string; p_days: number; p_policy: string }
         Returns: undefined
+      }
+      approve_unipathway_urgent_class_release: {
+        Args: { p_reason: string; p_session: string }
+        Returns: Json
       }
       assign_unipathway_appeal_reviewer: {
         Args: { p_appeal: string; p_reviewer: string }
@@ -6619,11 +7805,27 @@ export type Database = {
         }
         Returns: Json
       }
+      can_access_ielts_speaking: {
+        Args: { p_path: string; p_write?: boolean }
+        Returns: boolean
+      }
+      can_access_my_unipathway_class_resource: {
+        Args: { p_session: string; p_tenant: string }
+        Returns: boolean
+      }
       can_author_uni_assessment: {
         Args: { p_module: string; p_tenant: string }
         Returns: boolean
       }
+      can_join_unipathway_class: {
+        Args: { p_session: string }
+        Returns: boolean
+      }
       can_manage_uni_assessment: { Args: { p_brief: string }; Returns: boolean }
+      can_manage_unipathway_class: {
+        Args: { p_session: string }
+        Returns: boolean
+      }
       can_manage_unipathway_microsoft: {
         Args: { p_tenant: string }
         Returns: boolean
@@ -6633,12 +7835,24 @@ export type Database = {
         Returns: boolean
       }
       can_mark_uni_attempt: { Args: { p_attempt: string }; Returns: boolean }
+      can_open_my_unipathway_class_media: {
+        Args: { p_path: string }
+        Returns: boolean
+      }
+      can_open_my_unipathway_material: {
+        Args: { p_path: string }
+        Returns: boolean
+      }
       can_quality_uni_attempt: { Args: { p_attempt: string }; Returns: boolean }
       can_read_uni_appeal_attempt: {
         Args: { p_attempt: string }
         Returns: boolean
       }
       can_read_uni_appeal_brief: { Args: { p_brief: string }; Returns: boolean }
+      can_read_unipathway_class_media: {
+        Args: { p_path: string }
+        Returns: boolean
+      }
       can_read_unipathway_coursework_file: {
         Args: { p_path: string }
         Returns: boolean
@@ -6657,6 +7871,10 @@ export type Database = {
       }
       can_review_uni_assessment_brief: {
         Args: { p_brief: string }
+        Returns: boolean
+      }
+      can_review_unipathway_class: {
+        Args: { p_session: string }
         Returns: boolean
       }
       can_study_uni_assessment: { Args: { p_brief: string }; Returns: boolean }
@@ -6686,6 +7904,10 @@ export type Database = {
         Args: { p_tenant: string }
         Returns: Json
       }
+      claim_unipathway_recording_job: {
+        Args: { p_tenant: string }
+        Returns: Json
+      }
       complete_unipathway_admission: {
         Args: {
           p_application: string
@@ -6705,6 +7927,10 @@ export type Database = {
           p_send?: boolean
         }
         Returns: string
+      }
+      confirm_unipathway_actual_class_end: {
+        Args: { p_evidence: string; p_session: string }
+        Returns: Json
       }
       consume_study_tutor_quota: { Args: { p_user: string }; Returns: Json }
       create_unipathway_learning_plan: {
@@ -6759,12 +7985,20 @@ export type Database = {
         Args: { p_application: string }
         Returns: Json
       }
+      get_unipathway_daily_register: {
+        Args: { p_date: string; p_module: string }
+        Returns: Json
+      }
       get_unipathway_guardian_activity: { Args: never; Returns: Json }
       get_unipathway_guardian_learning: { Args: never; Returns: Json }
       get_unipathway_guardian_results: { Args: never; Returns: Json }
       get_unipathway_guardian_scopes: { Args: never; Returns: Json }
       get_unipathway_guardian_sharing: { Args: never; Returns: Json }
       get_unipathway_guardian_staff_queue: { Args: never; Returns: Json }
+      get_unipathway_guided_audio: {
+        Args: { p_session: string }
+        Returns: Json
+      }
       get_unipathway_learning_share_options: {
         Args: { p_plan: string }
         Returns: Json
@@ -6784,6 +8018,7 @@ export type Database = {
           type: string
         }[]
       }
+      get_unipathway_teams_plan: { Args: { p_session: string }; Returns: Json }
       get_unipathway_tuition_roster: { Args: never; Returns: Json }
       get_user_tenant_id: { Args: { _user_id: string }; Returns: string }
       guardian_learner_allowed: { Args: { p_link: string }; Returns: boolean }
@@ -6792,6 +8027,7 @@ export type Database = {
         Returns: boolean
       }
       guardian_staff_allowed: { Args: { p_link: string }; Returns: boolean }
+      guided_audio_session: { Args: { p_path: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -6815,10 +8051,23 @@ export type Database = {
         }
         Returns: string
       }
+      invite_enrolled_unipathway_lecture: {
+        Args: { p_session: string }
+        Returns: number
+      }
+      list_attendance_corrections: { Args: { p_after?: string }; Returns: Json }
       my_quiz_attempts: { Args: never; Returns: Json }
+      note_unipathway_whiteboard_view: {
+        Args: { p_board: string }
+        Returns: undefined
+      }
       publish_unipathway_assessment_brief: {
         Args: { p_brief: string }
         Returns: undefined
+      }
+      publish_unipathway_course_material: {
+        Args: { p_material: string }
+        Returns: Json
       }
       queue_uni_mail: { Args: { p_message: string }; Returns: undefined }
       read_uni_mail_alert: { Args: { p_id: string }; Returns: undefined }
@@ -6849,6 +8098,15 @@ export type Database = {
         Args: { p_box: string; p_member: string }
         Returns: undefined
       }
+      request_attendance_correction: {
+        Args: {
+          p_id: string
+          p_reason: string
+          p_record: string
+          p_status: Database["public"]["Enums"]["attendance_status"]
+        }
+        Returns: string
+      }
       request_unipathway_assessment_resubmission: {
         Args: { p_attempt: string; p_guidance: string }
         Returns: undefined
@@ -6860,6 +8118,10 @@ export type Database = {
       request_unipathway_microsoft_account: {
         Args: { p_user: string }
         Returns: string
+      }
+      request_unipathway_recordings: {
+        Args: { p_session: string }
+        Returns: undefined
       }
       reserve_unipathway_coursework_file: {
         Args: {
@@ -6886,6 +8148,14 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      respond_unipathway_hand_raise: {
+        Args: { p_action: string; p_session: string; p_student: string }
+        Returns: undefined
+      }
+      review_attendance_correction: {
+        Args: { p_decision: string; p_id: string; p_reason: string }
+        Returns: string
       }
       review_production_check: {
         Args: {
@@ -6927,6 +8197,10 @@ export type Database = {
       }
       review_unipathway_learning_attempt: {
         Args: { p_attempt: string; p_feedback: string; p_outcome: string }
+        Returns: undefined
+      }
+      review_unipathway_recording: {
+        Args: { p_artifact: string; p_expected: string; p_status: string }
         Returns: undefined
       }
       same_tenant: { Args: { t: string }; Returns: boolean }
@@ -6995,6 +8269,29 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      save_unipathway_daily_mark: {
+        Args: {
+          p_date: string
+          p_module: string
+          p_status: Database["public"]["Enums"]["attendance_status"]
+          p_student: string
+        }
+        Returns: string
+      }
+      save_unipathway_teams_plan: {
+        Args: {
+          p_duration: number
+          p_groups: Json
+          p_instructions: string
+          p_revision: number
+          p_session: string
+        }
+        Returns: number
+      }
+      save_unipathway_whiteboard_snapshot: {
+        Args: { p_board: string; p_shapes: Json; p_through_sequence: number }
+        Returns: undefined
+      }
       seed_uni_remaining_launch_checks: {
         Args: { p_tenant: string }
         Returns: undefined
@@ -7019,6 +8316,21 @@ export type Database = {
         Args: { p_link: string; p_scope: string; p_share: boolean }
         Returns: undefined
       }
+      set_unipathway_guided_audio: {
+        Args: {
+          p_path: string
+          p_playing: boolean
+          p_position: number
+          p_revision: number
+          p_session: string
+          p_title: string
+        }
+        Returns: Json
+      }
+      set_unipathway_hand_raise: {
+        Args: { p_action: string; p_session: string }
+        Returns: string
+      }
       set_unipathway_learning_share: {
         Args: { p_link: string; p_plan: string; p_share: boolean }
         Returns: undefined
@@ -7034,6 +8346,10 @@ export type Database = {
       }
       submit_unipathway_assessment: {
         Args: { p_brief: string; p_evidence: string }
+        Returns: string
+      }
+      submit_unipathway_class_question: {
+        Args: { p_body: string; p_session: string }
         Returns: string
       }
       submit_unipathway_coursework: {
@@ -7107,6 +8423,13 @@ export type Database = {
         Returns: {
           full_name: string
           role_label: string
+          user_id: string
+        }[]
+      }
+      unipathway_module_organisers: {
+        Args: { p_module: string }
+        Returns: {
+          display_name: string
           user_id: string
         }[]
       }
