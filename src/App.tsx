@@ -121,6 +121,7 @@ const ModuleOverview = lazy(() => import('./pages/learning/ModuleOverview'));
 const StudentCourses = lazy(() => import("./pages/student/StudentCourses"));
 const StudentApplications = lazy(() => import("./pages/student/StudentApplications"));
 const LearningPlans = lazy(() => import("./pages/tuition/LearningPlans"));
+const DirectorTuitionProgress = lazy(() => import("./pages/tuition/DirectorTuitionProgress"));
 const GuardianLearning = lazy(() => import("./pages/tuition/GuardianLearning"));
 const StudentCoursework = lazy(() => import("./pages/student/StudentCoursework"));
 const StudentReleasedResults = lazy(() => import("./pages/student/StudentReleasedResults"));
@@ -441,6 +442,7 @@ function AppRoutes() {
         <Route path="/director/education-partnerships" element={<Director><EducationPartnershipReadiness /></Director>} />
         <Route path="/director/residential-planner" element={<Director><ResidentialPlanner /></Director>} />
         <Route path="/director/schedule" element={<Director><ScheduleManager /></Director>} />
+        <Route path="/director/tuition-progress" element={<RoleGuard allowed={['centre_director']}><DirectorTuitionProgress /></RoleGuard>} />
         <Route path="/director/branding" element={<Director><TenantBranding /></Director>} />
         <Route path="/director/page-builder" element={<Director><TenantPageBuilder /></Director>} />
         <Route path="/director/domains" element={<Director><TenantDomainSettings /></Director>} />

@@ -6,6 +6,7 @@ import {useAuth} from '@/contexts/AuthContext';
 import {useSupabaseQuery} from '@/hooks/useSupabaseQuery';
 import {useScheduledLectures,DAY_NAMES,TIME_SLOTS} from '@/hooks/useScheduledLectures';
 import {scheduleConflicts} from '@/lib/scheduleConflicts';
+import {calendarDay} from '@/lib/academicCalendar';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {Button} from '@/components/ui/button';
 import {DashboardSkeleton} from '@/components/ui/Skeletons';
@@ -15,7 +16,7 @@ function ScheduleContent(){
  const [editing,setEditing]=useState<LectureWithModule|null>(null),[cohort,setCohort]=useState(''),[reason,setReason]=useState(''),[notice,setNotice]=useState('');const formRef=useRef<HTMLFormElement>(null);
  const history=useQuery({queryKey:['schedule-changes',user?.id,user?.tenantId],enabled:!!user?.tenantId,queryFn:async()=>{const r=await db.from('unipathway_schedule_changes').select('id,action,reason,created_at,current').eq('tenant_id',user!.tenantId).order('created_at',{ascending:false}).limit(20);if(r.error)throw r.error;return r.data as {id:string;action:string;reason:string;created_at:string;current:Record<string,any>}[];}});
  const modules=useSupabaseQuery('modules',{enabled:!!user?.tenantId,filters:[{column:'tenant_id',operator:'eq',value:user?.tenantId}]});
- const [moduleId,setModuleId]=useState(''),[day,setDay]=useState('1'),[start,setStart]=useState('09:00'),[end,setEnd]=useState('10:30'),[year,setYear]=useState(String(new Date().getFullYear())),[semester,setSemester]=useState('1'),[from,setFrom]=useState(new Date().toISOString().slice(0,10)),[until,setUntil]=useState(''),[room,setRoom]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ const [moduleId,setModuleId]=useState(''),[day,setDay]=useState('1'),[start,setStart]=useState('09:00'),[end,setEnd]=useState('10:30'),[year,setYear]=useState(String(new Date().getFullYear())),[semester,setSemester]=useState('1'),[from,setFrom]=useState(() => calendarDay()),[until,setUntil]=useState(''),[room,setRoom]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
  const canManage=!!user&&['superadmin','centre_director','programme_leader','lecturer'].includes(user.role);
  const selected=modules.data.find(m=>m.id===moduleId);
  const clashes=scheduleConflicts(schedule.lectures);
