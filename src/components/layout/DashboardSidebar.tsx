@@ -1,3 +1,4 @@
+import {tuitionReportsEnabled} from '@/lib/tuitionReports';
 import {matchesLocalSearch} from '@/lib/localSearch';
 import {workspacePath} from '@/lib/workspaceContext';
 import { toast } from 'sonner';
@@ -115,6 +116,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Finance', icon: CreditCard, path: '/director/finance' },
       { label: 'Calendar', icon: CalendarDays, path: '/calendar' },
       { label: 'Schedule', icon: Calendar, path: '/director/schedule' },
+      ...(tuitionReportsEnabled() ? [{ label: 'Tuition progress', icon: ClipboardCheck, path: '/director/tuition-progress' }] : []),
       { label: 'Lesson Plans', icon: BookOpen, path: '/lesson-plans' },
       { label: 'Leave', icon: Clock, path: '/leave' },
       { label: 'Transport', icon: Bus, path: '/transport' },
@@ -436,7 +438,7 @@ const TASK_GROUPS: Partial<Record<UserRole, ReadonlyArray<{title:string;paths:re
       '/director/syllabuses','/director/opportunity-fund',
     ]},
     {title:'Teaching & quality',paths:[
-      '/director/course-content','/director/specifications','/director/assessment-management',
+      '/director/course-content','/director/tuition-progress','/director/specifications','/director/assessment-management',
       '/director/assessment-appeals','/director/quality','/director/attendance-corrections',
       '/director/class-release','/director/exam-plans','/director/exam-rosters',
       '/director/beauty-accreditation','/lesson-plans','/ai-recommendations',
