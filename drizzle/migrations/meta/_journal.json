@@ -155,6 +155,27 @@
       "when": 1795362170440,
       "tag": "0021_tech_lab_entitlements",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1795391343307,
+      "tag": "0022_cctv_workspace",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1795391388591,
+      "tag": "0023_exam_syllabuses",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1795391456301,
+      "tag": "0024_supervised_placements",
+      "breakpoints": true
     }
   ]
 }

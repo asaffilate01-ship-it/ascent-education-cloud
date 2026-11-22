@@ -483,6 +483,64 @@ export type Database = {
           },
         ]
       }
+      cctv_access_events: {
+        Row: {
+          camera_id: string
+          created_at: string
+          ends_at: string | null
+          id: string
+          mode: string
+          reason: string | null
+          starts_at: string | null
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          camera_id: string
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          mode: string
+          reason?: string | null
+          starts_at?: string | null
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          camera_id?: string
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          mode?: string
+          reason?: string | null
+          starts_at?: string | null
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cctv_access_events_camera_id_fkey"
+            columns: ["camera_id"]
+            isOneToOne: false
+            referencedRelation: "unipathway_cctv_cameras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cctv_access_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cctv_access_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       certificate_verifications: {
         Row: {
           awarding_body: string
@@ -6902,6 +6960,57 @@ export type Database = {
           },
         ]
       }
+      unipathway_cctv_cameras: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: string
+          location: string
+          name: string
+          provider_camera_id: string
+          security_live: boolean
+          security_playback: boolean
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          location: string
+          name: string
+          provider_camera_id: string
+          security_live?: boolean
+          security_playback?: boolean
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          location?: string
+          name?: string
+          provider_camera_id?: string
+          security_live?: boolean
+          security_playback?: boolean
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_cctv_cameras_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_cctv_cameras_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       unipathway_class_release_decisions: {
         Row: {
           approved_at: string
@@ -7323,6 +7432,110 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_exam_syllabuses: {
+        Row: {
+          academic_session: string | null
+          authorisation_evidence_reference: string | null
+          authorisation_status: string
+          authorised_at: string | null
+          authorised_by: string | null
+          awarding_body: string
+          course_delivery_status: string
+          created_at: string
+          created_by: string | null
+          curriculum_reviewed_at: string | null
+          curriculum_reviewed_by: string | null
+          exam_delivery: string
+          examination: string
+          family: string
+          grading_model: string
+          id: string
+          internal_notes: string | null
+          jurisdiction: string
+          mock_exam_support: boolean
+          module_id: string | null
+          official_exam_registration_enabled: boolean
+          qualification_level: string | null
+          specification_source: string
+          specification_version: string
+          stream: string | null
+          subject: string
+          syllabus_code: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          academic_session?: string | null
+          authorisation_evidence_reference?: string | null
+          authorisation_status?: string
+          authorised_at?: string | null
+          authorised_by?: string | null
+          awarding_body: string
+          course_delivery_status?: string
+          created_at?: string
+          created_by?: string | null
+          curriculum_reviewed_at?: string | null
+          curriculum_reviewed_by?: string | null
+          exam_delivery?: string
+          examination: string
+          family: string
+          grading_model: string
+          id?: string
+          internal_notes?: string | null
+          jurisdiction?: string
+          mock_exam_support?: boolean
+          module_id?: string | null
+          official_exam_registration_enabled?: boolean
+          qualification_level?: string | null
+          specification_source: string
+          specification_version: string
+          stream?: string | null
+          subject: string
+          syllabus_code?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          academic_session?: string | null
+          authorisation_evidence_reference?: string | null
+          authorisation_status?: string
+          authorised_at?: string | null
+          authorised_by?: string | null
+          awarding_body?: string
+          course_delivery_status?: string
+          created_at?: string
+          created_by?: string | null
+          curriculum_reviewed_at?: string | null
+          curriculum_reviewed_by?: string | null
+          exam_delivery?: string
+          examination?: string
+          family?: string
+          grading_model?: string
+          id?: string
+          internal_notes?: string | null
+          jurisdiction?: string
+          mock_exam_support?: boolean
+          module_id?: string | null
+          official_exam_registration_enabled?: boolean
+          qualification_level?: string | null
+          specification_source?: string
+          specification_version?: string
+          stream?: string | null
+          subject?: string
+          syllabus_code?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_exam_syllabuses_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
             referencedColumns: ["id"]
           },
         ]
@@ -8160,6 +8373,68 @@ export type Database = {
         }
         Relationships: []
       }
+      unipathway_mock_exam_events: {
+        Row: {
+          approved_by: string | null
+          created_at: string
+          created_by: string
+          duration_minutes: number | null
+          exam_component: string | null
+          id: string
+          paper_reference: string | null
+          published_at: string | null
+          registration_url: string | null
+          starts_at: string | null
+          status: string
+          syllabus_id: string
+          tenant_id: string
+          title: string
+          total_marks: number | null
+        }
+        Insert: {
+          approved_by?: string | null
+          created_at?: string
+          created_by: string
+          duration_minutes?: number | null
+          exam_component?: string | null
+          id?: string
+          paper_reference?: string | null
+          published_at?: string | null
+          registration_url?: string | null
+          starts_at?: string | null
+          status?: string
+          syllabus_id: string
+          tenant_id: string
+          title: string
+          total_marks?: number | null
+        }
+        Update: {
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string
+          duration_minutes?: number | null
+          exam_component?: string | null
+          id?: string
+          paper_reference?: string | null
+          published_at?: string | null
+          registration_url?: string | null
+          starts_at?: string | null
+          status?: string
+          syllabus_id?: string
+          tenant_id?: string
+          title?: string
+          total_marks?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_mock_exam_events_syllabus_id_fkey"
+            columns: ["syllabus_id"]
+            isOneToOne: false
+            referencedRelation: "unipathway_exam_syllabuses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       unipathway_module_materials: {
         Row: {
           available_at: string | null
@@ -8213,6 +8488,186 @@ export type Database = {
             columns: ["module_id"]
             isOneToOne: false
             referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_placement_actions: {
+        Row: {
+          action: string
+          actor_id: string
+          created_at: string
+          id: string
+          payload: Json
+          placement_id: string
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          created_at?: string
+          id: string
+          payload: Json
+          placement_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          created_at?: string
+          id?: string
+          payload?: Json
+          placement_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_placement_actions_placement_id_fkey"
+            columns: ["placement_id"]
+            isOneToOne: false
+            referencedRelation: "unipathway_placements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_placement_logs: {
+        Row: {
+          created_at: string
+          id: string
+          minutes: number
+          notes: string
+          placement_id: string
+          review_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          submitted_by: string
+          worked_on: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          minutes: number
+          notes: string
+          placement_id: string
+          review_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_by: string
+          worked_on: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          minutes?: number
+          notes?: string
+          placement_id?: string
+          review_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_by?: string
+          worked_on?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_placement_logs_placement_id_fkey"
+            columns: ["placement_id"]
+            isOneToOne: false
+            referencedRelation: "unipathway_placements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_placements: {
+        Row: {
+          created_at: string
+          created_by: string
+          employer_name: string
+          ends_on: string
+          id: string
+          learning_goals: string
+          organisation_id: string
+          programme_id: string
+          programme_title: string
+          required: boolean
+          required_minutes: number
+          starts_on: string
+          status: string
+          student_id: string
+          student_name: string
+          supervisor_id: string
+          supervisor_name: string
+          tenant_id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          employer_name: string
+          ends_on: string
+          id: string
+          learning_goals: string
+          organisation_id: string
+          programme_id: string
+          programme_title: string
+          required: boolean
+          required_minutes: number
+          starts_on: string
+          status?: string
+          student_id: string
+          student_name: string
+          supervisor_id: string
+          supervisor_name: string
+          tenant_id: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          employer_name?: string
+          ends_on?: string
+          id?: string
+          learning_goals?: string
+          organisation_id?: string
+          programme_id?: string
+          programme_title?: string
+          required?: boolean
+          required_minutes?: number
+          starts_on?: string
+          status?: string
+          student_id?: string
+          student_name?: string
+          supervisor_id?: string
+          supervisor_name?: string
+          tenant_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_placements_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "unipathway_employer_organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_placements_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_placements_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_placements_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
             referencedColumns: ["id"]
           },
         ]
@@ -8503,6 +8958,53 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_syllabus_objectives: {
+        Row: {
+          display_order: number
+          exam_component: string | null
+          id: string
+          learning_evidence: string | null
+          objective_code: string
+          objective_text: string
+          requires_supervised_practical: boolean
+          syllabus_id: string
+          tenant_id: string
+          topic: string
+        }
+        Insert: {
+          display_order: number
+          exam_component?: string | null
+          id?: string
+          learning_evidence?: string | null
+          objective_code: string
+          objective_text: string
+          requires_supervised_practical?: boolean
+          syllabus_id: string
+          tenant_id: string
+          topic: string
+        }
+        Update: {
+          display_order?: number
+          exam_component?: string | null
+          id?: string
+          learning_evidence?: string | null
+          objective_code?: string
+          objective_text?: string
+          requires_supervised_practical?: boolean
+          syllabus_id?: string
+          tenant_id?: string
+          topic?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_syllabus_objectives_syllabus_id_fkey"
+            columns: ["syllabus_id"]
+            isOneToOne: false
+            referencedRelation: "unipathway_exam_syllabuses"
             referencedColumns: ["id"]
           },
         ]
@@ -8844,6 +9346,10 @@ export type Database = {
         Args: { p_brief: string; p_days: number; p_policy: string }
         Returns: undefined
       }
+      approve_unipathway_teaching_syllabus: {
+        Args: { p_syllabus: string }
+        Returns: undefined
+      }
       approve_unipathway_urgent_class_release: {
         Args: { p_reason: string; p_session: string }
         Returns: Json
@@ -8899,6 +9405,7 @@ export type Database = {
         Args: { p_template: string }
         Returns: boolean
       }
+      can_manage_uni_syllabus: { Args: { p_tenant: string }; Returns: boolean }
       can_manage_unipathway_class: {
         Args: { p_session: string }
         Returns: boolean
@@ -8959,6 +9466,7 @@ export type Database = {
         Args: { p_path: string }
         Returns: boolean
       }
+      can_view_uni_syllabus: { Args: { p_syllabus: string }; Returns: boolean }
       can_view_unipathway_module: {
         Args: { p_module: string }
         Returns: boolean
@@ -8972,6 +9480,10 @@ export type Database = {
         Returns: undefined
       }
       cancel_uni_mail_draft: { Args: { p_message: string }; Returns: undefined }
+      change_unipathway_placement: {
+        Args: { p_action: string; p_data: Json; p_request: string }
+        Returns: string
+      }
       check_my_unipathway_tech_lab: {
         Args: { p_module: string }
         Returns: boolean
@@ -9103,6 +9615,7 @@ export type Database = {
           type: string
         }[]
       }
+      get_unipathway_placement_options: { Args: never; Returns: Json }
       get_unipathway_teams_plan: { Args: { p_session: string }; Returns: Json }
       get_unipathway_tuition_roster: { Args: never; Returns: Json }
       get_user_tenant_id: { Args: { _user_id: string }; Returns: string }
@@ -9173,6 +9686,7 @@ export type Database = {
         Args: { p_material: string }
         Returns: Json
       }
+      publish_unipathway_mock: { Args: { p_mock: string }; Returns: undefined }
       queue_uni_mail: { Args: { p_message: string }; Returns: undefined }
       read_uni_mail_alert: { Args: { p_id: string }; Returns: undefined }
       record_unipathway_appeal_review: {
@@ -9605,6 +10119,8 @@ export type Database = {
           user_id: string
         }[]
       }
+      unipathway_placement_access: { Args: { p_id: string }; Returns: boolean }
+      unipathway_placement_manager: { Args: never; Returns: boolean }
       unipathway_private_attachment_allowed: {
         Args: { p_path: string }
         Returns: boolean
