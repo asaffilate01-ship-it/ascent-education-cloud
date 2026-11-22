@@ -120,6 +120,41 @@
       "when": 1795361753216,
       "tag": "0016_large_lecture_whiteboard_realtime",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1795361839423,
+      "tag": "0017_virtual_labs_foundation",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1795361973688,
+      "tag": "0018_lms_practical_lab_access",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1795362011804,
+      "tag": "0019_browser_coding_workspaces",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1795362116035,
+      "tag": "0020_lms_lab_offerings_permissions",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1795362170440,
+      "tag": "0021_tech_lab_entitlements",
+      "breakpoints": true
     }
   ]
 }

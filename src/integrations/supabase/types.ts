@@ -1856,6 +1856,265 @@ export type Database = {
           },
         ]
       }
+      lab_class_runs: {
+        Row: {
+          cohort_reference: string
+          created_at: string
+          ends_at: string | null
+          id: string
+          lead_instructor_id: string
+          live_class_session_id: string | null
+          max_concurrent: number
+          starts_at: string | null
+          status: string
+          ta_user_ids: string[]
+          template_id: string
+          tenant_id: string
+        }
+        Insert: {
+          cohort_reference: string
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          lead_instructor_id: string
+          live_class_session_id?: string | null
+          max_concurrent?: number
+          starts_at?: string | null
+          status?: string
+          ta_user_ids?: string[]
+          template_id: string
+          tenant_id: string
+        }
+        Update: {
+          cohort_reference?: string
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          lead_instructor_id?: string
+          live_class_session_id?: string | null
+          max_concurrent?: number
+          starts_at?: string | null
+          status?: string
+          ta_user_ids?: string[]
+          template_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_class_runs_live_class_session_id_fkey"
+            columns: ["live_class_session_id"]
+            isOneToOne: false
+            referencedRelation: "live_class_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_class_runs_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "lab_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lab_evidence: {
+        Row: {
+          captured_at: string
+          evidence_reference: string | null
+          evidence_type: string
+          id: string
+          session_id: string
+          signed_off_at: string | null
+          signed_off_by: string | null
+          task_id: string | null
+          tenant_id: string
+          verification: Json
+        }
+        Insert: {
+          captured_at?: string
+          evidence_reference?: string | null
+          evidence_type: string
+          id?: string
+          session_id: string
+          signed_off_at?: string | null
+          signed_off_by?: string | null
+          task_id?: string | null
+          tenant_id: string
+          verification?: Json
+        }
+        Update: {
+          captured_at?: string
+          evidence_reference?: string | null
+          evidence_type?: string
+          id?: string
+          session_id?: string
+          signed_off_at?: string | null
+          signed_off_by?: string | null
+          task_id?: string | null
+          tenant_id?: string
+          verification?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_evidence_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "lab_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_evidence_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "lab_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lab_help_requests: {
+        Row: {
+          claimed_at: string | null
+          claimed_by: string | null
+          id: string
+          message: string | null
+          priority: string
+          requested_at: string
+          resolved_at: string | null
+          session_id: string
+          status: string
+          student_id: string
+          tenant_id: string
+        }
+        Insert: {
+          claimed_at?: string | null
+          claimed_by?: string | null
+          id?: string
+          message?: string | null
+          priority?: string
+          requested_at?: string
+          resolved_at?: string | null
+          session_id: string
+          status?: string
+          student_id: string
+          tenant_id: string
+        }
+        Update: {
+          claimed_at?: string | null
+          claimed_by?: string | null
+          id?: string
+          message?: string | null
+          priority?: string
+          requested_at?: string
+          resolved_at?: string | null
+          session_id?: string
+          status?: string
+          student_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_help_requests_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "lab_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lab_instructor_access: {
+        Row: {
+          ended_at: string | null
+          id: string
+          instructor_id: string
+          metadata: Json
+          mode: string
+          reason: string
+          session_id: string
+          started_at: string
+          tenant_id: string
+        }
+        Insert: {
+          ended_at?: string | null
+          id?: string
+          instructor_id: string
+          metadata?: Json
+          mode: string
+          reason: string
+          session_id: string
+          started_at?: string
+          tenant_id: string
+        }
+        Update: {
+          ended_at?: string | null
+          id?: string
+          instructor_id?: string
+          metadata?: Json
+          mode?: string
+          reason?: string
+          session_id?: string
+          started_at?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_instructor_access_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "lab_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lab_provider_configs: {
+        Row: {
+          budget_currency: string
+          budget_monthly: number | null
+          capabilities: Json
+          credential_status: string
+          display_name: string
+          enabled: boolean
+          hard_stop_minutes: number
+          id: string
+          idle_shutdown_minutes: number
+          max_concurrent: number
+          metadata: Json
+          provider: string
+          tenant_id: string
+          verified_at: string | null
+        }
+        Insert: {
+          budget_currency?: string
+          budget_monthly?: number | null
+          capabilities?: Json
+          credential_status?: string
+          display_name: string
+          enabled?: boolean
+          hard_stop_minutes?: number
+          id?: string
+          idle_shutdown_minutes?: number
+          max_concurrent?: number
+          metadata?: Json
+          provider: string
+          tenant_id: string
+          verified_at?: string | null
+        }
+        Update: {
+          budget_currency?: string
+          budget_monthly?: number | null
+          capabilities?: Json
+          credential_status?: string
+          display_name?: string
+          enabled?: boolean
+          hard_stop_minutes?: number
+          id?: string
+          idle_shutdown_minutes?: number
+          max_concurrent?: number
+          metadata?: Json
+          provider?: string
+          tenant_id?: string
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
       lab_screen_shares: {
         Row: {
           ended_at: string | null
@@ -1899,51 +2158,109 @@ export type Database = {
       }
       lab_sessions: {
         Row: {
+          attempt_no: number
+          broker_ready_at: string | null
+          class_run_id: string | null
           classroom_session_id: string | null
+          cohort_reference: string | null
           created_at: string
           description: string | null
           ended_at: string | null
+          estimated_cost: number
+          expires_at: string | null
           id: string
+          idle_shutdown_minutes: number
           is_lab_mode: boolean
+          last_activity_at: string | null
+          launch_mode: string | null
           lecturer_id: string
+          minutes_used: number
           module_id: string | null
+          offering_id: string | null
+          provider_session_id: string | null
           scheduled_at: string | null
+          started_at: string | null
           status: string
+          stop_requested_at: string | null
+          student_id: string | null
+          template_id: string | null
           tenant_id: string
           title: string
           updated_at: string
+          workspace_reference: string | null
         }
         Insert: {
+          attempt_no?: number
+          broker_ready_at?: string | null
+          class_run_id?: string | null
           classroom_session_id?: string | null
+          cohort_reference?: string | null
           created_at?: string
           description?: string | null
           ended_at?: string | null
+          estimated_cost?: number
+          expires_at?: string | null
           id?: string
+          idle_shutdown_minutes?: number
           is_lab_mode?: boolean
+          last_activity_at?: string | null
+          launch_mode?: string | null
           lecturer_id: string
+          minutes_used?: number
           module_id?: string | null
+          offering_id?: string | null
+          provider_session_id?: string | null
           scheduled_at?: string | null
+          started_at?: string | null
           status?: string
+          stop_requested_at?: string | null
+          student_id?: string | null
+          template_id?: string | null
           tenant_id: string
-          title: string
+          title?: string
           updated_at?: string
+          workspace_reference?: string | null
         }
         Update: {
+          attempt_no?: number
+          broker_ready_at?: string | null
+          class_run_id?: string | null
           classroom_session_id?: string | null
+          cohort_reference?: string | null
           created_at?: string
           description?: string | null
           ended_at?: string | null
+          estimated_cost?: number
+          expires_at?: string | null
           id?: string
+          idle_shutdown_minutes?: number
           is_lab_mode?: boolean
+          last_activity_at?: string | null
+          launch_mode?: string | null
           lecturer_id?: string
+          minutes_used?: number
           module_id?: string | null
+          offering_id?: string | null
+          provider_session_id?: string | null
           scheduled_at?: string | null
+          started_at?: string | null
           status?: string
+          stop_requested_at?: string | null
+          student_id?: string | null
+          template_id?: string | null
           tenant_id?: string
           title?: string
           updated_at?: string
+          workspace_reference?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "lab_sessions_class_run_id_fkey"
+            columns: ["class_run_id"]
+            isOneToOne: false
+            referencedRelation: "lab_class_runs"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "lab_sessions_classroom_session_id_fkey"
             columns: ["classroom_session_id"]
@@ -1959,6 +2276,20 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "lab_sessions_offering_id_fkey"
+            columns: ["offering_id"]
+            isOneToOne: false
+            referencedRelation: "lms_lab_offerings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_sessions_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "lab_templates"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "lab_sessions_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
@@ -1970,6 +2301,178 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lab_task_progress: {
+        Row: {
+          attempts: number
+          completed_at: string | null
+          id: string
+          session_id: string
+          status: string
+          task_id: string
+          tenant_id: string
+          verification_result: Json
+        }
+        Insert: {
+          attempts?: number
+          completed_at?: string | null
+          id?: string
+          session_id: string
+          status?: string
+          task_id: string
+          tenant_id: string
+          verification_result?: Json
+        }
+        Update: {
+          attempts?: number
+          completed_at?: string | null
+          id?: string
+          session_id?: string
+          status?: string
+          task_id?: string
+          tenant_id?: string
+          verification_result?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_task_progress_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "lab_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_task_progress_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "lab_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lab_tasks: {
+        Row: {
+          coding_language: string | null
+          execution_mode: string
+          exercise_kind: string
+          id: string
+          instructions: string | null
+          points: number
+          sequence_no: number
+          starter_code: string | null
+          template_id: string
+          tenant_id: string
+          title: string
+          verification_config: Json
+          verification_type: string
+        }
+        Insert: {
+          coding_language?: string | null
+          execution_mode?: string
+          exercise_kind?: string
+          id?: string
+          instructions?: string | null
+          points?: number
+          sequence_no: number
+          starter_code?: string | null
+          template_id: string
+          tenant_id: string
+          title: string
+          verification_config?: Json
+          verification_type?: string
+        }
+        Update: {
+          coding_language?: string | null
+          execution_mode?: string
+          exercise_kind?: string
+          id?: string
+          instructions?: string | null
+          points?: number
+          sequence_no?: number
+          starter_code?: string | null
+          template_id?: string
+          tenant_id?: string
+          title?: string
+          verification_config?: Json
+          verification_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_tasks_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "lab_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lab_templates: {
+        Row: {
+          access_mode: string
+          active: boolean
+          created_by: string | null
+          duration_minutes: number
+          environment_reference: string | null
+          estimated_cost_gbp: number
+          id: string
+          instructor_assist: boolean
+          instructor_observe: boolean
+          learning_outcomes: string | null
+          max_attempts: number
+          module_id: string | null
+          preparation_notes: string | null
+          provider: string
+          published: boolean
+          tenant_id: string
+          title: string
+        }
+        Insert: {
+          access_mode?: string
+          active?: boolean
+          created_by?: string | null
+          duration_minutes?: number
+          environment_reference?: string | null
+          estimated_cost_gbp?: number
+          id?: string
+          instructor_assist?: boolean
+          instructor_observe?: boolean
+          learning_outcomes?: string | null
+          max_attempts?: number
+          module_id?: string | null
+          preparation_notes?: string | null
+          provider: string
+          published?: boolean
+          tenant_id: string
+          title: string
+        }
+        Update: {
+          access_mode?: string
+          active?: boolean
+          created_by?: string | null
+          duration_minutes?: number
+          environment_reference?: string | null
+          estimated_cost_gbp?: number
+          id?: string
+          instructor_assist?: boolean
+          instructor_observe?: boolean
+          learning_outcomes?: string | null
+          max_attempts?: number
+          module_id?: string | null
+          preparation_notes?: string | null
+          provider?: string
+          published?: boolean
+          tenant_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_templates_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
             referencedColumns: ["id"]
           },
         ]
@@ -2911,6 +3414,138 @@ export type Database = {
             columns: ["module_id"]
             isOneToOne: false
             referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lms_lab_class_invitations: {
+        Row: {
+          created_at: string
+          invited_by: string
+          run_id: string
+          status: string
+          student_id: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          invited_by: string
+          run_id: string
+          status?: string
+          student_id: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          invited_by?: string
+          run_id?: string
+          status?: string
+          student_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lms_lab_class_invitations_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "lab_class_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lms_lab_class_invitations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lms_lab_class_invitations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lms_lab_offerings: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string
+          id: string
+          launch_enabled: boolean
+          max_active_learners: number
+          modes: string[]
+          module_id: string
+          published: boolean
+          self_study_attempts: number
+          session_minutes: number
+          template_id: string
+          tenant_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string
+          id?: string
+          launch_enabled?: boolean
+          max_active_learners?: number
+          modes?: string[]
+          module_id: string
+          published?: boolean
+          self_study_attempts?: number
+          session_minutes?: number
+          template_id: string
+          tenant_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string
+          id?: string
+          launch_enabled?: boolean
+          max_active_learners?: number
+          modes?: string[]
+          module_id?: string
+          published?: boolean
+          self_study_attempts?: number
+          session_minutes?: number
+          template_id?: string
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lms_lab_offerings_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lms_lab_offerings_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "lab_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lms_lab_offerings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lms_lab_offerings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
             referencedColumns: ["id"]
           },
         ]
@@ -5476,6 +6111,55 @@ export type Database = {
           },
         ]
       }
+      unipathway_approved_tech_modules: {
+        Row: {
+          approved_at: string
+          approved_by: string
+          enabled: boolean
+          evidence_reference: string
+          module_id: string
+          tenant_id: string
+        }
+        Insert: {
+          approved_at?: string
+          approved_by: string
+          enabled?: boolean
+          evidence_reference: string
+          module_id: string
+          tenant_id: string
+        }
+        Update: {
+          approved_at?: string
+          approved_by?: string
+          enabled?: boolean
+          evidence_reference?: string
+          module_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_approved_tech_modules_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: true
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_approved_tech_modules_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_approved_tech_modules_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       unipathway_assessment_ai_drafts: {
         Row: {
           attempt_id: string
@@ -6812,6 +7496,325 @@ export type Database = {
           },
         ]
       }
+      unipathway_lab_code_activity: {
+        Row: {
+          action: string
+          actor_id: string
+          id: string
+          occurred_at: string
+          revision: number
+          student_id: string
+          task_id: string
+          template_id: string
+          tenant_id: string
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          id?: string
+          occurred_at?: string
+          revision: number
+          student_id: string
+          task_id: string
+          template_id: string
+          tenant_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          id?: string
+          occurred_at?: string
+          revision?: number
+          student_id?: string
+          task_id?: string
+          template_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_lab_code_activity_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "lab_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_lab_code_activity_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "lab_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_lab_code_workspaces: {
+        Row: {
+          code: string
+          reviewed_at: string | null
+          reviewer_feedback: string | null
+          reviewer_id: string | null
+          revision: number
+          status: string
+          student_id: string
+          submitted_at: string | null
+          task_id: string
+          template_id: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          code?: string
+          reviewed_at?: string | null
+          reviewer_feedback?: string | null
+          reviewer_id?: string | null
+          revision?: number
+          status?: string
+          student_id: string
+          submitted_at?: string | null
+          task_id: string
+          template_id: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          reviewed_at?: string | null
+          reviewer_feedback?: string | null
+          reviewer_id?: string | null
+          revision?: number
+          status?: string
+          student_id?: string
+          submitted_at?: string | null
+          task_id?: string
+          template_id?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_lab_code_workspaces_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "lab_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_lab_code_workspaces_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "lab_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_lab_launch_requests: {
+        Row: {
+          approved_at: string | null
+          class_run_id: string | null
+          error_code: string | null
+          estimated_cost_gbp: number
+          expires_at: string | null
+          id: string
+          mode: string
+          provider_resource_reference: string | null
+          requested_at: string
+          started_at: string | null
+          status: string
+          stopped_at: string | null
+          student_id: string
+          template_id: string
+          tenant_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          class_run_id?: string | null
+          error_code?: string | null
+          estimated_cost_gbp?: number
+          expires_at?: string | null
+          id?: string
+          mode: string
+          provider_resource_reference?: string | null
+          requested_at?: string
+          started_at?: string | null
+          status?: string
+          stopped_at?: string | null
+          student_id: string
+          template_id: string
+          tenant_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          class_run_id?: string | null
+          error_code?: string | null
+          estimated_cost_gbp?: number
+          expires_at?: string | null
+          id?: string
+          mode?: string
+          provider_resource_reference?: string | null
+          requested_at?: string
+          started_at?: string | null
+          status?: string
+          stopped_at?: string | null
+          student_id?: string
+          template_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_lab_launch_requests_class_run_id_fkey"
+            columns: ["class_run_id"]
+            isOneToOne: false
+            referencedRelation: "lab_class_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_lab_launch_requests_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "lab_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_lab_run_invitations: {
+        Row: {
+          class_run_id: string
+          created_at: string
+          invited_by: string
+          status: string
+          student_id: string
+          tenant_id: string
+        }
+        Insert: {
+          class_run_id: string
+          created_at?: string
+          invited_by: string
+          status?: string
+          student_id: string
+          tenant_id: string
+        }
+        Update: {
+          class_run_id?: string
+          created_at?: string
+          invited_by?: string
+          status?: string
+          student_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_lab_run_invitations_class_run_id_fkey"
+            columns: ["class_run_id"]
+            isOneToOne: false
+            referencedRelation: "lab_class_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_lab_support_requests: {
+        Row: {
+          answered_at: string | null
+          assigned_lecturer_id: string | null
+          id: string
+          launch_request_id: string
+          message: string
+          requested_at: string
+          response: string | null
+          status: string
+          student_id: string
+          tenant_id: string
+        }
+        Insert: {
+          answered_at?: string | null
+          assigned_lecturer_id?: string | null
+          id?: string
+          launch_request_id: string
+          message: string
+          requested_at?: string
+          response?: string | null
+          status?: string
+          student_id: string
+          tenant_id: string
+        }
+        Update: {
+          answered_at?: string | null
+          assigned_lecturer_id?: string | null
+          id?: string
+          launch_request_id?: string
+          message?: string
+          requested_at?: string
+          response?: string | null
+          status?: string
+          student_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_lab_support_requests_launch_request_id_fkey"
+            columns: ["launch_request_id"]
+            isOneToOne: false
+            referencedRelation: "unipathway_lab_launch_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unipathway_lab_task_notes: {
+        Row: {
+          id: string
+          notes: string
+          reviewer_feedback: string | null
+          reviewer_id: string | null
+          status: string
+          student_id: string
+          submitted_at: string | null
+          task_id: string
+          template_id: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          notes?: string
+          reviewer_feedback?: string | null
+          reviewer_id?: string | null
+          status?: string
+          student_id: string
+          submitted_at?: string | null
+          task_id: string
+          template_id: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          notes?: string
+          reviewer_feedback?: string | null
+          reviewer_id?: string | null
+          status?: string
+          student_id?: string
+          submitted_at?: string | null
+          task_id?: string
+          template_id?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_lab_task_notes_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "lab_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_lab_task_notes_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "lab_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       unipathway_learning_attempts: {
         Row: {
           feedback: string | null
@@ -7452,6 +8455,58 @@ export type Database = {
           },
         ]
       }
+      unipathway_student_lab_entitlements: {
+        Row: {
+          issued_at: string
+          issued_by: string
+          module_id: string
+          revoked_at: string | null
+          student_id: string
+          tenant_id: string
+          valid_until: string
+        }
+        Insert: {
+          issued_at?: string
+          issued_by: string
+          module_id: string
+          revoked_at?: string | null
+          student_id: string
+          tenant_id: string
+          valid_until: string
+        }
+        Update: {
+          issued_at?: string
+          issued_by?: string
+          module_id?: string
+          revoked_at?: string | null
+          student_id?: string
+          tenant_id?: string
+          valid_until?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unipathway_student_lab_entitlements_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_student_lab_entitlements_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unipathway_student_lab_entitlements_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       unipathway_task_history: {
         Row: {
           changed_by: string
@@ -7774,6 +8829,10 @@ export type Database = {
         Args: { p_answer: string; p_publish?: boolean; p_question: string }
         Returns: undefined
       }
+      answer_unipathway_lab_support: {
+        Args: { p_response: string; p_support: string }
+        Returns: undefined
+      }
       append_unipathway_whiteboard_operation: {
         Args: { p_board: string; p_operation: Json }
         Returns: {
@@ -7813,7 +8872,16 @@ export type Database = {
         Args: { p_session: string; p_tenant: string }
         Returns: boolean
       }
+      can_access_uni_lab_run: { Args: { p_run: string }; Returns: boolean }
+      can_access_uni_lab_template: {
+        Args: { p_template: string }
+        Returns: boolean
+      }
       can_author_uni_assessment: {
+        Args: { p_module: string; p_tenant: string }
+        Returns: boolean
+      }
+      can_create_uni_lab_in_module: {
         Args: { p_module: string; p_tenant: string }
         Returns: boolean
       }
@@ -7822,6 +8890,15 @@ export type Database = {
         Returns: boolean
       }
       can_manage_uni_assessment: { Args: { p_brief: string }; Returns: boolean }
+      can_manage_uni_lab_request: {
+        Args: { p_request: string }
+        Returns: boolean
+      }
+      can_manage_uni_lab_run: { Args: { p_run: string }; Returns: boolean }
+      can_manage_uni_lab_template: {
+        Args: { p_template: string }
+        Returns: boolean
+      }
       can_manage_unipathway_class: {
         Args: { p_session: string }
         Returns: boolean
@@ -7895,10 +8972,18 @@ export type Database = {
         Returns: undefined
       }
       cancel_uni_mail_draft: { Args: { p_message: string }; Returns: undefined }
+      check_my_unipathway_tech_lab: {
+        Args: { p_module: string }
+        Returns: boolean
+      }
       claim_uni_calendar_job: { Args: { p_tenant: string }; Returns: Json }
       claim_uni_mail_send: {
         Args: { p_provider?: string; p_tenant: string }
         Returns: Json
+      }
+      claim_unipathway_lab_help: {
+        Args: { p_request: string; p_resolved?: boolean }
+        Returns: undefined
       }
       claim_unipathway_microsoft_job: {
         Args: { p_tenant: string }
@@ -8021,6 +9106,10 @@ export type Database = {
       get_unipathway_teams_plan: { Args: { p_session: string }; Returns: Json }
       get_unipathway_tuition_roster: { Args: never; Returns: Json }
       get_user_tenant_id: { Args: { _user_id: string }; Returns: string }
+      grant_unipathway_tech_lab_to_student: {
+        Args: { p_module: string; p_student: string; p_until: string }
+        Returns: boolean
+      }
       guardian_learner_allowed: { Args: { p_link: string }; Returns: boolean }
       guardian_scope_allowed: {
         Args: { p_link: string; p_scope: string }
@@ -8051,12 +9140,27 @@ export type Database = {
         }
         Returns: string
       }
+      invite_enrolled_unipathway_lab_class: {
+        Args: { p_run: string }
+        Returns: number
+      }
+      invite_enrolled_unipathway_lab_run: {
+        Args: { p_run: string }
+        Returns: number
+      }
       invite_enrolled_unipathway_lecture: {
         Args: { p_session: string }
         Returns: number
       }
+      is_academic_manager: { Args: never; Returns: boolean }
       list_attendance_corrections: { Args: { p_after?: string }; Returns: Json }
       my_quiz_attempts: { Args: never; Returns: Json }
+      my_unipathway_tech_lab_modules: {
+        Args: never
+        Returns: {
+          module_id: string
+        }[]
+      }
       note_unipathway_whiteboard_view: {
         Args: { p_board: string }
         Returns: undefined
@@ -8113,6 +9217,22 @@ export type Database = {
       }
       request_unipathway_grade_appeal: {
         Args: { p_attempt: string; p_details: string; p_grounds: string }
+        Returns: string
+      }
+      request_unipathway_lab_help: {
+        Args: { p_message: string; p_session: string }
+        Returns: string
+      }
+      request_unipathway_lab_support: {
+        Args: { p_message: string; p_request: string }
+        Returns: string
+      }
+      request_unipathway_lms_lab: {
+        Args: { p_class_run?: string; p_mode: string; p_template: string }
+        Returns: string
+      }
+      request_unipathway_managed_lab: {
+        Args: { p_class_run?: string; p_mode: string; p_offering: string }
         Returns: string
       }
       request_unipathway_microsoft_account: {
@@ -8195,6 +9315,23 @@ export type Database = {
         }
         Returns: number
       }
+      review_unipathway_lab_code: {
+        Args: { p_feedback: string; p_student: string; p_task: string }
+        Returns: undefined
+      }
+      review_unipathway_lab_practice_note: {
+        Args: { p_feedback: string; p_note: string }
+        Returns: undefined
+      }
+      review_unipathway_lab_task: {
+        Args: {
+          p_approved: boolean
+          p_feedback: string
+          p_session: string
+          p_task: string
+        }
+        Returns: undefined
+      }
       review_unipathway_learning_attempt: {
         Args: { p_attempt: string; p_feedback: string; p_outcome: string }
         Returns: undefined
@@ -8202,6 +9339,14 @@ export type Database = {
       review_unipathway_recording: {
         Args: { p_artifact: string; p_expected: string; p_status: string }
         Returns: undefined
+      }
+      review_unipathway_tech_lab_module: {
+        Args: { p_enabled: boolean; p_module: string; p_reference: string }
+        Returns: boolean
+      }
+      revoke_unipathway_tech_lab: {
+        Args: { p_module: string; p_student: string }
+        Returns: boolean
       }
       same_tenant: { Args: { t: string }; Returns: boolean }
       save_quiz_answers: {
@@ -8276,6 +9421,17 @@ export type Database = {
           p_status: Database["public"]["Enums"]["attendance_status"]
           p_student: string
         }
+        Returns: string
+      }
+      save_unipathway_lab_code: {
+        Args: { p_code: string; p_submit?: boolean; p_task: string }
+        Returns: {
+          saved_revision: number
+          saved_status: string
+        }[]
+      }
+      save_unipathway_lab_practice_note: {
+        Args: { p_notes: string; p_submit?: boolean; p_task: string }
         Returns: string
       }
       save_unipathway_teams_plan: {
@@ -8361,6 +9517,10 @@ export type Database = {
         }
         Returns: string
       }
+      submit_unipathway_lab_task: {
+        Args: { p_note: string; p_session: string; p_task: string }
+        Returns: undefined
+      }
       submit_unipathway_learning_attempt: {
         Args: {
           p_help: boolean
@@ -8416,6 +9576,18 @@ export type Database = {
       }
       unipathway_is_messaging_staff: {
         Args: { p_user: string }
+        Returns: boolean
+      }
+      unipathway_lab_can_view_session: {
+        Args: { p_session: string }
+        Returns: boolean
+      }
+      unipathway_lab_staff_can_manage: {
+        Args: { p_module: string }
+        Returns: boolean
+      }
+      unipathway_lab_student_enrolled: {
+        Args: { p_module: string }
         Returns: boolean
       }
       unipathway_message_directory: {
