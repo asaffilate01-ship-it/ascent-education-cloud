@@ -22,6 +22,20 @@
       "when": 1792478174970,
       "tag": "0002_restore_function_execute_grants",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1795361009211,
+      "tag": "0003_private_messaging_activation",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795361055746,
+      "tag": "0004_direct_messages_between_centre_members",
+      "breakpoints": true
     }
   ]
 }

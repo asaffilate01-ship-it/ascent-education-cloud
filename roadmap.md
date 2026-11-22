@@ -21,3 +21,7 @@
 - [x] Name and describe the new public page as art, crafts and sewing so fine art is discoverable in navigation, homepage, metadata and keywords.
 - [x] Reduce oversized site icons and homepage imagery; desktop/mobile image loading and course navigation verified, seven related tests passed; publish the lighter site.
 - [x] Audit all 17 role dashboards (desktop + phone), lessons, live/recorded classes, language lab and tech labs; findings in docs/DASHBOARD_AUDIT_20261122.md.
+- [ ] Switch on missing features in the live database with additive forward-only changes (messaging, IELTS + guided audio, whiteboards/Q&A/teaching plans/recordings/class release, attendance register + corrections, labs, placements, CCTV, Opportunity Fund, accreditation, knowledge, international progression, syllabuses, exams, welfare, office) and regenerate types.
+- [ ] Polish dashboards: one-row phone header, shorter/grouped long menus without truncated labels, plain-English unavailable/error messages, lighter compliance copy.
+- [ ] Add sample lessons, a lesson plan and a weekly timetable to the test Level 4 Business Management course.
+- [ ] Turn on private messages for every role.

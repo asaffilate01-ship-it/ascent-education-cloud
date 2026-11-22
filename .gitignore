@@ -28,6 +28,7 @@ dist-ssr
 .env.*
 !.env.example
 !.env.production
+!.env.development
 
 # Test artifacts
 playwright-report/

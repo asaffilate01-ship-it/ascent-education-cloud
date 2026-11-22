@@ -58,6 +58,9 @@ function EnabledMessagingInbox() {
   const [newConvoName, setNewConvoName] = useState('');
   const [newConvoOpen, setNewConvoOpen] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [peopleSearch, setPeopleSearch] = useState('');
+  const [people, setPeople] = useState<{ user_id: string; full_name: string; role_label: string | null }[]>([]);
+  const [peopleLoading, setPeopleLoading] = useState(false);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -238,6 +241,30 @@ function EnabledMessagingInbox() {
     } as any, { onConflict: 'user_id' });
   };
 
+  useEffect(() => {
+    if (!newConvoOpen || !user) return;
+    let active = true;
+    setPeopleLoading(true);
+    const t = setTimeout(async () => {
+      const { data, error } = await db.rpc('unipathway_message_directory', { p_search: peopleSearch.trim() || null });
+      if (!active) return;
+      setPeople(error || !Array.isArray(data) ? [] : data);
+      setPeopleLoading(false);
+    }, 250);
+    return () => { active = false; clearTimeout(t); };
+  }, [newConvoOpen, peopleSearch, user]);
+
+  const handleStartChat = async (person: { user_id: string; full_name: string }) => {
+    if (!user) return;
+    setCreating(true);
+    const { data: id, error } = await db.rpc('start_unipathway_direct_conversation', { p_recipient: person.user_id });
+    setCreating(false);
+    if (error || !id) { toast.error(error?.message?.includes('staff only') ? 'You can message centre staff only.' : 'Chat could not be started. Please try again.'); return; }
+    setNewConvoOpen(false); setPeopleSearch('');
+    await fetchConversations();
+    setSelectedConvo(id as string);
+  };
+
   const handleCreateConversation = async () => {
     if (!newConvoName.trim() || !user) return;
     setCreating(true);
@@ -286,10 +313,29 @@ function EnabledMessagingInbox() {
             <Button size="sm" className="gap-1.5"><Plus className="w-3.5 h-3.5" /> New Chat</Button>
           </DialogTrigger>
           <DialogContent>
-            <DialogHeader><DialogTitle>New Conversation</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>Start a chat</DialogTitle></DialogHeader>
             <div className="space-y-3 pt-2">
-              <input value={newConvoName} onChange={(e) => setNewConvoName(e.target.value)} placeholder="Conversation name..." className="w-full bg-secondary text-sm px-3 py-2 rounded-lg outline-none" />
-              <Button onClick={handleCreateConversation} disabled={creating} className="w-full">{creating ? 'Creating...' : 'Create Conversation'}</Button>
+              <label htmlFor="people-search" className="text-sm font-medium">Find someone at your centre</label>
+              <input id="people-search" value={peopleSearch} onChange={(e) => setPeopleSearch(e.target.value)} placeholder="Search by name" className="w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring" autoComplete="off" />
+              <ul className="max-h-72 overflow-y-auto divide-y rounded-lg border" aria-label="People you can message" aria-busy={peopleLoading}>
+                {peopleLoading && people.length === 0 && <li className="px-3 py-3 text-sm text-muted-foreground">Searching…</li>}
+                {!peopleLoading && people.length === 0 && <li className="px-3 py-3 text-sm text-muted-foreground">No matching people. Students can message centre staff.</li>}
+                {people.map((p) => (
+                  <li key={p.user_id}>
+                    <button type="button" disabled={creating} onClick={() => handleStartChat(p)} className="flex w-full min-h-11 items-center gap-3 px-3 py-2 text-left hover:bg-secondary disabled:opacity-60">
+                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-semibold text-primary">{p.full_name.slice(0, 2).toUpperCase()}</span>
+                      <span className="min-w-0"><span className="block truncate text-sm font-medium">{p.full_name}</span>{p.role_label && <span className="block truncate text-xs capitalize text-muted-foreground">{p.role_label}</span>}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <details className="text-sm">
+                <summary className="cursor-pointer text-muted-foreground">Or create a private notes thread</summary>
+                <div className="mt-2 space-y-2">
+                  <input value={newConvoName} onChange={(e) => setNewConvoName(e.target.value)} placeholder="Thread name" className="w-full bg-secondary text-sm px-3 py-2 rounded-lg outline-none" />
+                  <Button variant="outline" onClick={handleCreateConversation} disabled={creating} className="w-full">{creating ? 'Creating…' : 'Create thread'}</Button>
+                </div>
+              </details>
             </div>
           </DialogContent>
         </Dialog>

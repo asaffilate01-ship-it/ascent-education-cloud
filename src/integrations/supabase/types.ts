@@ -1973,6 +1973,8 @@ export type Database = {
       }
       messages: {
         Row: {
+          attachment_name: string | null
+          attachment_path: string | null
           content: string
           conversation_id: string
           created_at: string
@@ -1982,6 +1984,8 @@ export type Database = {
           sender_name: string
         }
         Insert: {
+          attachment_name?: string | null
+          attachment_path?: string | null
           content: string
           conversation_id: string
           created_at?: string
@@ -1991,6 +1995,8 @@ export type Database = {
           sender_name: string
         }
         Update: {
+          attachment_name?: string | null
+          attachment_path?: string | null
           content?: string
           conversation_id?: string
           created_at?: string
@@ -6705,6 +6711,10 @@ export type Database = {
         Args: { p_goal: string; p_module: string; p_student: string }
         Returns: string
       }
+      create_unipathway_private_conversation: {
+        Args: { p_name: string }
+        Returns: string
+      }
       decide_unipathway_quality_mark: {
         Args: { p_approve: boolean; p_attempt: string; p_rationale: string }
         Returns: undefined
@@ -7014,6 +7024,10 @@ export type Database = {
         Returns: undefined
       }
       start_quiz_attempt: { Args: { p_quiz_id: string }; Returns: Json }
+      start_unipathway_direct_conversation: {
+        Args: { p_recipient: string }
+        Returns: string
+      }
       submit_quiz_attempt: {
         Args: { p_answers: Json; p_attempt_id: string }
         Returns: Json
@@ -7064,6 +7078,13 @@ export type Database = {
         Args: { p_send?: boolean; p_thread: string }
         Returns: boolean
       }
+      unipathway_conversation_members: {
+        Args: { p_conversation: string }
+        Returns: {
+          full_name: string
+          user_id: string
+        }[]
+      }
       unipathway_guardian_can_read_results: {
         Args: { p_student: string; p_tenant: string }
         Returns: boolean
@@ -7075,6 +7096,22 @@ export type Database = {
           p_student: string
           p_tenant: string
         }
+        Returns: boolean
+      }
+      unipathway_is_messaging_staff: {
+        Args: { p_user: string }
+        Returns: boolean
+      }
+      unipathway_message_directory: {
+        Args: { p_search?: string }
+        Returns: {
+          full_name: string
+          role_label: string
+          user_id: string
+        }[]
+      }
+      unipathway_private_attachment_allowed: {
+        Args: { p_path: string }
         Returns: boolean
       }
       unipathway_student_verified_employer: {
