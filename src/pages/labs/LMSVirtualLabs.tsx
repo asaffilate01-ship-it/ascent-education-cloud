@@ -130,7 +130,7 @@ function LMSVirtualLabsContent(){
    const {data,error:e}=await supabase.functions.invoke('unipathway-aws-lab-gateway',{body:{action:'readiness'}});
    if(gatewayGeneration.current!==generation)return;
    setAwsReady(!e&&data?.aws_managed_configured===true);
-   setGatewayNote(e?'AWS lab connector is unavailable.':String(data?.note||'AWS provider verification pending.'));
+   setGatewayNote(e?'Paid AWS labs are not connected yet. Practical labs without AWS still work.':String(data?.note||'AWS provider verification pending.'));
   }catch{if(gatewayGeneration.current===generation){setAwsReady(false);setGatewayNote('AWS provider connector is unavailable.');}}
  },[user?.id]);
  useEffect(()=>{void checkGateway();},[checkGateway]);
@@ -162,7 +162,7 @@ function LMSVirtualLabsContent(){
    if(e||data?.error||!data?.url){toast.error('Cloud workspace could not be opened. Please retry or contact your instructor.');return;}
    if(typeof data.url!=='string'||!data.url.startsWith('https://')){toast.error('AWS returned an invalid launch URL');return;}
    setLaunch({url:data.url,status:String(data.status),sessionId:String(data.sessionId),validitySeconds:Number(data.validitySeconds)||60});
-   toast.success('Short-lived AWS workspace link ready. Open within 60 seconds.');
+   toast.success('Your lab is ready. Open it now – the link expires shortly.');
    void reload();
   }catch{toast.error('Cloud workspace request failed. Please check your connection and retry.');}
   finally{setBusy(false);}

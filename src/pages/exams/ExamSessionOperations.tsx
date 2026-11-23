@@ -64,7 +64,7 @@ function ExamOperationsWorkspace(){
   {!tenant?<p role="alert" className="rounded-xl border p-5">A verified active Exams Officer or Centre Director role with an assigned centre is required. No exam records have been requested.</p>:
   !enabled?<section role="status" className="rounded-xl border bg-card p-5 space-y-3">
    <h2 className="font-semibold">Exam operations backend not activated</h2>
-   <p className="text-sm text-muted-foreground">The planning service remains disabled until the correct UniPathway database, two-centre RLS, invited exam staff and separate approval RPCs are verified. No candidates, exam plans or private records have been requested.</p>
+   <p className="text-sm text-muted-foreground">Exam session planning is not switched on yet. Your centre manager will let you know when it is ready. No candidate or exam records have been opened.</p>
    <p className="text-sm text-muted-foreground">The existing exam calendar is read-only. Live official exam entry, identity verification, seating allocations and awarding-body results are separate services.</p>
    <Link className="underline font-medium" to={director?'/director/schedule':'/exams/schedule'}>View recorded academic calendar</Link>
   </section>:<>

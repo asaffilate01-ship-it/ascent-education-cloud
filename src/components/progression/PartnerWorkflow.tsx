@@ -40,7 +40,7 @@ export default function PartnerWorkflow({ student = false }: { student?: boolean
   const results = await Promise.all(tables.map(t => workflowRows(db,t,tenant,()=>request===version.current)));
   if(request!==version.current)return;
   const failed = results.find(r => r.error);
-  if (failed) setError('The workflow could not be loaded. Check access and database migration status.');
+  if (failed) setError('This workflow could not be loaded. Please try again, or ask your centre manager to check your access.');
   const data = (name:string) => (results[tables.indexOf(name)]?.data || []) as Row[];
   setRoutes(data(tables[0]));setReferrals(data(tables[1]));setApplications(data('international_university_applications'));setPartners(data('international_education_partners'));setAgreements(data('international_partner_agreements'));
   setLoading(false);

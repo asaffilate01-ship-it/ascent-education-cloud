@@ -79,7 +79,7 @@ export default function IELTSAcademy() {
         if(!lookup.error)setNames(Object.fromEntries((lookup.data||[]).map(row=>[row.user_id,row.full_name])));
       }
     } catch {
-      setError('IELTS workspace could not be loaded. Check your centre access and migration status, then retry.');
+      setError('Your IELTS workspace could not be loaded. Please try again in a moment, or ask your course team if it keeps happening.');
     } finally {setLoading(false);}
   },[tenant,student,teacher]);
   useEffect(()=>{void reload();},[reload]);

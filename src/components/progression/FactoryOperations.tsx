@@ -16,7 +16,7 @@ function Queue({tenant}:{tenant:string}){
   const token=++generation.current;setLoading(true);setError('');setRows([]);
   const result=await workflowRows(supabase,'omniqora_event_outbox',tenant,()=>token===generation.current,'id,event_type,status,attempts,processed_at,created_at,exported_at,lease_until,next_attempt_at,factory_run_id,last_error');
   if(token!==generation.current)return;
-  if(result.error)setError('Event queue unavailable. Check migrations and centre access, then retry.');else{setRows(result.data as FactoryQueueEvent[]);setNow(Date.now());}
+  if(result.error)setError('The event queue could not be loaded. Please try again, or ask your centre manager to check your access.');else{setRows(result.data as FactoryQueueEvent[]);setNow(Date.now());}
   setLoading(false);
  },[tenant]);
  useEffect(()=>{active.current=true;void load();return()=>{active.current=false;generation.current++;};},[load]);

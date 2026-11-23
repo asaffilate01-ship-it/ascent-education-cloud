@@ -649,7 +649,7 @@ export default function DashboardSidebar() {
                   }
                 >
                   <item.icon className="w-[18px] h-[18px] shrink-0" />
-                  {!collapsed && <span className="truncate">{item.label}</span>}
+                  {!collapsed && <span className="min-w-0 break-words leading-snug">{item.label}</span>}
                 </NavLink>
               ))}
             </div>

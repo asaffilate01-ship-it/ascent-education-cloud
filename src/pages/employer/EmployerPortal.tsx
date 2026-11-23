@@ -38,7 +38,7 @@ function EmployerWorkspace(){
     .select('id,organisation_id,title,status,opportunity_type,city,role_description,created_at')
     .eq('tenant_id',tenant).in('organisation_id',orgs).order('created_at',{ascending:false});
    if(!current())return;
-   if(jobs.error)throw new Error('Verified organisation opportunities are unavailable. Ask the centre to check employer RLS.');
+   if(jobs.error)throw new Error('Your organisation’s opportunities could not be loaded. Please try again, or ask the centre to check your employer access.');
    const ownJobs=(jobs.data||[]) as Opportunity[];
    // Never fetch applicant rows for every opportunity in a centre.
    // Query only IDs obtained through this user's verified organisation memberships.
@@ -49,7 +49,7 @@ function EmployerWorkspace(){
      .select('opportunity_id,status')
      .eq('tenant_id',tenant).in('opportunity_id',opportunityIds);
     if(!current())return;
-    if(apps.error)throw new Error('Consented applications cannot be verified for your own opportunities. Ask the centre to check applicant RLS.');
+    if(apps.error)throw new Error('Applications for your opportunities could not be loaded. Please try again, or ask the centre to check your access.');
     ownApplications=(apps.data||[]) as Application[];
    }
    if(!current())return;

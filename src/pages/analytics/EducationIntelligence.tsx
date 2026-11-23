@@ -30,7 +30,7 @@ function SnapshotRecords({tenant,revision}:{tenant:string;revision:number}){
    workflowRows(supabase,'omniqora_executive_snapshots',tenant,current,'*','snapshot_date')
   ]);
   if(!current())return;
-  if(a.error||b.error||c.error)setError('Intelligence records could not be loaded completely. Check access and migrations, then retry.');
+  if(a.error||b.error||c.error)setError('Some records could not be loaded. Please try again, or ask your centre manager to check your access.');
   else{setStudents(a.data as Student[]);setCourses(b.data as Course[]);setExecutive((c.data[0] as Executive)||null);setStudentPage(0);setCoursePage(0);}
   setLoading(false);
  },[tenant]);
