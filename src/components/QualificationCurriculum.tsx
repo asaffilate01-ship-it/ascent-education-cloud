@@ -1,5 +1,4 @@
 import type {QualificationOption} from '@/lib/qualificationSelection';
-import {pearsonFineArtSpecification} from '@/lib/pearsonFineArt';
 
 export default function QualificationCurriculum({qualification:q}:{qualification:QualificationOption}){
  const curriculum=q.curriculum;
@@ -19,7 +18,7 @@ export default function QualificationCurriculum({qualification:q}:{qualification
      <ul className="mt-2 list-disc space-y-2 pl-5">{curriculum.craftFocus.map(topic=><li key={topic}>{topic}</li>)}</ul>
      <p className="mt-2 text-muted-foreground">These are UniPathway teaching themes within the assessed modules, not additional Pearson units or extra credits. Final studio projects, facilities and supervised practical attendance must be confirmed for the approved programme.</p>
     </section>
-    <a href={pearsonFineArtSpecification} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center font-semibold underline">Pearson Fine Art specification (PDF)<span className="sr-only"> (opens in a new tab)</span></a>
+    <span className="inline-flex min-h-11 items-center font-semibold">Pearson Fine Art specification available from admissions</span>
    </div>
   </details>
  </div>;

@@ -31,3 +31,5 @@
 - [x] Hikvision Ultra classroom screens: setup/device-check page and full-screen live-lab view with QR join.
 - [ ] Trial on a real Hikvision panel (touch, camera, microphones, Teams on the Windows OPS computer) — needs the hardware in the room.
 - [x] Global Partners and admissions pages: partner, pathway, agreement, referral, academic evidence, service enrolment and partner-application data switched on.
+- [ ] Phase 1 / Phase 2 launch: mark Phase 1 (Classes 9–12 tuition, ACCA, IELTS, tech certification prep, OTHM/Qualifi Business & Accounting L3–5) across the public site; show the rest as Phase 2 "coming soon"; switch on the tuition academy data with Phase 1 boards (FBISE + all provincial boards incl. AJK; Cambridge + Pearson Edexcel) and subjects; tech = Microsoft, AWS, Cisco certification prep plus AI courses.
+- [ ] Remaining dashboard pages: prioritise Phase 1 areas (tuition director roster and reports — no saved design yet); Phase 2 areas (beauty, funding/tenders, residential extras) wait for Phase 2.

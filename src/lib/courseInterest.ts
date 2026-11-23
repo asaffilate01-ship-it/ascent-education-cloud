@@ -1,7 +1,7 @@
 import {qualificationSelection} from './qualificationSelection';
 /** Public course-interest routing. This is an enquiry, not confirmed admission. */
 export const STUDY_AREAS = [
-  {id:'tuition',label:'School tuition (Years 8–12)',detail:'Matric, Intermediate and Cambridge preparation'},
+  {id:'tuition',label:'School tuition (Classes 9–12)',detail:'Matric, Intermediate, IGCSE, O Level and A Level'},
   {id:'qualifications',label:'UK qualification pathways (confirm your level)',detail:'Check the specific qualification, approval and entry requirements'},
   {id:'vocational',label:'Vocational, SIA and CPD enquiries',detail:'Practical and short-course options, subject to location and approval'},
   {id:'technology',label:'Technology and digital skills',detail:'Programming, AI, cybersecurity and cloud'},

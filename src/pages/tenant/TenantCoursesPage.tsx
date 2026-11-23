@@ -9,6 +9,8 @@ import { supabase } from '@/integrations/supabase/client';
 import Seo from '@/components/Seo';
 import PublicFooter from '@/components/PublicFooter';
 import { Link as CourseLink } from 'react-router-dom';
+import LaunchPhaseBadge from '@/components/launch/LaunchPhaseBadge';
+import { byLaunchPhase, programmePhase, type LaunchPhase } from '@/lib/launchPhases';
 
 interface Course {
   id: string;
@@ -19,6 +21,7 @@ interface Course {
   credits: number | null;
   modules: string[];
   progression: string;
+  phase: LaunchPhase;
 }
 
 export default function TenantCoursesPage() {
@@ -41,7 +44,7 @@ export default function TenantCoursesPage() {
         const rows: Course[] = [];
         for (let offset = 0; ; offset += 250) {
           const { data, error } = await supabase.from('programmes')
-            .select('id, title, level, awarding_body, credits, duration, progression_pathway, modules(title, code)')
+            .select('id, title, level, awarding_body, credits, duration, progression_pathway, launch_phase, modules(title, code)')
             .eq('tenant_id', tenant.data.id).eq('status', 'active').order('id').range(offset, offset + 249);
           if (!active) return;
           if (error) throw new Error('Courses could not be loaded. Please retry.');
@@ -50,10 +53,11 @@ export default function TenantCoursesPage() {
             duration: p.duration || 'Duration to be confirmed', credits: p.credits,
             modules: [...(p.modules || [])].sort((a: any, b: any) => String(a.code || '').localeCompare(String(b.code || ''))).map((m: any) => m.title),
             progression: typeof p.progression_pathway === 'string' ? p.progression_pathway : '',
+            phase: p.launch_phase === 1 || p.launch_phase === 2 ? p.launch_phase : programmePhase(p),
           })));
           if (!data || data.length < 250) break;
         }
-        if (active) setCourses(rows);
+        if (active) setCourses(byLaunchPhase(rows, r => r.phase));
       } catch (e) { if (active) setError((e as Error).message); }
       finally { if (active) setLoading(false); }
     })();
@@ -121,6 +125,7 @@ export default function TenantCoursesPage() {
                     <div className="flex flex-wrap items-center gap-2 mb-3">
                       <span className="text-xs font-bold uppercase text-success">{course.body}</span>
                       <span className="text-xs text-muted-foreground">· {course.level}</span>
+                      <LaunchPhaseBadge phase={course.phase} />
                     </div>
                     <h2 className="text-base sm:text-lg font-bold">{course.title}</h2>
                     <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-2 text-xs text-muted-foreground">

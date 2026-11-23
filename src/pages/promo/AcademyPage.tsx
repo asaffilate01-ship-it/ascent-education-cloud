@@ -10,26 +10,29 @@ import Seo from '@/components/Seo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { academyTracks,type AcademyKind } from '@/lib/academyCatalog';
+import LaunchPhaseBadge from '@/components/launch/LaunchPhaseBadge';
+import { academyTrackPhase,byLaunchPhase,registerInterestUrl,techCertifications } from '@/lib/launchPhases';
 
 const levels=['All','Foundation','Intermediate','Advanced','Exam preparation'] as const;
 export default function AcademyPage({kind}:{kind:AcademyKind}){
  const tech=kind==='tech';
  const [level,setLevel]=useState<string>('All'),[query,setQuery]=useState('');
- const tracks=useMemo(()=>academyTracks(kind).filter(t=>
+ const tracks=useMemo(()=>byLaunchPhase(academyTracks(kind).filter(t=>
   (level==='All'||t.level===level)&&`${t.title} ${t.summary} ${t.topics.join(' ')}`.toLowerCase().includes(query.trim().toLowerCase())
- ),[kind,level,query]);
+ ),t=>academyTrackPhase(kind,t.id)),[kind,level,query]);
  const title=tech?'Technology Academy':'Accounting & Finance Academy';
  return <div className="public-site min-h-dvh bg-background">
    <Seo canonical={tech?'/tech-academy':'/finance-academy'} title={title+' | UniPathway'} description={tech?'AI, coding, cyber security, Cyber Essentials awareness, cloud, DevOps and technology training online and in centre.':'Financial accounting, bookkeeping, finance modelling, software and tutor-led IFA/ACCA exam preparation.'}/>
    <PublicNav/>
    <main className="mx-auto max-w-7xl space-y-12 px-5 py-12 sm:px-8">
      <PublicHero topic={tech ? 'technology' : 'finance'}>
-       <div><p className="text-xs font-bold uppercase tracking-[0.15em] text-[#128F58]">{title}</p><h1 className="mt-4 text-3xl font-extrabold text-[#0B2D5B] dark:text-white sm:text-5xl">{tech?'Build the skills to create, protect and operate technology.':'Understand the numbers. Build practical financial expertise.'}</h1>
+       <div><div className="flex flex-wrap items-center gap-3"><p className="text-xs font-bold uppercase tracking-[0.15em] text-[#128F58]">{title}</p><LaunchPhaseBadge phase={1}/></div><h1 className="mt-4 text-3xl font-extrabold text-[#0B2D5B] dark:text-white sm:text-5xl">{tech?'Build the skills to create, protect and operate technology.':'Understand the numbers. Build practical financial expertise.'}</h1>
          <p className="mt-5 max-w-3xl leading-relaxed text-slate-700 dark:text-slate-300">{tech?'Learn programming, AI, responsible automation, cloud computing, cyber defence, DevOps and data analytics with applied projects, tutor feedback and career preparation.':'Develop confidence in bookkeeping, financial reporting, tax, management accounting, analytics, treasury and professional examination preparation.'} Explore the subjects below. Ask admissions to confirm the start date, fees and online or in-centre options.</p>
          <div className="mt-6 flex flex-wrap gap-3"><Button asChild><Link to="/contact">Ask about enrolling <ArrowRight className="ml-1 size-4"/></Link></Button><Button asChild variant="outline"><Link to="/qualifications">Explore awarding-body diplomas</Link></Button></div>
        </div>
        </PublicHero>
 <CourseAtAGlance course={title}/><PageContents/>
+<section id={tech?'certification-prep':'acca-launch'} aria-labelledby="phase-one-academy" className="scroll-mt-28 rounded-2xl border border-success/30 bg-success/5 p-6"><LaunchPhaseBadge phase={1}/><h2 id="phase-one-academy" className="mt-3 text-2xl font-bold">{tech?'Opening first: certification preparation and AI courses':'Opening first: ACCA exam preparation'}</h2><p className="mt-2 max-w-3xl text-sm text-muted-foreground">{tech?'We start with preparation for these vendor exams and our AI and machine learning courses. Coding, cyber security and wider digital skills courses follow in Phase 2.':'We start with ACCA Applied Knowledge and Applied Skills preparation. Bookkeeping, tax, finance and software courses follow in Phase 2.'}</p>{tech?<div className="mt-4 grid gap-3 sm:grid-cols-3">{techCertifications.map(c=><div key={c.vendor} className="rounded-xl border bg-card p-4"><h3 className="font-bold">{c.vendor}</h3><ul className="mt-2 space-y-1 text-sm text-muted-foreground">{c.exams.map(e=><li key={e}>{e}</li>)}</ul></div>)}</div>:<Button asChild className="mt-4"><a href="#acca-prep">See ACCA preparation details</a></Button>}</section>
 <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{[{icon:BookOpen,title:'Structured syllabuses',desc:'Clear modules and objectives'},{icon:Laptop,title:'Practical projects',desc:'Exercises and portfolios'},{icon:ClipboardCheck,title:'Tutor feedback',desc:'Assignments and revision'},{icon:GraduationCap,title:'Progression advice',desc:'Next course and career step'}].map(({icon:Icon,title,desc})=><div key={title} className="rounded-xl border bg-white p-4 dark:bg-card"><Icon className="size-6 text-success"/><h2 className="mt-2 text-sm font-bold">{title}</h2><p className="mt-1 text-xs text-muted-foreground">{desc}</p></div>)}</div>
 
      <section aria-labelledby="academy-programmes-heading" className="space-y-5">
@@ -39,12 +42,12 @@ export default function AcademyPage({kind}:{kind:AcademyKind}){
          <label htmlFor="academy-level" className="text-sm font-semibold">Learning level<select className="mt-1 h-10 w-full rounded-md border bg-background px-3" id="academy-level" value={level} onChange={e=>setLevel(e.target.value)}>{levels.map(l=><option key={l} value={l}>{l==='All'?'All levels':l}</option>)}</select></label>
        </div>
        <p role="status" className="text-sm text-muted-foreground">{tracks.length} learning pathways match your selection.</p>
-       <div className="grid gap-4 lg:grid-cols-2">{tracks.map(track=><article key={track.id} className="flex flex-col rounded-xl border bg-card p-6">
-         <p className="text-xs font-bold uppercase tracking-wide text-success">{track.level}</p><h3 className="mt-2 text-xl font-bold">{track.title}</h3><p className="mt-2 text-sm text-muted-foreground">{track.summary}</p>
+       <div className="grid gap-4 lg:grid-cols-2">{tracks.map(track=>{const phase=academyTrackPhase(kind,track.id);return <article id={track.id} key={track.id} className="flex scroll-mt-28 flex-col rounded-xl border bg-card p-6">
+         <div className="flex flex-wrap items-center gap-2"><p className="text-xs font-bold uppercase tracking-wide text-success">{track.level}</p><LaunchPhaseBadge phase={phase}/></div><h3 className="mt-2 text-xl font-bold">{track.title}</h3><p className="mt-2 text-sm text-muted-foreground">{track.summary}</p>
          <div className="mt-5"><h4 className="text-sm font-semibold">Topics and modules</h4><ul className="mt-3 space-y-2">{track.topics.map(item=><li key={item} className="flex items-start gap-2 text-sm"><CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success"/><span>{item}</span></li>)}</ul></div>
-         <div className="mt-5 border-t pt-4"><p className="text-sm font-semibold">Practical outcome</p><p className="mt-1 text-sm text-muted-foreground">{track.practical}</p><p className="mt-3 text-sm font-semibold">Who it suits</p><p className="mt-1 text-sm text-muted-foreground">{track.forWhom}</p><p className="mt-3 text-xs text-muted-foreground">{track.certification}</p></div>
-         <Button asChild variant="outline" className="mt-auto self-start pt-5"><Link to={`/contact?${new URLSearchParams({course:track.title})}`}>Request course details</Link></Button>
-       </article>)}</div>
+         <div className="mb-5 mt-5 border-t pt-4"><p className="text-sm font-semibold">Practical outcome</p><p className="mt-1 text-sm text-muted-foreground">{track.practical}</p><p className="mt-3 text-sm font-semibold">Who it suits</p><p className="mt-1 text-sm text-muted-foreground">{track.forWhom}</p><p className="mt-3 text-xs text-muted-foreground">{track.certification}</p></div>
+         <Button asChild variant="outline" className="mt-auto self-start"><Link to={phase===1?`/contact?${new URLSearchParams({course:track.title})}`:registerInterestUrl(tech?'technology':'accounting')}>{phase===1?'Request course details':'Register interest for Phase 2'}</Link></Button>
+       </article>})}</div>
      </section>
      <section className="grid gap-5 rounded-xl border bg-secondary/40 p-6 md:grid-cols-2">
        <div><ShieldCheck className="size-7 text-success"/><h2 className="mt-3 text-xl font-bold">Independent certifications are separate</h2><p className="mt-2 text-sm text-muted-foreground">UniPathway can prepare students for relevant vendor or professional examinations, but students only receive a third-party certificate through the official provider, after meeting its own requirements. We do not claim to be an official Microsoft, AWS, Google, ACCA, IFA or Cyber Essentials certification centre unless formally authorised.</p></div>

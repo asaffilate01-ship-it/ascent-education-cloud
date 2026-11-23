@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import BrandLogo from '@/components/BrandLogo';
 import PublicBottomNav from '@/components/PublicBottomNav';
 import { cn } from '@/lib/utils';
+import { byLaunchPhase, routePhase } from '@/lib/launchPhases';
 
 export const studyLinks = [
   { label: 'Complete Education Centre', detail: 'Pakistan board exams, O/A Levels, global languages, professional certification, care, beauty and UK diplomas', to: '/education-centre', icon: GraduationCap },
@@ -20,11 +21,11 @@ export const studyLinks = [
 
   { label: 'UK & international qualifications', detail: 'OTHM, Qualifi, ATHE, Pearson BTEC and VTCT Skills guidance', to: '/qualifications', icon: GraduationCap },
   { label: 'University progression directory', detail: 'OTHM and Qualifi named university routes with in-site guidance', to: '/university-progression', icon: GraduationCap },
-  { label: 'Years 8–12 tuition', detail: 'Matric, Intermediate/FSc, Cambridge; online and in-centre', to: '/tuition', icon: School },
+  { label: 'Classes 9–12 tuition', detail: 'Pakistan boards, IGCSE, O/A Level: sciences, maths, English, tech, commerce', to: '/tuition', icon: School },
   { label: 'IELTS preparation', detail: 'Academic and General Training practice', to: '/ielts-preparation', icon: BookOpen },
   { label: 'German language courses', detail: 'A1–C1, Goethe, TestDaF, telc and DSH preparation', to: '/german-preparation', icon: BookOpen },
-  { label: 'Technology Academy', detail: 'AI, Python, coding, cyber defence, cloud and DevOps', to: '/tech-academy', icon: BookOpen },
-  { label: 'Accounting & Finance Academy', detail: 'Bookkeeping, tax, finance, IFA and ACCA revision', to: '/finance-academy', icon: GraduationCap },
+  { label: 'Technology Academy', detail: 'AI courses; Microsoft, AWS and Cisco certification prep', to: '/tech-academy', icon: BookOpen },
+  { label: 'Accounting & Finance Academy', detail: 'ACCA exam preparation', to: '/finance-academy', icon: GraduationCap },
   { label: 'Employer learning', detail: 'Skills for teams and organisations', to: '/employer-learning', icon: BriefcaseBusiness },
   { label: 'Education consultancy', detail: 'Universities, admissions, counselling and career guidance', to: '/pathways', icon: Globe2 },
   { label: 'Pakistan funded skills', detail: 'PSDF, PITB e-Rozgaar, WDD SEHR and NAVTTC', to: '/funded-courses', icon: BriefcaseBusiness },
@@ -43,7 +44,7 @@ export const destinationLinks = [
   { label: 'Canada', detail: 'English/French study routes and university options', to: '/canada' },
 ];
 
-const primaryStudyLinks = studyLinks.filter(link => ['/study', '/scholarships', '/qualifications', '/tuition', '/ielts-preparation', '/german-preparation', '/tech-academy', '/finance-academy', '/beauty-aesthetics', '/creative-crafts'].includes(link.to));
+const primaryStudyLinks = byLaunchPhase(studyLinks.filter(link => ['/study', '/scholarships', '/qualifications', '/tuition', '/ielts-preparation', '/german-preparation', '/tech-academy', '/finance-academy', '/beauty-aesthetics', '/creative-crafts'].includes(link.to)), link => routePhase(link.to));
 
 const linkCls = (active: boolean) => cn('relative inline-flex min-h-11 items-center rounded-full px-4 py-2 text-sm font-semibold transition-colors', active ? 'bg-primary/5 text-primary' : 'text-foreground/80 hover:bg-accent hover:text-foreground');
 
@@ -95,7 +96,7 @@ export default function PublicNav() {
           <button ref={coursesTrigger} type="button" aria-expanded={studyOpen} aria-controls="desktop-course-navigation" onClick={() => { setStudyOpen(!studyOpen); setDestinationsOpen(false); }} className={cn(linkCls(studyOpen), 'inline-flex items-center gap-1')}>Courses <ChevronDown className={cn('size-4 transition-transform', studyOpen && 'rotate-180')} /></button>
           {studyOpen && <div id="desktop-course-navigation" role="region" aria-label="Course options" className="absolute inset-x-4 top-full mx-auto w-[760px] max-w-[calc(100%_-_2rem)] pt-3 animate-in fade-in-0 slide-in-from-top-1 motion-reduce:animate-none"><div className="flex max-h-[min(60dvh,40rem)] flex-wrap overflow-y-auto rounded-2xl border border-border bg-card shadow-surface-xl">
             <div className="grid min-w-0 flex-[3_1_30rem] grid-cols-[repeat(auto-fit,minmax(min(100%,12rem),1fr))] gap-1 p-3">
-              {primaryStudyLinks.map(({ label, detail, to, icon: Icon }) => <Link key={label} to={to} className="group/item flex min-w-0 gap-3 rounded-xl p-3 transition-colors hover:bg-secondary"><span className="grid size-9 shrink-0 place-items-center rounded-lg bg-success/10 text-success transition-colors group-hover/item:bg-success group-hover/item:text-success-foreground"><Icon className="size-4" /></span><span className="min-w-0 [overflow-wrap:anywhere]"><span className="block text-sm font-bold text-foreground">{label}</span><span className="mt-0.5 block text-xs leading-snug text-muted-foreground">{detail}</span></span></Link>)}
+              {primaryStudyLinks.map(({ label, detail, to, icon: Icon }) => <Link key={label} to={to} className="group/item flex min-w-0 gap-3 rounded-xl p-3 transition-colors hover:bg-secondary"><span className="grid size-9 shrink-0 place-items-center rounded-lg bg-success/10 text-success transition-colors group-hover/item:bg-success group-hover/item:text-success-foreground"><Icon className="size-4" /></span><span className="min-w-0 [overflow-wrap:anywhere]"><span className="block text-sm font-bold text-foreground">{label}{routePhase(to)===2&&<span className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 align-middle text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Coming soon</span>}</span><span className="mt-0.5 block text-xs leading-snug text-muted-foreground">{detail}</span></span></Link>)}
             </div>
             <div className="flex min-w-0 flex-[1_1_13.75rem] flex-col justify-between bg-primary p-5 text-primary-foreground"><div><p className="text-[11px] font-bold uppercase tracking-widest text-gold">Find your next step</p><p className="mt-2 text-lg font-bold leading-snug">Not sure where to start?</p><p className="mt-2 text-xs text-primary-foreground/75">Get free, personal guidance on the right course for you.</p></div><Button variant="secondary" size="sm" asChild className="mt-4"><Link to="/contact">Talk to an adviser <ArrowRight /></Link></Button></div>
           </div></div>}
@@ -118,7 +119,7 @@ export default function PublicNav() {
       <input id="mobile-course-search" type="search" value={courseQuery} onChange={e => setCourseQuery(e.target.value)} placeholder="Try IELTS, tuition, technology…" className="mt-2 min-h-12 w-full rounded-xl border border-border bg-card px-4 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" />
       <p role="status" className="mt-2 text-xs text-muted-foreground">{courseQuery ? `${matchingCourses.length} matching options` : 'Explore our most popular courses'}</p>
       {courseQuery && matchingCourses.length === 0 && <p className="mt-3 text-sm">No matches. <button type="button" className="min-h-11 underline font-semibold" onClick={()=>{setCourseQuery('');document.getElementById('mobile-course-search')?.focus();}}>Clear course search</button> or <Link className="underline" to="/contact">Ask an adviser for help</Link>.</p>}
-      <div className="mt-3 grid gap-2 sm:grid-cols-2">{(courseQuery ? matchingCourses : primaryStudyLinks).map(({ label, detail, to, icon: Icon }) => <Link key={to} to={to} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 active:scale-[0.99] transition-transform"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-success/10 text-success"><Icon className="size-5" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-bold">{label}</span><span className="block text-xs leading-relaxed text-muted-foreground">{detail}</span></span><ArrowRight className="size-4 shrink-0 text-muted-foreground" /></Link>)}</div>
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">{(courseQuery ? matchingCourses : primaryStudyLinks).map(({ label, detail, to, icon: Icon }) => <Link key={to} to={to} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 active:scale-[0.99] transition-transform"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-success/10 text-success"><Icon className="size-5" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-bold">{label}{routePhase(to)===2&&<span className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 align-middle text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Coming soon</span>}</span><span className="block text-xs leading-relaxed text-muted-foreground">{detail}</span></span><ArrowRight className="size-4 shrink-0 text-muted-foreground" /></Link>)}</div>
       <details className="mt-6 rounded-xl border p-4"><summary className="cursor-pointer py-2 font-semibold">Explore study-abroad destinations</summary>
       <div className="mt-3 flex flex-wrap gap-2">{destinationLinks.map(({ label, to }) => <Link key={to} to={to} className="rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold">{label}</Link>)}</div>
       </details><div className="mt-7 grid grid-cols-2 gap-2">{[['Learning advice', '/blog'], ['Apply now', '/apply']].map(([label, to]) => <Link key={to} to={to} className="rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold">{label}</Link>)}</div>

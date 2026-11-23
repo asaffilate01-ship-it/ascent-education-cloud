@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 
 const offers=[
   {icon:GraduationCap,title:'UK & International Qualifications',description:'Explore selected OTHM and Qualifi qualification pathways, with the current awarding-body specifications and centre authorisations verified before any programme is opened.',to:'/qualifications'},
-  {icon:BookOpen,title:'Online & In-Centre Tuition',description:'Years 8–12 across Mathematics, English, Biology, Chemistry, Physics and Technology, including Matric/FSc and Cambridge board support.',to:'/tuition'},
+  {icon:BookOpen,title:'Online & In-Centre Tuition',description:'Classes 9–12 sciences, maths, English, technology and commerce for Federal and all provincial boards, IGCSE, O Level and A Level.',to:'/tuition'},
   {icon:MonitorSmartphone,title:'Technology Academy',description:'Applied AI, coding, Python, cybersecurity, Cyber Essentials awareness, data analytics, cloud infrastructure and DevOps.',to:'/tech-academy'},
   {icon:BriefcaseBusiness,title:'Accounting & Finance',description:'Bookkeeping, financial reporting, taxation, management accounting and preparation for IFA and ACCA professional exams.',to:'/finance-academy'},
   {icon:HeartHandshake,title:'Women’s Beauty & Aesthetics',description:'Planned female-focused skincare, make-up and salon courses with CIBTAC centre and CPD UK review processes.',to:'/beauty-aesthetics'},

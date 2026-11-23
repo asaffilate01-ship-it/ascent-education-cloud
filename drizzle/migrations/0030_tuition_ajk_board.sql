@@ -1,0 +1,2 @@
+ALTER TABLE public.school_tuition_tracks DROP CONSTRAINT IF EXISTS school_tuition_tracks_curriculum_route_check;
+ALTER TABLE public.school_tuition_tracks ADD CONSTRAINT school_tuition_tracks_curriculum_route_check CHECK (curriculum_route IN ('FBISE','Punjab_BISE','Sindh_BISE','KPK_BISE','Balochistan_BISE','AJK_BISE','AKU_EB','Cambridge_OL','Cambridge_IGCSE','Cambridge_AL','Edexcel_IGCSE','Edexcel_IAL','Other'));

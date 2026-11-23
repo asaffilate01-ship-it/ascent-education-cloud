@@ -52,7 +52,7 @@ export default function EuropeStudyDirectory(){
   </section>
 
   <section className="grid gap-4 md:grid-cols-3">{[
-   {icon:BookOpenCheck,title:'Tuition and qualifications',copy:'Years 8–12 Matric, FSc and Cambridge support, OTHM/Qualifi options and structured learning.',to:'/study'},
+   {icon:BookOpenCheck,title:'Tuition and qualifications',copy:'Classes 9–12 Matric, FSc, IGCSE and A Level support, UK diploma options and structured learning.',to:'/study'},
    {icon:Languages,title:'Language academy',copy:'English/IELTS and German A1–C1 preparation. Other European-language requirements are reviewed before a student books external training.',to:'/german-preparation'},
    {icon:GraduationCap,title:'University progression directory',copy:'Review source-checked OTHM and Qualifi university progression arrangements without leaving UniPathway.',to:'/university-progression'},
   ].map(({icon:Icon,title,copy,to})=><article key={title} className="rounded-xl border p-6"><Icon className="size-7 text-success"/><h3 className="mt-3 text-lg font-bold">{title}</h3><p className="mt-2 text-sm text-muted-foreground">{copy}</p><Button asChild variant="outline" className="mt-4"><Link to={to}>Explore this service</Link></Button></article>)}</section>

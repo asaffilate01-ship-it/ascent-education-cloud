@@ -1,6 +1,7 @@
 import CourseAtAGlance from '@/components/CourseAtAGlance';
 import PublicHero from '@/components/PublicHero';
 import PageContents from '@/components/PageContents';
+import PhaseTwoNotice from '@/components/launch/PhaseTwoNotice';
 import { useMemo, useRef } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowRight, Camera, CheckCircle2, GraduationCap, Palette, Scissors, Search, ShieldCheck, ShoppingBag, Store } from 'lucide-react';
@@ -54,7 +55,8 @@ export default function CreativeCrafts() {
           </div>
         </div>
       </PublicHero>
-      <CourseAtAGlance course="Art, Crafts & Sewing" /><PageContents />
+      <PhaseTwoNotice area="creative" subject="Art, crafts & sewing"/>
+<CourseAtAGlance course="Art, Crafts & Sewing" /><PageContents />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {highlights.map(({ icon: Icon, title, desc }) => <div key={title} className="rounded-xl border bg-white p-4 dark:bg-card"><Icon className="size-6 text-success" /><h2 className="mt-2 text-sm font-bold">{title}</h2><p className="mt-1 text-xs text-muted-foreground">{desc}</p></div>)}

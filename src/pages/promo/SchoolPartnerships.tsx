@@ -17,7 +17,7 @@ export default function SchoolPartnerships(){
 
    <section className="grid gap-4 md:grid-cols-3">{[
     {icon:School,title:'Optional Ilmvero software',copy:'School and campus operations, attendance, timetables, fees, parents, teachers, exams and available learning tools, subject to the agreed licence.'},
-    {icon:GraduationCap,title:'UniPathway — extended education',copy:'Online and planned in-school Years 8–12 tuition in Maths, English, Biology, Chemistry, Physics and Technology, plus international progression information.'},
+    {icon:GraduationCap,title:'UniPathway — extended education',copy:'Online and planned in-school Classes 9–12 tuition in sciences, maths, English, technology and commerce, plus international progression information.'},
     {icon:BookOpen,title:'Optional Omniqora Intelligence',copy:'Future permission-scoped educational analytics, teaching plans and learning support. An Ilmvero licence does not automatically activate cross-platform AI or transfer pupil information.'},
    ].map(({icon:Icon,title,copy})=><article className="rounded-xl border bg-card p-6" key={title}><Icon className="size-7 text-success"/><h2 className="mt-3 text-lg font-bold">{title}</h2><p className="mt-3 text-sm text-muted-foreground">{copy}</p></article>)}</section>
    <section><h2 className="text-2xl font-bold">Optional Ilmvero partnership benefit</h2><p className="mt-3 text-sm text-muted-foreground">Ilmvero is standalone school-management software with its own account, licence and onboarding. Eligible schools may receive their first 12 months complimentary under a separate signed agreement. Confirm the included plan, activation date and renewal terms before joining.</p><div className="mt-5 grid gap-4 md:grid-cols-4">{[

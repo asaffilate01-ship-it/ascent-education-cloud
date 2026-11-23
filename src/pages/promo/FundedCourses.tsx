@@ -1,5 +1,6 @@
 import PublicHero from '@/components/PublicHero';
 import PageContents from '@/components/PageContents';
+import PhaseTwoNotice from '@/components/launch/PhaseTwoNotice';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, BriefcaseBusiness, CheckCircle2, GraduationCap, Monitor, Search, ShieldCheck, Users } from 'lucide-react';
@@ -25,6 +26,7 @@ export default function FundedCourses(){
   <PublicNav/>
   <main className="mx-auto max-w-7xl space-y-11 px-5 py-12 sm:px-8">
    <PublicHero topic="tuition"><p className="text-label text-success">Pakistan skills and vocational training</p><h1 className="mt-3 text-3xl font-extrabold sm:text-5xl">Learn practical skills. Explore funded places through official portals.</h1><p className="mt-5 text-muted-foreground">UniPathway can help you identify vocational training routes and prepare for applications. Government funding, scheme eligibility, enrolment and training-provider accreditation belong to each official programme administrator; no specific track below is guaranteed to be funded.</p></PublicHero>
+<PhaseTwoNotice area="vocational" subject="Pakistan and Punjab vocational training"/>
 <PageContents/>
 
    <section><h2 className="text-2xl font-bold">Official Pakistan funding and training schemes</h2><div className="mt-5 grid gap-4 md:grid-cols-2">{providers.map(p=><article key={p.name} className="flex flex-col rounded-xl border bg-card p-6"><ShieldCheck className="size-6 text-success"/><p className="mt-3 text-xs font-semibold uppercase tracking-wide text-success">{p.category}</p><h3 className="mt-2 text-xl font-bold">{p.name}</h3><p className="mt-3 text-sm text-muted-foreground">{p.description}</p><Link to="/contact" className="mt-auto inline-flex items-center gap-1 pt-5 text-sm font-semibold text-primary hover:underline">Ask for programme guidance <ArrowUpRight className="size-4"/></Link></article>)}</div></section>

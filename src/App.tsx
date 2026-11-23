@@ -123,6 +123,7 @@ const StudentApplications = lazy(() => import("./pages/student/StudentApplicatio
 const LearningPlans = lazy(() => import("./pages/tuition/LearningPlans"));
 const DirectorTuitionProgress = lazy(() => import("./pages/tuition/DirectorTuitionProgress"));
 const GuardianLearning = lazy(() => import("./pages/tuition/GuardianLearning"));
+const TuitionAcademy = lazy(() => import("./pages/tuition/TuitionAcademy"));
 const StudentCoursework = lazy(() => import("./pages/student/StudentCoursework"));
 const StudentReleasedResults = lazy(() => import("./pages/student/StudentReleasedResults"));
 const StudentAssessmentAppeals = lazy(() => import("./pages/student/StudentAssessmentAppeals"));
@@ -453,6 +454,7 @@ function AppRoutes() {
         <Route path="/director/residential-planner" element={<Director><ResidentialPlanner /></Director>} />
         <Route path="/director/schedule" element={<Director><ScheduleManager /></Director>} />
         <Route path="/director/tuition-progress" element={<RoleGuard allowed={['centre_director']}><DirectorTuitionProgress /></RoleGuard>} />
+        <Route path="/director/tuition-academy" element={<RoleGuard allowed={['centre_director','superadmin']}><TuitionAcademy /></RoleGuard>} />
         <Route path="/director/branding" element={<Director><TenantBranding /></Director>} />
         <Route path="/director/page-builder" element={<Director><TenantPageBuilder /></Director>} />
         <Route path="/director/domains" element={<Director><TenantDomainSettings /></Director>} />
@@ -482,6 +484,7 @@ function AppRoutes() {
         <Route path="/lecturer/teaching" element={<LecturerR><LecturerTeaching /></LecturerR>} />
         <Route path="/lecturer/delivery-readiness" element={<LecturerR><LecturerDeliveryReadiness /></LecturerR>} />
         <Route path="/lecturer/learning-plans" element={<LecturerR><LearningPlans teacher /></LecturerR>} />
+        <Route path="/lecturer/tuition-academy" element={<LecturerR><TuitionAcademy /></LecturerR>} />
         <Route path="/lecturer/assessments" element={<LecturerR><LecturerAssessmentBriefs /></LecturerR>} />
         <Route path="/lecturer/ielts" element={<LecturerR><IELTSAcademy /></LecturerR>} />
         <Route path="/lecturer/classroom" element={<LecturerR><LiveClassroom /></LecturerR>} />
@@ -525,6 +528,7 @@ function AppRoutes() {
         <Route path="/programme/assessments" element={<Programme><AssessmentManager /></Programme>} />
         <Route path="/programme/appeals" element={<Programme><AssessmentAppealManagement /></Programme>} />
         <Route path="/programme/syllabuses" element={<Programme><CentreSyllabusPlanner /></Programme>} />
+        <Route path="/programme/tuition-academy" element={<Programme><TuitionAcademy /></Programme>} />
         <Route path="/programme/course-content" element={<Programme><CourseContentHub /></Programme>} />
         <Route path="/programme/specifications" element={<Programme><CourseSpecifications /></Programme>} />
         <Route path="/programme/schedule" element={<Programme><ScheduleManager /></Programme>} />

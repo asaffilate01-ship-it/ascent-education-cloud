@@ -9,6 +9,8 @@ import Seo from '@/components/Seo';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { centrePathwayFamilies,searchCentrePathways } from '@/lib/educationCentrePathways';
+import LaunchPhaseBadge from '@/components/launch/LaunchPhaseBadge';
+import { byLaunchPhase,centrePathwayPhase } from '@/lib/launchPhases';
 
 const categories:Record<string,React.ElementType>={
  'Pakistan school & board exams':School,
@@ -24,9 +26,9 @@ const categories:Record<string,React.ElementType>={
 export default function EducationCentreHub(){
  const [family,setFamily]=useState('All');
  const [query,setQuery]=useState('');
- const results=useMemo(()=>searchCentrePathways(family,query),[family,query]);
+ const results=useMemo(()=>byLaunchPhase(searchCentrePathways(family,query),p=>centrePathwayPhase(p.id)),[family,query]);
  return <div className="public-site min-h-dvh bg-background">
-  <Seo title="UniPathway Centre — School Exams, Language, Professional & Diploma Preparation" description="Explore Pakistan Matric, FSc, FA/ICS/ICom, Cambridge O/A Levels, language exams, technology, finance, healthcare, beauty and UK diploma preparation in UniPathway's online and in-centre learning model." canonical="/education-centre"/>
+  <Seo title="UniPathway Centre — School Exams, Language, Professional & Diploma Preparation" description="Explore Pakistan Matric, FSc, ICS/ICom, IGCSE, O/A Levels, language exams, technology, finance, healthcare, beauty and UK diploma preparation in UniPathway's online and in-centre learning model." canonical="/education-centre"/>
   <PublicNav/>
   <main className="mx-auto max-w-7xl px-5 pb-16 pt-10 sm:px-8">
    <PublicHero topic="study">
@@ -63,6 +65,7 @@ export default function EducationCentreHub(){
      {results.map(p=>{const Icon=categories[p.family]||BookOpen;
        return <article key={p.id} className="flex flex-col rounded-xl border bg-card p-5">
         <div className="flex items-center gap-2 text-xs font-semibold text-success"><Icon className="size-4"/>{p.family}</div>
+        <LaunchPhaseBadge phase={centrePathwayPhase(p.id)} className="mt-2"/>
         <h3 className="mt-3 text-lg font-bold">{p.title}</h3>
         <p className="mt-1 text-xs text-muted-foreground">{p.courseLevel} · {p.practical?'Practical/portfolio elements':'Theory, practice & feedback'}</p>
         <p className="mt-3 text-sm">{p.preparationFor}</p>

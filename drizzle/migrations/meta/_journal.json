@@ -204,6 +204,20 @@
       "when": 1795448734449,
       "tag": "0028_admissions_service_and_partner_applications",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1795450157221,
+      "tag": "0029_tuition_academy_and_launch_phase",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1795450440745,
+      "tag": "0030_tuition_ajk_board",
+      "breakpoints": true
     }
   ]
 }

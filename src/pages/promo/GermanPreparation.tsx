@@ -1,6 +1,7 @@
 import CourseAtAGlance from '@/components/CourseAtAGlance';
 import PublicHero from '@/components/PublicHero';
 import PageContents from '@/components/PageContents';
+import PhaseTwoNotice from '@/components/launch/PhaseTwoNotice';
 import { Link } from 'react-router-dom';
 import { BookOpen, GraduationCap, Languages, Mic, ArrowUpRight } from 'lucide-react';
 import PublicNav from '@/components/PublicNav';
@@ -24,6 +25,7 @@ export default function GermanPreparation() {
     <PublicNav/>
     <main className="mx-auto max-w-7xl space-y-10 px-5 py-12 sm:px-8">
       <PublicHero topic="german"><p className="text-label text-success">German language academy</p><h1 className="mt-3 text-3xl font-extrabold sm:text-5xl">Learn German. Prepare for your next step.</h1><p className="mt-4 text-muted-foreground">Tutor-led online and planned in-centre German language courses, from beginner A1 through advanced C1, plus focused examination preparation for study in Germany.</p><Button className="mt-6" asChild><Link to="/contact">Enquire about German classes</Link></Button></PublicHero>
+<PhaseTwoNotice area="languages" subject="German language training"/>
 <CourseAtAGlance course="German language classes" entry="A1 for beginners; admissions will assess placement for higher levels."/><PageContents/>
 
       <section><h2 className="text-2xl font-bold">Language pathways</h2><div className="mt-4 grid gap-4 md:grid-cols-3">{steps.map(s=><article key={s.level} className="rounded-xl border bg-card p-5"><Languages className="size-6 text-success"/><p className="mt-3 text-sm font-bold text-success">{s.level}</p><h3 className="mt-1 font-bold">{s.title}</h3><p className="mt-2 text-sm text-muted-foreground">{s.description}</p></article>)}</div></section>

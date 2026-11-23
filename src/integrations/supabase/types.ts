@@ -5462,6 +5462,7 @@ export type Database = {
           enrolled: number | null
           entry_requirements: Json | null
           id: string
+          launch_phase: number | null
           level: string
           modules_count: number | null
           progression_pathway: Json | null
@@ -5479,6 +5480,7 @@ export type Database = {
           enrolled?: number | null
           entry_requirements?: Json | null
           id?: string
+          launch_phase?: number | null
           level: string
           modules_count?: number | null
           progression_pathway?: Json | null
@@ -5496,6 +5498,7 @@ export type Database = {
           enrolled?: number | null
           entry_requirements?: Json | null
           id?: string
+          launch_phase?: number | null
           level?: string
           modules_count?: number | null
           progression_pathway?: Json | null
@@ -6170,6 +6173,121 @@ export type Database = {
           },
         ]
       }
+      school_tuition_subjects: {
+        Row: {
+          active: boolean
+          exam_board: string | null
+          id: string
+          practical_required: boolean
+          subject: string
+          subject_group: string | null
+          syllabus_version: string | null
+          tenant_id: string
+          track_id: string
+        }
+        Insert: {
+          active?: boolean
+          exam_board?: string | null
+          id?: string
+          practical_required?: boolean
+          subject: string
+          subject_group?: string | null
+          syllabus_version?: string | null
+          tenant_id: string
+          track_id: string
+        }
+        Update: {
+          active?: boolean
+          exam_board?: string | null
+          id?: string
+          practical_required?: boolean
+          subject?: string
+          subject_group?: string | null
+          syllabus_version?: string | null
+          tenant_id?: string
+          track_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_tuition_subjects_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_tuition_subjects_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_tuition_subjects_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "school_tuition_tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      school_tuition_tracks: {
+        Row: {
+          active: boolean
+          city: string | null
+          created_at: string
+          curriculum_route: string
+          delivery_modes: string[]
+          grade: number
+          id: string
+          launch_phase: number
+          stream: string | null
+          tenant_id: string
+          title: string
+        }
+        Insert: {
+          active?: boolean
+          city?: string | null
+          created_at?: string
+          curriculum_route: string
+          delivery_modes?: string[]
+          grade: number
+          id?: string
+          launch_phase?: number
+          stream?: string | null
+          tenant_id: string
+          title: string
+        }
+        Update: {
+          active?: boolean
+          city?: string | null
+          created_at?: string
+          curriculum_route?: string
+          delivery_modes?: string[]
+          grade?: number
+          id?: string
+          launch_phase?: number
+          stream?: string | null
+          tenant_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_tuition_tracks_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_tuition_tracks_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       student_enrolments: {
         Row: {
           application_id: string | null
@@ -6667,6 +6785,214 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tuition_enrolments: {
+        Row: {
+          created_at: string
+          ends_on: string | null
+          fee_pkr: number | null
+          guardian_user_id: string | null
+          id: string
+          package_type: string
+          starts_on: string | null
+          status: string
+          student_id: string
+          subject_ids: string[]
+          tenant_id: string
+          track_id: string
+        }
+        Insert: {
+          created_at?: string
+          ends_on?: string | null
+          fee_pkr?: number | null
+          guardian_user_id?: string | null
+          id?: string
+          package_type?: string
+          starts_on?: string | null
+          status?: string
+          student_id: string
+          subject_ids?: string[]
+          tenant_id: string
+          track_id: string
+        }
+        Update: {
+          created_at?: string
+          ends_on?: string | null
+          fee_pkr?: number | null
+          guardian_user_id?: string | null
+          id?: string
+          package_type?: string
+          starts_on?: string | null
+          status?: string
+          student_id?: string
+          subject_ids?: string[]
+          tenant_id?: string
+          track_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tuition_enrolments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tuition_enrolments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tuition_enrolments_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "school_tuition_tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tuition_mock_exams: {
+        Row: {
+          delivery_mode: string
+          duration_minutes: number | null
+          id: string
+          scheduled_at: string | null
+          status: string
+          subject_id: string
+          tenant_id: string
+          title: string
+          total_marks: number | null
+        }
+        Insert: {
+          delivery_mode?: string
+          duration_minutes?: number | null
+          id?: string
+          scheduled_at?: string | null
+          status?: string
+          subject_id: string
+          tenant_id: string
+          title: string
+          total_marks?: number | null
+        }
+        Update: {
+          delivery_mode?: string
+          duration_minutes?: number | null
+          id?: string
+          scheduled_at?: string | null
+          status?: string
+          subject_id?: string
+          tenant_id?: string
+          title?: string
+          total_marks?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tuition_mock_exams_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "school_tuition_subjects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tuition_mock_exams_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tuition_mock_exams_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tuition_progress_snapshots: {
+        Row: {
+          attendance_pct: number | null
+          created_at: string
+          homework_pct: number | null
+          id: string
+          mock_pct: number | null
+          period_end: string
+          period_start: string
+          quiz_pct: number | null
+          strengths: Json
+          student_id: string
+          subject_id: string
+          teacher_comment: string | null
+          tenant_id: string
+          track_id: string
+          weak_topics: Json
+        }
+        Insert: {
+          attendance_pct?: number | null
+          created_at?: string
+          homework_pct?: number | null
+          id?: string
+          mock_pct?: number | null
+          period_end: string
+          period_start: string
+          quiz_pct?: number | null
+          strengths?: Json
+          student_id: string
+          subject_id: string
+          teacher_comment?: string | null
+          tenant_id: string
+          track_id: string
+          weak_topics?: Json
+        }
+        Update: {
+          attendance_pct?: number | null
+          created_at?: string
+          homework_pct?: number | null
+          id?: string
+          mock_pct?: number | null
+          period_end?: string
+          period_start?: string
+          quiz_pct?: number | null
+          strengths?: Json
+          student_id?: string
+          subject_id?: string
+          teacher_comment?: string | null
+          tenant_id?: string
+          track_id?: string
+          weak_topics?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tuition_progress_snapshots_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "school_tuition_subjects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tuition_progress_snapshots_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tuition_progress_snapshots_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tuition_progress_snapshots_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "school_tuition_tracks"
             referencedColumns: ["id"]
           },
         ]

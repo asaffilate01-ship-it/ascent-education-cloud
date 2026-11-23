@@ -37,7 +37,8 @@ it('finds both Pearson Fine Art awards by craft focus and displays the correct s
  expect(cards[0]).toHaveTextContent('610/1794/2');expect(cards[0]).toHaveTextContent('120 credits');expect(cards[0]).not.toHaveTextContent('B1');
  expect(cards[1]).toHaveTextContent('610/1795/4');expect(cards[1]).toHaveTextContent('240 credits overall: 120 at Level 4 plus 120 at Level 5');
  expect(cards[1]).toHaveTextContent('B2 · Professional Project');expect(cards[0]).toHaveTextContent('not additional Pearson units or extra credits');
- expect(within(cards[0]).getByRole('link',{name:/Pearson Fine Art specification/})).toHaveAttribute('href',expect.stringContaining('qualifications.pearson.com'));
+ expect(within(cards[0]).getByText(/Pearson Fine Art specification/)).toBeInTheDocument();
+ expect(within(cards[0]).queryByRole('link',{name:/Pearson Fine Art specification/})).toBeNull();
 });
 it('restores and updates the level filter while preserving campaign and browser history',async()=>{
  await mount('/qualifications?level=3&utm_source=pathway#qualification-filters');

@@ -7,15 +7,18 @@ import PublicNav from '@/components/PublicNav';
 import PublicFooter from '@/components/PublicFooter';
 import LearningHero from '@/components/promo/LearningHero';
 import { matchesLocalSearch } from '@/lib/localSearch';
-const pathways = [
-  { title: 'Complete Education Centre', caption: 'Matric, FSc, FA/ICS/ICom, Cambridge O/A Levels, global languages and vocational certifications', to: '/education-centre', icon: GraduationCap, number: '00' },
-  { title: 'UK & international qualifications', caption: 'Online study with centre visits only where approved programme requirements permit', to: '/qualifications', icon: GraduationCap, number: '01' },
-  { title: 'Technology Academy', caption: 'AI, software, Python, cyber security, cloud and DevOps', to: '/tech-academy', icon: School, number: '02' },
-  { title: 'Accounting & Finance Academy', caption: 'Bookkeeping, tax, financial reporting and IFA/ACCA preparation', to: '/finance-academy', icon: GraduationCap, number: '09' },
+import LaunchPhaseBadge from '@/components/launch/LaunchPhaseBadge';
+import PhaseOneLaunch from '@/components/launch/PhaseOneLaunch';
+import { byLaunchPhase, routePhase } from '@/lib/launchPhases';
+const allPathways = [
+  { title: 'Complete Education Centre', caption: 'Matric, FSc, ICS/ICom, IGCSE, O/A Levels, IELTS and technology certifications', to: '/education-centre', icon: GraduationCap, number: '00' },
+  { title: 'UK & international qualifications', caption: 'Business and accounting diplomas, Levels 3–5, open first; more subjects follow in Phase 2', to: '/qualifications', icon: GraduationCap, number: '01' },
+  { title: 'Technology Academy', caption: 'AI courses plus Microsoft, AWS and Cisco cloud and networking certification prep; Python and coding follow', to: '/tech-academy', icon: School, number: '02' },
+  { title: 'Accounting & Finance Academy', caption: 'ACCA exam preparation with timed mocks and tutor feedback', to: '/finance-academy', icon: GraduationCap, number: '09' },
   { title: 'Women’s Beauty & Aesthetics', caption: 'Planned beauty training; CIBTAC centre and CPD UK approvals under preparation', to: '/beauty-aesthetics', icon: GraduationCap, number: '10' },
   { title: 'Art, Crafts & Sewing', caption: 'Fine art, sewing, tailoring, embroidery, ceramics and selling handmade products online across Pakistan', to: '/creative-crafts', icon: School, number: '11' },
 
-  { title: 'Years 8–12 Tuition', caption: 'Online and in-centre maths, English, biology, chemistry, physics and tech', to: '/tuition', icon: BriefcaseBusiness, number: '03' },
+  { title: 'Classes 9–12 Tuition', caption: 'Sciences, maths, English, technology and commerce for Pakistan boards, IGCSE, O and A Level', to: '/tuition', icon: BriefcaseBusiness, number: '03' },
   { title: 'European & Global University Pathways', caption: 'Explore EU and wider European destinations, alongside the UK, USA, Canada, Australia and Pakistan', to: '/europe', icon: Globe2, number: '04' },
   { title: 'IELTS Preparation', caption: 'Academic & General Training with guided practice', to: '/ielts-preparation', icon: BookOpen, number: '05' },
   { title: 'German Courses', caption: 'A1–C1, Goethe, TestDaF, telc and DSH preparation', to: '/german-preparation', icon: BookOpen, number: '06' },
@@ -23,6 +26,7 @@ const pathways = [
   { title: 'Careers & Internships', caption: 'Pakistan employers, placements and overseas student support', to: '/careers', icon: BriefcaseBusiness, number: '08' },
   { title: 'UniPathway Foundation', caption: 'Reduced or fully funded fees for talented students from less privileged backgrounds, with employer co-funding', to: '/scholarships', icon: GraduationCap, number: '12' },
 ];
+const pathways = byLaunchPhase(allPathways, p => routePhase(p.to));
 
 export default function PromoHome() {
   const [query, setQuery] = useState('');
@@ -52,11 +56,12 @@ export default function PromoHome() {
           ['Study abroad support', '/student-support', Globe2], ['Student portal', '/login', Video],
         ] as const).map(([label,to,Icon])=><Link key={to} to={to} className="group flex min-h-14 items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold hover:bg-success/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><Icon className="size-5 shrink-0 text-success"/><span className="min-w-0 break-words">{label}</span><ArrowRight className="ml-auto size-4 shrink-0 text-muted-foreground"/></Link>)}</div>
       </nav>
+      <div className="mx-auto max-w-7xl px-5 pt-14 sm:px-8 sm:pt-20"><PhaseOneLaunch eyebrow="Now launching · Phase 1" /></div>
       <section id="study" className="scroll-mt-28 py-14 sm:py-20"><div className="mx-auto max-w-7xl px-5 sm:px-8">
         <p className="text-xs font-bold uppercase tracking-widest text-success">01 / Find your direction</p>
         <div className="mt-3 flex flex-wrap items-end justify-between gap-6"><div className="min-w-0 flex-[1_1_24rem]"><h2 className="text-3xl font-bold tracking-tight sm:text-4xl">What would you like to learn?</h2><p className="mt-3 max-w-xl text-muted-foreground">Start with a subject. Check the course details, then speak to us about entry requirements, fees and the next intake.</p></div><div className="relative min-w-0 flex-[1_1_20rem]"><label htmlFor="home-course-search" className="sr-only">Search learning areas</label><Search className="pointer-events-none absolute left-4 top-4 size-5 text-muted-foreground" /><input ref={searchInput} id="home-course-search" type="search" maxLength={120} aria-describedby="home-course-results" value={query} onChange={e=>setQuery(e.target.value.slice(0,120))} placeholder="Try Python, IELTS or finance" className="h-14 w-full rounded-xl border bg-card pl-12 pr-4 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" /></div></div>
         <div role="group" aria-label="Filter learning areas" className="mt-7 flex flex-wrap gap-2">{Object.keys(areas).map(label => <button key={label} aria-pressed={area === label} onClick={() => setArea(label)} className={`min-h-11 rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${area === label ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-foreground hover:bg-accent'}`}>{label}</button>)}</div><p id="home-course-results" role="status" className="mt-4 text-sm text-muted-foreground">{query || area !== 'All subjects' ? `${matches.length} matching learning ${matches.length === 1 ? 'area' : 'areas'}` : 'Explore all learning areas'}</p>
-        <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(min(100%,20rem),1fr))] gap-4">{matches.map(({title,caption,to,icon:Icon})=><Link to={to} key={to} className="group relative grid min-w-0 grid-cols-[1fr_auto] items-start gap-4 rounded-2xl border border-border/80 bg-card p-5 sm:p-6 transition-colors hover:border-success hover:bg-success/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><span className="grid size-11 place-items-center rounded-xl bg-success/10 text-success"><Icon className="size-5" /></span><ArrowRight className="mt-1 size-4" /><div className="col-span-2 min-w-0"><h3 className="font-bold leading-snug">{title}</h3><p className="mt-2 text-sm leading-relaxed text-muted-foreground">{caption}</p></div></Link>)}</div>
+        <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(min(100%,20rem),1fr))] gap-4">{matches.map(({title,caption,to,icon:Icon})=><Link to={to} key={to} className="group relative grid min-w-0 grid-cols-[1fr_auto] items-start gap-4 rounded-2xl border border-border/80 bg-card p-5 sm:p-6 transition-colors hover:border-success hover:bg-success/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><span className="grid size-11 place-items-center rounded-xl bg-success/10 text-success"><Icon className="size-5" /></span><ArrowRight className="mt-1 size-4" /><div className="col-span-2 min-w-0"><LaunchPhaseBadge phase={routePhase(to)} className="mb-2" /><h3 className="font-bold leading-snug">{title}</h3><p className="mt-2 text-sm leading-relaxed text-muted-foreground">{caption}</p></div></Link>)}</div>
         {matches.length===0&&<div className="rounded-xl border p-8"><h3 className="font-bold">Let’s find the right option.</h3><p className="mt-2 text-muted-foreground">Try a broader subject or ask an adviser for guidance.</p><button onClick={clearSearch} className="mt-4 min-h-11 font-semibold underline">Show all learning areas</button></div>}
         <div className="mt-6 flex flex-wrap gap-x-8 gap-y-2"><Link className="inline-flex min-h-11 items-center gap-2 font-semibold" to="/study">View the full course guide <ArrowRight className="size-4" /></Link><Link className="inline-flex min-h-11 items-center gap-2 font-semibold" to="/employer-learning">Learning for your team <ArrowRight className="size-4" /></Link></div>
       </div></section>
