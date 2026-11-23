@@ -24,7 +24,9 @@ Deno.test('Invalid grade does not progress; future courses require staff',()=>{
   let t=say(START,'1');t=say(t.state,'1');t=say(t.state,'1');t=say(t.state,'1');
   const bad=say(t.state,'8');assertEquals(bad.state.step,'grade');
   t=say(START,'1');t=say(t.state,'1');t=say(t.state,'6');
-  assert(t.handoff);assertEquals(t.state.programme,'future_interest');
+  assertEquals(t.state.step,'phase2_interest');
+  t=say(t.state,'1');assert(t.handoff);assertEquals(t.state.phase2Interest,'beauty_aesthetics');
+  assertEquals(t.state.programme,'future_interest');
 });
 Deno.test('Sensitive and STOP requests stop automation',()=>{
  const t=say({step:'subjects',language:'en',programme:'school_tuition'},'my child has a medical emergency');
