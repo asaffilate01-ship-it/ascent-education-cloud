@@ -20,7 +20,7 @@ export default function UniversityCommissionLedger({tenant}:{tenant:string}){
    db.from('international_partner_referrals').select('id,partner_id,status,external_application_ref').eq('tenant_id',tenant).eq('status','enrolled').limit(150),
    db.from('international_partner_agreements').select('id,partner_id,status,starts_on,ends_on,commission_basis,commission_amount,commission_currency').eq('tenant_id',tenant).eq('status','signed').limit(150)
   ]);
-  if(c.error||r.error||a.error)setError('The signed agreement and commission-claims records cannot be loaded. Verify migrations and centre finance access.');
+  if(c.error||r.error||a.error)setError('Agreements and commission claims are not switched on yet, or your finance access needs checking. Ask your centre manager.');
   else{setClaims((c.data||[]) as Claim[]);setReferrals((r.data||[]) as Referral[]);setAgreements((a.data||[]) as Agreement[]);}
  }
  useEffect(()=>{void reload();},[tenant]);

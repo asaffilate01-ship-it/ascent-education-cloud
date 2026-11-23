@@ -72,7 +72,7 @@ function Overview(){
      <Button asChild><Link to="/director/admissions">Review applicant pipeline</Link></Button>
      <Button asChild variant="outline"><Link to="/director/staff">Review staff memberships</Link></Button>
     </nav>
-    <p className="text-xs text-muted-foreground">Source only: the database must independently apply centre RLS. A verified agent agreement, signed referral attribution and finance reconciliation service are required before commission records may be displayed.</p>
+    <p className="text-xs text-muted-foreground">Overview only. A verified agent agreement, signed referral attribution and finance reconciliation service are required before commission records may be displayed.</p>
    </div>}
  </DashboardLayout>;
 }

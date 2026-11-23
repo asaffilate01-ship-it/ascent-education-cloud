@@ -77,7 +77,7 @@ function VisitorDesk(){
       {checkinAttempt&&<Button type="button" variant="outline" disabled={inFlight} onClick={()=>{setCheckinAttempt(null);setActionError('First check the visitor register for this visitor before creating a new request.');visitors.refresh();}}>I reviewed the register — start a new request</Button>}
      </div>
     </form>
-   </section>:<p role="status" className="mt-5 rounded-lg border p-4">Visitor writes are disabled until the dedicated server-authorised, audited centre RPCs and two-centre checks are activated. Read access alone cannot check someone in or out.</p>}
+   </section>:<p role="status" className="mt-5 rounded-lg border p-4">Checking visitors in and out is not switched on yet.</p>}
    <section className="mt-5 rounded-xl border bg-card p-5"><h2 className="font-semibold">Visitor register</h2>
     {!visitors.data.length&&<p className="mt-3 text-sm">No visitors are recorded in this centre's register.</p>}
     <div className="mt-3 divide-y">{[...visitors.data].sort((a,b)=>Date.parse(b.created_at)-Date.parse(a.created_at)).slice(0,100).map(v=><article className="flex flex-wrap items-center justify-between gap-3 py-4" key={v.id}>

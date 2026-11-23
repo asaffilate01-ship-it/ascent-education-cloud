@@ -233,7 +233,7 @@ function Workspace({isScopeCurrent}:{isScopeCurrent:()=>boolean}){
     !manager?<p role="alert" className="rounded-xl border p-5">Only an active, verified Centre Director or Platform Owner can review individual permission changes.</p>:
     !enabled?<section role="status" className="space-y-3 rounded-xl border bg-card p-6 max-sm:px-[16px]">
      <h2 className="text-lg font-semibold">Office access activation pending</h2>
-     <p>Per-person capability changes require the reviewed UniPathway role enum, centre-isolated access tables and audit RPCs. Checkboxes cannot grant access until those changes are applied and tested with real centre accounts. No staff records have been changed.</p>
+     <p>Individual staff permissions are not switched on yet, so these checkboxes cannot grant access. Ask your centre manager to change someone's role instead. No staff records have been changed.</p>
      <p>Staff sign in at <a className="underline" href={UNIPATHWAY_SIGN_IN}>unipathway.pk/login</a>. Existing development email addresses are not automatically renamed.</p>
      <Link className="inline-flex min-h-11 max-w-full items-center rounded-lg border px-4 py-3" to={platform?'/landlord/centres':'/director/staff'}>Return to staff management</Link>
     </section>:<>

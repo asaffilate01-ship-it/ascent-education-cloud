@@ -41,7 +41,7 @@ export default function OpportunityFundDashboard(){
        db.from('unipathway_foundation_scholarship_cases').select('*').eq('tenant_id',tenant).order('created_at',{ascending:false}),
        db.from('unipathway_foundation_case_reviews').select('id,scholarship_case_id,reviewer_id,recommendation,reviewed_at').eq('tenant_id',tenant),
      ]);
-     if(results.some(x=>x.error))throw new Error('The Opportunity Fund database is not deployed or tenant permissions have not passed review. No scholarships can be awarded until the existing Lovable Supabase migration is reconciled.');
+     if(results.some(x=>x.error))throw new Error('The Opportunity Fund is not switched on yet, so no scholarships can be awarded from here.');
      const p=(results[0].data||[]) as Fund[],s=(results[1].data||[]) as Sponsor[],c=(results[2].data||[]) as Case[];
      setFunds(p);setSponsors(s);setCases(c);setReviews((results[3].data||[]) as Review[]);setSelected(v=>p.some(x=>x.id===v)?v:p[0]?.id||'');
    }catch(e){setError(e instanceof Error?e.message:'The Opportunity Fund could not be loaded.');}

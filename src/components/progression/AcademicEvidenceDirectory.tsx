@@ -52,7 +52,7 @@ export default function AcademicEvidenceDirectory({tenant,student=false,manager=
   if(student)query=query.eq('review_status','verified').eq('student_visible',true);
   const r=await query;
   if(req!==version.current)return;
-  if(r.error)setError('The academic progression directory is unavailable. Its staging migration may not yet be applied.');
+  if(r.error)setError('The academic progression directory is not switched on yet.');
   else setRows((r.data||[]) as SourceRow[]);
   setLoading(false);
  },[tenant,student]);

@@ -11,7 +11,7 @@ import {ShieldCheck,FileCheck2,Building2,ClipboardCheck} from 'lucide-react';
 const requirements=[
  {icon:Building2,title:'Awarding-body membership',details:'Verified active reviewer identity, institution, permitted centre and qualification scope.'},
  {icon:FileCheck2,title:'Approved evidence sample',details:'A named, time-limited sample approved by the centre with a legitimate assessment purpose.'},
- {icon:ShieldCheck,title:'Independent database isolation',details:'Real JWT-backed RLS denying unrelated students, centres, results and other awarding bodies.'},
+ {icon:ShieldCheck,title:'Independent database isolation',details:'Each awarding body sees only its own centres, students and results.'},
  {icon:ClipboardCheck,title:'Audit and expiry',details:'Evidence views must be logged and expire when the review or reviewer assignment ends.'},
 ] as const;
 export default function AwardingBodyDashboard(){

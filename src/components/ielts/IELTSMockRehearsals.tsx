@@ -57,7 +57,7 @@ export default function IELTSMockRehearsals({track}:{track?:Mode}){
    if(r.error||p.error)throw r.error||p.error;
    setRows((r.data||[]) as Row[]);
    setStudents((p.data||[]) as Profile[]);
-  }catch{setError('Mock rehearsal records could not be loaded. Confirm centre permissions and database migration.');}
+  }catch{setError('Mock rehearsals could not be loaded. Please try again, or ask your course team if it keeps happening.');}
   finally{setLoading(false);}
  },[tenant,user?.id,staff]);
  useEffect(()=>{void reload();},[reload]);

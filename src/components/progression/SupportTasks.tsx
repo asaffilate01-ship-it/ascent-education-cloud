@@ -24,7 +24,7 @@ export default function SupportTasks({tenant,application,student=false,onChanged
     tasks.push(...(result.data||[]));if((result.data||[]).length<100)break;
    }
    setRows(tasks);
-  }catch{if(token===generation.current)setError('Support tasks could not be loaded. Check access and migrations, then retry.');}
+  }catch{if(token===generation.current)setError('Support tasks could not be loaded. Please try again, or ask your centre manager to check your access.');}
   finally{if(token===generation.current)setLoading(false);}
  },[tenant,application]);
  useEffect(()=>{if(open)void load();return()=>{generation.current++;};},[open,load]);

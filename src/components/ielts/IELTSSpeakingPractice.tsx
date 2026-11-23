@@ -47,7 +47,7 @@ export default function IELTSSpeakingPractice({tenant,student,track,enabled}:{
     .select('id,storage_path,prompt_key,track,duration_seconds,created_at,teacher_feedback,reviewed_at')
     .eq('tenant_id',tenant).eq('student_id',student).order('created_at',{ascending:false}).limit(25);
   if(active.current){
-   if(result.error)setError('Speaking evidence is unavailable. Check the database migration and centre permissions.');
+   if(result.error)setError('Your speaking recordings could not be loaded. Please try again, or ask your course team if it keeps happening.');
    else setRows((result.data||[]) as SavedAudio[]);
    setLoading(false);
   }

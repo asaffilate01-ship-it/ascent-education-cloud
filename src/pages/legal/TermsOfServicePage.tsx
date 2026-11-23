@@ -60,7 +60,7 @@ export default function TermsOfServicePage() {
               <li>Share login credentials with unauthorised persons</li>
               <li>Attempt to access other tenants' data</li>
               <li>Use the platform for any unlawful purpose</li>
-              <li>Circumvent security controls or RLS policies</li>
+              <li>Circumvent security or access controls</li>
             </ul>
           </section>
 

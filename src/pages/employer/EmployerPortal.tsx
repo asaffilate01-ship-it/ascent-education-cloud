@@ -29,7 +29,7 @@ function EmployerWorkspace(){
   try{
    const m=await db.from('unipathway_employer_memberships').select('organisation_id,unipathway_employer_organisations(name,sector,status)').eq('tenant_id',tenant).eq('user_id',user.id).eq('status','verified');
    if(!current())return;
-   if(m.error)throw new Error('Employer organisation verification is not available in Supabase. The approved employer schema must be deployed and checked before recruitment is enabled.');
+   if(m.error)throw new Error('Your employer verification could not be checked, so recruitment is paused. Please try again, or ask the centre for help.');
    const verified=(m.data||[]).filter((x:Membership)=>x.unipathway_employer_organisations?.status==='verified') as Membership[];
    setMembers(verified);
    if(!verified.length){setLoading(false);return;}

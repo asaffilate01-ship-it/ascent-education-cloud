@@ -87,7 +87,7 @@ function RosterWorkspace(){
   {!tenant?<p role="alert" className="rounded-xl border p-5">A verified active Exams Officer or Centre Director membership at this centre is required.</p>:
   !enabled?<section role="status" className="rounded-xl border bg-card p-5 space-y-3">
    <h2 className="font-semibold">Candidate roster activation is disabled</h2>
-   <p className="text-sm text-muted-foreground">This sensitive service remains off until the correct UniPathway staging project, F1/F2 database gates, student consent process, active enrolment records and signed-in two-centre security tests are verified. No learner records or provisional seats have been requested.</p>
+   <p className="text-sm text-muted-foreground">The exam candidate roster is not switched on yet. It stays off until student consent and security checks are complete. No learner records or provisional seats have been requested.</p>
    <p className="text-sm text-muted-foreground">Official awarding-body entry, invigilator appointment, identity checks and final exam results remain separate from internal seat planning.</p>
    <Link className="font-semibold underline" to={director?'/director/exam-plans':'/exams/session-plans'}>View approved internal session plans</Link>
   </section>:<>

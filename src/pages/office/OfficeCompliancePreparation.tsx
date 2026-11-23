@@ -39,7 +39,7 @@ function Preparation(){
   <div className="space-y-5">
    <Link to="/office" className="inline-flex min-h-11 items-center rounded-lg border px-3 text-sm hover:bg-accent">Return to my office dashboard</Link>
    {!eligible?<p role="alert">A currently assigned Office Administrator, HR Officer or Secretary role and centre membership are required.</p>:
-    !enabled?<p role="status" className="rounded-xl border p-5">Personal office permissions are not yet activated on this UniPathway backend. This preparation workspace remains unavailable until centre-scoped permission RPCs and RLS have passed staging checks.</p>:
+    !enabled?<p role="status" className="rounded-xl border p-5">Personal office permissions are not switched on yet, so this workspace is unavailable for now.</p>:
     loading?<p role="status">Checking your personal preparation permission…</p>:
     error?<div role="alert" className="rounded-xl border p-5"><p>{error}</p><Button variant="outline" className="mt-3" onClick={()=>setRefresh(v=>v+1)}>Retry verification</Button></div>:
     !allowed?<p role="alert" className="rounded-xl border p-5">Your Centre Director has not authorised compliance preparation for this selected role. No records have been loaded or changed.</p>:

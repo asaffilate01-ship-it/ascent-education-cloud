@@ -28,7 +28,7 @@ function Workspace({tenant,userId}:{tenant:string;userId:string}){
    workflowRows(supabase,'international_university_applications',tenant,current,'id,student_id,programme,destination_country,intake,status'),
   ]);
   if(!current())return;
-  if(results.some(r=>r.error))setError('The support desk could not be loaded completely. Check access and migrations, then retry.');
+  if(results.some(r=>r.error))setError('Some support desk records could not be loaded. Please try again, or ask your centre manager to check your access.');
   else{setTasks(results[0].data as SupportTask[]);setApplications(results[1].data as Application[]);setNow(Date.now());}
   setLoading(false);
  },[tenant]);

@@ -116,7 +116,7 @@ function Registry(){
    {!allowed?<section role="alert" className="rounded-xl border bg-card p-5">An active centre director, programme leader or superadmin role with a centre assignment is required.</section>:
     !enabled?<section role="status" className="max-w-3xl rounded-xl border bg-card p-6 space-y-3">
      <h2 className="text-lg font-semibold">Registry activation is pending</h2>
-     <p className="text-sm text-muted-foreground">Qualification-version and redistribution-rights records have been built, but the staging SQL and authenticated permissions must be independently verified in UniPathway's own database before this workspace is enabled. No unverified external qualifications or publishing permissions are shown.</p>
+     <p className="text-sm text-muted-foreground">Qualification versions and course-material rights are not switched on yet in UniPathway's own database before this workspace is enabled. No unverified external qualifications or publishing permissions are shown.</p>
      <Link to={back} className="inline-flex min-h-11 items-center rounded-lg border px-4 text-sm font-semibold">Return to course content</Link>
     </section>:<>
      <section className="rounded-xl border bg-card p-5 space-y-2">

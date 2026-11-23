@@ -35,7 +35,7 @@ export default function EmployerPartnershipsPage(){
      db.from('unipathway_employer_opportunities').select('id,organisation_id,title,status,opportunity_type,role_description,employer_display_name').eq('tenant_id',tenant).order('created_at',{ascending:false}),
      db.from('unipathway_employer_applications').select('id,opportunity_id,student_id,statement,status').eq('tenant_id',tenant),
    ]);
-   if(results.some(x=>x.error))throw new Error('The verified employer placement tables are not available yet. Reconcile the Lovable-connected Supabase migrations, RLS and policies before onboarding employers.');
+   if(results.some(x=>x.error))throw new Error('Employer partnership records could not be loaded. Please try again, or check your centre director access.');
    setOrgs(results[0].data||[]);setMembers(results[1].data||[]);setJobs(results[2].data||[]);setApps(results[3].data||[]);
    setMemberOrg(v=>(results[0].data||[]).some((x:Organisation)=>x.id===v)?v:results[0].data?.[0]?.id||'');
    setSelectedOrg(v=>(results[0].data||[]).some((x:Organisation)=>x.id===v)?v:results[0].data?.[0]?.id||'');

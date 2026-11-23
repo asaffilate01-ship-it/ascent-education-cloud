@@ -237,11 +237,11 @@ function LMSVirtualLabsContent(){
  };
  const activate=async(offering:Offering)=>{
   if(!centreManager||!awsReady){toast.error('AWS gateway must be configured before activation');return;}
-  if(!window.confirm('Activate only after verifying provider credentials, budget guardrails, IAM scope, fleet capacity and staging RLS tests?'))return;
+  if(!window.confirm('Switch on launching? Only do this once the lab provider account, spending limit and capacity have been checked.'))return;
   setBusy(true);
   const {error:e}=await db.from('lms_lab_offerings').update({launch_enabled:true}).eq('id',offering.id);
   setBusy(false);if(e){toast.error(e.message);return;}
-  toast.success('Lab launch configuration enabled; test student access in staging.');void reload();
+  toast.success('Lab launching switched on. Check a test student can open it before telling learners.');void reload();
  };
  const createRun=async()=>{
   if(!user?.id||!selected||!runName.trim()||!runStart||!runEnd)return;
@@ -294,7 +294,7 @@ function LMSVirtualLabsContent(){
    <h2 className="font-semibold">Your labs are temporarily unavailable</h2>
    <p className="text-sm">{/schema cache|does not exist|could not find the table/i.test(error)?'The lab service is awaiting a system update. Your course access has not been changed.':error.includes('centre assignment')?'Your account needs an approved centre assignment. Please contact your programme team.':'We could not verify your lab records. Check your connection and try again, or contact your programme team.'}</p>
    <div className="flex flex-wrap gap-3"><Button variant="outline" disabled={loading} onClick={refreshLabs}>Retry lab catalogue</Button><Button variant="outline" asChild><Link to={staff?'/lecturer/teaching':'/student/courses'}>Back to course modules</Link></Button>{!staff&&<Button variant="outline" asChild><Link to="/student/support">Contact learning support</Link></Button>}</div>
-   {staff&&<details className="text-sm"><summary className="cursor-pointer font-semibold">Technical details for your administrator</summary><p className="mt-2 break-words">{error}</p><p className="mt-2">Check deployed classroom and lab migrations, centre assignment, role permissions and active course enrolment.</p></details>}
+   {staff&&<details className="text-sm"><summary className="cursor-pointer font-semibold">Technical details for your administrator</summary><p className="mt-2 break-words">{error}</p><p className="mt-2">Please try again. If it keeps happening, ask your centre manager to check your course enrolment and role.</p></details>}
   </section>}
   {!loading&&!error&&<div className="space-y-6">
    {staff&&<section className="rounded-xl border bg-card p-5">

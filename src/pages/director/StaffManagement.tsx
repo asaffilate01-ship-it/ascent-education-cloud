@@ -84,7 +84,7 @@ function ScopedStaffDirectory(){
   <section className="mb-5 rounded-lg border bg-card p-4">
    <h2 className="flex items-center gap-2 font-semibold"><Shield className="size-4"/>Role records, not employment status</h2>
    <p className="mt-2 text-sm text-muted-foreground">This list shows authorised account memberships, not verified employment, DBS clearance, active payroll or awarding-body accreditation. Roles are issued only through server-authorised workflows.</p>
-   {platform&&!user?.tenantId&&<p className="mt-2 text-xs text-muted-foreground">Platform owner view spans centres, subject to backend RLS. Open an individual centre to review its staff.</p>}
+   {platform&&!user?.tenantId&&<p className="mt-2 text-xs text-muted-foreground">This platform view covers every centre. Open a centre to review its staff.</p>}
   </section>
   <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-3">
    <StatCard label="Staff accounts" value={staff.length} icon={Users}/>

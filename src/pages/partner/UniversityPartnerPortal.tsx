@@ -37,7 +37,7 @@ export default function UniversityPartnerPortal(){
       [Building2,'Institution and account','An approved university–user membership tied to the correct centre and verified institution.'],
       [FileCheck,'Signed agreement','Active institution agreement, contract authority and any applicable recruitment/commission terms.'],
       [GraduationCap,'Individual student consent','An explicit opt-in to disclose each referral/application to that verified institution.'],
-      [ClipboardList,'Isolated workflow','JWT-backed RLS for institution-only applications and offers, plus an auditable commission ledger.'],
+      [ClipboardList,'Isolated workflow','Each institution sees only its own applications and offers, with an auditable commission ledger.'],
      ] as const).map(([Icon,title,description])=><article className="rounded-lg border bg-secondary/20 p-4" key={title}>
       <h3 className="flex items-center gap-2 text-sm font-semibold"><Icon className="size-4"/>{title}</h3>
       <p className="mt-2 text-sm text-muted-foreground">{description}</p>

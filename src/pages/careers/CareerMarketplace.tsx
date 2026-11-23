@@ -22,7 +22,7 @@ export default function CareerMarketplace(){
     db.from('unipathway_employer_opportunities').select('id,tenant_id,employer_display_name,title,opportunity_type,city,country,remote,role_description,safety_requirements,stipend_details,application_deadline,status').eq('tenant_id',tenant).eq('status','published').order('created_at',{ascending:false}),
     db.from('unipathway_employer_applications').select('id,opportunity_id,status,created_at').eq('tenant_id',tenant).eq('student_id',user.id),
    ]);
-   if(o.error||a.error)throw new Error('The verified employer opportunities backend is not ready on the connected Lovable Supabase. No unverified vacancies are being displayed; ask admissions for support.');
+   if(o.error||a.error)throw new Error('Employer opportunities could not be loaded, so no vacancies are shown. Please try again, or ask admissions for support.');
    setJobs((o.data||[]) as Opportunity[]);setApplications((a.data||[]) as Application[]);
   }catch(e){setError(e instanceof Error?e.message:'Opportunities could not be loaded.');}
   finally{setLoading(false);}

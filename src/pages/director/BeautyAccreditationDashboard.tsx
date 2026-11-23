@@ -73,7 +73,7 @@ export default function BeautyAccreditationDashboard(){
        db.from('modules').select('id,title,programme_id').eq('tenant_id',tenant).order('title'),
      ]);
      const firstFailure=rows.find(x=>x.error);
-     if(firstFailure?.error)throw new Error('Accreditation and curriculum tables are not ready in the connected Supabase database. Complete the migration-reconciliation and RLS tests before enabling this workflow. '+firstFailure.error.message);
+     if(firstFailure?.error)throw new Error('Accreditation and curriculum tracking is not switched on yet. '+firstFailure.error.message);
      setCases((rows[0].data||[]) as CaseRow[]);
      setReviews((rows[1].data||[]) as ReviewRow[]);
      setUnits((rows[2].data||[]) as UnitRow[]);
@@ -91,7 +91,7 @@ export default function BeautyAccreditationDashboard(){
  const act=async(key:string,fn:()=>Promise<void>)=>{
    if(busy)return;
    setBusy(key);setError('');setNotice('');
-   try{await fn();setNotice('Saved to Supabase. Review the recorded evidence before describing any external approval as confirmed.');await load();}
+   try{await fn();setNotice('Saved. Review the recorded evidence before describing any external approval as confirmed.');await load();}
    catch(e){setError(e instanceof Error?e.message:'The change was not saved.');}
    finally{setBusy('');}
  };

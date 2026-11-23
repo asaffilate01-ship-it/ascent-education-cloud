@@ -112,7 +112,7 @@ function ExamOperationsWorkspace(){
         {officer&&!EXAM_WRITES_ENABLED&&<p role="status" className="rounded-lg border p-3 text-sm">Internal plan writes are not enabled; no submit action is available.</p>}
         {director&&plan?.status==='submitted'&&EXAM_APPROVALS_ENABLED&&
          <PlanApproval key={`${tenant}:${exam.id}:${plan.revision}`} tenant={tenant!} plan={plan} event={exam} refresh={refresh}/>}
-        {director&&!EXAM_APPROVALS_ENABLED&&<p role="status" className="rounded-lg border p-3 text-sm">Director plan approval is disabled until the verified staging workflow is activated.</p>}
+        {director&&!EXAM_APPROVALS_ENABLED&&<p role="status" className="rounded-lg border p-3 text-sm">Director approval of exam plans is not switched on yet.</p>}
         {!plan&&director&&<p className="text-sm text-muted-foreground">No submitted internal plan for approval. Ask the Exams Officer to prepare this session.</p>}
        </div>}
      </section>

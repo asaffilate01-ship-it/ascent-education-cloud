@@ -53,7 +53,7 @@ export default function QADashboard(){
     <h2 className="font-semibold">{item.label}</h2><p className="mt-2 text-sm text-muted-foreground">{item.detail}</p>
    </Link>)}
   </section>
-  <p className="mt-5 text-sm text-muted-foreground">This dashboard does not fetch legacy centre-wide submissions, contact details, unassigned marking drafts or external awarding-body evidence. Hosted RLS remains the ultimate access boundary.</p>
+  <p className="mt-5 text-sm text-muted-foreground">This dashboard does not fetch legacy centre-wide submissions, contact details, unassigned marking drafts or external awarding-body evidence. Access is always checked again for each record.</p>
  </DashboardLayout>;
 }
 function IqaWorkload({reviewer,tenant}:{reviewer:string;tenant:string}){

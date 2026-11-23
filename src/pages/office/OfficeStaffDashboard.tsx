@@ -55,7 +55,7 @@ function StaffWorkspace(){
       </article>)}
       {!data.capabilities.length&&<p className="rounded-xl border p-4 text-sm">Your manager has restricted all office capabilities. Contact your Centre Director to review access.</p>}
      </section>
-     {allowed('invite_limited_staff')&&!inviteEnabled&&<p role="status" className="rounded-xl border p-4 text-sm">Staff invitations are not activated on this backend. No accounts can be created from this screen until the invitation RPC and email delivery are verified.</p>}
+     {allowed('invite_limited_staff')&&!inviteEnabled&&<p role="status" className="rounded-xl border p-4 text-sm">Staff invitations are not switched on yet, so no accounts can be created from this screen.</p>}
      {allowed('view_own_tasks')&&<section className="rounded-xl border bg-card p-5 space-y-3">
       <h2 className="font-semibold">My assigned office tasks ({data.tasks.length})</h2>
       {data.tasks.map(t=><article key={t.id} className="rounded-lg border p-3">

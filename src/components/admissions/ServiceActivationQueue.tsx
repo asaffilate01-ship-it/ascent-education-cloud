@@ -40,7 +40,7 @@ export default function ServiceActivationQueue(){
    if(l.error||s.error)throw l.error||s.error;
    setLeads(((l.data||[]) as Lead[]).filter(r=>acceptedSource(r.source)));
    setServices((s.data||[]) as Service[]);
-  }catch{setError('Service matching is not available. Check that the UniPathway service-activation migration has been applied.');}
+  }catch{setError('Service matching is not switched on yet. Your centre manager will let you know when it is ready.');}
   finally{setLoading(false);}
  },[tenant,isStaff]);
  useEffect(()=>{void fetchRows();},[fetchRows]);

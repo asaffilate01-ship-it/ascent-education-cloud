@@ -14,7 +14,7 @@ export default function MicrosoftAccountQueue({tenantId}:{tenantId?:string|null}
     db.from('profiles').select('user_id,full_name').eq('tenant_id',tenantId).order('full_name').limit(200),
     db.from('unipathway_microsoft_jobs').select('id,user_id,role_type,status,error_code,attempts').eq('tenant_id',tenantId).order('updated_at',{ascending:false}).limit(100)
    ]);
-   if(p.error||j.error)throw Error('Unable to load the account queue. Check centre permissions and the provisioning migration.');
+   if(p.error||j.error)throw Error('The Microsoft account queue could not be loaded. Please try again, or ask your centre manager to check your access.');
    setPeople(p.data||[]);setJobs(j.data||[]);
   }catch(e){setError(e instanceof Error?e.message:'Unable to load account queue');setPeople([]);setJobs([]);}finally{setLoading(false);}
  },[tenantId]);

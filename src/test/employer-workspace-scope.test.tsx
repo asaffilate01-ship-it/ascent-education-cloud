@@ -15,7 +15,7 @@ afterEach(cleanup);
 it('keeps a query failure distinct from pending organisation approval and allows retry',async()=>{
  state.query.mockResolvedValueOnce({data:null,error:{message:'offline'}});
  render(<EmployerPortal/>);
- expect(await screen.findByRole('alert')).toHaveTextContent('verification is not available');
+ expect(await screen.findByRole('alert')).toHaveTextContent('verification could not be checked');
  expect(screen.queryByText('Organisation approval pending')).not.toBeInTheDocument();
  fireEvent.click(screen.getByRole('button',{name:'Refresh verification'}));
  expect(await screen.findByText('Organisation approval pending')).toBeInTheDocument();
