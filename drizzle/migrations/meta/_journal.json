@@ -176,6 +176,13 @@
       "when": 1795391456301,
       "tag": "0024_supervised_placements",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1795417817410,
+      "tag": "0025_interactive_labs",
+      "breakpoints": true
     }
   ]
 }

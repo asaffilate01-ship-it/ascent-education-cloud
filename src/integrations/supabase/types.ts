@@ -1704,6 +1704,187 @@ export type Database = {
           },
         ]
       }
+      interactive_lab_ai_usage: {
+        Row: {
+          request_count: number
+          usage_day: string
+          user_id: string
+        }
+        Insert: {
+          request_count?: number
+          usage_day: string
+          user_id: string
+        }
+        Update: {
+          request_count?: number
+          usage_day?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      interactive_lab_attempts: {
+        Row: {
+          activity_id: string
+          audio_path: string | null
+          content: string
+          created_at: string
+          feedback_at: string | null
+          feedback_by: string | null
+          id: string
+          lab_kind: string
+          passed: boolean | null
+          result: Json
+          score: number | null
+          session_id: string | null
+          teacher_feedback: string | null
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          activity_id: string
+          audio_path?: string | null
+          content?: string
+          created_at?: string
+          feedback_at?: string | null
+          feedback_by?: string | null
+          id?: string
+          lab_kind: string
+          passed?: boolean | null
+          result?: Json
+          score?: number | null
+          session_id?: string | null
+          teacher_feedback?: string | null
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          activity_id?: string
+          audio_path?: string | null
+          content?: string
+          created_at?: string
+          feedback_at?: string | null
+          feedback_by?: string | null
+          id?: string
+          lab_kind?: string
+          passed?: boolean | null
+          result?: Json
+          score?: number | null
+          session_id?: string | null
+          teacher_feedback?: string | null
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interactive_lab_attempts_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "interactive_lab_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      interactive_lab_participants: {
+        Row: {
+          current_activity: string | null
+          display_name: string
+          hand_raised: boolean
+          id: string
+          joined_at: string
+          last_seen: string
+          location: string
+          session_id: string
+          status: string
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          current_activity?: string | null
+          display_name?: string
+          hand_raised?: boolean
+          id?: string
+          joined_at?: string
+          last_seen?: string
+          location?: string
+          session_id: string
+          status?: string
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          current_activity?: string | null
+          display_name?: string
+          hand_raised?: boolean
+          id?: string
+          joined_at?: string
+          last_seen?: string
+          location?: string
+          session_id?: string
+          status?: string
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interactive_lab_participants_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "interactive_lab_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      interactive_lab_sessions: {
+        Row: {
+          activity_id: string | null
+          activity_revision: number
+          broadcast: Json
+          created_at: string
+          created_by: string
+          ended_at: string | null
+          id: string
+          join_code: string
+          kind: string
+          locked: boolean
+          status: string
+          tenant_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          activity_id?: string | null
+          activity_revision?: number
+          broadcast?: Json
+          created_at?: string
+          created_by: string
+          ended_at?: string | null
+          id?: string
+          join_code: string
+          kind: string
+          locked?: boolean
+          status?: string
+          tenant_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          activity_id?: string | null
+          activity_revision?: number
+          broadcast?: Json
+          created_at?: string
+          created_by?: string
+          ended_at?: string | null
+          id?: string
+          join_code?: string
+          kind?: string
+          locked?: boolean
+          status?: string
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       invoices: {
         Row: {
           amount: number
@@ -9428,6 +9609,7 @@ export type Database = {
         Returns: boolean
       }
       can_quality_uni_attempt: { Args: { p_attempt: string }; Returns: boolean }
+      can_read_language_recording: { Args: { _name: string }; Returns: boolean }
       can_read_uni_appeal_attempt: {
         Args: { p_attempt: string }
         Returns: boolean
@@ -9528,6 +9710,10 @@ export type Database = {
       confirm_unipathway_actual_class_end: {
         Args: { p_evidence: string; p_session: string }
         Returns: Json
+      }
+      consume_interactive_lab_ai: {
+        Args: { p_daily_limit: number }
+        Returns: boolean
       }
       consume_study_tutor_quota: { Args: { p_user: string }; Returns: Json }
       create_unipathway_learning_plan: {
@@ -9666,6 +9852,12 @@ export type Database = {
         Returns: number
       }
       is_academic_manager: { Args: never; Returns: boolean }
+      is_lab_participant: { Args: { _session: string }; Returns: boolean }
+      is_lab_teacher: { Args: { _user: string }; Returns: boolean }
+      join_interactive_lab: {
+        Args: { p_code: string; p_location: string }
+        Returns: string
+      }
       list_attendance_corrections: { Args: { p_after?: string }; Returns: Json }
       my_quiz_attempts: { Args: never; Returns: Json }
       my_unipathway_tech_lab_modules: {
@@ -9677,6 +9869,31 @@ export type Database = {
       note_unipathway_whiteboard_view: {
         Args: { p_board: string }
         Returns: undefined
+      }
+      open_interactive_lab: {
+        Args: { p_kind: string; p_title: string }
+        Returns: {
+          activity_id: string | null
+          activity_revision: number
+          broadcast: Json
+          created_at: string
+          created_by: string
+          ended_at: string | null
+          id: string
+          join_code: string
+          kind: string
+          locked: boolean
+          status: string
+          tenant_id: string
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "interactive_lab_sessions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       publish_unipathway_assessment_brief: {
         Args: { p_brief: string }
@@ -10043,6 +10260,15 @@ export type Database = {
           p_task: string
         }
         Returns: string
+      }
+      touch_interactive_lab: {
+        Args: {
+          p_activity: string
+          p_hand: boolean
+          p_session: string
+          p_status: string
+        }
+        Returns: undefined
       }
       uni_calendar_candidates: { Args: { p_module: string }; Returns: Json }
       uni_calendar_manage: { Args: { p_session: string }; Returns: boolean }
