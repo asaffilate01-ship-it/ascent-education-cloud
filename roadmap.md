@@ -28,3 +28,5 @@
 - [x] Add the eight Academic Writing lessons from the curriculum library (published at the user's request), a lesson plan and a weekly timetable to the test Level 4 Business Management course.
 - [x] Turn on private messages for every role.
 - [x] Make the browser tech labs (AI, Python, web, JavaScript, SQL, data, cyber) and the interactive language lab fully work in class and remotely: graded exercises, AI coach, speaking transcription/feedback, teacher live sessions with join codes and a monitoring console.
+- [x] Hikvision Ultra classroom screens: setup/device-check page and full-screen live-lab view with QR join.
+- [ ] Trial on a real Hikvision panel (touch, camera, microphones, Teams on the Windows OPS computer) — needs the hardware in the room.

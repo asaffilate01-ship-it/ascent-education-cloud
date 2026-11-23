@@ -63,6 +63,7 @@ export const workspaceCatalog:Record<string,WorkspaceGroup[]>={
   ['Coursework briefs','/lecturer/assessments','Prepare assignments; independent assessment remains separate.'],
   ['Learning plans','/lecturer/learning-plans','Review practice and support progress.'],
   ['Placement supervision','/lecturer/placements','Review assigned student activity and completion.'],
+  ['Classroom screen','/classroom-screen','Set up and check the interactive classroom screen for Teams, recording, labs and whiteboard.'],
   ['Run a live lab','/labs/teach','Open a tech or language lab session, push activities and monitor students in class and remotely.'],
   ['Lab planning','/lecturer/labs','Prepare lab tasks and scheduled runs.'],
   ['Report cards','/lecturer/report-cards','Review the report-card workflow and source records.'],

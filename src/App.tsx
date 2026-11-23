@@ -212,6 +212,7 @@ const LabInstructorPlanner = lazy(() => import("./pages/labs/LabInstructorPlanne
 const TechLabStudio = lazy(() => import("./pages/labs/TechLabStudio"));
 const LanguageLabStudio = lazy(() => import("./pages/labs/LanguageLabStudio"));
 const LabTeachingConsole = lazy(() => import("./pages/labs/LabTeachingConsole"));
+const ClassroomScreenSetup = lazy(() => import("./pages/labs/ClassroomScreenSetup"));
 const CertificateVerification = lazy(() => import("./pages/verify/CertificateVerification"));
 const PredictiveAnalytics = lazy(() => import("./pages/analytics/PredictiveAnalytics"));
 const DocumentManagement = lazy(() => import("./pages/documents/DocumentManagement"));
@@ -673,6 +674,7 @@ function AppRoutes() {
         <Route path="/coding" element={<P><CloudCodingSandbox /></P>} />
         <Route path="/labs/tech" element={<LabLearnerR><TechLabStudio /></LabLearnerR>} />
         <Route path="/labs/language" element={<LabLearnerR><LanguageLabStudio /></LabLearnerR>} />
+        <Route path="/classroom-screen" element={<LabTeacherR><ClassroomScreenSetup /></LabTeacherR>} />
         <Route path="/labs/teach" element={<LabTeacherR><LabTeachingConsole /></LabTeacherR>} />
         <Route path="/labs/teach/:sessionId" element={<LabTeacherR><LabTeachingConsole /></LabTeacherR>} />
 

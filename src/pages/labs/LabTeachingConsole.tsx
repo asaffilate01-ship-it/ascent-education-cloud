@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Copy, Hand, Lock, Maximize2, Play, Radio, Send, Square, Unlock, X } from 'lucide-react';
+import { ArrowLeft, Copy, Hand, Lock, MonitorSmartphone, Play, Radio, Send, Square, Unlock } from 'lucide-react';
+import ClassroomScreenView from '@/components/labs/interactive/ClassroomScreenView';
 import { toast } from 'sonner';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
@@ -49,7 +50,8 @@ function SessionList() {
   const liveRows = sessions?.filter(s => s.status === 'live') || [];
   const past = sessions?.filter(s => s.status === 'ended').slice(0, 10) || [];
   return (
-    <DashboardLayout title="Run a live lab" subtitle="Open a tech or language lab for your class. Students join with a code from the classroom or from home, and you see everyone’s progress here.">
+    <DashboardLayout title="Run a live lab" subtitle="Open a tech or language lab for your class. Students join with a code from the classroom or from home, and you see everyone’s progress here."
+      actions={<Button asChild variant="outline" className="min-h-11"><Link to="/classroom-screen"><MonitorSmartphone className="mr-2 size-4" />Classroom screen setup</Link></Button>}>
       <section className="mb-6 rounded-xl border bg-card p-4 sm:p-5" aria-label="Open a new session">
         <h2 className="font-semibold">Open a new session</h2>
         <form className="mt-3 flex flex-wrap items-end gap-3" onSubmit={e => { e.preventDefault(); void open(); }}>
@@ -116,6 +118,7 @@ function SessionMonitor({ sessionId }: { sessionId: string }) {
   const sendTech = () => update({ activity_id: exercise, activity_revision: (session?.activity_revision || 0) + 1 }, 'Sent to every student’s screen');
   const sendLanguage = () => update({ broadcast: { mode, item_id: item, revision: (b.revision || 0) + 1, play_revision: b.play_revision || 0, rate } as unknown as Json, activity_id: `${mode}:${item}`, activity_revision: (session?.activity_revision || 0) + 1 }, 'Sent to every student');
   const playAll = () => update({ broadcast: { ...b, rate, play_revision: (b.play_revision || 0) + 1 } as unknown as Json }, 'Playing on every device with class audio on');
+  const closeScreen = useCallback(() => setProjector(false), []);
   const lowerHand = async (p: Participant) => { const { error: e } = await supabase.from('interactive_lab_participants').update({ hand_raised: false, status: 'working' }).eq('id', p.id); if (e) toast.error('Could not lower the hand.'); else void load(); };
 
   const names = useMemo(() => new Map(people.map(p => [p.user_id, p.display_name])), [people]);
@@ -137,18 +140,15 @@ function SessionMonitor({ sessionId }: { sessionId: string }) {
   return (
     <DashboardLayout title={session.title} subtitle={`${session.kind === 'tech' ? 'Tech lab' : 'Language lab'} · ${ended ? 'ended' : 'live'} · ${people.length} joined`}
       actions={<Button asChild variant="ghost" className="min-h-11"><Link to="/labs/teach"><ArrowLeft className="mr-2 size-4" />All sessions</Link></Button>}>
-      {projector && <div role="dialog" aria-label="Join code" className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-background p-6 text-center">
-        <p className="text-2xl">Go to <strong>{window.location.host}{studentPath(session.kind)}</strong> and enter</p>
-        <p className="font-mono text-[18vw] font-bold leading-none tracking-widest sm:text-[12vw]">{session.join_code}</p>
-        <Button variant="outline" className="min-h-11" onClick={() => setProjector(false)}><X className="mr-2 size-4" />Close</Button>
-      </div>}
+      {projector && <ClassroomScreenView session={session} people={people} attempts={attempts} joinUrl={joinUrl} joinPath={studentPath(session.kind)}
+        activityName={currentId ? activityName(currentId) : null} canPlay={session.kind === 'language' && !ended && !!b.item_id} busy={busy} onPlay={() => void playAll()} onClose={closeScreen} />}
 
       <section className="mb-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
         <div className="rounded-xl border bg-card p-4">
           <p className="text-sm text-muted-foreground">Join code</p>
           <p className="font-mono text-4xl font-bold tracking-widest">{session.join_code}</p>
           <div className="mt-3 flex flex-wrap gap-2">
-            <Button variant="outline" className="min-h-11" onClick={() => setProjector(true)}><Maximize2 className="mr-2 size-4" />Show on projector</Button>
+            <Button variant="outline" className="min-h-11" onClick={() => setProjector(true)}><MonitorSmartphone className="mr-2 size-4" />Show on classroom screen</Button>
             <Button variant="outline" className="min-h-11" onClick={() => navigator.clipboard.writeText(joinUrl).then(() => toast.success('Join link copied — share it with remote students'), () => toast.error('Copy failed'))}><Copy className="mr-2 size-4" />Copy join link</Button>
           </div>
           {!ended && <div className="mt-3 flex flex-wrap gap-2">

@@ -91,6 +91,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Managed AWS Labs', icon: Cloud, path: '/director/managed-labs' },
       { label: 'Tech course lab permissions', icon: Shield, path: '/director/tech-lab-access' },
       { label: 'Run a live lab', icon: Monitor, path: '/labs/teach' },
+      { label: 'Classroom screen', icon: Monitor, path: '/classroom-screen' },
       { label: 'Admissions', icon: UserPlus, path: '/director/admissions' },
       { label: 'Programmes', icon: BookOpen, path: '/director/programmes' },
       { label: 'Course Content Library', icon: BookOpen, path: '/director/course-content' },
@@ -189,6 +190,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
     { label: 'Recorded Lesson Archive', icon: Video, path: '/lecturer/lesson-archive' },
     { label: 'Whiteboards', icon: FileText, path: '/lecturer/whiteboards' },
       { label: 'Run a live lab', icon: Monitor, path: '/labs/teach' },
+      { label: 'Classroom screen', icon: Monitor, path: '/classroom-screen' },
       { label: 'Tech Lab', icon: Monitor, path: '/labs/tech' },
       { label: 'Language Lab', icon: GraduationCap, path: '/labs/language' },
       { label: 'Practical Labs & Cloud', icon: Cloud, path: '/lecturer/labs' },
@@ -241,6 +243,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Dashboard', icon: LayoutDashboard, path: '/programme' },
       { label: 'Managed AWS Labs', icon: Cloud, path: '/programme/managed-labs' },
       { label: 'Run a live lab', icon: Monitor, path: '/labs/teach' },
+      { label: 'Classroom screen', icon: Monitor, path: '/classroom-screen' },
       { label: 'Modules', icon: BookOpen, path: '/programme/modules' },
        { label: 'Class resource release', icon: Clock, path: '/programme/class-release' },
       { label: 'Curriculum & Accreditation', icon: Award, path: '/programme/beauty-accreditation' },
@@ -462,7 +465,7 @@ const TASK_GROUPS: Partial<Record<UserRole, ReadonlyArray<{title:string;paths:re
       '/director/funding','/director/finance',
     ]},
     {title:'Systems & communications',paths:[
-      '/labs/teach','/director/managed-labs','/director/tech-lab-access','/director/microsoft-education',
+      '/labs/teach','/classroom-screen','/director/managed-labs','/director/tech-lab-access','/director/microsoft-education',
       '/director/knowledge','/ai-course-builder','/predictive-analytics',
       '/documents','/email-campaigns','/director/domains','/director/page-builder',
       '/director/branding','/director/settings','/communications','/messaging',
@@ -489,7 +492,7 @@ const TASK_GROUPS: Partial<Record<UserRole, ReadonlyArray<{title:string;paths:re
   ],
   lecturer: [
     {title:'Plan & teach',paths:[
-      '/labs/teach','/labs/tech','/labs/language',
+      '/labs/teach','/classroom-screen','/labs/tech','/labs/language',
       '/lecturer/class-scheduler','/lecturer/delivery-readiness','/lecturer/class-release',
       '/lecturer/learning-plans','/lecturer/materials','/lecturer/course-content',
       '/lecturer/lesson-archive','/lecturer/whiteboards','/lecturer/labs',
