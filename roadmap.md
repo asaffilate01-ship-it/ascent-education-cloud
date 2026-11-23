@@ -22,7 +22,7 @@
 - [x] Reduce oversized site icons and homepage imagery; desktop/mobile image loading and course navigation verified, seven related tests passed; publish the lighter site.
 - [x] Audit all 17 role dashboards (desktop + phone), lessons, live/recorded classes, language lab and tech labs; findings in docs/DASHBOARD_AUDIT_20261122.md.
 - [x] Switch on messaging, IELTS + guided audio, whiteboards/Q&A/teaching plans/recordings/class release, attendance register + corrections, tech labs + coding workspaces + entitlements, placements, CCTV and syllabuses.
-- [ ] Switch on the remaining pages: Opportunity Fund, accreditation/curriculum readiness, knowledge library, international progression/partners, assessor AI drafts, integrity cases, funding/tenders, course directory, residential extras, student life, office/onboarding, centre feedback, course rights.
+- [ ] Switch on the remaining pages: Opportunity Fund, accreditation/curriculum readiness, knowledge library, assessor AI drafts, integrity cases, funding/tenders, course directory, residential extras, student life, office/onboarding, centre feedback, course rights.
 - [x] Polish dashboards: one-row phone header, menu labels wrap instead of truncating, plain-English error messages on IELTS, labs, employer, exams, progression and intelligence pages.
 - [ ] Lighten the dense compliance copy on student/lecturer dashboards.
 - [x] Add the eight Academic Writing lessons from the curriculum library (published at the user's request), a lesson plan and a weekly timetable to the test Level 4 Business Management course.
@@ -30,3 +30,4 @@
 - [x] Make the browser tech labs (AI, Python, web, JavaScript, SQL, data, cyber) and the interactive language lab fully work in class and remotely: graded exercises, AI coach, speaking transcription/feedback, teacher live sessions with join codes and a monitoring console.
 - [x] Hikvision Ultra classroom screens: setup/device-check page and full-screen live-lab view with QR join.
 - [ ] Trial on a real Hikvision panel (touch, camera, microphones, Teams on the Windows OPS computer) — needs the hardware in the room.
+- [x] Global Partners and admissions pages: partner, pathway, agreement, referral, academic evidence, service enrolment and partner-application data switched on.
