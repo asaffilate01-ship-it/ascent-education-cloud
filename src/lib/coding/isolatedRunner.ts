@@ -1,7 +1,8 @@
 // Opaque-origin frame + disposable worker: never run learner code in the LMS origin.
 export const PYODIDE_URL = 'https://cdn.jsdelivr.net/pyodide/v0.27.7/full/';
 const literal = (value: string) => JSON.stringify(value).replace(/</g, '\\u003c');
-export function isolatedRunner(language: 'python' | 'javascript', code: string, input: string, token: string) {
+export function isolatedRunner(language: 'python' | 'javascript', code: string, input: string, token: string, packages: string[] = []) {
+  const safePackages = packages.filter(name => /^[a-z0-9_-]{2,30}$/.test(name));
   const python = language === 'python';
   const worker = `(async () => {
 const send = self.postMessage.bind(self);
@@ -16,6 +17,7 @@ try {
  ${python ? `
  importScripts('${PYODIDE_URL}pyodide.js');
  const py = await loadPyodide({indexURL: '${PYODIDE_URL}'});
+ ${safePackages.length ? `await py.loadPackage(${JSON.stringify(safePackages)});` : ''}
  const inputs = ${literal(input)}.split('\\n'); let index = 0;
  py.setStdin({stdin: () => index < inputs.length ? inputs[index++] : null});
  py.setStdout({batched: write}); py.setStderr({batched: write});

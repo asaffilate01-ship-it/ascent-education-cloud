@@ -209,6 +209,9 @@ const ForumPage = lazy(() => import("./pages/forums/ForumPage"));
 const LMSVirtualLabs = lazy(() => import("./pages/labs/LMSVirtualLabs"));
 const LabLearningHub = lazy(() => import("./pages/labs/LabLearningHub"));
 const LabInstructorPlanner = lazy(() => import("./pages/labs/LabInstructorPlanner"));
+const TechLabStudio = lazy(() => import("./pages/labs/TechLabStudio"));
+const LanguageLabStudio = lazy(() => import("./pages/labs/LanguageLabStudio"));
+const LabTeachingConsole = lazy(() => import("./pages/labs/LabTeachingConsole"));
 const CertificateVerification = lazy(() => import("./pages/verify/CertificateVerification"));
 const PredictiveAnalytics = lazy(() => import("./pages/analytics/PredictiveAnalytics"));
 const DocumentManagement = lazy(() => import("./pages/documents/DocumentManagement"));
@@ -259,6 +262,12 @@ const Marketing = ({ children }: { children: React.ReactNode }) => (
 );
 const AgentR = ({ children }: { children: React.ReactNode }) => (
   <RoleGuard allowed={['agent', 'centre_director', 'superadmin']}>{children}</RoleGuard>
+);
+const LabLearnerR = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['student', 'lecturer', 'programme_leader', 'assessor', 'centre_director', 'superadmin']}>{children}</RoleGuard>
+);
+const LabTeacherR = ({ children }: { children: React.ReactNode }) => (
+  <RoleGuard allowed={['lecturer', 'programme_leader', 'assessor', 'centre_director', 'superadmin']}>{children}</RoleGuard>
 );
 const StudentR = ({ children }: { children: React.ReactNode }) => (
   <RoleGuard allowed={['student', 'centre_director', 'superadmin']}>{children}</RoleGuard>
@@ -662,6 +671,10 @@ function AppRoutes() {
         <Route path="/schedule" element={<P><ScheduleManager /></P>} />
         <Route path="/timeline" element={<P><AcademicTimeline /></P>} />
         <Route path="/coding" element={<P><CloudCodingSandbox /></P>} />
+        <Route path="/labs/tech" element={<LabLearnerR><TechLabStudio /></LabLearnerR>} />
+        <Route path="/labs/language" element={<LabLearnerR><LanguageLabStudio /></LabLearnerR>} />
+        <Route path="/labs/teach" element={<LabTeacherR><LabTeachingConsole /></LabTeacherR>} />
+        <Route path="/labs/teach/:sessionId" element={<LabTeacherR><LabTeachingConsole /></LabTeacherR>} />
 
         <Route path="/actions" element={<ProtectedRoute><ActionCentre /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />

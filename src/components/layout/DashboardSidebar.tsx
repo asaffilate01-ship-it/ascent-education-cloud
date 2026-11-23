@@ -90,6 +90,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Dashboard', icon: LayoutDashboard, path: '/director' },
       { label: 'Managed AWS Labs', icon: Cloud, path: '/director/managed-labs' },
       { label: 'Tech course lab permissions', icon: Shield, path: '/director/tech-lab-access' },
+      { label: 'Run a live lab', icon: Monitor, path: '/labs/teach' },
       { label: 'Admissions', icon: UserPlus, path: '/director/admissions' },
       { label: 'Programmes', icon: BookOpen, path: '/director/programmes' },
       { label: 'Course Content Library', icon: BookOpen, path: '/director/course-content' },
@@ -187,6 +188,9 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
     { label: 'Course Content Library', icon: BookOpen, path: '/lecturer/course-content' },
     { label: 'Recorded Lesson Archive', icon: Video, path: '/lecturer/lesson-archive' },
     { label: 'Whiteboards', icon: FileText, path: '/lecturer/whiteboards' },
+      { label: 'Run a live lab', icon: Monitor, path: '/labs/teach' },
+      { label: 'Tech Lab', icon: Monitor, path: '/labs/tech' },
+      { label: 'Language Lab', icon: GraduationCap, path: '/labs/language' },
       { label: 'Practical Labs & Cloud', icon: Cloud, path: '/lecturer/labs' },
       { label: 'Lesson Plans', icon: BookOpen, path: '/lesson-plans' },
       { label: 'AI Builder', icon: Brain, path: '/ai-course-builder' },
@@ -236,6 +240,7 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Placements', icon: Briefcase, path: '/programme/placements' },
       { label: 'Dashboard', icon: LayoutDashboard, path: '/programme' },
       { label: 'Managed AWS Labs', icon: Cloud, path: '/programme/managed-labs' },
+      { label: 'Run a live lab', icon: Monitor, path: '/labs/teach' },
       { label: 'Modules', icon: BookOpen, path: '/programme/modules' },
        { label: 'Class resource release', icon: Clock, path: '/programme/class-release' },
       { label: 'Curriculum & Accreditation', icon: Award, path: '/programme/beauty-accreditation' },
@@ -335,6 +340,8 @@ const NAV_CONFIG: Record<UserRole, NavSection[]> = {
       { label: 'Dashboard', icon: LayoutDashboard, path: '/student' },
       { label: 'Managed AWS Labs', icon: Cloud, path: '/student/managed-labs' },
       { label: 'Courses', icon: BookOpen, path: '/student/courses' },
+      { label: 'Tech Lab', icon: Monitor, path: '/labs/tech' },
+      { label: 'Language Lab', icon: GraduationCap, path: '/labs/language' },
       { label: 'IELTS Preparation', icon: GraduationCap, path: '/student/ielts' },
       { label: 'Live Classroom', icon: Video, path: '/student/classroom' },
       { label: 'Lesson Archive', icon: Library, path: '/student/lesson-archive' },
@@ -455,7 +462,7 @@ const TASK_GROUPS: Partial<Record<UserRole, ReadonlyArray<{title:string;paths:re
       '/director/funding','/director/finance',
     ]},
     {title:'Systems & communications',paths:[
-      '/director/managed-labs','/director/tech-lab-access','/director/microsoft-education',
+      '/labs/teach','/director/managed-labs','/director/tech-lab-access','/director/microsoft-education',
       '/director/knowledge','/ai-course-builder','/predictive-analytics',
       '/documents','/email-campaigns','/director/domains','/director/page-builder',
       '/director/branding','/director/settings','/communications','/messaging',
@@ -463,6 +470,7 @@ const TASK_GROUPS: Partial<Record<UserRole, ReadonlyArray<{title:string;paths:re
   ],
   student: [
     {title:'Learn',paths:[
+      '/labs/tech','/labs/language',
       '/student/classroom','/student/lesson-archive','/student/materials','/student/library',
       '/student/quizzes','/student/forums','/student/ielts','/student/labs',
       '/student/managed-labs','/student/microsoft','/student/knowledge','/coding',
@@ -481,6 +489,7 @@ const TASK_GROUPS: Partial<Record<UserRole, ReadonlyArray<{title:string;paths:re
   ],
   lecturer: [
     {title:'Plan & teach',paths:[
+      '/labs/teach','/labs/tech','/labs/language',
       '/lecturer/class-scheduler','/lecturer/delivery-readiness','/lecturer/class-release',
       '/lecturer/learning-plans','/lecturer/materials','/lecturer/course-content',
       '/lecturer/lesson-archive','/lecturer/whiteboards','/lecturer/labs',
