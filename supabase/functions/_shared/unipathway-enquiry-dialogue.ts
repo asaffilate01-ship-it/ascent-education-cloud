@@ -5,7 +5,7 @@
  */
 export type Language = 'en' | 'ur';
 export type EnquiryStep = 'language' | 'relationship' | 'programme' | 'board' |
-  'grade' | 'subjects' | 'mode' | 'time' | 'consent' | 'complete';
+  'grade' | 'subjects' | 'mode' | 'time' | 'consent' | 'phase2_interest' | 'complete';
 export type EnquiryState = {
   step: EnquiryStep;
   language: Language;
@@ -14,6 +14,7 @@ export type EnquiryState = {
   board?: string;
   grade?: string;
   subjects?: string;
+  phase2Interest?: string;
   mode?: 'jhelum' | 'hybrid' | 'online';
   timePreference?: string;
   contactConsent?: boolean;
@@ -32,6 +33,7 @@ const en = {
  consent:'May the admissions team contact you on WhatsApp about THIS enquiry and proposed classes? Reply YES or NO. This does not subscribe you to marketing messages.',
  done:'Thank you. Your course enquiry is recorded for admissions review. Staff will confirm fees, tutor, timetable, eligibility and actual seat availability. Nothing is booked or payable yet. Reply HUMAN if you need assistance.',
  invalid:'Please choose one of the listed options, or reply HUMAN for our admissions team.',
+ phase2:'Which Phase 2 area interests you? 1 Beauty & Aesthetics / 2 Health & Social Care / 3 German and other languages / 4 Hospitality / 5 Creative and digital skills / 6 Trades, energy and vocational / 7 Other qualifications (OTHM, Qualifi, ATHE, Pearson, Punjab/Pakistan).',
  future:'Phase 2 launch (register interest only): Beauty & Aesthetics, Health & Social Care, additional languages, Hospitality, Creative/Digital, Trades, and further OTHM, Qualifi, ATHE, Pearson and Pakistan/Punjab vocational programmes. Exact courses, qualifications, facilities, approvals and dates will be confirmed before enrolment. Reply HUMAN and admissions can note your interest.',
  handoff:'I will refer this to our admissions team. Please do not send passwords, identity documents or bank details in this chat.',
  stop:'We will not send automated enquiry follow-ups. You can contact our team again whenever you need assistance.'
@@ -48,6 +50,7 @@ const ur = {
  consent:'کیا داخلہ ٹیم آپ سے اسی انکوائری اور کلاس کی معلومات کے لیے واٹس ایپ پر رابطہ کر سکتی ہے؟ YES یا NO لکھیں۔ یہ مارکیٹنگ کی اجازت نہیں ہے۔',
  done:'شکریہ! آپ کی انکوائری داخلہ ٹیم کے جائزے کے لیے محفوظ ہے۔ فیس، استاد، ٹائم ٹیبل، اہلیت اور نشست کی دستیابی کی تصدیق عملہ کرے گا۔ ابھی کوئی داخلہ یا ادائیگی طے نہیں ہوئی۔',
  invalid:'براہ کرم درست نمبر یا HUMAN لکھیں۔',
+ phase2:'دوسرے مرحلے میں کیا دلچسپی ہے؟ 1 بیوٹی و ایستھیٹکس / 2 صحت و سماجی نگہداشت / 3 جرمن اور دوسری زبانیں / 4 ہوٹلنگ / 5 ڈیزائن اور ڈیجیٹل مہارتیں / 6 ٹریڈز اور فنی تربیت / 7 دوسرے ڈپلومے (OTHM، Qualifi، ATHE، Pearson، پنجاب/پاکستان)',
  future:'دوسرا مرحلہ (فی الحال صرف دلچسپی درج کروائیں): بیوٹی اور ایستھیٹکس، صحت و سماجی نگہداشت، اضافی زبانیں، ہوٹلنگ، ڈیزائن و ڈیجیٹل مہارتیں، فنی تربیت، مزید OTHM، Qualifi، ATHE، Pearson اور پاکستان/پنجاب کے ووکیشنل کورسز۔ کورس کی دستیابی، منظوری اور تاریخ بعد میں تصدیق ہوگی۔ HUMAN لکھ کر داخلہ ٹیم سے بات کریں۔',
  handoff:'آپ کی درخواست داخلہ ٹیم کو بھیج دی جائے گی۔ یہاں پاس ورڈ، شناختی دستاویزات یا بینک کی تفصیلات نہ بھیجیں۔',
  stop:'اس انکوائری کی خودکار یاد دہانیاں نہیں بھیجی جائیں گی۔ ضرورت پر دوبارہ رابطہ کر سکتے ہیں۔'
@@ -87,9 +90,15 @@ export function enquiryTurn(current: EnquiryState | null, input: string): Enquir
    const i=option(text,['1','2','3','4','5','6']);
    if(i<0)return {state:s,reply:d.invalid+' '+d.programme};
    const programme=['school_tuition','acca_prep','ielts_prep','tech_cert_prep','business_accountancy_l3_l5','future_interest'][i];
-   if(i===5)return {state:{...s,programme,step:'complete'},reply:d.future,handoff:true,complete:true};
+   if(i===5)return {state:{...s,programme,step:'phase2_interest'},reply:d.phase2};
    return i===0?{state:{...s,programme,step:'board'},reply:d.board}
      :{state:{...s,programme,step:'mode'},reply:d.mode};
+ }
+ if(s.step==='phase2_interest'){
+   const i=option(text,['1','2','3','4','5','6','7']);
+   if(i<0)return {state:s,reply:d.invalid+' '+d.phase2};
+   const phase2Interest=['beauty_aesthetics','health_social_care','additional_languages','hospitality','creative_digital','trades_vocational','additional_qualifications'][i];
+   return {state:{...s,phase2Interest,step:'complete'},reply:d.future,handoff:true,complete:true};
  }
  if(s.step==='board'){
    const i=option(text,['1','2','3']);
