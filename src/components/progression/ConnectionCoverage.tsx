@@ -28,14 +28,14 @@ export const connectionCoverage=[
   },
   {
     "name": "Language lab",
-    "state": "Implementation required",
-    "detail": "Guided language activities are not a complete live language room.",
-    "next": "Complete pair/group audio, teacher monitoring and intercom, reconnects and recording for classroom and remote learners."
+    "state": "Browser lab working; classroom trial pending",
+    "detail": "Listen-and-repeat with speech checking, dictation, timed speaking with AI practice feedback, an AI conversation partner and teacher-led live sessions work for classroom and remote learners. Live pair audio and teacher intercom are not included.",
+    "next": "Trial with a real class on students' phones and headsets; decide whether pair/group audio is needed."
   },
   {
     "name": "Virtual tech labs",
-    "state": "Provider integration required",
-    "detail": "Browser Python and JavaScript workspaces are implemented. Managed cloud environments remain separate.",
+    "state": "Browser labs working; cloud provider required",
+    "detail": "Marked AI, Python, web, JavaScript, SQL, data and cyber exercises, an AI coach and teacher-led live sessions run in the browser. Managed cloud environments (Linux desktops, servers) remain separate.",
     "next": "Choose the cloud provider and complete provisioning, saved work, expiry, shutdown, capacity and cost limits."
   },
   {

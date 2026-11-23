@@ -257,6 +257,7 @@ export default function IELTSAcademy() {
            </div>:<div className="border rounded-xl p-4 text-sm text-muted-foreground"><GraduationCap className="w-5 h-5 mb-2"/> Save your Academic or General Training plan to enable practice submissions and track your learning.</div>}
          </section>
        </div>}
+       <section className="surface-card p-5" aria-label="Language Lab"><h3 className="font-semibold flex items-center gap-2"><Headphones className="w-4 h-4" /> Language Lab</h3><p className="mt-1 text-sm text-muted-foreground">Listen and repeat with a pronunciation check, dictation, timed speaking tests with feedback and an AI conversation partner. Join your teacher’s live session with a code.</p><Button className="mt-3" variant="outline" asChild><Link to="/labs/language">Open the Language Lab</Link></Button></section>
        <GuidedAudioLab />
        <IELTSAudioWorkstation key={`${tenant}:${student}`} />
        <IELTSMockRehearsals track={activeTrack}/>

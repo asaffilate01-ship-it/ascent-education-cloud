@@ -30,13 +30,16 @@ export default function TechLabAccessGate({children}:{children:React.ReactNode})
  if(!enabled)return <main role="status" className="mx-auto max-w-2xl space-y-4 p-6">
   <h1 className="text-xl font-semibold">Technology lab access is being verified</h1>
   <p>Course-specific lab entitlements and provider policies are not yet activated in UniPathway. No AWS or other paid lab has been started.</p>
+  <p>You can practise now in the browser labs, which need no cloud account.</p>
+  <div className="flex flex-wrap gap-3"><Button asChild><Link to="/labs/tech">Open the Tech Lab</Link></Button><Button asChild variant="outline"><Link to="/labs/language">Open the Language Lab</Link></Button></div>
   <Link className="underline" to="/student/courses">View your enrolled courses</Link>
  </main>;
  if(loading)return <main role="status" className="p-6">Checking your enrolled technology modules and lab authorisation…</main>;
  if(error||!modules.length)return <main role="alert" className="mx-auto max-w-2xl space-y-4 p-6">
   <h1 className="text-xl font-semibold">No current technology lab authorisation</h1>
   <p>{error||'Your active programmes do not currently include an approved, individually granted technology lab. Other students may access their standard course content without the tech lab.'}</p>
-  <Button asChild variant="outline"><Link to="/student/courses">My course modules</Link></Button>
+  <p>Meanwhile, the browser Tech Lab and Language Lab are open to every student, in class or at home.</p>
+  <div className="flex flex-wrap gap-3"><Button asChild><Link to="/labs/tech">Open the Tech Lab</Link></Button><Button asChild variant="outline"><Link to="/labs/language">Open the Language Lab</Link></Button><Button asChild variant="outline"><Link to="/student/courses">My course modules</Link></Button></div>
  </main>;
  return <TechLabContext.Provider value={modules}>{children}</TechLabContext.Provider>;
 }

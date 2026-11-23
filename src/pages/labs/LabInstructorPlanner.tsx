@@ -172,7 +172,8 @@ export default function LabInstructorPlanner(){
    <div className="mt-3 flex flex-wrap gap-4 text-sm font-semibold">
     <Link to="/lecturer/materials" className="underline"><BookOpen className="mr-1 inline size-4"/>Upload teaching notes</Link>
     <Link to="/lecturer/classroom" className="underline"><GraduationCap className="mr-1 inline size-4"/>Teams classroom & whiteboard</Link>
-    <Link to="/coding" className="underline">Browser coding practice (demo)</Link>
+    <Link to="/labs/teach" className="underline">Run a live tech or language lab</Link>
+    <Link to="/labs/tech" className="underline">Browse Tech Lab exercises</Link>
    </div>
   </div>
   {loading&&<p role="status">Loading assigned modules and labs…</p>}

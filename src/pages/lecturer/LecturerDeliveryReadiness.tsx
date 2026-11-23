@@ -79,8 +79,10 @@ function DeliveryWorkspace(){
     </div>}
     <section className="rounded-xl border bg-card p-5 space-y-3">
      <h2 className="font-semibold">Language lab and IELTS preparation</h2>
-     <p className="text-sm text-muted-foreground">IELTS reading, listening, speaking and writing practice have dedicated teaching screens. A separate multi-language audio laboratory, saved lesson recordings and exam registration integrations require their own connection tests and permissions.</p>
+     <p className="text-sm text-muted-foreground">IELTS reading, listening, speaking and writing practice have dedicated teaching screens. The Language Lab (English and German) and Tech Lab run in the browser: open a live session, share the code, push activities and see students’ results whether they are in class or remote. Saved Teams recordings and exam registration still need their own connection tests.</p>
      <div className="flex flex-wrap gap-2">
+      <Link className="inline-flex min-h-11 items-center rounded-lg border px-4 text-sm font-semibold hover:bg-accent" to="/labs/teach">Run a live tech or language lab</Link>
+      <Link className="inline-flex min-h-11 items-center rounded-lg border px-4 text-sm font-semibold hover:bg-accent" to="/labs/language">Language Lab</Link>
       <Link className="inline-flex min-h-11 items-center rounded-lg border px-4 text-sm font-semibold hover:bg-accent" to="/lecturer/ielts">IELTS practice</Link>
       <Link className="inline-flex min-h-11 items-center rounded-lg border px-4 text-sm font-semibold hover:bg-accent" to="/lecturer/lesson-archive">Recorded lessons</Link>
       <Link className="inline-flex min-h-11 items-center rounded-lg border px-4 text-sm font-semibold hover:bg-accent" to="/lecturer/materials">Teaching resources</Link>

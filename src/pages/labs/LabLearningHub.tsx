@@ -146,7 +146,8 @@ export default function LabLearningHub(){
    <div className="mt-3 flex flex-wrap gap-3 text-sm">
     <Link className="inline-flex items-center gap-1 font-semibold underline" to="/student/materials"><BookOpen className="size-4"/>Course notes & slides</Link>
     <Link className="inline-flex items-center gap-1 font-semibold underline" to="/student/classroom"><GraduationCap className="size-4"/>Live classes</Link>
-    <Link className="inline-flex items-center gap-1 font-semibold underline" to="/coding"><Code2 className="size-4"/>Browser coding practice</Link>
+    <Link className="inline-flex items-center gap-1 font-semibold underline" to="/labs/tech"><Code2 className="size-4"/>Tech Lab (marked exercises & live classes)</Link>
+    <Link className="inline-flex items-center gap-1 font-semibold underline" to="/coding"><Code2 className="size-4"/>Free coding sandbox</Link>
    </div>
   </div>
   <div className="mb-4 flex flex-wrap items-end gap-3">
@@ -163,7 +164,7 @@ export default function LabLearningHub(){
   {modules.some(m=>m.id===selectedModule)&&<ModuleJourney moduleId={selectedModule}/>}
   {loading&&<p role="status">Checking your enrolled modules and lab permissions…</p>}
   {error&&<div role="alert" className="rounded-xl border border-destructive p-5"><p>We could not load your labs. Retry, or contact your course team if this continues.</p><Button className="mt-3" variant="outline" onClick={()=>void load()}>Retry</Button></div>}
-  {!loading&&!error&&visibleTemplates.length===0&&<p className="rounded-xl border bg-card p-6">No published practical labs are assigned to your enrolled modules yet. Course reading materials and the basic coding practice remain separately available.</p>}
+  {!loading&&!error&&visibleTemplates.length===0&&<p className="rounded-xl border bg-card p-6">No published practical labs are assigned to your enrolled modules yet. Use the <Link className="font-semibold underline" to="/labs/tech">Tech Lab</Link> for marked AI, coding, web, SQL, data and cyber exercises, on your own or in your teacher’s live session.</p>}
   {!loading&&!error&&<div className="space-y-6">{visibleTemplates.map(t=>{
    const module=modules.find(m=>m.id===t.module_id);
    const current=requests.find(r=>r.template_id===t.id&&blockedStates.has(r.status));
