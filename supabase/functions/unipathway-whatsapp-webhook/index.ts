@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.99.1';
-import { whatsappDecision, normalizeWhatsAppText } from '../_shared/unipathway-whatsapp.ts';
+import { normalizeWhatsAppText } from '../_shared/unipathway-whatsapp.ts';
+import { enquiryTurn, type EnquiryState } from '../_shared/unipathway-enquiry-dialogue.ts';
 
 const plain = (body: string, status = 200) => new Response(body, { status, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
 async function validSignature(raw: string, header: string | null, secret: string): Promise<boolean> {
@@ -48,7 +49,7 @@ Deno.serve(async req => {
           .from('uni_whatsapp_conversations')
           .upsert({ tenant_id: tenantId, phone_number_id: phoneId, wa_id: message.from },
                   { onConflict: 'tenant_id,phone_number_id,wa_id' })
-          .select('id,automation_paused').single();
+          .select('id,automation_paused,enquiry_state').single();
         if (conversationError || !conversation) return plain('Storage unavailable', 503);
         const { data: inserted, error: insertError } = await db
           .from('uni_whatsapp_messages')
@@ -58,27 +59,29 @@ Deno.serve(async req => {
           .select('id');
         if (insertError) return plain('Storage unavailable', 503);
         if (!inserted?.length || conversation.automation_paused) continue;
-        const decision = whatsappDecision(body);
-        if (/^\s*(human|agent|staff|person|representative)\s*$/i.test(body) || decision.kind === 'handoff') {
-          await db.from('uni_whatsapp_conversations')
-            .update({ automation_paused: true, status: 'needs_staff' }).eq('id', conversation.id);
-          continue;
-        }
-        // Only non-sensitive public FAQ responses, off by default until Meta and hosted acceptance.
+        const turn = enquiryTurn(conversation.enquiry_state as EnquiryState | null, body);
+        const { error: stateError } = await db.from('uni_whatsapp_conversations')
+          .update({
+            enquiry_state: turn.state,
+            ...(turn.handoff || turn.complete ? { automation_paused: true, status: 'needs_staff' } : {}),
+          }).eq('id', conversation.id);
+        if (stateError) return plain('Storage unavailable', 503);
+        // Automated sending is disabled until Meta and staff-inbox acceptance pass.
         if (Deno.env.get('UNIPATHWAY_WA_AUTO_REPLY_ENABLED') !== 'true') continue;
+        const autoReply = turn.reply;
         const token = Deno.env.get('UNIPATHWAY_WA_ACCESS_TOKEN');
         if (!token) continue;
         const result = await fetch(`https://graph.facebook.com/${Deno.env.get('UNIPATHWAY_WA_GRAPH_VERSION') || 'v23.0'}/${phoneId}/messages`, {
           method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ messaging_product: 'whatsapp', to: message.from, type: 'text',
-            text: { body: decision.body } })
+            text: { body: autoReply } })
         });
         if (result.ok) {
           const sent = await result.json();
           if (sent.messages?.[0]?.id) {
             await db.from('uni_whatsapp_messages').insert({
               conversation_id: conversation.id, provider_message_id: sent.messages[0].id,
-              direction: 'outbound', body_text: decision.body
+              direction: 'outbound', body_text: autoReply
             });
           }
         } else {
