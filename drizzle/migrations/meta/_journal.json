@@ -183,6 +183,13 @@
       "when": 1795417817410,
       "tag": "0025_interactive_labs",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1795447199640,
+      "tag": "0026_interactive_labs_helper_grants",
+      "breakpoints": true
     }
   ]
 }
