@@ -23,7 +23,7 @@ export const START: EnquiryState = {step:'language',language:'en'};
 const en = {
  welcome:'Welcome to UniPathway Jhelum! Please select your language: 1 English / 2 اردو. Reply HUMAN anytime to speak to admissions.',
  relationship:'Are you enquiring as 1 Student, 2 Parent/guardian, or 3 Other?',
- programme:'Which programme? 1 Grades 9–12 school tuition (Sciences, Maths, English, Technology, Commerce) / 2 ACCA preparation / 3 IELTS preparation / 4 Technology certification preparation / 5 OTHM or Qualifi Business/Accountancy Levels 3–5 / 6 Other or future courses. Reply HUMAN for admissions.',
+ programme:'Which programme? 1 Grades 9–12 school tuition (Sciences, Maths, English, Technology, Commerce) / 2 ACCA preparation / 3 IELTS preparation / 4 Technology certification preparation / 5 OTHM or Qualifi Business/Accountancy Levels 3–5 / 6 Phase 2 courses (Beauty & Aesthetics, Health & Social Care, Languages, Hospitality, Creative/Digital, Trades, other qualifications). Reply HUMAN for admissions.',
  board:'Which school board? 1 Punjab/Pakistan boards / 2 Cambridge IGCSE / 3 Other Pakistan board. Our staff will confirm exact syllabus availability.',
  grade:'Which grade: 9, 10, 11 or 12?',
  subjects:'Which subject(s) do you want: Maths, Physics, Chemistry, Biology, English, Computer/Technology, Commerce, or several? Please type the subjects.',
@@ -32,14 +32,14 @@ const en = {
  consent:'May the admissions team contact you on WhatsApp about THIS enquiry and proposed classes? Reply YES or NO. This does not subscribe you to marketing messages.',
  done:'Thank you. Your course enquiry is recorded for admissions review. Staff will confirm fees, tutor, timetable, eligibility and actual seat availability. Nothing is booked or payable yet. Reply HUMAN if you need assistance.',
  invalid:'Please choose one of the listed options, or reply HUMAN for our admissions team.',
- future:'We are planning additional OTHM, Qualifi, ATHE, Pearson and Pakistan/Punjab vocational programmes, subject to approvals and launch readiness. Admissions can note your interest but cannot confirm enrolment. Reply HUMAN to discuss.',
+ future:'Phase 2 launch (register interest only): Beauty & Aesthetics, Health & Social Care, additional languages, Hospitality, Creative/Digital, Trades, and further OTHM, Qualifi, ATHE, Pearson and Pakistan/Punjab vocational programmes. Exact courses, qualifications, facilities, approvals and dates will be confirmed before enrolment. Reply HUMAN and admissions can note your interest.',
  handoff:'I will refer this to our admissions team. Please do not send passwords, identity documents or bank details in this chat.',
  stop:'We will not send automated enquiry follow-ups. You can contact our team again whenever you need assistance.'
 };
 const ur = {
  welcome:'یونی پاتھ وے جہلم میں خوش آمدید! زبان منتخب کریں: 1 English / 2 اردو۔ عملے سے بات کے لیے HUMAN لکھیں۔',
  relationship:'آپ کون ہیں؟ 1 طالب علم، 2 والدین یا سرپرست، 3 دیگر',
- programme:'کون سا کورس؟ 1 جماعت 9 تا 12 (سائنس، ریاضی، انگریزی، ٹیکنالوجی، کامرس) / 2 ACCA تیاری / 3 IELTS تیاری / 4 ٹیک سرٹیفکیشن / 5 OTHM یا Qualifi بزنس/اکاؤنٹنگ لیول 3 تا 5 / 6 دیگر یا مستقبل کے کورسز',
+ programme:'کون سا کورس؟ 1 جماعت 9 تا 12 (سائنس، ریاضی، انگریزی، ٹیکنالوجی، کامرس) / 2 ACCA تیاری / 3 IELTS تیاری / 4 ٹیک سرٹیفکیشن / 5 OTHM یا Qualifi بزنس/اکاؤنٹنگ لیول 3 تا 5 / 6 دوسرے مرحلے کے کورسز (بیوٹی و ایستھیٹکس، صحت و سماجی نگہداشت، زبانیں، ہوٹلنگ، ڈیزائن، ہنر و دیگر ڈپلومے)',
  board:'بورڈ منتخب کریں: 1 پنجاب/پاکستان بورڈ / 2 کیمبرج IGCSE / 3 دیگر پاکستانی بورڈ۔ نصاب کی دستیابی عملہ تصدیق کرے گا۔',
  grade:'آپ کس جماعت میں ہیں؟ 9، 10، 11 یا 12',
  subjects:'کون سے مضامین پڑھنا چاہتے ہیں؟ ریاضی، فزکس، کیمسٹری، بائیولوجی، انگریزی، کمپیوٹر/ٹیکنالوجی، کامرس، یا متعدد مضامین؟',
@@ -48,7 +48,7 @@ const ur = {
  consent:'کیا داخلہ ٹیم آپ سے اسی انکوائری اور کلاس کی معلومات کے لیے واٹس ایپ پر رابطہ کر سکتی ہے؟ YES یا NO لکھیں۔ یہ مارکیٹنگ کی اجازت نہیں ہے۔',
  done:'شکریہ! آپ کی انکوائری داخلہ ٹیم کے جائزے کے لیے محفوظ ہے۔ فیس، استاد، ٹائم ٹیبل، اہلیت اور نشست کی دستیابی کی تصدیق عملہ کرے گا۔ ابھی کوئی داخلہ یا ادائیگی طے نہیں ہوئی۔',
  invalid:'براہ کرم درست نمبر یا HUMAN لکھیں۔',
- future:'مزید OTHM، Qualifi، ATHE، Pearson اور پاکستان/پنجاب ووکیشنل کورسز کی منصوبہ بندی ہے، لیکن منظوری اور آغاز کی تصدیق باقی ہے۔ HUMAN لکھ کر عملے سے بات کریں۔',
+ future:'دوسرا مرحلہ (فی الحال صرف دلچسپی درج کروائیں): بیوٹی اور ایستھیٹکس، صحت و سماجی نگہداشت، اضافی زبانیں، ہوٹلنگ، ڈیزائن و ڈیجیٹل مہارتیں، فنی تربیت، مزید OTHM، Qualifi، ATHE، Pearson اور پاکستان/پنجاب کے ووکیشنل کورسز۔ کورس کی دستیابی، منظوری اور تاریخ بعد میں تصدیق ہوگی۔ HUMAN لکھ کر داخلہ ٹیم سے بات کریں۔',
  handoff:'آپ کی درخواست داخلہ ٹیم کو بھیج دی جائے گی۔ یہاں پاس ورڈ، شناختی دستاویزات یا بینک کی تفصیلات نہ بھیجیں۔',
  stop:'اس انکوائری کی خودکار یاد دہانیاں نہیں بھیجی جائیں گی۔ ضرورت پر دوبارہ رابطہ کر سکتے ہیں۔'
 };
