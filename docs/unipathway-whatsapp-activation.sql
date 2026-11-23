@@ -8,6 +8,7 @@ create table if not exists public.uni_whatsapp_conversations (
   wa_id text not null,
   status text not null default 'open' check (status in ('open','needs_staff','closed')),
   automation_paused boolean not null default false,
+  enquiry_state jsonb not null default '{"step":"language","language":"en"}'::jsonb,
   created_at timestamptz not null default now(),
   unique (tenant_id, phone_number_id, wa_id)
 );
