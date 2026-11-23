@@ -5,7 +5,7 @@
 - Pakistan/Punjab boards and Cambridge IGCSE. Other Pakistan boards require explicit syllabus mapping.
 - ACCA preparation; IELTS preparation; tech certification preparation.
 - OTHM and Qualifi Business and Accountancy **Levels 3–5** first. Do not represent UniPathway as an approved awarding-body centre without signed approval, or imply that preparation is itself an accredited award.
-- Future: additional OTHM, Qualifi, ATHE, Pearson and Pakistan/Punjab vocational pathways. These are **interest-list only**, not live admissions.
+- **Phase 2 launch (interest list, not open enrolment):** Women's Beauty & Aesthetics Academy (salon foundations, beauty therapy, make-up, nail care, safety, proposed advanced aesthetics subject to specialist approvals); Health & Social Care; additional languages including German; hospitality; creative/digital skills; trades/energy; additional OTHM, Qualifi, ATHE, Pearson and Pakistan/Punjab vocational pathways. Other website/Git catalogue programmes are not automatically Phase 1. These are **interest-list only**, pending launch readiness, appropriate facilities, qualified instructors and all required approvals. Never imply CIBTAC or CPD accreditation without verified evidence.
 
 ## Time, location, capacities and tutor allocation
 - **Asia/Karachi** timezone; planned daily teaching window **08:00–21:00** (13 hours), not a promise that every programme runs every day.
@@ -19,7 +19,7 @@
 ## Admissions WhatsApp conversation
 1. Inbound greeting -> English or Urdu.
 2. Student, parent/guardian or other enquirer.
-3. Programme; for school tuition: curriculum board, grade 9–12 and subjects.
+3. Programme; for school tuition: curriculum board, grade 9–12 and subjects. For Phase 2: choose a specific future-interest category, including Beauty & Aesthetics, then route to admissions without inventing an intake date.
 4. Study preference: Jhelum in-person, hybrid or online.
 5. Preferred days/time in Pakistan time.
 6. Specific follow-up consent (yes/no), without opt-in to promotional broadcasts.
