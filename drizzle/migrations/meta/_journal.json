@@ -197,6 +197,13 @@
       "when": 1795448277762,
       "tag": "0027_global_education_partnerships",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1795448734449,
+      "tag": "0028_admissions_service_and_partner_applications",
+      "breakpoints": true
     }
   ]
 }

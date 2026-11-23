@@ -1149,6 +1149,150 @@ export type Database = {
           },
         ]
       }
+      education_partner_applications: {
+        Row: {
+          approval_reference: string | null
+          approval_verified_at: string | null
+          approval_verified_by: string | null
+          country: string
+          created_at: string
+          documents_checklist: string | null
+          id: string
+          next_action: string | null
+          next_action_at: string | null
+          notes: string | null
+          official_application_url: string | null
+          organisation_name: string
+          owner_id: string | null
+          programme: string
+          stage: string
+          submitted_at: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          approval_reference?: string | null
+          approval_verified_at?: string | null
+          approval_verified_by?: string | null
+          country: string
+          created_at?: string
+          documents_checklist?: string | null
+          id?: string
+          next_action?: string | null
+          next_action_at?: string | null
+          notes?: string | null
+          official_application_url?: string | null
+          organisation_name: string
+          owner_id?: string | null
+          programme: string
+          stage?: string
+          submitted_at?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          approval_reference?: string | null
+          approval_verified_at?: string | null
+          approval_verified_by?: string | null
+          country?: string
+          created_at?: string
+          documents_checklist?: string | null
+          id?: string
+          next_action?: string | null
+          next_action_at?: string | null
+          notes?: string | null
+          official_application_url?: string | null
+          organisation_name?: string
+          owner_id?: string | null
+          programme?: string
+          stage?: string
+          submitted_at?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "education_partner_applications_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "education_partner_applications_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      education_staff_credentials: {
+        Row: {
+          created_at: string
+          credential_name: string
+          credential_number: string | null
+          evidence_reference: string | null
+          expires_on: string | null
+          id: string
+          issued_on: string | null
+          provider_name: string
+          staff_id: string
+          status: string
+          tenant_id: string
+          updated_at: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          credential_name: string
+          credential_number?: string | null
+          evidence_reference?: string | null
+          expires_on?: string | null
+          id?: string
+          issued_on?: string | null
+          provider_name: string
+          staff_id: string
+          status?: string
+          tenant_id: string
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          credential_name?: string
+          credential_number?: string | null
+          evidence_reference?: string | null
+          expires_on?: string | null
+          id?: string
+          issued_on?: string | null
+          provider_name?: string
+          staff_id?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "education_staff_credentials_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "education_staff_credentials_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expenses: {
         Row: {
           agent_id: string | null
@@ -2503,6 +2647,67 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "international_education_partners"
             referencedColumns: ["id", "tenant_id"]
+          },
+        ]
+      }
+      international_service_enrolments: {
+        Row: {
+          assigned_by: string
+          billing_mode: string
+          created_at: string
+          enquiry_id: string
+          id: string
+          service_type: string
+          status: string
+          student_id: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_by: string
+          billing_mode: string
+          created_at?: string
+          enquiry_id: string
+          id?: string
+          service_type: string
+          status?: string
+          student_id: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_by?: string
+          billing_mode?: string
+          created_at?: string
+          enquiry_id?: string
+          id?: string
+          service_type?: string
+          status?: string
+          student_id?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "international_service_enrolments_enquiry_id_tenant_id_fkey"
+            columns: ["enquiry_id", "tenant_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id", "tenant_id"]
+          },
+          {
+            foreignKeyName: "international_service_enrolments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "international_service_enrolments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -10253,6 +10458,10 @@ export type Database = {
       }
     }
     Functions: {
+      activate_international_service_from_lead: {
+        Args: { p_billing_mode?: string; p_enquiry: string; p_student: string }
+        Returns: string
+      }
       add_unipathway_learning_task: {
         Args: {
           p_baseline: string
