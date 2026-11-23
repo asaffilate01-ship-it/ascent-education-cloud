@@ -168,6 +168,11 @@ begin
  select * into e from public.centre_fee_settlements where id=_event_id for update;
  if e.id is null then raise exception 'Verified fee event not found' using errcode='22023'; end if;
  if e.kind='refund' then
+  if not exists(select 1 from public.centre_fee_commission_lines
+    where settlement_id=e.original_event_id and tenant_id=e.tenant_id) then
+    raise exception 'Original settlement must be accrued before refund adjustment'
+      using errcode='22023';
+  end if;
   for old_line in select payee_referrer_id,kind,bps from public.centre_fee_commission_lines
      where settlement_id=e.original_event_id and tenant_id=e.tenant_id loop
    amount:=-round(e.eligible_gross_pkr*old_line.bps/10000,2);
