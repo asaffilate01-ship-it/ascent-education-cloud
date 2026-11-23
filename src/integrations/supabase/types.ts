@@ -80,6 +80,135 @@ export type Database = {
           },
         ]
       }
+      academic_progression_audit: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          evidence_id: string
+          id: string
+          new_status: string | null
+          old_status: string | null
+          tenant_id: string
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          evidence_id: string
+          id?: string
+          new_status?: string | null
+          old_status?: string | null
+          tenant_id: string
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          evidence_id?: string
+          id?: string
+          new_status?: string | null
+          old_status?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academic_progression_audit_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "academic_progression_audit_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      academic_progression_evidence: {
+        Row: {
+          awarding_body: string
+          created_at: string
+          destination_country: string
+          destination_institution: string
+          destination_programme: string
+          english_requirements: string | null
+          entry_stage: string | null
+          grade_requirements: string | null
+          id: string
+          qualification_level: string
+          qualification_name: string
+          recheck_due: string | null
+          review_status: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          source_kind: string
+          source_url: string | null
+          student_visible: boolean
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          awarding_body: string
+          created_at?: string
+          destination_country: string
+          destination_institution: string
+          destination_programme: string
+          english_requirements?: string | null
+          entry_stage?: string | null
+          grade_requirements?: string | null
+          id?: string
+          qualification_level: string
+          qualification_name: string
+          recheck_due?: string | null
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_kind?: string
+          source_url?: string | null
+          student_visible?: boolean
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          awarding_body?: string
+          created_at?: string
+          destination_country?: string
+          destination_institution?: string
+          destination_programme?: string
+          english_requirements?: string | null
+          entry_stage?: string | null
+          grade_requirements?: string | null
+          id?: string
+          qualification_level?: string
+          qualification_name?: string
+          recheck_due?: string | null
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_kind?: string
+          source_url?: string | null
+          student_visible?: boolean
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academic_progression_evidence_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "academic_progression_evidence_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       accreditation_bodies: {
         Row: {
           country: string | null
@@ -482,6 +611,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      career_organisations: {
+        Row: {
+          city: string | null
+          country: string | null
+          created_at: string
+          id: string
+          name: string
+          organisation_type: string
+          partner_status: string
+          tenant_id: string
+          verified: boolean
+          website: string | null
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          organisation_type: string
+          partner_status?: string
+          tenant_id: string
+          verified?: boolean
+          website?: string | null
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          organisation_type?: string
+          partner_status?: string
+          tenant_id?: string
+          verified?: boolean
+          website?: string | null
+        }
+        Relationships: []
       }
       cctv_access_events: {
         Row: {
@@ -1884,6 +2052,602 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      international_education_partners: {
+        Row: {
+          accreditation_status: string
+          agreement_signed_on: string | null
+          countries: string[]
+          created_at: string
+          id: string
+          last_reviewed_at: string | null
+          name: string
+          next_action: string | null
+          next_action_at: string | null
+          notes: string | null
+          owner_id: string | null
+          partner_kind: string
+          relationship_status: string
+          slug: string
+          tenant_id: string
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          accreditation_status?: string
+          agreement_signed_on?: string | null
+          countries?: string[]
+          created_at?: string
+          id?: string
+          last_reviewed_at?: string | null
+          name: string
+          next_action?: string | null
+          next_action_at?: string | null
+          notes?: string | null
+          owner_id?: string | null
+          partner_kind: string
+          relationship_status?: string
+          slug: string
+          tenant_id: string
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          accreditation_status?: string
+          agreement_signed_on?: string | null
+          countries?: string[]
+          created_at?: string
+          id?: string
+          last_reviewed_at?: string | null
+          name?: string
+          next_action?: string | null
+          next_action_at?: string | null
+          notes?: string | null
+          owner_id?: string | null
+          partner_kind?: string
+          relationship_status?: string
+          slug?: string
+          tenant_id?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "international_education_partners_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "international_education_partners_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      international_partner_agreements: {
+        Row: {
+          agreement_type: string
+          clawback_days: number | null
+          commission_amount: number | null
+          commission_basis: string | null
+          commission_currency: string | null
+          created_at: string
+          document_id: string | null
+          document_reference: string | null
+          ends_on: string | null
+          id: string
+          notes: string | null
+          partner_id: string
+          starts_on: string | null
+          status: string
+          tenant_id: string
+        }
+        Insert: {
+          agreement_type: string
+          clawback_days?: number | null
+          commission_amount?: number | null
+          commission_basis?: string | null
+          commission_currency?: string | null
+          created_at?: string
+          document_id?: string | null
+          document_reference?: string | null
+          ends_on?: string | null
+          id?: string
+          notes?: string | null
+          partner_id: string
+          starts_on?: string | null
+          status?: string
+          tenant_id: string
+        }
+        Update: {
+          agreement_type?: string
+          clawback_days?: number | null
+          commission_amount?: number | null
+          commission_basis?: string | null
+          commission_currency?: string | null
+          created_at?: string
+          document_id?: string | null
+          document_reference?: string | null
+          ends_on?: string | null
+          id?: string
+          notes?: string | null
+          partner_id?: string
+          starts_on?: string | null
+          status?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agreement_document_tenant"
+            columns: ["document_id", "tenant_id", "partner_id"]
+            isOneToOne: false
+            referencedRelation: "international_partner_documents"
+            referencedColumns: ["id", "tenant_id", "partner_id"]
+          },
+          {
+            foreignKeyName: "agreements_partner_tenant"
+            columns: ["partner_id", "tenant_id"]
+            isOneToOne: false
+            referencedRelation: "international_education_partners"
+            referencedColumns: ["id", "tenant_id"]
+          },
+          {
+            foreignKeyName: "international_partner_agreements_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "international_partner_agreements_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      international_partner_audit: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          entity_id: string
+          entity_table: string
+          id: string
+          new_status: string | null
+          old_status: string | null
+          tenant_id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          entity_id: string
+          entity_table: string
+          id?: string
+          new_status?: string | null
+          old_status?: string | null
+          tenant_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          entity_id?: string
+          entity_table?: string
+          id?: string
+          new_status?: string | null
+          old_status?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "international_partner_audit_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "international_partner_audit_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      international_partner_documents: {
+        Row: {
+          created_at: string
+          id: string
+          original_name: string
+          partner_id: string
+          storage_path: string
+          tenant_id: string
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          original_name: string
+          partner_id: string
+          storage_path: string
+          tenant_id: string
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          original_name?: string
+          partner_id?: string
+          storage_path?: string
+          tenant_id?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "international_partner_documents_partner_id_tenant_id_fkey"
+            columns: ["partner_id", "tenant_id"]
+            isOneToOne: false
+            referencedRelation: "international_education_partners"
+            referencedColumns: ["id", "tenant_id"]
+          },
+          {
+            foreignKeyName: "international_partner_documents_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "international_partner_documents_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      international_partner_referrals: {
+        Row: {
+          created_at: string
+          external_application_ref: string | null
+          id: string
+          international_application_id: string | null
+          partner_id: string
+          recipient_name: string
+          route_id: string | null
+          status: string
+          student_consent_at: string | null
+          student_id: string
+          submitted_at: string | null
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          external_application_ref?: string | null
+          id?: string
+          international_application_id?: string | null
+          partner_id: string
+          recipient_name?: string
+          route_id?: string | null
+          status?: string
+          student_consent_at?: string | null
+          student_id: string
+          submitted_at?: string | null
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          external_application_ref?: string | null
+          id?: string
+          international_application_id?: string | null
+          partner_id?: string
+          recipient_name?: string
+          route_id?: string | null
+          status?: string
+          student_consent_at?: string | null
+          student_id?: string
+          submitted_at?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "international_partner_referrals_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "international_partner_referrals_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_route_matches_partner"
+            columns: ["route_id", "tenant_id", "partner_id"]
+            isOneToOne: false
+            referencedRelation: "international_pathway_routes"
+            referencedColumns: ["id", "tenant_id", "partner_id"]
+          },
+          {
+            foreignKeyName: "referrals_same_tenant_application"
+            columns: ["international_application_id", "tenant_id", "student_id"]
+            isOneToOne: false
+            referencedRelation: "international_university_applications"
+            referencedColumns: ["id", "tenant_id", "student_id"]
+          },
+          {
+            foreignKeyName: "referrals_same_tenant_partner"
+            columns: ["partner_id", "tenant_id"]
+            isOneToOne: false
+            referencedRelation: "international_education_partners"
+            referencedColumns: ["id", "tenant_id"]
+          },
+          {
+            foreignKeyName: "referrals_same_tenant_route"
+            columns: ["route_id", "tenant_id"]
+            isOneToOne: false
+            referencedRelation: "international_pathway_routes"
+            referencedColumns: ["id", "tenant_id"]
+          },
+        ]
+      }
+      international_pathway_routes: {
+        Row: {
+          awarding_body_id: string | null
+          created_at: string
+          destination_country: string
+          destination_institution: string
+          destination_programme: string
+          english_requirements: string | null
+          entry_stage: string | null
+          evidence_reviewed_at: string | null
+          evidence_url: string | null
+          grade_requirements: string | null
+          id: string
+          notes: string | null
+          partner_id: string
+          pathway_type: string
+          qualification_level: string | null
+          qualification_name: string | null
+          review_status: string
+          route_name: string
+          student_visible: boolean
+          tenant_id: string
+          updated_at: string
+          verified_by: string | null
+        }
+        Insert: {
+          awarding_body_id?: string | null
+          created_at?: string
+          destination_country: string
+          destination_institution: string
+          destination_programme: string
+          english_requirements?: string | null
+          entry_stage?: string | null
+          evidence_reviewed_at?: string | null
+          evidence_url?: string | null
+          grade_requirements?: string | null
+          id?: string
+          notes?: string | null
+          partner_id: string
+          pathway_type?: string
+          qualification_level?: string | null
+          qualification_name?: string | null
+          review_status?: string
+          route_name: string
+          student_visible?: boolean
+          tenant_id: string
+          updated_at?: string
+          verified_by?: string | null
+        }
+        Update: {
+          awarding_body_id?: string | null
+          created_at?: string
+          destination_country?: string
+          destination_institution?: string
+          destination_programme?: string
+          english_requirements?: string | null
+          entry_stage?: string | null
+          evidence_reviewed_at?: string | null
+          evidence_url?: string | null
+          grade_requirements?: string | null
+          id?: string
+          notes?: string | null
+          partner_id?: string
+          pathway_type?: string
+          qualification_level?: string | null
+          qualification_name?: string | null
+          review_status?: string
+          route_name?: string
+          student_visible?: boolean
+          tenant_id?: string
+          updated_at?: string
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "international_pathway_routes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "international_pathway_routes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "route_same_tenant_awarder"
+            columns: ["awarding_body_id", "tenant_id"]
+            isOneToOne: false
+            referencedRelation: "international_education_partners"
+            referencedColumns: ["id", "tenant_id"]
+          },
+          {
+            foreignKeyName: "route_same_tenant_partner"
+            columns: ["partner_id", "tenant_id"]
+            isOneToOne: false
+            referencedRelation: "international_education_partners"
+            referencedColumns: ["id", "tenant_id"]
+          },
+        ]
+      }
+      international_support_tasks: {
+        Row: {
+          application_id: string
+          completed_at: string | null
+          created_at: string
+          due_at: string | null
+          id: string
+          notes: string | null
+          owner_id: string | null
+          status: string
+          task_type: string
+          tenant_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          application_id: string
+          completed_at?: string | null
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          notes?: string | null
+          owner_id?: string | null
+          status?: string
+          task_type: string
+          tenant_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          application_id?: string
+          completed_at?: string | null
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          notes?: string | null
+          owner_id?: string | null
+          status?: string
+          task_type?: string
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "international_support_tasks_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "international_university_applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "support_same_tenant_application"
+            columns: ["application_id", "tenant_id"]
+            isOneToOne: false
+            referencedRelation: "international_university_applications"
+            referencedColumns: ["id", "tenant_id"]
+          },
+        ]
+      }
+      international_university_applications: {
+        Row: {
+          accommodation_status: string
+          arrival_support_status: string
+          commission_currency: string | null
+          commission_expected: number | null
+          commission_status: string
+          counsellor_id: string | null
+          created_at: string
+          currency: string | null
+          destination_country: string
+          documents: Json
+          id: string
+          intake: string | null
+          offer_reference: string | null
+          offer_type: string | null
+          predeparture_status: string
+          programme: string
+          status: string
+          student_id: string
+          tenant_id: string
+          tuition_fee: number | null
+          university_organisation_id: string
+          updated_at: string
+        }
+        Insert: {
+          accommodation_status?: string
+          arrival_support_status?: string
+          commission_currency?: string | null
+          commission_expected?: number | null
+          commission_status?: string
+          counsellor_id?: string | null
+          created_at?: string
+          currency?: string | null
+          destination_country: string
+          documents?: Json
+          id?: string
+          intake?: string | null
+          offer_reference?: string | null
+          offer_type?: string | null
+          predeparture_status?: string
+          programme: string
+          status?: string
+          student_id: string
+          tenant_id: string
+          tuition_fee?: number | null
+          university_organisation_id: string
+          updated_at?: string
+        }
+        Update: {
+          accommodation_status?: string
+          arrival_support_status?: string
+          commission_currency?: string | null
+          commission_expected?: number | null
+          commission_status?: string
+          counsellor_id?: string | null
+          created_at?: string
+          currency?: string | null
+          destination_country?: string
+          documents?: Json
+          id?: string
+          intake?: string | null
+          offer_reference?: string | null
+          offer_type?: string | null
+          predeparture_status?: string
+          programme?: string
+          status?: string
+          student_id?: string
+          tenant_id?: string
+          tuition_fee?: number | null
+          university_organisation_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "international_university_applic_university_organisation_id_fkey"
+            columns: ["university_organisation_id"]
+            isOneToOne: false
+            referencedRelation: "career_organisations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       invoices: {
         Row: {
@@ -9559,6 +10323,10 @@ export type Database = {
         Args: { p_session: string; p_tenant: string }
         Returns: boolean
       }
+      can_access_partner_file: {
+        Args: { p_name: string; p_write?: boolean }
+        Returns: boolean
+      }
       can_access_uni_lab_run: { Args: { p_run: string }; Returns: boolean }
       can_access_uni_lab_template: {
         Args: { p_template: string }
@@ -9716,6 +10484,10 @@ export type Database = {
         Returns: boolean
       }
       consume_study_tutor_quota: { Args: { p_user: string }; Returns: Json }
+      create_pathway_application: {
+        Args: { p_intake?: string; p_route: string; p_student: string }
+        Returns: string
+      }
       create_unipathway_learning_plan: {
         Args: { p_goal: string; p_module: string; p_student: string }
         Returns: string
@@ -9805,6 +10577,10 @@ export type Database = {
       get_unipathway_teams_plan: { Args: { p_session: string }; Returns: Json }
       get_unipathway_tuition_roster: { Args: never; Returns: Json }
       get_user_tenant_id: { Args: { _user_id: string }; Returns: string }
+      global_partner_authorised: {
+        Args: { p_partner: string; p_tenant: string }
+        Returns: boolean
+      }
       grant_unipathway_tech_lab_to_student: {
         Args: { p_module: string; p_student: string; p_until: string }
         Returns: boolean
@@ -9919,6 +10695,10 @@ export type Database = {
       record_unipathway_human_mark: {
         Args: { p_attempt: string; p_criteria: Json; p_feedback: string }
         Returns: number
+      }
+      register_partner_document: {
+        Args: { p_name: string; p_partner: string; p_path: string }
+        Returns: string
       }
       register_uni_mail_document: {
         Args: { p_name: string; p_path: string; p_thread: string }

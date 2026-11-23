@@ -190,6 +190,13 @@
       "when": 1795447199640,
       "tag": "0026_interactive_labs_helper_grants",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1795448277762,
+      "tag": "0027_global_education_partnerships",
+      "breakpoints": true
     }
   ]
 }
