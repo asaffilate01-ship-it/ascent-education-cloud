@@ -131,6 +131,9 @@ jobs:
           retention-days: 14
           if-no-files-found: error
       - name: Connected academic journey acceptance
+        env:
+          # The recording archive acceptance case intentionally exercises the inactive release scenario.
+          VITE_UNIPATHWAY_CLASS_RELEASE_ENABLED: 'false'
         run: npx playwright test e2e/ux-flow.spec.ts e2e/teaching-learning-flow.spec.ts e2e/staff-access-gates.spec.ts --workers=1
       - name: Assessment drafting, publication and independent marking journeys
         run: npx playwright test e2e/assessment-review-flow.spec.ts --workers=1 --output=test-results/assessment-review
