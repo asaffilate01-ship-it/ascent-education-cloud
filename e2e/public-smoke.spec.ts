@@ -14,7 +14,7 @@ test.describe('public production smoke', () => {
     await expect(page).toHaveURL(/\/login(?:[/?#]|$)/);
   });
 
-  test('native public bottom tabs navigate and retain active state across redirected routes', async ({ page }) => {
+  test('native public bottom tabs navigate to international study and retain active state', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
     const tabs = page.getByRole('navigation', { name: 'Quick navigation' });
@@ -33,7 +33,7 @@ test.describe('public production smoke', () => {
     await expect(tabs.getByRole('link', { name: 'Courses' })).toHaveAttribute('aria-current', 'page');
 
     await tabs.getByRole('link', { name: 'Abroad' }).click();
-    await expect(page).toHaveURL(/\/tenant\/unipathway\/pathways/);
+    await expect(page).toHaveURL(/\/international-study$/);
     await expect(tabs.getByRole('link', { name: 'Abroad' })).toHaveAttribute('aria-current', 'page');
   });
 });
@@ -231,4 +231,87 @@ test('focused course menu closes with Escape and course search recovers from no 
  await page.getByRole('button',{name:'Clear filters'}).click();
  await expect(page.getByLabel('Search subjects and training')).toHaveValue('');
  await expect(page.getByRole('heading',{name:'No matching study options'})).toHaveCount(0);
+});
+
+test('international study guides keep academic and immigration routes separate', async ({ page }) => {
+  const countries = [
+    ['uk', 'United Kingdom', 'www.gov.uk'],
+    ['italy', 'Italy', 'www.universitaly.it'],
+    ['germany', 'Germany', 'pakistan.diplo.de'],
+    ['australia', 'Australia', 'immi.homeaffairs.gov.au'],
+    ['canada', 'Canada', 'www.canada.ca'],
+    ['usa', 'United States', 'travel.state.gov'],
+    ['france', 'France', 'www.pakistan.campusfrance.org'],
+    ['spain', 'Spain', 'www.exteriores.gob.es'],
+    ['netherlands', 'Netherlands', 'ind.nl'],
+  ];
+  await page.goto('/');
+  const mainNav = page.getByRole('navigation', { name: 'Main navigation' });
+  await expect(mainNav.getByRole('button', { name: 'Study Abroad' })).toBeVisible();
+  const consent = page.getByRole('dialog', { name: 'Cookie preferences' });
+  if (await consent.isVisible()) await consent.getByRole('button', { name: 'Reject all' }).click();
+  await mainNav.getByRole('button', { name: 'Study Abroad' }).click();
+  await mainNav.getByRole('link', { name: /International study & visa guidance/i }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'International study & visa guidance' })).toBeVisible();
+  const directory = page.getByRole('region', { name: 'Choose a destination' });
+  await expect(directory.getByRole('link')).toHaveCount(countries.length);
+  await expect(page.getByRole('link', { name: 'Explore the European study directory' })).toHaveAttribute('href', '/europe');
+
+  for (const [slug, country, authority] of countries) {
+    await directory.getByRole('link', { name: new RegExp(country) }).click();
+    await expect(page).toHaveURL(new RegExp(`/international-study/${slug}$`));
+    await expect(page.getByRole('heading', { level: 1, name: new RegExp(country) })).toBeVisible();
+    const education = page.getByRole('region', { name: 'Plan your academic application' });
+    await expect(education.getByRole('link', { name: new RegExp(country) })).toHaveAttribute('href', /^\/(?!international-study)/);
+    const immigration = page.getByRole('region', { name: /what to check/i });
+    const links = await immigration.getByRole('link').evaluateAll(nodes => nodes.map(node => node.getAttribute('href')));
+    expect(links.some(href => href?.startsWith(`https://${authority}/`))).toBe(true);
+    await expect(page.locator('link[rel=canonical]')).toHaveAttribute('href', `https://unipathway.pk/international-study/${slug}`);
+    await expect(page.getByRole('complementary', { name: 'Scope of this guidance' })).toContainText('not individual immigration advice');
+    await page.getByRole('link', { name: 'All international study guides' }).click();
+  }
+
+  await page.goto('/international-study/unknown');
+  await expect(page.getByRole('heading', { level: 1, name: 'Destination guide not found' })).toBeVisible();
+  await expect(page.locator('meta[name=robots]')).toHaveAttribute('content', /^noindex/);
+  await page.getByRole('link', { name: 'Open the guide directory' }).click();
+  await expect(directory).toBeVisible();
+});
+
+test('UK visa transition and TOEFL enquiry survive the country-to-academic deep link on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await page.goto('/international-study/uk');
+  await expect(page.getByRole('heading', { level: 1, name: 'Study in the United Kingdom' })).toBeVisible();
+  const consent = page.getByRole('dialog', { name: 'Cookie preferences' });
+  if (await consent.isVisible()) await consent.getByRole('button', { name: 'Reject all' }).click();
+  await page.getByRole('link', { name: /see UK Student visa costs and dated financial rules/i }).click();
+  await expect(page).toHaveURL(/\/tenant\/unipathway\/uk#student-visa-costs$/);
+  const cost = page.getByRole('region', { name: 'UK Student visa costs and financial evidence' });
+  await expect(cost.getByRole('heading', { level: 2 })).toBeInViewport();
+  await expect(cost.getByText('Before 30 November 2026')).toBeVisible();
+  await expect(cost.getByText(/£1,529\/month.*£1,171\/month/)).toBeVisible();
+  await expect(cost.getByText('From 30 November 2026')).toBeVisible();
+  await expect(cost.getByText(/£1,570\/month.*£1,203\/month/)).toBeVisible();
+  await expect(cost.getByRole('link', { name: /£558/ })).toHaveAttribute('href', 'https://www.gov.uk/student-visa');
+  await expect(cost.getByRole('link', { name: /£776 per year/ })).toBeVisible();
+  await expect(cost.getByText(/28 consecutive days.*31 days/)).toBeVisible();
+  await expect(cost).not.toContainText(/£1,483|£1,136|£524/);
+  const toefl = page.locator('.surface-card').filter({ has: page.getByRole('heading', { name: 'TOEFL iBT preparation enquiries' }) });
+  await expect(toefl).toContainText('Schedule to be confirmed');
+  await expect(toefl).toContainText('Ask for current quote');
+  await expect(toefl).not.toContainText(/Rs\.20,000|40 hours|Integrated and independent/i);
+  await expect(page.getByRole('heading', { name: 'PTE Academic Preparation' })).toBeVisible();
+
+  await page.reload();
+  await expect(cost.getByRole('heading', { level: 2 })).toBeInViewport();
+  await page.getByRole('link', { name: 'Read the UK student visa guide' }).click();
+  await expect(page).toHaveURL(/\/international-study\/uk$/);
+  await expect(page.getByRole('link', { name: 'Abroad' })).toHaveAttribute('aria-current', 'page');
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
+
+  await page.goto('/international-study/netherlands');
+  await expect(page.getByRole('heading', { level: 1, name: 'Study in the Netherlands' })).toBeVisible();
+  await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
+  await expect(page.getByRole('link', { name: /NetherlandsWorldwide/ })).toBeVisible();
 });

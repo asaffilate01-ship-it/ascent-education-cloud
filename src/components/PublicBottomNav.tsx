@@ -6,7 +6,7 @@ const items = [
   { label: 'Home', to: '/', icon: Home },
   { label: 'Courses', to: '/study', icon: BookOpen },
   { label: 'Apply', to: '/apply', icon: Send, primary: true },
-  { label: 'Abroad', to: '/pathways', icon: Globe2 },
+  { label: 'Abroad', to: '/international-study', icon: Globe2 },
   { label: 'Sign in', to: '/login', icon: LogIn },
 ];
 

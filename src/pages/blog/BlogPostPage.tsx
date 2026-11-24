@@ -75,6 +75,19 @@ export default function BlogPostPage() {
           ))}
         </div>
 
+        {post.guidanceLinks && (
+          <section aria-labelledby="article-next-checks" className="mt-8 rounded-xl border border-border bg-card p-5">
+            <h2 id="article-next-checks" className="font-bold">Check current guidance</h2>
+            <ul className="mt-2 space-y-1">
+              {post.guidanceLinks.map(({ label, to }) => (
+                <li key={to} className="text-sm text-primary underline underline-offset-4">
+                  {to.startsWith('/') ? <Link className="inline-block py-2" to={to}>{label}</Link> : <a className="inline-block py-2" href={to}>{label}</a>}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         <div className="mt-10 pt-6 border-t border-border">
           <SocialShare title={post.title} url={canonicalUrl} />
         </div>

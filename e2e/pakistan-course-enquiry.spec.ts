@@ -60,7 +60,7 @@ test('study and qualification search match terms in any order on mobile',async({
   status:200,headers:{'access-control-allow-origin':'*','content-type':'application/json'},body:'[]',
  }));
  await page.setViewportSize({width:375,height:812});
- await page.goto('/study?q=Python%20machine');
+ await page.goto('/study?q=certification%20Microsoft');
  await dismissConsent(page);
  await expect(page.getByRole('heading',{name:'AI, coding and cyber skills'})).toBeVisible();
  await page.goto('/qualifications?body=OTHM&q=Management%20Business');

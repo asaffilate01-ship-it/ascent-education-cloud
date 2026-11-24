@@ -221,3 +221,41 @@ test('calendar recovers failed reads, opens every same-day event and reports fai
   expect(deletion?.params.get('id')).toBe('eq.event-one');
   expect(fixture.requests.filter(read => read.name === 'academic_events').every(read => read.params.get('tenant_id') === `eq.${tenant}`)).toBe(true);
 });
+
+test('dashboard keeps its phone header and notification controls reachable at enlarged text', async ({context, page}) => {
+  await records(context, 'admissions_admin', {});
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  await page.setViewportSize({width: 360, height: 900});
+  await page.goto('/admissions');
+  await dismissConsent(page);
+  const menu = page.getByRole('button', {name: 'Open navigation', exact: true});
+  const search = page.getByRole('button', {name: 'Search workspace'});
+  const comms = page.getByRole('link', {name: 'Communications', exact: true});
+  const bell = page.getByRole('button', {name: 'Notifications', exact: true});
+  for (const action of [menu, search, comms, bell]) await expect(action).toBeVisible();
+  const ordinaryMenu = (await menu.boundingBox())!;
+  const ordinarySearch = (await search.boundingBox())!;
+  expect(ordinarySearch.y).toBeLessThan(ordinaryMenu.y + ordinaryMenu.height);
+
+  await page.evaluate(() => {
+    document.documentElement.classList.add('dark');
+    document.documentElement.style.fontSize = '32px';
+  });
+  for (const action of [menu, search, comms, bell]) {
+    await expect(action).toBeInViewport({ratio: 1});
+    const bounds = (await action.boundingBox())!;
+    expect(bounds.x).toBeGreaterThanOrEqual(0);
+    expect(bounds.x + bounds.width).toBeLessThanOrEqual(360);
+  }
+  const largeMenu = (await menu.boundingBox())!;
+  const actions = (await page.getByRole('group', {name: 'Workspace actions'}).boundingBox())!;
+  expect(largeMenu.height).toBeGreaterThanOrEqual(44);
+  expect(largeMenu.width).toBeGreaterThanOrEqual(44);
+  expect(largeMenu.x + largeMenu.width <= actions.x + 1 || largeMenu.y + largeMenu.height <= actions.y + 1).toBe(true);
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
+
+  await bell.focus();
+  await bell.press('Enter');
+  await expect(page.getByRole('menu', {name: 'Notifications'})).toBeInViewport({ratio: 1});
+  await expect(page.getByRole('link', {name: 'View all notifications'})).toBeInViewport({ratio: 1});
+});

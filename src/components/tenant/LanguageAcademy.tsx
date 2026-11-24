@@ -28,7 +28,7 @@ const ENGLISH: Course[] = [
   { code: 'AE', title: 'Academic English', hours: '80 hours · 8 weeks', mode: 'Live online or classroom', fee: 'Rs.26,000', desc: 'Academic writing, listening for lectures, reading strategies and referencing.' },
   { code: 'IELTS', title: 'IELTS Academic Preparation', hours: '48 hours · 6 weeks', mode: 'Live online', fee: 'Rs.22,000', desc: 'Full band-9 rubric coaching across all four sections. Test booking and certification are handled directly by the British Council or IDP.', prep: true },
   { code: 'PTE', title: 'PTE Academic Preparation', hours: '40 hours · 5 weeks', mode: 'Live online', fee: 'Rs.20,000', desc: 'AI-scored task practice with weekly mocks. Test booking and certification are through Pearson.', prep: true },
-  { code: 'TOEFL', title: 'TOEFL iBT Preparation', hours: '40 hours · 5 weeks', mode: 'Live online', fee: 'Rs.20,000', desc: 'Integrated and independent task drills. Test booking and certification are through ETS.', prep: true },
+  { code: 'TOEFL', title: 'TOEFL iBT preparation enquiries', hours: 'Schedule to be confirmed', mode: 'Delivery to be confirmed', fee: 'Ask for current quote', desc: 'Ask about preparation for your TOEFL iBT test date. Before booking, confirm which test version and scores your programme accepts. Check visa English requirements separately.' },
 ];
 
 const EUROPEAN: Record<'french'|'italian'|'spanish',Course[]> = {
@@ -55,7 +55,7 @@ export default function LanguageAcademy({ track }: Props) {
   const title = track === 'german' ? 'German Language Academy — A1 to B2 and Exam Preparation' : track === 'english' ? 'English Language Academy — Academic English and Exam Preparation' : `${EUROPEAN_LABELS[track]} Language Academy — A1 to C1 and university preparation`;
   const subtitle = track === 'german'
     ? 'Live-taught German at every CEFR level required for higher education in Germany, plus dedicated preparation for TestDaF, telc and Goethe exams.'
-    : track === 'english' ? 'Academic English for university readiness, plus dedicated preparation for IELTS Academic, PTE Academic and TOEFL iBT.' : `Explore ${EUROPEAN_LABELS[track]} courses from A1 to C1, academic-language practice and external examination preparation. University entry and accepted language tests depend on the specific programme; availability and fees are confirmed before enrolment.`;
+    : track === 'english' ? 'Academic English for university readiness, with IELTS Academic and PTE Academic preparation and TOEFL iBT enquiries.' : `Explore ${EUROPEAN_LABELS[track]} courses from A1 to C1, academic-language practice and external examination preparation. University entry and accepted language tests depend on the specific programme; availability and fees are confirmed before enrolment.`;
 
   return (
     <section className="space-y-6">
