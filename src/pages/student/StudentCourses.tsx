@@ -1,3 +1,4 @@
+import StudentRegistrationSummary from '@/components/student/StudentRegistrationSummary';
 import {Link} from 'react-router-dom';
 import {useRef,useState} from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -35,6 +36,7 @@ function Courses(){
   <div className="min-w-0 [&_button]:max-w-full [&_button]:whitespace-normal">
   <p className="mb-5 flex flex-wrap gap-x-5 gap-y-2"><Link className="font-semibold underline" to="/labs/tech">Open the Tech Lab</Link><Link className="font-semibold underline" to="/labs/language">Open the Language Lab</Link><Link className="font-semibold underline" to="/student/labs">Course practical labs</Link></p>
   {error?<div role="alert" className="space-y-3 rounded-lg border border-destructive p-4"><p>Your courses could not be verified. Retry or contact your centre.</p><Button variant="outline" onClick={()=>{void enrolments.refetch();void programmes.refetch();void modules.refetch();}}>Retry my courses</Button></div>:<>
+   {user?.tenantId&&user.role==='student'&&user.roles?.includes('student')&&<StudentRegistrationSummary tenantId={user.tenantId} enrolmentIds={enrolments.data.map(e=>e.id)} modules={modules.data}/>}
    {!courses.length?<p>No active enrolments yet. Contact your centre to complete enrolment.</p>:<>
     <section aria-label="Find enrolled learning" className="mb-5 space-y-3 rounded-xl border bg-card p-4"><label className="block text-sm font-semibold" htmlFor="my-courses-search">Find my course or module</label><Input id="my-courses-search" ref={search} type="search" maxLength={120} value={query} aria-describedby="my-courses-count" placeholder="Course, awarding body, module title or code" onChange={e=>{setQuery(e.target.value);setPage(0);}}/><p id="my-courses-count" role="status" aria-atomic="true" className="text-sm text-muted-foreground">{matches.length} of {courses.length} enrolled programmes · {matches.reduce((sum,row)=>sum+row.modules.length,0)} matching modules</p>{query&&<Button variant="outline" onClick={clear}>Clear my course search</Button>}</section>
     {!matches.length&&<p className="mb-4 rounded-lg border p-4">No enrolled courses or modules match. Try another title or code, or clear the search.</p>}

@@ -1,3 +1,4 @@
+import ApplicationReviewQueue from '@/components/admissions/ApplicationReviewQueue';
 import {Link} from 'react-router-dom';
 import {invoiceMonths, directorReport} from '@/lib/dashboardMetrics';
 import {downloadText} from '@/lib/downloadText';
@@ -86,6 +87,8 @@ export default function LandlordDashboard() {
         </div>
       }
     >
+      <ApplicationReviewQueue kind="student" />
+      <ApplicationReviewQueue kind="lecturer" />
       <section aria-label="Next actions" className="mb-6 grid gap-3 sm:grid-cols-3">
         <Link to="/landlord/centres" className="rounded-xl border bg-card p-5 hover:bg-accent"><h2 className="font-semibold">Review centre onboarding</h2><p className="mt-2 text-sm text-muted-foreground">{tenants.filter(t=>t.status==='onboarding').length} centre(s) recorded as onboarding. Create or update centre records in the dedicated management view.</p></Link>
         <Link to="/landlord/readiness" className="rounded-xl border bg-card p-5 hover:bg-accent"><h2 className="font-semibold">Check launch readiness</h2><p className="mt-2 text-sm text-muted-foreground">Review evidence and outstanding setup before launching a centre.</p></Link>
