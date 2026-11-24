@@ -68,6 +68,8 @@ jobs:
         run: node scripts/test-unipathway-exam-roster-db.mjs
       - name: Welfare privacy and 24/12-hour class release PostgreSQL rehearsal
         run: node scripts/test-unipathway-wellbeing-release-db.mjs
+      - name: Private identity evidence and two-centre storage RLS rehearsal
+        run: node scripts/test-private-evidence-rls-db.mjs
       - name: Fresh schema and access checks (hosted extensions deferred)
         run: npm run test:fresh-schema
   edge-tests:
