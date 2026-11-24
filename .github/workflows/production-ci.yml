@@ -108,6 +108,8 @@ jobs:
       VITE_TURNSTILE_SITE_KEY: ci-only-no-real-challenge
       VITE_UNIPATHWAY_OFFICE_ACCESS_ENABLED: 'false'
       VITE_UNIPATHWAY_STAFF_INVITES_ENABLED: 'false'
+      # The disabled-lab test is a synthetic scenario, independent of hosted feature flags.
+      VITE_UNIPATHWAY_TECH_LAB_ENTITLEMENTS_ENABLED: 'false'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

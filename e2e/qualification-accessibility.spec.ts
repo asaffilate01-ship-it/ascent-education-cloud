@@ -14,7 +14,7 @@ for (const width of [375,1440]) test(`qualification stages and filters are acces
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 
-test('ATHE titles have official sources and preserve programme filters on narrow screens',async({context,page})=>{
+test('ATHE planned titles preserve programme filters and registration context on narrow screens',async({context,page})=>{
  // This test covers catalogue reflow, not the separately tested cookie dialogue.
  // Set an explicit essential-only preference before first app hydration so the
  // consent banner cannot appear after a one-time visibility check and obscure layout.
@@ -33,8 +33,13 @@ test('ATHE titles have official sources and preserve programme filters on narrow
  await expect(page.getByRole('combobox',{name:'Qualification level'})).toHaveValue('4');
  const cards=page.getByRole('region',{name:'Proposed qualifications'}).getByRole('article');
  await expect(cards).toHaveCount(2);
- await expect(cards.first().getByRole('link',{name:/Check official qualification listing/})).toHaveAttribute('href',/^https:\/\/athe\.co\.uk\/qualifications\/athe-/);
- await expect(cards.first().getByRole('link',{name:'Review study options & enquire'})).toHaveAttribute('href',/^\/apply\?area=qualifications&course=ATHE/);
+ await expect(cards.first().getByText('Phase 2 · Coming soon')).toBeVisible();
+ const title=await cards.first().getByRole('heading',{level:2,name:/^Level 4 /}).innerText();
+ const enquiry=cards.first().getByRole('link',{name:'Register interest for Phase 2'});
+ const url=new URL(await enquiry.getAttribute('href')||'',page.url());
+ expect(url.pathname).toBe('/apply');
+ expect(url.searchParams.get('area')).toBe('qualifications');
+ expect(url.searchParams.get('course')).toBe(`ATHE ${title}`);
  await page.evaluate(()=>{document.documentElement.style.fontSize='32px';});
  for(const width of [360,390,768,1440]){
   await page.setViewportSize({width,height:1000});

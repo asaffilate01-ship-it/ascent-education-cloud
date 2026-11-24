@@ -71,7 +71,7 @@ test('students search and page enrolled modules, retain module links and recover
  await page.evaluate(()=>{document.documentElement.classList.add('dark');document.documentElement.style.fontSize='24px';});for(const viewport of [{width:375,height:812},{width:812,height:375},{width:1440,height:1000}]){await page.setViewportSize(viewport);await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth?[]:Array.from(document.querySelectorAll('body *')).filter(el=>el.getBoundingClientRect().right>innerWidth+1&&getComputedStyle(el).visibility!=='hidden').slice(-8).map(el=>({tag:el.tagName,text:el.textContent?.slice(0,90),right:Math.round(el.getBoundingClientRect().right),viewport:innerWidth})))).toEqual([]);}
 });
 
-test('Pearson Fine Art and craft options expose sourced modules and a course-specific enquiry',async({context,page})=>{
+test('Pearson Fine Art and craft options expose modules and a course-specific Phase 2 enquiry',async({context,page})=>{
  test.setTimeout(45_000);
  await context.route('https://unipathway-browser-ci.invalid/**',route=>route.fulfill({status:200,headers:{'access-control-allow-origin':'*','content-type':'application/json'},body:'[]'}));
  await page.setViewportSize({width:375,height:812});await page.emulateMedia({reducedMotion:'reduce'});
@@ -84,7 +84,12 @@ test('Pearson Fine Art and craft options expose sourced modules and a course-spe
  await expect(hnd.getByText(/not additional Pearson units or extra credits/)).toBeVisible();
  const enquiry=hnd.getByRole('link',{name:/Ask about Pearson BTEC Level 5/});
  expect(new URL(await enquiry.getAttribute('href')||'',page.url()).searchParams.get('course')).toBe('Pearson BTEC Level 5 Higher National Diploma in Fine Art');
- await expect(hnd.getByRole('link',{name:/Pearson Fine Art specification/})).toHaveAttribute('href',/qualifications\.pearson\.com/);
+ await expect(hnd.getByText('Pearson Fine Art specification available from admissions')).toBeVisible();
+ await expect(hnd.getByText('Phase 2 · Coming soon')).toBeVisible();
+ const interest=hnd.getByRole('link',{name:'Register interest for Phase 2'});
+ const interestUrl=new URL(await interest.getAttribute('href')||'',page.url());
+ expect(interestUrl.pathname).toBe('/apply');
+ expect(interestUrl.searchParams.get('course')).toBe('Pearson BTEC Level 5 Higher National Diploma in Fine Art');
  const enterprise=page.getByRole('region',{name:'Fine art and crafts for women building a business',exact:true});
  await expect(enterprise.getByRole('article')).toHaveCount(8);
  await expect(enterprise.getByText(/Specifically designed for women in Pakistan/)).toBeVisible();
