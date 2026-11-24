@@ -34,7 +34,7 @@ END $$;
 -- Private helper: all source rows captured in one statement snapshot, ordered deterministically.
 -- Call only after resolving the caller's verified centre.
 CREATE FUNCTION unipathway_payroll_prep.source(t uuid,p_month date) RETURNS jsonb
-LANGUAGE plpgsql STABLE SECURITY INVOKER SET search_path='' SET timezone='UTC' AS $
+LANGUAGE plpgsql STABLE SECURITY INVOKER SET search_path='' SET timezone='UTC' AS $$
 DECLARE result jsonb;
 BEGIN
  IF t IS NULL OR p_month IS NULL OR p_month<DATE '2000-01-01' OR extract(day FROM p_month)<>1
