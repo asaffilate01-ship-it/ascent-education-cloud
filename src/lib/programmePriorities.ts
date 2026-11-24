@@ -17,7 +17,7 @@ export const programmePriorities = [
 export const progressionDestinations = ['Pakistan', 'UK', 'USA', 'Germany', 'Canada', 'Australia'] as const;
 export const residentialModel = {
   visitsPerYear: 2, daysPerVisit: 14, teachingHoursPerYear: 72,
-  supportHoursPerYear: 3, teachingCapacity: 50, supportCapacity: 10,
+  supportHoursPerYear: 3, teachingCapacity: 60, supportCapacity: 10,
   studentsPerCohort: 200, minimumAge: 18,
 } as const;
 
