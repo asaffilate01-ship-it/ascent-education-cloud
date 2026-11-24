@@ -80,8 +80,8 @@ BEGIN
   SELECT p.user_id AS id,p.full_name AS name FROM public.profiles p WHERE p.tenant_id=t AND p.user_id<>auth.uid() AND length(btrim(p.full_name)) BETWEEN 1 AND 300 AND
   unipathway_centre_cards.eligible_identity(t,p.user_id,p_kind) IS NOT NULL ORDER BY p.full_name,p.user_id LIMIT 501
  ) x;
- SELECT coalesce(jsonb_agg(unipathway_centre_cards.view_card(x) ORDER BY x.display_name,x.id),'[]'::jsonb) INTO cards FROM (
-  SELECT DISTINCT ON (c.subject_id) c.* FROM unipathway_centre_cards.cards c WHERE c.tenant_id=t AND c.kind=p_kind ORDER BY c.subject_id,c.issued_at DESC,c.id DESC LIMIT 501
+ SELECT coalesce(jsonb_agg(unipathway_centre_cards.view_card(x.card) ORDER BY x.display_name,x.id),'[]'::jsonb) INTO cards FROM (
+  SELECT DISTINCT ON (c.subject_id) c AS card,c.display_name,c.id FROM unipathway_centre_cards.cards c WHERE c.tenant_id=t AND c.kind=p_kind ORDER BY c.subject_id,c.issued_at DESC,c.id DESC LIMIT 501
  ) x;
  IF jsonb_array_length(people)>500 OR jsonb_array_length(cards)>500 THEN RAISE EXCEPTION 'Card register exceeds bounded review size; request a paginated centre report'; END IF;
  RETURN jsonb_build_object('tenant_id',t,'kind',p_kind,'people',people,'cards',cards);
