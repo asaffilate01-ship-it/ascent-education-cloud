@@ -2,7 +2,7 @@ import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 import {cleanup,render,screen} from '@testing-library/react';
 import {MemoryRouter} from 'react-router-dom';
 const mock=vi.hoisted(()=>({
- user:{id:'director',tenantId:'centre-a',role:'centre_director'} as any,
+ user:{id:'director',tenantId:'centre-a',role:'centre_director',roles:['centre_director']} as any,
  fail:'',queries:[] as {table:string;options:any}[],
  rows:{
   profiles:[
@@ -13,11 +13,13 @@ const mock=vi.hoisted(()=>({
    {user_id:'staff-a',role:'lecturer',tenant_id:'centre-a'},
    {user_id:'staff-a',role:'assessor',tenant_id:'centre-a'},
    {user_id:'staff-a',role:'finance_officer',tenant_id:'centre-b'},
+   {user_id:'staff-a',role:'finance_officer',tenant_id:null},
    {user_id:'staff-b',role:'lecturer',tenant_id:'centre-b'}
   ],
   modules:[
    {id:'m1',lecturer_id:'staff-a',tenant_id:'centre-a'},
-   {id:'m2',lecturer_id:'staff-b',tenant_id:'centre-b'}
+   {id:'m2',lecturer_id:'staff-b',tenant_id:'centre-b'},
+   {id:'m3',lecturer_id:'staff-a',tenant_id:'centre-b'}
   ],
  } as Record<string,Record<string,unknown>[]>,
 }));
@@ -35,7 +37,7 @@ vi.mock('@/hooks/useSupabaseQuery',()=>({useSupabaseQuery:(table:string,options:
  return {data:rows,loading:false,error:mock.fail===table?'unavailable':null,refetch:vi.fn()};
 }}));
 import StaffManagement from '@/pages/director/StaffManagement';
-beforeEach(()=>{mock.queries=[];mock.user={id:'director',tenantId:'centre-a',role:'centre_director'};mock.fail='';});
+beforeEach(()=>{mock.queries=[];mock.user={id:'director',tenantId:'centre-a',role:'centre_director',roles:['centre_director']};mock.fail='';});
 afterEach(cleanup);
 const show=()=>render(<MemoryRouter><StaffManagement/></MemoryRouter>);
 it('centre staff directory narrows profiles and modules, then role records by authorised user IDs',()=>{
@@ -50,12 +52,12 @@ it('centre staff directory narrows profiles and modules, then role records by au
  expect(screen.queryByText(/Active: /)).toBeNull();
 });
 it('programme leads cannot grant or invite staff from a roster view',()=>{
- mock.user={id:'leader',tenantId:'centre-a',role:'programme_leader'};
+ mock.user={id:'leader',tenantId:'centre-a',role:'programme_leader',roles:['programme_leader']};
  show();expect(screen.queryByRole('button',{name:'Invite or add staff'})).toBeNull();
  expect(screen.getByRole('link',{name:'programme modules'})).toHaveAttribute('href','/programme/modules');
 });
 it('unassigned staff roles fail closed and do not query the directory',()=>{
- mock.user={id:'student',tenantId:'centre-a',role:'student'};
+ mock.user={id:'student',tenantId:'centre-a',role:'student',roles:['student']};
  show();expect(screen.getByRole('alert')).toHaveTextContent('verified centre leadership or superadmin');
  expect(mock.queries.every(q=>q.options.enabled===false)).toBe(true);
 });
@@ -63,4 +65,10 @@ it('a denied roles read never becomes an empty verified directory',()=>{
  mock.fail='user_roles';show();
  expect(screen.getByRole('alert')).toHaveTextContent('could not be verified');
  expect(screen.queryByText(/Own centre lecturer/)).toBeNull();
+});
+
+it('does not read staff records for an unverified selected management role',()=>{
+ mock.user={id:'director',tenantId:'centre-a',role:'centre_director',roles:['lecturer']};
+ show();expect(screen.getByRole('alert')).toHaveTextContent('verified centre leadership');
+ expect(mock.queries.every(q=>q.options.enabled===false)).toBe(true);
 });

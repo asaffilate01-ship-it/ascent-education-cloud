@@ -19,26 +19,27 @@ const staffRoles=new Set<UserRole>([
 ]);
 export default function StaffManagement(){
  const {user}=useAuth();
- return <ScopedStaffDirectory key={[user?.id,user?.tenantId,user?.role].join(':')}/>;
+ return <ScopedStaffDirectory key={[user?.id,user?.tenantId,user?.role,user?.roles?.join(',')].join(':')}/>;
 }
 function ScopedStaffDirectory(){
- const {user}=useAuth();
- const platform=user?.role==='superadmin';
- const scoped=!!user?.tenantId&&['centre_director','programme_leader'].includes(user.role);
+ const {user,loading:authLoading}=useAuth();
+ const verified=!authLoading&&!!user&&user.roles?.includes(user.role)===true;
+ const platform=verified&&user?.role==='superadmin';
+ const scoped=verified&&!!user?.tenantId&&['centre_director','programme_leader'].includes(user.role);
  const allowed=!!user&&(platform||scoped);
  const canInvite=!!user&&['superadmin','centre_director'].includes(user.role)&&user.roles?.includes(user.role);
  const [search,setSearch]=useState(''),[page,setPage]=useState(0),[addOpen,setAddOpen]=useState(false);
  const scope=user?.tenantId?[{column:'tenant_id',operator:'eq' as const,value:user.tenantId}]:[];
  // Platform-wide enumeration is only used for an active, verified superadmin.
  const profileQuery=useSupabaseQuery('profiles',{
-  enabled:allowed,filters:platform?[]:scope,orderBy:{column:'full_name',ascending:true},
+  enabled:allowed,select:'id,user_id,tenant_id,full_name,email',filters:platform?[]:scope,orderBy:{column:'full_name',ascending:true},
  });
  const ids=[...new Set(profileQuery.data.map(p=>p.user_id))];
  const roleQuery=useSupabaseQuery('user_roles',{
   enabled:allowed&&!profileQuery.loading&&!profileQuery.error&&ids.length>0,
-  filters:[{column:'user_id',operator:'in',value:ids}],
+  select:'id,user_id,tenant_id,role',filters:[{column:'user_id',operator:'in',value:ids}],
  });
- const moduleQuery=useSupabaseQuery('modules',{enabled:allowed,filters:platform?[]:scope});
+ const moduleQuery=useSupabaseQuery('modules',{enabled:allowed,select:'id,tenant_id,lecturer_id',filters:platform?[]:scope});
  const loading=profileQuery.loading||roleQuery.loading||moduleQuery.loading;
  const error=profileQuery.error||roleQuery.error||moduleQuery.error;
  const staff=useMemo(()=>{
@@ -48,14 +49,14 @@ function ScopedStaffDirectory(){
   for(const row of roleQuery.data){
    const profile=byId.get(row.user_id);
    if(!profile||!staffRoles.has(row.role))continue;
-   // Legacy null-tenant memberships must still belong to an authorised profile.
-   if(row.tenant_id&&row.tenant_id!==profile.tenant_id)continue;
+   // Only centre-verified membership or the explicit global owner role is counted.
+   if(row.role==='superadmin' ? row.tenant_id!==null : !profile.tenant_id||row.tenant_id!==profile.tenant_id)continue;
    if(!roles.has(row.user_id))roles.set(row.user_id,new Set());
    roles.get(row.user_id)!.add(row.role);
   }
   const assigned=new Map<string,number>();
   for(const mod of moduleQuery.data){
-   if(!mod.lecturer_id)continue;
+   if(!mod.lecturer_id||!byId.has(mod.lecturer_id)||mod.tenant_id!==byId.get(mod.lecturer_id)?.tenant_id)continue;
    assigned.set(mod.lecturer_id,(assigned.get(mod.lecturer_id)||0)+1);
   }
   return profiles.filter(p=>roles.has(p.user_id)).map(p=>{
