@@ -18,7 +18,7 @@ function GuidanceBoundary() {
   );
 }
 
-const inPageLink = 'inline-flex min-h-11 min-w-0 items-center gap-2 rounded-md py-2 text-sm font-semibold text-primary underline decoration-1 underline-offset-4 hover:no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4';
+const inPageLink = 'inline-flex min-h-11 min-w-0 max-w-full items-center gap-2 rounded-md py-2 text-sm font-semibold text-primary underline decoration-1 underline-offset-4 hover:no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4';
 
 export default function InternationalStudy() {
   const { destination } = useParams();
@@ -33,12 +33,12 @@ export default function InternationalStudy() {
         <Seo canonical={hub} title="International Study & Visa Guidance | UniPathway" description="Compare international admissions steps and find official student visa and permit guidance for nine study destinations from Pakistan." />
       )}
       <PublicNav />
-      <div className="mx-auto max-w-7xl space-y-8 px-4 pb-12 pt-6 sm:px-8 sm:pt-10">
+      <div className="mx-auto min-w-0 max-w-7xl space-y-8 px-[min(4vw,1rem)] pb-12 pt-6 [overflow-wrap:anywhere] sm:px-8 sm:pt-10">
         {destination && <nav aria-label="Breadcrumb"><Link className={inPageLink} to={hub}>All international study guides</Link></nav>}
-        <header className="relative overflow-hidden rounded-3xl border border-border bg-primary px-5 py-8 text-primary-foreground sm:p-12">
+        <header className="relative overflow-hidden rounded-3xl border border-border bg-primary px-[min(5vw,1.25rem)] py-8 text-primary-foreground sm:p-12">
           {guide ? (
             <>
-              <p className="text-label text-gold">International study guide</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-primary-foreground/90">International study guide</p>
               <h1 className="mt-3 max-w-3xl text-3xl font-extrabold leading-tight sm:text-5xl">Study in {guide.country === 'United Kingdom' || guide.country === 'United States' || guide.country === 'Netherlands' ? 'the ' : ''}{guide.country}</h1>
               <p className="mt-4 text-base leading-relaxed">{guide.route} and university admissions for students applying from Pakistan.</p>
             </>
@@ -49,7 +49,7 @@ export default function InternationalStudy() {
             </>
           ) : (
             <>
-              <p className="flex items-center gap-2 text-label text-gold"><Globe2 aria-hidden="true" className="size-5" /> UniPathway study abroad</p>
+              <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary-foreground/90"><Globe2 aria-hidden="true" className="size-5" /> UniPathway study abroad</p>
               <h1 className="mt-3 max-w-3xl text-3xl font-extrabold leading-tight sm:text-5xl">International study &amp; visa guidance</h1>
               <p className="mt-4 max-w-2xl text-base leading-relaxed">Find out how to research courses, then check the separate student visa or study permit process with the official authority. Start with a destination below.</p>
             </>
@@ -79,17 +79,17 @@ export default function InternationalStudy() {
           </section>
         </>}
         {guide && <>
-          <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
-            <section aria-labelledby="education-title" className="rounded-2xl border border-border bg-card p-5 sm:p-7">
+          <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+            <section aria-labelledby="education-title" className="min-w-0 rounded-2xl border border-border bg-card px-[min(5vw,1.25rem)] py-5 sm:p-7">
               <BookOpen aria-hidden="true" className="size-5 text-success" />
-              <p className="mt-4 text-label text-success">01 · Education</p>
+              <p className="mt-4 text-xs font-bold uppercase tracking-widest text-success">01 · Education</p>
               <h2 id="education-title" className="mt-2 text-xl font-bold sm:text-2xl">Plan your academic application</h2>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{guide.education}</p>
               <Link to={guide.academicLink} className={`${inPageLink} mt-3`}>Explore {guide.country} study options <ArrowRight aria-hidden="true" className="size-4 shrink-0" /></Link>
             </section>
-            <section aria-labelledby="immigration-title" className="rounded-2xl border border-border bg-card p-5 sm:p-7">
+            <section aria-labelledby="immigration-title" className="min-w-0 rounded-2xl border border-border bg-card px-[min(5vw,1.25rem)] py-5 sm:p-7">
               <ShieldCheck aria-hidden="true" className="size-5 text-success" />
-              <p className="mt-4 text-label text-success">02 · Immigration</p>
+              <p className="mt-4 text-xs font-bold uppercase tracking-widest text-success">02 · Immigration</p>
               <h2 id="immigration-title" className="mt-2 text-xl font-bold sm:text-2xl">{guide.route}: what to check</h2>
               <ol className="mt-4 list-decimal space-y-3 pl-5 text-sm leading-relaxed text-muted-foreground marker:font-bold marker:text-primary">
                 {guide.steps.map(step => <li className="pl-1" key={step}>{step}</li>)}

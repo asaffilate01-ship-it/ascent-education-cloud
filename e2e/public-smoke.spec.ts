@@ -308,4 +308,10 @@ test('UK visa transition and TOEFL enquiry survive the country-to-academic deep 
   await expect(page).toHaveURL(/\/international-study\/uk$/);
   await expect(page.getByRole('link', { name: 'Abroad' })).toHaveAttribute('aria-current', 'page');
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
+
+  await page.goto('/international-study/netherlands');
+  await expect(page.getByRole('heading', { level: 1, name: 'Study in the Netherlands' })).toBeVisible();
+  await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
+  await expect(page.getByRole('link', { name: /NetherlandsWorldwide/ })).toBeVisible();
 });
