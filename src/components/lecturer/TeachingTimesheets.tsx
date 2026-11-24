@@ -47,7 +47,7 @@ function Workspace({uid,tenant,role}:{uid:string;tenant:string;role:TimesheetRol
   if(role!=='lecturer'||!chosen||!validMinutes||evidence.trim().length<5)return;
   await perform(async()=>{
    const r=await db.rpc('submit_unipathway_teaching_timesheet',{p_schedule:chosen.schedule_id,p_date:date,p_minutes:Number(minutes),p_evidence:evidence.trim(),p_expected_updated_at:chosen.updated_at});
-   if(r.error)throw Error();const receipt=readClaimReceipt(r.data,{tenant,date,minutes:Number(minutes)});
+   if(r.error)throw Error();const receipt=readClaimReceipt(r.data,{tenant,lecturer:uid,schedule:chosen.schedule_id,date,minutes:Number(minutes)});
    if(active.current){setSlots(null);setRows(null);setSelected('');setMinutes('');setEvidence('');setNotice('Recorded claim: '+labels[receipt.status]+'. Load the teaching month to review your receipt.');}
   },'Submission was not confirmed. Your entries are retained. Retry the same claim or load the month before making a different submission.');
  }
@@ -55,7 +55,7 @@ function Workspace({uid,tenant,role}:{uid:string;tenant:string;role:TimesheetRol
   if(role!=='centre_director'||!selectedReview||selectedReview.status!=='submitted'||selectedReview.lecturer_id===uid||reviewNote.trim().length<5)return;
   await perform(async()=>{
    const r=await db.rpc('review_unipathway_teaching_timesheet',{p_claim:selectedReview.id,p_revision:selectedReview.revision,p_decision:decision,p_note:reviewNote.trim()});
-   if(r.error)throw Error();readClaimReceipt(r.data,{tenant,date:selectedReview.teaching_date,minutes:selectedReview.actual_minutes,id:selectedReview.id,decision});
+   if(r.error)throw Error();readClaimReceipt(r.data,{tenant,lecturer:selectedReview.lecturer_id,schedule:selectedReview.schedule_id,date:selectedReview.teaching_date,minutes:selectedReview.actual_minutes,id:selectedReview.id,decision});
    if(active.current){setRows(null);setReviewId('');setReviewNote('');setNotice('Independent teaching review recorded. Load the month again to see the confirmed records.');}
   },'The review was not confirmed. Your decision and note are retained; retry the same review or reload the month to reconcile.');
  }

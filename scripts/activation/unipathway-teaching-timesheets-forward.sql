@@ -83,7 +83,7 @@ BEGIN
  SELECT * INTO v FROM unipathway_teaching_ops.timesheets WHERE tenant_id=t AND schedule_id=p_schedule AND teaching_date=p_date FOR UPDATE;
  IF FOUND THEN
   IF v.lecturer_id<>auth.uid() OR v.actual_minutes<>p_minutes OR v.evidence_reference<>note OR v.scheduled_revision<>p_expected_updated_at THEN RAISE EXCEPTION 'Existing claim differs; refresh and contact your centre'; END IF;
-  RETURN jsonb_build_object('id',v.id,'tenant_id',t,'status',v.status,'revision',v.revision,'teaching_date',v.teaching_date,'actual_minutes',v.actual_minutes);
+  RETURN jsonb_build_object('id',v.id,'tenant_id',t,'lecturer_id',v.lecturer_id,'schedule_id',v.schedule_id,'status',v.status,'revision',v.revision,'teaching_date',v.teaching_date,'actual_minutes',v.actual_minutes);
  END IF;
  SELECT * INTO s FROM public.scheduled_lectures WHERE id=p_schedule AND tenant_id=t AND lecturer_id=auth.uid() FOR SHARE;
  IF NOT FOUND OR NOT s.is_active OR s.recurrence<>'weekly' OR s.updated_at IS DISTINCT FROM p_expected_updated_at
@@ -98,7 +98,7 @@ BEGIN
  INSERT INTO unipathway_teaching_ops.timesheets(tenant_id,lecturer_id,schedule_id,module_id,module_title,teaching_date,scheduled_start,scheduled_end,scheduled_revision,planned_minutes,actual_minutes,evidence_reference)
  VALUES(t,auth.uid(),s.id,s.module_id,title,p_date,s.start_time,s.end_time,s.updated_at,planned,p_minutes,note)
  RETURNING * INTO v;
- RETURN jsonb_build_object('id',v.id,'tenant_id',t,'status',v.status,'revision',v.revision,'teaching_date',v.teaching_date,'actual_minutes',v.actual_minutes);
+ RETURN jsonb_build_object('id',v.id,'tenant_id',t,'lecturer_id',v.lecturer_id,'schedule_id',v.schedule_id,'status',v.status,'revision',v.revision,'teaching_date',v.teaching_date,'actual_minutes',v.actual_minutes);
 END $$;
 
 CREATE FUNCTION unipathway_teaching_ops.review(p_claim uuid,p_revision integer,p_decision text,p_note text) RETURNS jsonb
@@ -114,7 +114,7 @@ BEGIN
  ELSE
   UPDATE unipathway_teaching_ops.timesheets SET status=p_decision,revision=2,reviewed_by=auth.uid(),reviewed_at=clock_timestamp(),review_note=note WHERE id=v.id RETURNING * INTO v;
  END IF;
- RETURN jsonb_build_object('id',v.id,'tenant_id',t,'status',v.status,'revision',v.revision,'teaching_date',v.teaching_date,'actual_minutes',v.actual_minutes);
+ RETURN jsonb_build_object('id',v.id,'tenant_id',t,'lecturer_id',v.lecturer_id,'schedule_id',v.schedule_id,'status',v.status,'revision',v.revision,'teaching_date',v.teaching_date,'actual_minutes',v.actual_minutes);
 END $$;
 
 CREATE FUNCTION unipathway_teaching_ops.monthly(p_month date,p_role text) RETURNS jsonb

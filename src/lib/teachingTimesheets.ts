@@ -1,7 +1,7 @@
 export type TimesheetRole='lecturer'|'centre_director'|'finance_officer';
 export type TeachingSlot={schedule_id:string;module_id:string;module_title:string;start_time:string;end_time:string;updated_at:string;planned_minutes:number};
 export type TeachingClaim={id:string;tenant_id:string;lecturer_id:string;lecturer_name:string;schedule_id:string;module_id:string;module_title:string;teaching_date:string;scheduled_start:string;scheduled_end:string;planned_minutes:number;actual_minutes:number;status:'submitted'|'approved'|'rejected';revision:1|2;submitted_at:string;reviewed_at:string|null;evidence_reference:string|null;review_note:string|null};
-export type ClaimReceipt={id:string;tenant_id:string;teaching_date:string;actual_minutes:number;status:TeachingClaim['status'];revision:1|2};
+export type ClaimReceipt={id:string;tenant_id:string;lecturer_id:string;schedule_id:string;teaching_date:string;actual_minutes:number;status:TeachingClaim['status'];revision:1|2};
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const isId=(s:unknown):s is string=>typeof s==='string'&&uuid.test(s);
 const record=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object'&&!Array.isArray(v);
@@ -32,9 +32,9 @@ export function readTeachingClaims(raw:unknown,tenant:string,role:TimesheetRole,
  }
  return raw.rows as TeachingClaim[];
 }
-export function readClaimReceipt(raw:unknown,expected:{tenant:string;date:string;minutes:number;id?:string;decision?:'approved'|'rejected'}):ClaimReceipt{
- if(!record(raw)||!isId(raw.id)||raw.tenant_id!==expected.tenant||raw.teaching_date!==expected.date||raw.actual_minutes!==expected.minutes||!claimState(raw.status,raw.revision)||(expected.id&&raw.id!==expected.id)||(expected.decision&&raw.status!==expected.decision))throw Error('Invalid timesheet receipt');
- return raw as ClaimReceipt;
+export function readClaimReceipt(raw:unknown,expected:{tenant:string;lecturer:string;schedule:string;date:string;minutes:number;id?:string;decision?:'approved'|'rejected'}):ClaimReceipt{
+ if(!record(raw)||!isId(raw.id)||raw.tenant_id!==expected.tenant||raw.lecturer_id!==expected.lecturer||raw.schedule_id!==expected.schedule||raw.teaching_date!==expected.date||raw.actual_minutes!==expected.minutes||!claimState(raw.status,raw.revision)||(expected.id&&raw.id!==expected.id)||(expected.decision&&raw.status!==expected.decision))throw Error('Invalid timesheet receipt');
+ return raw as unknown as ClaimReceipt;
 }
 export function teachingClaimTotals(rows:readonly TeachingClaim[]){
  return rows.reduce((totals,r)=>{totals[r.status].sessions++;totals[r.status].minutes+=r.actual_minutes;return totals;},{submitted:{sessions:0,minutes:0},approved:{sessions:0,minutes:0},rejected:{sessions:0,minutes:0}});
