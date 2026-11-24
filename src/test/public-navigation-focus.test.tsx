@@ -43,3 +43,18 @@ it('keeps public mobile tabs keyboard-visible with correct active state and acce
  expect(within(nav).getAllByRole('link')).toHaveLength(5);
  expect(nav.querySelectorAll('svg[aria-hidden="true"]')).toHaveLength(5);
 });
+
+
+it('lets desktop visitors search all course options using reordered words and restore the default list',()=>{
+ render(<MemoryRouter><PublicNav/></MemoryRouter>);
+ const nav=screen.getByRole('navigation',{name:'Main navigation'});
+ fireEvent.click(within(nav).getByRole('button',{name:'Courses'}));
+ const panel=screen.getByRole('region',{name:'Course options'});
+ const input=within(panel).getByRole('searchbox',{name:'Search course options'});
+ fireEvent.change(input,{target:{value:'preparation IELTS'}});
+ expect(within(panel).getByRole('link',{name:/IELTS preparation/})).toHaveAttribute('href','/ielts-preparation');
+ fireEvent.change(input,{target:{value:'no-matching-course-123'}});
+ expect(within(panel).getByText(/No matching course options/)).toBeInTheDocument();
+ fireEvent.click(within(panel).getByRole('button',{name:'Clear course options'}));
+ expect(input).toHaveValue('');expect(input).toHaveFocus();
+});

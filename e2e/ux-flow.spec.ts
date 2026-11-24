@@ -259,3 +259,24 @@ test('dashboard keeps its phone header and notification controls reachable at en
   await expect(page.getByRole('menu', {name: 'Notifications'})).toBeInViewport({ratio: 1});
   await expect(page.getByRole('link', {name: 'View all notifications'})).toBeInViewport({ratio: 1});
 });
+
+
+test('student bottom navigation follows the active task on phones and tablets and stays hidden on desktop',async({context,page})=>{
+ await records(context,'student',{});
+ for(const width of [360,768,1024]){
+  await page.setViewportSize({width,height:1000});
+  await page.goto('/student/courses');
+  await dismissConsent(page);
+  await expect(page.getByRole('heading',{name:'My courses',exact:true})).toBeVisible();
+  const tabs=page.getByRole('navigation',{name:'Dashboard mobile tabs'});
+  if(width<1024){
+   await expect(tabs).toBeVisible();
+   await expect(tabs.getByRole('link',{name:'Courses',exact:true})).toHaveAttribute('aria-current','page');
+  }else await expect(tabs).toBeHidden();
+ }
+ await page.setViewportSize({width:390,height:844});
+ await page.goto('/education-centre');
+ await expect(page.getByRole('navigation',{name:'Quick navigation'})).toBeVisible();
+ await expect(page.getByRole('navigation',{name:'Dashboard mobile tabs'})).toHaveCount(0);
+ await expect(page.getByRole('navigation',{name:'Quick navigation'}).getByRole('link',{name:'Courses'})).toHaveAttribute('aria-current','page');
+});
