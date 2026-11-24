@@ -53,8 +53,8 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
       <DashboardSidebar />
       <div className="lg:pl-60 pl-0">
         {/* Premium Top Bar */}
-        <header className="sticky top-0 z-40 min-h-14 flex items-center justify-between gap-x-1 gap-y-1 sm:flex-wrap sm:gap-x-3 py-1.5 sm:py-2 px-3 sm:px-4 lg:px-6 border-b border-border/40 bg-card/90 backdrop-blur-xl shadow-sm">
-          <div className="ml-12 flex min-h-11 min-w-0 flex-[1_1_0%] sm:flex-[1_1_6rem] flex-col justify-center lg:ml-0">
+        <header className="sticky top-0 z-40 min-h-14 flex flex-wrap items-center justify-between gap-x-2 gap-y-2 sm:gap-x-3 py-1.5 sm:py-2 px-3 sm:px-4 lg:px-6 border-b border-border/40 bg-card/90 backdrop-blur-xl shadow-sm">
+          <div className="ml-12 flex min-h-11 min-w-0 flex-[1_1_6rem] flex-col justify-center lg:ml-0">
             {breadcrumbs.length > 1 && (
               <nav aria-label="Breadcrumb" className="hidden min-w-0 flex-wrap md:flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5">
                 {breadcrumbs.map((bc, i) => (
@@ -71,7 +71,7 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
             )}
             <p className="truncate text-sm font-semibold text-foreground">UniPathway <span className="hidden sm:inline font-normal text-muted-foreground">/ Your workspace</span></p>
           </div>
-          <div role="group" aria-label="Workspace actions" className="ml-auto flex min-w-0 shrink-0 max-w-full items-center sm:flex-wrap justify-end gap-1 lg:gap-2">
+          <div role="group" aria-label="Workspace actions" className="ml-auto flex min-w-0 max-w-full flex-wrap items-center justify-end gap-1 lg:gap-2">
             {user?.role==='student'&&<Link className="hidden sm:inline-flex min-h-11 items-center rounded-lg border px-3 text-xs hover:bg-accent" to="/student/downloads">Saved learning</Link>}
             <Link className="hidden md:inline-flex min-h-11 items-center rounded-lg border px-3 text-xs hover:bg-accent" to="/workspace">Workspace</Link>
             <button
