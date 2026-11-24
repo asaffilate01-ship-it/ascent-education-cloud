@@ -1,3 +1,4 @@
+import {db} from '@/lib/db';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -31,15 +32,16 @@ export default function ApplicationDraft({kind}:{kind:Kind}) {
   })().catch(()=>{if(active)setFailed(true);});
   return ()=>{active=false;};
  },[id,tenant,kind,retry]);
- async function save(){
+ async function save(submit=false){
   if(!id||!tenant||!ready||saving)return;
   if(kind==='lecturer'&&Array.from({length:20},(_,i)=>i+1).some(i=>competencyFields.some(f=>answers['Competency '+i+' — '+f]?.trim())&&(!answers['Competency '+i+' — Subject']?.trim()||!answers['Competency '+i+' — Maximum level / grade']?.trim()))){toast.error('Enter both subject and maximum level for each teaching competency.');return;}
+  if(submit&&(!answers['Full legal name']?.trim()||!answers['Email']?.trim())){toast.error('Name and email are required to submit.');return;}
   setSaving(true);
   try{
    const {error}=await (supabase.from as any)('onboarding_application_drafts').upsert({user_id:id,tenant_id:tenant,kind,answers,updated_at:new Date().toISOString()},{onConflict:'user_id,tenant_id,kind'});
    if(error)throw error;
-   toast.success('Application draft saved. Verification and approval are separate.');
-  }catch{toast.error('Unable to save application. Please try again.');}finally{setSaving(false);}
+   if(submit){const result=await db.rpc('record_onboarding_application_event',{p_user:id,p_kind:kind,p_snapshot:answers,p_action:'submitted',p_note:''});if(result.error)throw Error();toast.success('Application submitted for screening.');}else toast.success('Application draft saved. Verification and approval are separate.');
+  }catch{toast.error('Unable to complete the requested action. Your draft may have been saved; please retry.');}finally{setSaving(false);}
  }
  return <section className="surface-card p-5 mb-6 space-y-4">
   <h2 className="text-lg font-semibold">{kind==='lecturer'?'Part-time teaching application':'Student application'}</h2>
@@ -49,7 +51,7 @@ export default function ApplicationDraft({kind}:{kind:Kind}) {
    <div className="grid gap-4 md:grid-cols-2">{fields[kind].map(field=><label key={field} className="text-sm font-medium space-y-1 block">{field}<textarea rows={2} maxLength={1000} className="w-full rounded-md border bg-background p-2" value={answers[field]||''} onChange={e=>setAnswers(a=>({...a,[field]:e.target.value}))}/></label>)}</div>
    {kind==='lecturer'&&<fieldset className="space-y-3"><legend className="font-semibold">Subject-by-subject teaching competencies</legend><p className="text-sm text-muted-foreground">Declare the maximum level for each subject separately. These are self-reported, not approved teaching permissions. Include the examination board or qualification framework (e.g. Punjab Board, Cambridge, OTHM, ACCA).</p>{Array.from({length:20},(_,i)=>i).filter(i=>i===0||competencyFields.some(f=>answers['Competency '+(i+1)+' — '+f])||answers['Competency '+(i+1)+' — added']==='yes').map(i=><div key={i} className="rounded-lg border p-3 grid gap-3 sm:grid-cols-2"><div className="sm:col-span-2 flex justify-between items-center"><h3 className="font-medium">Subject {i+1}</h3><Button type="button" variant="outline" onClick={()=>setAnswers(a=>Object.fromEntries(Object.entries(a).filter(([key])=>!key.startsWith('Competency '+(i+1)+' — '))))}>Clear subject</Button></div>{competencyFields.map(f=>{const key='Competency '+(i+1)+' — '+f;return <label key={key} className="text-sm block">{f}<input maxLength={200} className="w-full rounded-md border bg-background p-2" value={answers[key]||''} onChange={e=>setAnswers(a=>({...a,[key]:e.target.value}))}/></label>;})}</div>)}<Button type="button" variant="outline" disabled={Array.from({length:19},(_,i)=>i+1).every(i=>competencyFields.some(f=>answers['Competency '+(i+1)+' — '+f])||answers['Competency '+(i+1)+' — added']==='yes')} onClick={()=>setAnswers(a=>{const next=Array.from({length:19},(_,i)=>i+1).find(i=>!competencyFields.some(f=>a['Competency '+(i+1)+' — '+f])&&a['Competency '+(i+1)+' — added']!=='yes');return next===undefined?a:{...a,['Competency '+(next+1)+' — added']:'yes'};})}>Add another subject</Button></fieldset>}
    <fieldset className="space-y-2"><legend className="font-semibold">Weekly availability (include time zone)</legend><div className="grid gap-3 sm:grid-cols-2">{days.map(day=><label key={day} className="text-sm block">{day}<input maxLength={150} className="w-full rounded-md border bg-background p-2" placeholder="09:00–12:00 or unavailable" value={answers[day]||''} onChange={e=>setAnswers(a=>({...a,[day]:e.target.value}))}/></label>)}</div></fieldset>
-   <Button type="submit" disabled={saving}>{saving?'Saving…':'Save application draft'}</Button>
+   <div className="flex flex-wrap gap-2"><Button type="submit" variant="outline" disabled={saving}>{saving?'Saving…':'Save application draft'}</Button><Button type="button" disabled={saving} onClick={()=>void save(true)}>Submit for screening</Button></div>
   </form>}
  </section>;
 }
