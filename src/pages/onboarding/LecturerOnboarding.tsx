@@ -1,3 +1,4 @@
+import ApplicationDraft from '@/components/admissions/ApplicationDraft';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { CheckCircle, Upload, FileText, Shield, Award, User, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -57,11 +58,12 @@ export default function LecturerOnboarding() {
       // Check if doc already exists
       const existing = docs.find(d => d.document_type === docType);
       if (existing) {
-        await supabase.from('kyc_documents')
+        const { error: updateErr } = await supabase.from('kyc_documents')
           .update({ file_name: file.name, file_url: filePath, status: 'pending' })
           .eq('id', existing.id);
+        if (updateErr) throw updateErr;
       } else {
-        await supabase.from('kyc_documents').insert({
+        const { error: insertErr } = await supabase.from('kyc_documents').insert({
           user_id: user.id,
           document_type: docType,
           file_name: file.name,
@@ -69,6 +71,7 @@ export default function LecturerOnboarding() {
           status: 'pending',
           tenant_id: user.tenantId || null,
         });
+        if (insertErr) throw insertErr;
       }
       toast.success(`${file.name} uploaded successfully`);
       fetchDocs();
@@ -92,9 +95,10 @@ export default function LecturerOnboarding() {
 
   return (
     <DashboardLayout
-      title="Staff Onboarding"
-      subtitle="Upload required documents for safeguarding and compliance"
+      title="Part-time Tutor & Lecturer Onboarding"
+      subtitle="All teaching appointments are part-time, whether classroom, remote or hybrid. Upload evidence for verification."
     >
+      <ApplicationDraft kind="lecturer" />
       {/* Progress */}
       <div className="surface-card p-5 mb-6">
         <div className="flex items-center justify-between mb-2">

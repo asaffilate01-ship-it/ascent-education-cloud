@@ -1,3 +1,4 @@
+import ApplicationReviewQueue from '@/components/admissions/ApplicationReviewQueue';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
@@ -119,6 +120,7 @@ export default function AdmissionsCRM() {
         </div>
       }
     >
+      <ApplicationReviewQueue kind="student" />
       <section className="mb-5 rounded-xl border bg-card p-4" aria-label="Admissions review tasks">
        <h2 className="font-semibold">Application checks and handover</h2>
        <p className="mt-1 text-sm text-muted-foreground">Review identity, eligibility, finance, accepted offers, correct programme and module access before enrolment. No stage drag proves identity or payment.</p>

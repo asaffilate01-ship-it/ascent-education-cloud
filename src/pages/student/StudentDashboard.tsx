@@ -69,7 +69,7 @@ function StudentDashboardContent() {
 
   const stats = [
     { label: 'Courses', value: String(programmes.length), icon: BookOpen },
-    { label: 'Modules', value: String(modules.length), change: 'enrolled', changeType: 'neutral' as const, icon: Video },
+    { label: 'Modules', value: String(modules.length), change: 'programme curriculum', changeType: 'neutral' as const, icon: Video },
     { label: 'Approved Average', value: gradeError||gradeLoading?'—':approvedAverage===null?'—':`${approvedAverage}%`, change: 'Latest 100 released attempts; not a qualification grade', changeType: 'positive' as const, icon: BarChart3 },
   ];
 
@@ -131,12 +131,13 @@ function StudentDashboardContent() {
             <MessageSquare className="w-4 h-4 text-primary" /> Programme Overview
           </h3>
           <div className="space-y-4">
-            {programmes.slice(0, 3).map((p) => (
+            {programmes.map((p) => (
               <div key={p.id}>
                 <div className="flex items-center justify-between mb-1.5">
                   <div>
                     <p className="text-sm font-medium">{p.title}</p>
                     <p className="text-xs text-muted-foreground">{p.level} · {p.awarding_body}</p>
+                    <details className="mt-2"><summary className="cursor-pointer text-sm">{modules.filter(m=>m.programme_id===p.id).length} programme {modules.filter(m=>m.programme_id===p.id).length===1?'module':'modules'}</summary><ul className="mt-2 space-y-1 text-sm">{modules.filter(m=>m.programme_id===p.id).map(m=><li key={m.id}><Link className="underline" to={'/student/module?module='+encodeURIComponent(m.id)}>{[m.code,m.title].filter(Boolean).join(' — ')}</Link></li>)}</ul><p className="text-xs text-muted-foreground">Modules in your enrolled programme curriculum; individual elective registration is not confirmed here.</p></details>
                   </div>
                 </div>
               </div>

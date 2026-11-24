@@ -1,3 +1,4 @@
+import ModuleRegistrationEditor from '@/components/admissions/ModuleRegistrationEditor';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatusBadge from '@/components/ui/StatusBadge';
 import DataTable from '@/components/ui/DataTable';
@@ -11,8 +12,8 @@ import {useAuth} from '@/contexts/AuthContext';
 import {DashboardSkeleton} from '@/components/ui/Skeletons';
 
 type StudentRow={
- id:string;studentId:string;name:string;email:string;programme:string;
- enrolledAt:string;status:string;attendanceRate:number|null;
+ id:string;studentId:string;programmeId:string;name:string;email:string;programme:string;
+ modules:string[];enrolledAt:string;status:string;attendanceRate:number|null;
 };
 export default function StudentManagement(){
  const {user}=useAuth();
@@ -35,15 +36,18 @@ function ScopedStudentRegistry(){
   setLoading(true);setError('');setStudents([]);
   void (async()=>{
    try{
-    const [es,ps,programmes,attendance]=await Promise.all([
+    const [es,ps,programmes,attendance,modules]=await Promise.all([
      supabase.from('student_enrolments').select('id,student_id,programme_id,status,enrolled_at').eq('tenant_id',tenant),
      supabase.from('profiles').select('user_id,tenant_id,full_name,email').eq('tenant_id',tenant),
      supabase.from('programmes').select('id,title').eq('tenant_id',tenant),
      supabase.from('attendance_records').select('student_id,status').eq('tenant_id',tenant),
+     supabase.from('modules').select('id,programme_id,title,code').eq('tenant_id',tenant),
     ]);
-    if([es,ps,programmes,attendance].some(q=>q.error))throw Error('Student registry data unavailable');
+    if([es,ps,programmes,attendance,modules].some(q=>q.error))throw Error('Student registry data unavailable');
     const profiles=new Map((ps.data||[]).filter(p=>p.tenant_id===tenant).map(p=>[p.user_id,p]));
     const titles=new Map((programmes.data||[]).map(p=>[p.id,p.title]));
+    const moduleMap=new Map<string,string[]>();
+    for(const m of modules.data||[]){const list=moduleMap.get(m.programme_id)||[];list.push([m.code,m.title].filter(Boolean).join(' — '));moduleMap.set(m.programme_id,list);}
     const marks=new Map<string,{present:number;total:number}>();
     for(const mark of attendance.data||[]){
      if(!['present','late','absent'].includes(mark.status))continue;
@@ -54,9 +58,9 @@ function ScopedStudentRegistry(){
     const rows=(es.data||[]).map(e=>{
      const profile=profiles.get(e.student_id);
      const record=marks.get(e.student_id);
-     return {id:e.id,studentId:e.student_id,name:profile?.full_name||'Student record unavailable',
+     return {id:e.id,studentId:e.student_id,programmeId:e.programme_id,name:profile?.full_name||'Student record unavailable',
       email:profile?.email||'',programme:titles.get(e.programme_id)||'Programme record unavailable',
-      enrolledAt:e.enrolled_at,status:e.status,
+      modules:moduleMap.get(e.programme_id)||[],enrolledAt:e.enrolled_at,status:e.status,
       attendanceRate:record&&record.total?Math.round(record.present*100/record.total):null} satisfies StudentRow;
     });
     if(live)setStudents(rows);
@@ -67,7 +71,7 @@ function ScopedStudentRegistry(){
   return()=>{live=false;};
  },[authorised,tenant,refresh]);
  const filtered=useMemo(()=>students.filter(row=>
-  [row.name,row.email,row.programme].some(value=>value.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()))
+  [row.name,row.email,row.programme,...row.modules].some(value=>value.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()))
  ),[students,search]);
  const count=filtered.length;
  const pages=Math.max(1,Math.ceil(count/20));
@@ -75,6 +79,7 @@ function ScopedStudentRegistry(){
  const columns=[
   {key:'name',label:'Learner',render:(s:StudentRow)=><div><p className="text-sm font-semibold">{s.name}</p><p className="text-xs text-muted-foreground">{s.email}</p></div>},
   {key:'programme',label:'Programme',render:(s:StudentRow)=><span className="text-sm">{s.programme}</span>},
+  {key:'modules',label:'Programme modules',render:(s:StudentRow)=><div><details><summary className="cursor-pointer text-sm">{s.modules.length} curriculum modules</summary><ul className="mt-2 space-y-1 text-xs">{s.modules.map((m,i)=><li key={i}>{m}</li>)}</ul><p className="mt-2 text-xs text-muted-foreground">Programme curriculum, not individually confirmed module registrations.</p></details><ModuleRegistrationEditor key={s.id} enrolmentId={s.id} tenantId={tenant!} programmeId={s.programmeId} active={s.status==='active'}/></div>},
   {key:'attendance',label:'Recorded attendance',render:(s:StudentRow)=><span className="text-sm">{s.attendanceRate===null?'Not available':s.attendanceRate+'%'}</span>},
   {key:'status',label:'Recorded enrolment status',render:(s:StudentRow)=><StatusBadge status={s.status} variant={s.status==='active'?'success':'neutral'}/>}
  ];
@@ -101,7 +106,7 @@ function ScopedStudentRegistry(){
   <label className="mb-4 block max-w-xl text-sm font-semibold">Search centre enrolments
    <span className="relative mt-2 block"><Search className="absolute left-3 top-3 size-4 text-muted-foreground"/>
     <input aria-label="Search centre enrolments" value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}}
-     type="search" maxLength={120} placeholder="Name, email or programme"
+     type="search" maxLength={120} placeholder="Name, email, programme or module"
      className="min-h-11 w-full rounded-lg border bg-background pl-9 pr-3 text-sm"/>
    </span>
   </label>

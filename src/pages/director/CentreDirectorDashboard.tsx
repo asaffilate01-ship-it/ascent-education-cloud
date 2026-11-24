@@ -1,3 +1,4 @@
+import ApplicationReviewQueue from '@/components/admissions/ApplicationReviewQueue';
 import {Link} from 'react-router-dom';
 import {useAuth} from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -76,6 +77,8 @@ export default function CentreDirectorDashboard() {
         </div>
       }
     >
+      <ApplicationReviewQueue kind="student" />
+      <ApplicationReviewQueue kind="lecturer" />
       <section aria-label="Next actions" className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Link to="/director/admissions" className="rounded-xl border bg-card p-5 hover:bg-accent"><h2 className="font-semibold">Review admissions</h2><p className="mt-2 text-sm text-muted-foreground">{applications.filter(a=>['lead','applied','documents_submitted'].includes(a.stage)).length} application(s) awaiting initial review. {deposits} at deposit-paid stage need enrolment checks.</p></Link>
         <Link to="/director/finance" className="rounded-xl border bg-card p-5 hover:bg-accent"><h2 className="font-semibold">Follow up payments</h2><p className="mt-2 text-sm text-muted-foreground">{overdueCount} invoice(s) marked overdue. Check the payer and any government or employer funding before contacting learners.</p></Link>

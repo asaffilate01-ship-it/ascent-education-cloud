@@ -19,13 +19,14 @@ const state=vi.hoisted(()=>({
    {id:'p1',tenant_id:'centre-a',title:'Business'},
    {id:'p2',tenant_id:'centre-b',title:'Another course'}
   ],
+  modules:[{id:'m1',programme_id:'p1',tenant_id:'centre-a',title:'Business communication',code:'B1'},{id:'m2',programme_id:'p2',tenant_id:'centre-b',title:'Private module',code:'B2'}],
   attendance_records:[{student_id:'student-a',tenant_id:'centre-a',status:'present'}],
  } as Record<string,Record<string,unknown>[]>,
 }));
 vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:state.user})}));
 vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:{children:React.ReactNode})=><main>{children}</main>}));
 vi.mock('@/components/ui/StatCard',()=>({default:({label,value}:any)=><p>{label}: {value}</p>}));
-vi.mock('@/components/ui/DataTable',()=>({default:({data}:any)=><div>{data.map((x:any)=><p key={x.id}>{x.name} — {x.programme}</p>)}</div>}));
+vi.mock('@/components/ui/DataTable',()=>({default:({data}:any)=><div>{data.map((x:any)=><p key={x.id}>{x.name} — {x.programme} — {x.modules?.join(', ')}</p>)}</div>}));
 vi.mock('@/integrations/supabase/client',()=>({supabase:{from:(table:string)=>{
  const filters:{column:string;value:unknown}[]=[];
  const q:any={
@@ -46,8 +47,10 @@ it('restricts every management registry query to the verified centre and does no
  show();
  expect(await screen.findByText(/Student in my centre/)).toBeInTheDocument();
  expect(screen.queryByText(/Private other centre/)).toBeNull();
+ expect(screen.getByText(/Business communication/)).toBeInTheDocument();
+ expect(screen.queryByText(/Private module/)).toBeNull();
  for(const q of state.queries)expect(q.filters).toContainEqual({column:'tenant_id',value:'centre-a'});
- expect(state.queries.map(q=>q.table).sort()).toEqual(['attendance_records','profiles','programmes','student_enrolments']);
+ expect(state.queries.map(q=>q.table).sort()).toEqual(['attendance_records','modules','profiles','programmes','student_enrolments']);
  expect(screen.queryByText(/At Risk/)).toBeNull();
  expect(screen.queryByText(/Generate Certificate/)).toBeNull();
 });
