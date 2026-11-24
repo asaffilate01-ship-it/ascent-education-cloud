@@ -1,3 +1,4 @@
+import TeachingTimesheets from '@/components/lecturer/TeachingTimesheets';
 import {Link} from 'react-router-dom';
 import {BookOpen,ArrowRight} from 'lucide-react';
 import {Button} from '@/components/ui/button';
@@ -34,6 +35,7 @@ function TeachingHome(){
    </nav>
   </section>
   <TodayTeachingPlan modules={modules}/>
+  <TeachingTimesheets/>
   <section className="rounded-xl border bg-card p-4 sm:p-5" aria-labelledby="lecturer-modules-title">
    <div className="flex flex-wrap items-center justify-between gap-3">
     <div><h2 id="lecturer-modules-title" className="text-lg font-semibold">My assigned modules</h2><p className="mt-1 text-sm text-muted-foreground">{modules.length} assigned · {modules.filter(module=>module.status==='active').length} active</p></div>

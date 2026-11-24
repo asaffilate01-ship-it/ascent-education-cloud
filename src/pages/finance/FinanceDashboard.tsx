@@ -1,3 +1,4 @@
+import TeachingTimesheets from '@/components/lecturer/TeachingTimesheets';
 import TeachingRemunerationPlanner from '@/components/finance/TeachingRemunerationPlanner';
 import {useEffect, useMemo, useRef, useState} from 'react';
 import {Link} from 'react-router-dom';
@@ -174,6 +175,7 @@ function FinanceWorkspace() {
         {user?.role === 'finance_officer' && <Button asChild variant="outline"><Link to="/finance/payments">Review payment records</Link></Button>}
         {user?.role !== 'superadmin' && <Button asChild variant="outline"><Link to={user?.role === 'centre_director' ? '/director/funding' : '/finance/funding'}>Review sponsor funding</Link></Button>}
       </div>
+      <TeachingTimesheets/>
       <TeachingRemunerationPlanner/>
       {loading ? <p role="status">Loading authorised centre invoices…</p> : dataError ?
         <section role="alert" className="space-y-3 rounded-xl border border-destructive p-4"><p>{dataError}</p><Button variant="outline" onClick={() => void refetch()}>Retry invoices</Button></section> :
