@@ -1,0 +1,68 @@
+import {afterEach,beforeEach,describe,expect,it,vi} from 'vitest';
+import {cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
+import ApplicationDraft from '@/components/admissions/ApplicationDraft';
+import ApplicationReviewQueue from '@/components/admissions/ApplicationReviewQueue';
+const mock=vi.hoisted(()=>({user:{id:'user',tenantId:'centre',role:'lecturer',roles:['lecturer']} as {id:string;tenantId:string;role:string;roles:string[]},from:vi.fn(),upsert:vi.fn(),rpc:vi.fn(),read:vi.fn(),range:vi.fn(),status:vi.fn()}));
+vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:mock.user,loading:false})}));
+vi.mock('@/integrations/supabase/client',()=>({supabase:{from:(...args:unknown[])=>mock.from(...args)}}));
+vi.mock('@/lib/db',()=>({db:{rpc:(...args:unknown[])=>mock.rpc(...args)}}));
+vi.mock('sonner',()=>({toast:{success:vi.fn()}}));
+vi.mock('@/components/admissions/ApplicationStatus',()=>({default:({userId}:{userId:string})=>{mock.status(userId);return <p>Screening status for {userId}</p>;}}));
+vi.mock('@/components/admissions/TeachingCompetencyStatus',()=>({default:()=>null}));
+vi.mock('@/components/admissions/TeachingCompetencyReview',()=>({default:()=>null}));
+vi.mock('@/components/admissions/ApplicationScreening',()=>({default:()=>null}));
+beforeEach(()=>{
+ vi.clearAllMocks();
+ mock.user={id:'user',tenantId:'centre',role:'lecturer',roles:['lecturer']};
+ mock.read.mockResolvedValue({data:{answers:{'Full legal name':'Applicant',Email:'applicant@example.test'}},error:null});
+ mock.range.mockResolvedValue({data:[],error:null});
+ mock.upsert.mockResolvedValue({error:null});mock.rpc.mockResolvedValue({error:null});
+ mock.from.mockImplementation(()=>{const q={select:()=>q,eq:()=>q,order:()=>q,maybeSingle:mock.read,range:mock.range,upsert:mock.upsert};return q;});
+});
+afterEach(cleanup);
+describe('sectioned onboarding and responsive review',()=>{
+ it('keeps partial competency drafts and earlier answers when navigating, then prevents incomplete submission',async()=>{
+  render(<ApplicationDraft kind="lecturer"/>);
+  await screen.findByDisplayValue('Applicant');
+  fireEvent.change(screen.getByLabelText(/Full legal name/),{target:{value:'Updated applicant'}});
+  fireEvent.click(screen.getByRole('button',{name:'3. Subjects & levels'}));
+  fireEvent.change(screen.getByLabelText('Subject',{exact:true}),{target:{value:'Maths'}});
+  fireEvent.click(screen.getByRole('button',{name:'Save draft'}));
+  await waitFor(()=>expect(mock.upsert).toHaveBeenCalledWith(expect.objectContaining({answers:expect.objectContaining({'Full legal name':'Updated applicant','Competency 1 — Subject':'Maths'})}),expect.anything()));
+  await screen.findByText('Application draft saved.',{selector:'p[role="status"]'});
+  fireEvent.click(screen.getByRole('button',{name:'6. Review & submit'}));
+  expect(screen.getByText('Updated applicant')).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button',{name:'Submit for screening'}));
+  expect(screen.getByRole('alert')).toHaveTextContent('For each declared subject');
+  expect(mock.rpc).not.toHaveBeenCalled();
+  expect(screen.getByRole('heading',{name:'Subjects & levels'})).toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText('Curriculum / awarding body'),{target:{value:'Cambridge'}});
+  fireEvent.change(screen.getByLabelText('Maximum level / grade'),{target:{value:'A Level'}});
+  fireEvent.click(screen.getByRole('button',{name:'6. Review & submit'}));
+  fireEvent.click(screen.getByRole('button',{name:'Submit for screening'}));
+  await waitFor(()=>expect(mock.rpc).toHaveBeenCalledWith('record_onboarding_application_event',expect.objectContaining({p_kind:'lecturer',p_action:'submitted',p_snapshot:expect.objectContaining({'Competency 1 — Maximum level / grade':'A Level'})})));
+ });
+ it('only mounts screening status for the expanded application and distinguishes page end',async()=>{
+  mock.user={id:'director',tenantId:'centre',role:'centre_director',roles:['centre_director']};
+  mock.range.mockResolvedValue({error:null,data:['a','b'].map((id,i)=>({user_id:id,tenant_id:'centre',kind:'student',answers:{'Full legal name':i?'Second applicant':'First applicant'},updated_at:'2026-11-24T12:00:00Z'}))});
+  render(<ApplicationReviewQueue kind="student"/>);
+  expect(mock.from).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole('button',{name:'Review applications'}));
+  const first=await screen.findByRole('button',{name:/First applicant/});
+  expect(mock.status).not.toHaveBeenCalled();
+  expect(screen.getByRole('button',{name:'Next'})).toBeDisabled();
+  fireEvent.click(first);
+  expect(screen.getByText('Screening status for a')).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button',{name:/Second applicant/}));
+  expect(screen.queryByText('Screening status for a')).toBeNull();
+  expect(screen.getByText('Screening status for b')).toBeInTheDocument();
+ });
+ it('rejects mixed-centre review responses instead of rendering partial applicant details',async()=>{
+  mock.user={id:'director',tenantId:'centre',role:'centre_director',roles:['centre_director']};
+  mock.range.mockResolvedValue({error:null,data:[{user_id:'a',tenant_id:'elsewhere',kind:'student',answers:{'Full legal name':'Foreign applicant'},updated_at:'2026-11-24T12:00:00Z'}]});
+  render(<ApplicationReviewQueue kind="student"/>);
+  fireEvent.click(screen.getByRole('button',{name:'Review applications'}));
+  expect(await screen.findByRole('alert')).toHaveTextContent('Applications could not be loaded');
+  expect(screen.queryByText(/Foreign applicant/)).toBeNull();
+ });
+});
