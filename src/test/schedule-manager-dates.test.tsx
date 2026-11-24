@@ -120,3 +120,5 @@ describe('weekly timetable calendar dates', () => {
     await screen.findByText(/Timetable updated/);
   });
 });
+
+it('saves a Sunday tuition session with a 45-minute duration',async()=>{render(<ScheduleManager/>);fireEvent.change(screen.getByLabelText('Module'),{target:{value:'module'}});fireEvent.change(screen.getByLabelText('Day'),{target:{value:'7'}});fireEvent.change(screen.getByLabelText('Session duration'),{target:{value:'45'}});fireEvent.change(screen.getByLabelText('Class time (PKT)'),{target:{value:'11:15'}});fireEvent.click(screen.getByRole('button',{name:'Save weekly class'}));await waitFor(()=>expect(mock.add).toHaveBeenCalledWith(expect.objectContaining({day_of_week:7,start_time:'11:15:00',end_time:'12:00:00'})));});
