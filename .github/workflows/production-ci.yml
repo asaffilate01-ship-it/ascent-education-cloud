@@ -76,6 +76,8 @@ jobs:
         run: node scripts/test-teaching-timesheets-db.mjs
       - name: Teaching rate agreements and approved remuneration rehearsal
         run: node scripts/test-teaching-rates-db.mjs
+      - name: Public certificate status and legacy lookup privacy rehearsal
+        run: node scripts/test-certificate-status-db.mjs
       - name: Fresh schema and access checks (hosted extensions deferred)
         run: npm run test:fresh-schema
   edge-tests:
