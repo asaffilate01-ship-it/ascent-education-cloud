@@ -1,3 +1,4 @@
+import GrossPreparation from '@/components/finance/GrossPreparation';
 import TeachingRateRegister from '@/components/finance/TeachingRateRegister';
 import TeachingTimesheets from '@/components/lecturer/TeachingTimesheets';
 import {useMemo,useState} from 'react';
@@ -96,6 +97,7 @@ function ScopedStaffDirectory(){
   </div>
   <TeachingTimesheets/>
       <TeachingRateRegister/>
+      <GrossPreparation/>
   <label className="mb-4 block max-w-xl text-sm font-semibold">Find staff or role
    <span className="relative mt-2 block"><Search className="absolute left-3 top-3 size-4 text-muted-foreground"/>
     <input aria-label="Find staff or role" type="search" maxLength={120} value={search}

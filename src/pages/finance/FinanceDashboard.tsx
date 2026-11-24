@@ -1,3 +1,4 @@
+import GrossPreparation from '@/components/finance/GrossPreparation';
 import TeachingRateRegister from '@/components/finance/TeachingRateRegister';
 import TeachingTimesheets from '@/components/lecturer/TeachingTimesheets';
 import TeachingRemunerationPlanner from '@/components/finance/TeachingRemunerationPlanner';
@@ -178,6 +179,7 @@ function FinanceWorkspace() {
       </div>
       <TeachingTimesheets/>
       <TeachingRateRegister/>
+      <GrossPreparation/>
       <TeachingRemunerationPlanner/>
       {loading ? <p role="status">Loading authorised centre invoices…</p> : dataError ?
         <section role="alert" className="space-y-3 rounded-xl border border-destructive p-4"><p>{dataError}</p><Button variant="outline" onClick={() => void refetch()}>Retry invoices</Button></section> :
