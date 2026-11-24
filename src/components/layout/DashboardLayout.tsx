@@ -86,7 +86,7 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
             <button
               onClick={toggleTheme}
               className="hidden sm:block min-h-11 min-w-11 p-2 rounded-lg border border-border/50 bg-background hover:bg-accent transition-default"
-              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               {theme === 'dark' ? (
                 <Sun className="w-4 h-4 text-muted-foreground" />
@@ -96,7 +96,7 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
             </button>
             <CommsBadge />
             <NotificationBell />
-            <div className="hidden xl:flex w-8 h-8 rounded-full gradient-primary flex items-center justify-center text-gradient-foreground text-xs font-bold ring-2 ring-primary/20 shadow-md hover:ring-primary/40 transition-default cursor-pointer">
+            <div className="hidden xl:flex w-8 h-8 rounded-full gradient-primary items-center justify-center text-gradient-foreground text-xs font-bold ring-2 ring-primary/20" aria-hidden="true">
               {user?.name?.charAt(0) || 'U'}
             </div>
           </div>
@@ -108,10 +108,10 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
           key={location.pathname}
           initial={reduceMotion ? false : { opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-          className="px-4 py-6 sm:px-6 sm:py-8 lg:px-8 pb-[calc(7.5rem+env(safe-area-inset-bottom))] lg:pb-10"
+          transition={{ duration: reduceMotion ? 0 : 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+          className="px-3 py-4 sm:px-6 sm:py-8 lg:px-8 pb-[calc(7.5rem+env(safe-area-inset-bottom))] lg:pb-10"
         >
-          <div className="page-shell min-w-0 [overflow-wrap:anywhere]"><div className="mb-7 flex flex-wrap items-start justify-between gap-4"><div className="min-w-0 flex-[1_1_24rem]"><h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">{title}</h1>{subtitle && <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">{subtitle}</p>}</div>{actions && <div className="flex min-w-0 max-w-full flex-wrap gap-2">{actions}</div>}</div><WorkspaceShortcuts />{!!workspaceLinks.length && <nav aria-label="Learning workspace" className="mb-5 flex flex-wrap gap-2">{workspaceLinks.map(([label,to])=><Link key={to} to={workspacePath(to,location.search)} aria-current={location.pathname===to?'page':undefined} className={`inline-flex min-h-11 items-center rounded-lg border px-3 py-2 text-sm font-medium ${location.pathname===to?'bg-primary text-primary-foreground':'bg-card hover:bg-accent'}`}>{label}</Link>)}</nav>}
+          <div className="page-shell min-w-0 [overflow-wrap:anywhere]"><div className="mb-5 sm:mb-7 flex flex-wrap items-start justify-between gap-4"><div className="min-w-0 flex-[1_1_24rem]"><h1 className="text-xl font-bold tracking-tight text-foreground sm:text-3xl">{title}</h1>{subtitle && <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">{subtitle}</p>}</div>{actions && <div className="flex min-w-0 max-w-full flex-wrap gap-2">{actions}</div>}</div><WorkspaceShortcuts />{!!workspaceLinks.length && <nav aria-label="Learning workspace" className="mb-5 flex flex-wrap gap-2">{workspaceLinks.map(([label,to])=><Link key={to} to={workspacePath(to,location.search)} aria-current={location.pathname===to?'page':undefined} className={`inline-flex min-h-11 items-center rounded-lg border px-3 py-2 text-sm font-medium ${location.pathname===to?'bg-primary text-primary-foreground':'bg-card hover:bg-accent'}`}>{label}</Link>)}</nav>}
             {children}</div>
         </motion.main>
       </div>
