@@ -1,3 +1,4 @@
+import FormativeQuestionLibrary from '@/components/learning/FormativeQuestionLibrary';
 import {useCallback,useEffect,useMemo,useState} from 'react';
 import {Link} from 'react-router-dom';
 import {BookOpen,ClipboardCheck,FileText,Layers,Search,ShieldCheck,Upload} from 'lucide-react';
@@ -95,6 +96,7 @@ function ContentWorkspace(){
      <p className="mt-2 text-sm text-muted-foreground">Record the exact qualification and syllabus/unit code, edition or examination series, source/rights, intended audience and release decision. Upload centre-authored or properly licensed copies only. Link to an official publisher portal when redistribution is not authorised; do not copy its protected question bank into the LMS.</p>
      <p className="mt-2 text-xs text-muted-foreground">The qualification-version and redistribution-rights registry is built but remains inactive until an independently verified UniPathway schema rollout. These are not yet permanent records of copyright permission or external awarding-body approval.</p>
     </section>
+    <FormativeQuestionLibrary/>
     <section className="rounded-xl border bg-card p-5 space-y-3" aria-label="Filter learning bodies">
      <div className="grid gap-3 sm:grid-cols-2">
       <label className="text-sm font-medium">Awarding body or examination board
