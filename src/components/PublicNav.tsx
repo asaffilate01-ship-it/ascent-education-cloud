@@ -1,3 +1,4 @@
+import {matchesLocalSearch} from '@/lib/localSearch';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
 import SocialIcons from '@/components/SocialIcons';
 import { useEffect, useRef, useState } from 'react';
@@ -55,7 +56,7 @@ export default function PublicNav() {
   const coursesTrigger = useRef<HTMLButtonElement>(null);
   const destinationsTrigger = useRef<HTMLButtonElement>(null);
   const [courseQuery, setCourseQuery] = useState('');
-  const matchingCourses = studyLinks.filter(link => `${link.label} ${link.detail}`.toLowerCase().includes(courseQuery.trim().toLowerCase()));
+  const matchingCourses = studyLinks.filter(link => matchesLocalSearch(`${link.label} ${link.detail}`,courseQuery));
   const [open, setOpen] = useState(false);
   const [studyOpen, setStudyOpen] = useState(false);
   const [destinationsOpen, setDestinationsOpen] = useState(false);
@@ -67,7 +68,18 @@ export default function PublicNav() {
     onScroll(); window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
-  useEffect(() => { document.body.style.overflow = open ? 'hidden' : ''; return () => { document.body.style.overflow = ''; }; }, [open]);
+  useEffect(() => {
+    if(!open)return;
+    const previous=document.body.style.overflow;
+    document.body.style.overflow='hidden';
+    return ()=>{document.body.style.overflow=previous;};
+  },[open]);
+  useEffect(()=>{
+    const media=window.matchMedia('(min-width: 1024px)');
+    const resize=()=>{setOpen(false);setStudyOpen(false);setDestinationsOpen(false);setCourseQuery('');};
+    media.addEventListener?.('change',resize);
+    return()=>media.removeEventListener?.('change',resize);
+  },[]);
 
   useEffect(() => {
     const close = (event: KeyboardEvent) => { if (event.key === 'Escape') { const trigger = open ? mobileTrigger : studyOpen ? coursesTrigger : destinationsOpen ? destinationsTrigger : null; setOpen(false); setStudyOpen(false); setDestinationsOpen(false); trigger?.current?.focus(); } };
@@ -94,16 +106,16 @@ export default function PublicNav() {
       <nav aria-label="Main navigation" className="hidden min-w-0 max-w-full flex-wrap items-center gap-1 lg:flex">
         <Link to="/" className={linkCls(pathname === '/')}>Home</Link>
         <div>
-          <button ref={coursesTrigger} type="button" aria-expanded={studyOpen} aria-controls="desktop-course-navigation" onClick={() => { setStudyOpen(!studyOpen); setDestinationsOpen(false); }} className={cn(linkCls(studyOpen), 'inline-flex items-center gap-1')}>Courses <ChevronDown className={cn('size-4 transition-transform', studyOpen && 'rotate-180')} /></button>
+          <button ref={coursesTrigger} type="button" aria-expanded={studyOpen} aria-controls="desktop-course-navigation" onClick={() => { setStudyOpen(!studyOpen); setDestinationsOpen(false); setCourseQuery(''); }} className={cn(linkCls(studyOpen), 'inline-flex items-center gap-1')}>Courses <ChevronDown className={cn('size-4 transition-transform', studyOpen && 'rotate-180')} /></button>
           {studyOpen && <div id="desktop-course-navigation" role="region" aria-label="Course options" className="absolute inset-x-4 top-full mx-auto w-[760px] max-w-[calc(100%_-_2rem)] pt-3 animate-in fade-in-0 slide-in-from-top-1 motion-reduce:animate-none"><div className="flex max-h-[min(60dvh,40rem)] flex-wrap overflow-y-auto rounded-2xl border border-border bg-card shadow-surface-xl">
-            <div className="grid min-w-0 flex-[3_1_30rem] grid-cols-[repeat(auto-fit,minmax(min(100%,12rem),1fr))] gap-1 p-3">
-              {primaryStudyLinks.map(({ label, detail, to, icon: Icon }) => <Link key={label} to={to} className="group/item flex min-w-0 gap-3 rounded-xl p-3 transition-colors hover:bg-secondary"><span className="grid size-9 shrink-0 place-items-center rounded-lg bg-success/10 text-success transition-colors group-hover/item:bg-success group-hover/item:text-success-foreground"><Icon className="size-4" /></span><span className="min-w-0 [overflow-wrap:anywhere]"><span className="block text-sm font-bold text-foreground">{label}{routePhase(to)===2&&<span className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 align-middle text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Coming soon</span>}</span><span className="mt-0.5 block text-xs leading-snug text-muted-foreground">{detail}</span></span></Link>)}
-            </div>
+            <div className="min-w-0 flex-[3_1_30rem] p-3"><label className="block text-sm font-semibold" htmlFor="desktop-course-search">Search course options</label><input id="desktop-course-search" type="search" maxLength={120} value={courseQuery} onChange={e=>setCourseQuery(e.target.value)} placeholder="Search courses and services" className="mt-2 min-h-11 w-full min-w-0 rounded-lg border bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"/><div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground"><span role="status">{courseQuery.trim()?matchingCourses.length+" matching options":"Popular courses and study routes"}</span>{courseQuery.trim()&&<button type="button" className="min-h-11 underline" onClick={()=>{setCourseQuery('');document.getElementById('desktop-course-search')?.focus();}}>Clear course options</button>}</div>{courseQuery.trim()&&!matchingCourses.length&&<p className="p-3 text-sm">No matching course options. Try another search or ask an adviser.</p>}<div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,12rem),1fr))] gap-1">
+              {(courseQuery.trim()?matchingCourses:primaryStudyLinks).map(({ label, detail, to, icon: Icon }) => <Link key={label} to={to} className="group/item flex min-w-0 gap-3 rounded-xl p-3 transition-colors hover:bg-secondary"><span className="grid size-9 shrink-0 place-items-center rounded-lg bg-success/10 text-success transition-colors group-hover/item:bg-success group-hover/item:text-success-foreground"><Icon className="size-4" /></span><span className="min-w-0 [overflow-wrap:anywhere]"><span className="block text-sm font-bold text-foreground">{label}{routePhase(to)===2&&<span className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 align-middle text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Coming soon</span>}</span><span className="mt-0.5 block text-xs leading-snug text-muted-foreground">{detail}</span></span></Link>)}
+            </div></div>
             <div className="flex min-w-0 flex-[1_1_13.75rem] flex-col justify-between bg-primary p-5 text-primary-foreground"><div><p className="text-[11px] font-bold uppercase tracking-widest text-gold">Find your next step</p><p className="mt-2 text-lg font-bold leading-snug">Not sure where to start?</p><p className="mt-2 text-xs text-primary-foreground/75">Get free, personal guidance on the right course for you.</p></div><Button variant="secondary" size="sm" asChild className="mt-4"><Link to="/contact">Talk to an adviser <ArrowRight /></Link></Button></div>
           </div></div>}
         </div>
         <div>
-          <button ref={destinationsTrigger} type="button" aria-expanded={destinationsOpen} aria-controls="desktop-destination-navigation" onClick={() => { setDestinationsOpen(!destinationsOpen); setStudyOpen(false); }} className={cn(linkCls(destinationsOpen), 'inline-flex items-center gap-1')}>Study Abroad <ChevronDown className={cn('size-4 transition-transform', destinationsOpen && 'rotate-180')} /></button>
+          <button ref={destinationsTrigger} type="button" aria-expanded={destinationsOpen} aria-controls="desktop-destination-navigation" onClick={() => { setDestinationsOpen(!destinationsOpen); setStudyOpen(false); setCourseQuery(''); }} className={cn(linkCls(destinationsOpen), 'inline-flex items-center gap-1')}>Study Abroad <ChevronDown className={cn('size-4 transition-transform', destinationsOpen && 'rotate-180')} /></button>
           {destinationsOpen && <div id="desktop-destination-navigation" role="region" aria-label="Study abroad options" className="absolute inset-x-4 top-full mx-auto w-[500px] max-w-[calc(100%_-_2rem)] pt-3 animate-in fade-in-0 slide-in-from-top-1 motion-reduce:animate-none"><div className="grid max-h-[min(60dvh,40rem)] grid-cols-[repeat(auto-fit,minmax(min(100%,12rem),1fr))] gap-1 overflow-y-auto rounded-2xl border border-border bg-card p-3 shadow-surface-xl">
             {destinationLinks.map(({ label, detail, to }) => <Link key={to} to={to} className="min-w-0 rounded-xl p-3 transition-colors hover:bg-secondary [overflow-wrap:anywhere]"><span className="block text-sm font-bold text-foreground">{label}</span><span className="mt-0.5 block text-xs text-muted-foreground">{detail}</span></Link>)}
           </div></div>}
@@ -112,15 +124,15 @@ export default function PublicNav() {
         <Link to="/contact" className={linkCls(pathname === '/contact')}>Contact</Link>
       </nav>
       <div className="hidden items-center gap-2 lg:flex"><Button variant="ghost" className="rounded-full font-semibold" asChild><Link to="/login">Sign in</Link></Button><Button className="rounded-full px-5 shadow-surface-lg" asChild><Link to="/apply">Apply now <ArrowRight /></Link></Button></div>
-      <Button ref={mobileTrigger} variant="outline" size="icon" className="shrink-0 rounded-full lg:hidden" aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open} onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</Button>
+      <Button ref={mobileTrigger} variant="outline" size="icon" className="shrink-0 rounded-full lg:hidden" aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open} onClick={() => {setOpen(!open);setCourseQuery('');}}>{open ? <X /> : <Menu />}</Button>
     </div>
     {open && <nav aria-label="Mobile navigation" className="h-[calc(100dvh-4rem)] overflow-y-auto border-t border-border bg-background px-4 pb-28 pt-4 animate-in fade-in-0 slide-in-from-top-2 sm:h-[calc(100dvh-5rem)] sm:px-8 lg:hidden">
-      <div className="mb-6 grid grid-cols-2 gap-2">{[['All courses','/study'],['International study & visa guidance','/international-study'],['Contact admissions','/contact'],['About UniPathway','/about'],['Student sign in','/login']].map(([label,to])=><Link key={to} to={to} className="flex min-h-12 items-center rounded-xl border bg-card px-4 text-sm font-semibold">{label}</Link>)}</div>
+      <div className="mb-6 grid grid-cols-2 gap-2">{[['All courses','/study'],['International study & visa guidance','/international-study'],['Contact admissions','/contact'],['About UniPathway','/about'],['Student sign in','/login']].map(([label,to])=><Link key={to} to={to} className="flex min-h-12 min-w-0 items-center rounded-xl border bg-card px-3 py-2 text-sm font-semibold [overflow-wrap:anywhere]">{label}</Link>)}</div>
       <label htmlFor="mobile-course-search" className="text-label">Find a course or service</label>
-      <input id="mobile-course-search" type="search" value={courseQuery} onChange={e => setCourseQuery(e.target.value)} placeholder="Try IELTS, tuition, technology…" className="mt-2 min-h-12 w-full rounded-xl border border-border bg-card px-4 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" />
-      <p role="status" className="mt-2 text-xs text-muted-foreground">{courseQuery ? `${matchingCourses.length} matching options` : 'Explore our most popular courses'}</p>
-      {courseQuery && matchingCourses.length === 0 && <p className="mt-3 text-sm">No matches. <button type="button" className="min-h-11 underline font-semibold" onClick={()=>{setCourseQuery('');document.getElementById('mobile-course-search')?.focus();}}>Clear course search</button> or <Link className="underline" to="/contact">Ask an adviser for help</Link>.</p>}
-      <div className="mt-3 grid gap-2 sm:grid-cols-2">{(courseQuery ? matchingCourses : primaryStudyLinks).map(({ label, detail, to, icon: Icon }) => <Link key={to} to={to} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 active:scale-[0.99] transition-transform"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-success/10 text-success"><Icon className="size-5" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-bold">{label}{routePhase(to)===2&&<span className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 align-middle text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Coming soon</span>}</span><span className="block text-xs leading-relaxed text-muted-foreground">{detail}</span></span><ArrowRight className="size-4 shrink-0 text-muted-foreground" /></Link>)}</div>
+      <input id="mobile-course-search" type="search" maxLength={120} value={courseQuery} onChange={e => setCourseQuery(e.target.value)} placeholder="Try IELTS, tuition, technology…" className="mt-2 min-h-12 w-full rounded-xl border border-border bg-card px-4 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" />
+      <p role="status" className="mt-2 text-xs text-muted-foreground">{courseQuery.trim() ? `${matchingCourses.length} matching options` : 'Explore our most popular courses'}</p>
+      {courseQuery.trim() && matchingCourses.length === 0 && <p className="mt-3 text-sm">No matches. <button type="button" className="min-h-11 underline font-semibold" onClick={()=>{setCourseQuery('');document.getElementById('mobile-course-search')?.focus();}}>Clear course search</button> or <Link className="underline" to="/contact">Ask an adviser for help</Link>.</p>}
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">{(courseQuery.trim() ? matchingCourses : primaryStudyLinks).map(({ label, detail, to, icon: Icon }) => <Link key={to} to={to} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 active:scale-[0.99] transition-transform motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-success/10 text-success"><Icon className="size-5" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-bold">{label}{routePhase(to)===2&&<span className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 align-middle text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Coming soon</span>}</span><span className="block text-xs leading-relaxed text-muted-foreground">{detail}</span></span><ArrowRight className="size-4 shrink-0 text-muted-foreground" /></Link>)}</div>
       <details className="mt-6 rounded-xl border p-4"><summary className="cursor-pointer py-2 font-semibold">Explore study-abroad destinations</summary>
       <div className="mt-3 flex flex-wrap gap-2">{destinationLinks.map(({ label, to }) => <Link key={to} to={to} className="rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold">{label}</Link>)}</div>
       </details><div className="mt-7 grid grid-cols-2 gap-2">{[['Learning advice', '/blog'], ['Apply now', '/apply']].map(([label, to]) => <Link key={to} to={to} className="rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold">{label}</Link>)}</div>

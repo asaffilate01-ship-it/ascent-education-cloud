@@ -1,13 +1,14 @@
+import {workspacePath} from '@/lib/workspaceContext';
+import {activeRoleVerified} from '@/lib/roleMembership';
 import { useAuth, ROLE_HOME } from '@/contexts/AuthContext';
-import { NavLink, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   Home, BookOpen, ClipboardList, BarChart3, MessageSquare,
   UserPlus, CreditCard, Building2, Users, Briefcase, ShieldCheck,
   FileText, Megaphone, GraduationCap, Bell, Video, Globe2,
   Mail, HeartHandshake, CalendarDays, ClipboardCheck,
 } from 'lucide-react';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { isPublicMobilePath } from '@/lib/mobileTabRoutes';
+import { activeDashboardTab, isPublicMobilePath } from '@/lib/mobileTabRoutes';
 import type { UserRole } from '@/types/platform';
 import type { LucideIcon } from 'lucide-react';
 
@@ -168,22 +169,20 @@ export function getBottomNavItems(role: UserRole | null, path: string): BottomNa
 
 export default function MobileBottomNav() {
   const { user, loading } = useAuth();
-  const mobile = useIsMobile();
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   // Public pages use Lovable's newer PublicBottomNav. Never render two fixed bars.
-  if (!mobile || loading || !user || isPublicMobilePath(pathname)) return null;
+  if (loading || !user || !activeRoleVerified(user) || isPublicMobilePath(pathname)) return null;
   const items = BOTTOM_NAV[user.role] || [{ label: 'Home', icon: Home, path: ROLE_HOME[user.role] }];
 
+  const active=activeDashboardTab(user.role,items.map(item=>item.path),pathname);
   return (
     <nav aria-label="Dashboard mobile tabs" className="fixed inset-x-0 bottom-0 z-50 border-t border-border/70 bg-white/95 shadow-[0_-8px_28px_rgba(11,45,91,0.08)] backdrop-blur-xl dark:bg-card/95 lg:hidden">
       <div className="mx-auto flex max-w-xl items-stretch justify-around gap-0.5 px-1 pt-1 pb-[max(0.375rem,env(safe-area-inset-bottom))]">
         {items.map(({ label, icon: Icon, path }) => (
-          <NavLink key={path} to={path} end className={({ isActive }) =>
-            `flex min-h-[55px] min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 ${isActive ? 'bg-green-50 text-[#087E50] dark:bg-green-950' : 'text-muted-foreground hover:bg-secondary'}`
-          }>
+          <Link key={path} to={workspacePath(path,search)} aria-current={active===path?(pathname===path?'page':'location'):undefined} aria-label={label} className={`flex min-h-[55px] min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${active===path ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-secondary'}`}>
             <Icon aria-hidden={true} className="size-[21px] shrink-0" />
-            <span className="max-w-full truncate text-[10px] font-semibold leading-4">{label}</span>
-          </NavLink>
+            <span className="max-w-full break-words text-[10px] font-semibold leading-tight [overflow-wrap:anywhere]">{label}</span>
+          </Link>
         ))}
       </div>
     </nav>
