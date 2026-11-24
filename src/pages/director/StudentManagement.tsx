@@ -1,3 +1,4 @@
+import ModuleRegistrationEditor from '@/components/admissions/ModuleRegistrationEditor';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatusBadge from '@/components/ui/StatusBadge';
 import DataTable from '@/components/ui/DataTable';
@@ -11,7 +12,7 @@ import {useAuth} from '@/contexts/AuthContext';
 import {DashboardSkeleton} from '@/components/ui/Skeletons';
 
 type StudentRow={
- id:string;studentId:string;name:string;email:string;programme:string;
+ id:string;studentId:string;programmeId:string;name:string;email:string;programme:string;
  modules:string[];enrolledAt:string;status:string;attendanceRate:number|null;
 };
 export default function StudentManagement(){
@@ -42,7 +43,7 @@ function ScopedStudentRegistry(){
      supabase.from('attendance_records').select('student_id,status').eq('tenant_id',tenant),
      supabase.from('modules').select('id,programme_id,title,code').eq('tenant_id',tenant),
     ]);
-    if([es,ps,programmes,attendance].some(q=>q.error))throw Error('Student registry data unavailable');
+    if([es,ps,programmes,attendance,modules].some(q=>q.error))throw Error('Student registry data unavailable');
     const profiles=new Map((ps.data||[]).filter(p=>p.tenant_id===tenant).map(p=>[p.user_id,p]));
     const titles=new Map((programmes.data||[]).map(p=>[p.id,p.title]));
     const moduleMap=new Map<string,string[]>();
@@ -57,7 +58,7 @@ function ScopedStudentRegistry(){
     const rows=(es.data||[]).map(e=>{
      const profile=profiles.get(e.student_id);
      const record=marks.get(e.student_id);
-     return {id:e.id,studentId:e.student_id,name:profile?.full_name||'Student record unavailable',
+     return {id:e.id,studentId:e.student_id,programmeId:e.programme_id,name:profile?.full_name||'Student record unavailable',
       email:profile?.email||'',programme:titles.get(e.programme_id)||'Programme record unavailable',
       modules:moduleMap.get(e.programme_id)||[],enrolledAt:e.enrolled_at,status:e.status,
       attendanceRate:record&&record.total?Math.round(record.present*100/record.total):null} satisfies StudentRow;
@@ -78,7 +79,7 @@ function ScopedStudentRegistry(){
  const columns=[
   {key:'name',label:'Learner',render:(s:StudentRow)=><div><p className="text-sm font-semibold">{s.name}</p><p className="text-xs text-muted-foreground">{s.email}</p></div>},
   {key:'programme',label:'Programme',render:(s:StudentRow)=><span className="text-sm">{s.programme}</span>},
-  {key:'modules',label:'Programme modules',render:(s:StudentRow)=><details><summary className="cursor-pointer text-sm">{s.modules.length} curriculum modules</summary><ul className="mt-2 space-y-1 text-xs">{s.modules.map((m,i)=><li key={i}>{m}</li>)}</ul><p className="mt-2 text-xs text-muted-foreground">Programme curriculum, not individually confirmed module registrations.</p></details>},
+  {key:'modules',label:'Programme modules',render:(s:StudentRow)=><div><details><summary className="cursor-pointer text-sm">{s.modules.length} curriculum modules</summary><ul className="mt-2 space-y-1 text-xs">{s.modules.map((m,i)=><li key={i}>{m}</li>)}</ul><p className="mt-2 text-xs text-muted-foreground">Programme curriculum, not individually confirmed module registrations.</p></details><ModuleRegistrationEditor key={s.id} enrolmentId={s.id} tenantId={tenant!} programmeId={s.programmeId} active={s.status==='active'}/></div>},
   {key:'attendance',label:'Recorded attendance',render:(s:StudentRow)=><span className="text-sm">{s.attendanceRate===null?'Not available':s.attendanceRate+'%'}</span>},
   {key:'status',label:'Recorded enrolment status',render:(s:StudentRow)=><StatusBadge status={s.status} variant={s.status==='active'?'success':'neutral'}/>}
  ];
