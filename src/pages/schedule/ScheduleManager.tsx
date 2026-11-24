@@ -45,7 +45,7 @@ function ScheduleContent(){
    <label>Academic year<input required maxLength={20} className={input} value={year} onChange={e=>setYear(e.target.value)}/></label>
    <label>Semester<input required type="number" min="1" max="3" className={input} value={semester} onChange={e=>setSemester(e.target.value)}/></label>
    <label>Class time (PKT)<input type="time" required step={60} className={input} value={start} onChange={e=>setStart(e.target.value)}/></label>
-   <label>Session duration<select className={input} value={duration} onChange={e=>setDuration(Number(e.target.value))}><option value={45}>45 minutes — tuition</option><option value={90}>90 minutes — professional programmes</option>{editing&&duration!==45&&duration!==90&&<option value={duration}>{duration} minutes — existing class</option>}</select><span className="mt-1 block text-sm text-muted-foreground">{end?'Ends at '+end+' PKT':'Choose a valid same-day start time.'}</span></label>
+   <label>Session duration<select aria-label="Session duration" className={input} value={duration} onChange={e=>setDuration(Number(e.target.value))}><option value={45}>45 minutes — tuition</option><option value={90}>90 minutes — professional programmes</option>{editing&&duration!==45&&duration!==90&&<option value={duration}>{duration} minutes — existing class</option>}</select><span className="mt-1 block text-sm text-muted-foreground">{end?'Ends at '+end+' PKT':'Choose a valid same-day start time.'}</span></label>
 
    <label>Starts on<input required type="date" className={input} value={from} onChange={e=>setFrom(e.target.value)}/></label>
    <label>Ends on (optional)<input type="date" className={input} value={until} onChange={e=>setUntil(e.target.value)}/></label>
