@@ -76,6 +76,8 @@ jobs:
         run: node scripts/test-teaching-timesheets-db.mjs
       - name: Teaching rate agreements and approved remuneration rehearsal
         run: node scripts/test-teaching-rates-db.mjs
+      - name: Closed-month gross preparation and independent review rehearsal
+        run: node scripts/test-gross-preparation-db.mjs
       - name: Fresh schema and access checks (hosted extensions deferred)
         run: npm run test:fresh-schema
   edge-tests:
