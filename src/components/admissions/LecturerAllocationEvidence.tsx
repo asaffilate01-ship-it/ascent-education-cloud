@@ -1,0 +1,9 @@
+import {useState,useEffect} from 'react';
+import {db} from '@/lib/db';
+import {Button} from '@/components/ui/button';
+import TeachingCompetencyStatus from '@/components/admissions/TeachingCompetencyStatus';
+export default function LecturerAllocationEvidence({lecturerId,tenantId}:{lecturerId:string;tenantId:string}){
+ const [open,setOpen]=useState(false),[answers,setAnswers]=useState<unknown>(null),[busy,setBusy]=useState(false),[error,setError]=useState(false),[revision,setRevision]=useState(0);
+ useEffect(()=>{let active=true;setAnswers(null);setError(false);if(!open)return;setBusy(true);void(async()=>{const r=await db.from('onboarding_application_drafts').select('answers').eq('tenant_id',tenantId).eq('user_id',lecturerId).eq('kind','lecturer').maybeSingle();if(r.error)throw Error();if(active)setAnswers(r.data?.answers||{});})().catch(()=>{if(active)setError(true);}).finally(()=>{if(active)setBusy(false);});return()=>{active=false;};},[open,lecturerId,tenantId,revision]);
+ return <div className="mt-3 space-y-2"><Button type="button" size="sm" variant="outline" aria-expanded={open} onClick={()=>setOpen(v=>!v)}>{open?'Close teaching evidence':'Review selected lecturer evidence'}</Button>{open&&<><p className="text-xs text-muted-foreground">Compare the approved subject, framework and maximum level with this module. This is an advisory check, not an automatic eligibility decision.</p>{busy?<p role="status" className="text-sm">Loading evidence…</p>:error?<p role="alert" className="text-sm">Evidence could not be verified.</p>:answers!==null&&<TeachingCompetencyStatus key={revision} tenantId={tenantId} lecturerId={lecturerId} answers={answers}/>}<Button type="button" size="sm" variant="outline" disabled={busy} onClick={()=>setRevision(v=>v+1)}>Reload saved declarations</Button></>}</div>;
+}
