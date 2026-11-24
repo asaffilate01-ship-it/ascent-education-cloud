@@ -266,7 +266,7 @@ test('student bottom navigation follows the active task on phones and tablets an
  for(const width of [360,768,1024]){
   await page.setViewportSize({width,height:1000});
   await page.goto('/student/courses');
-  await dismissConsent(page);
+  if(width===360)await dismissConsent(page);
   await expect(page.getByRole('heading',{name:'My courses',exact:true})).toBeVisible();
   const tabs=page.getByRole('navigation',{name:'Dashboard mobile tabs'});
   if(width<1024){
