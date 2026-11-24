@@ -1,3 +1,4 @@
+import CentreCardWorkspace from '@/components/admissions/CentreCardWorkspace';
 import ApplicationDraft from '@/components/admissions/ApplicationDraft';
 import IdentityConnectionStatus from '@/components/IdentityConnectionStatus';
 import OnboardingEvidence from '@/components/admissions/OnboardingEvidence';
@@ -9,7 +10,7 @@ export default function StudentOnboarding(){
  const allowed=!loading&&!!user?.tenantId&&user.role==='student'&&user.roles?.includes('student')===true;
  return <DashboardLayout title="Student onboarding" subtitle="Your application, identity and qualification evidence">
   {loading?<p role="status">Checking your account…</p>:!allowed?<p role="alert">A verified student account with an assigned centre is required. Contact admissions if your account is not ready.</p>:<>
-  <IdentityConnectionStatus key={user.id+':'+user.tenantId}/><ApplicationDraft kind="student"/><OnboardingEvidence kind="student" requirements={studentEvidence}/>
+  <IdentityConnectionStatus key={user.id+':'+user.tenantId}/><ApplicationDraft kind="student"/><OnboardingEvidence kind="student" requirements={studentEvidence}/><CentreCardWorkspace/>
   </>}
  </DashboardLayout>;
 }

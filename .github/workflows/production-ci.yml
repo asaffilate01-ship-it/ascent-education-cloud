@@ -78,6 +78,10 @@ jobs:
         run: node scripts/test-teaching-rates-db.mjs
       - name: Closed-month gross preparation and independent review rehearsal
         run: node scripts/test-gross-preparation-db.mjs
+      - name: Centre ID cards and assigned-module QR lookup rehearsal
+        run: node scripts/test-centre-id-cards-db.mjs
+      - name: Public certificate status and legacy lookup privacy rehearsal
+        run: node scripts/test-certificate-status-db.mjs
       - name: Fresh schema and access checks (hosted extensions deferred)
         run: npm run test:fresh-schema
   edge-tests:
