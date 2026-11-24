@@ -25,7 +25,7 @@ try{
  }
  await db.query("INSERT INTO public.student_enrolments VALUES($1,$2,$3,'active'),($4,$2,$5,'active'),($6,$7,$3,'active'),($8,$2,$3,'withdrawn')",[learner,t,prog,peer,otherProg,foreign,b,inactive]);
  await db.query('INSERT INTO public.modules VALUES($1,$2,$3,$4),($5,$2,$6,$7),($8,$9,$3,$7)',[mod,t,prog,teacher,otherMod,otherProg,otherTeacher,foreignMod,b]);
- const evidence=(n,u,centre,status='verified',by=director,created='2026-01-01T00:00:00Z')=>db.query("INSERT INTO public.kyc_documents VALUES($1,$2,$3,'passport',$4,$5,$6,$5,NULL)",[id(n),u,centre,status,by,created]);
+ const evidence=(n,u,centre,status='verified',by=director,created='2026-01-01T00:00:00Z')=>db.query("INSERT INTO public.kyc_documents VALUES($1,$2,$3,'passport',$4,$5,$6,$5,NULL)",[id(n),u,centre,status,created,by]);
  await evidence(30,learner,t);await evidence(31,peer,t);await evidence(32,teacher,t);await evidence(33,foreign,b,'verified',otherDirector);await evidence(34,inactive,t);await evidence(35,otherTeacher,t,'pending');
  await db.exec(readFileSync('scripts/activation/unipathway-centre-id-cards-forward.sql','utf8'));
  const today=(await db.query("SELECT (now() AT TIME ZONE 'Asia/Karachi')::date::text d")).rows[0].d;

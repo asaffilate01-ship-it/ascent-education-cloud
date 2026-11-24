@@ -4,13 +4,20 @@ import {useAuth} from '@/contexts/AuthContext';
 import {db} from '@/lib/db';
 import {parseCardPayload,readCardLookup} from '@/lib/centreCards';
 const enabled=import.meta.env.VITE_UNIPATHWAY_CENTRE_CARDS_ENABLED==='true';
-export default function RegisterCardLookup({module,roster,disabled,onMatch,onClear}:{module:string;roster:readonly string[];disabled:boolean;onMatch:(student:string)=>void;onClear:()=>void}){
- const {user}=useAuth();
+type Props={module:string;roster:readonly string[];disabled:boolean;onMatch:(student:string)=>void;onClear:()=>void};
+export default function RegisterCardLookup(props:Props){
+ return enabled?<AuthorisedLookup {...props}/>:null;
+}
+function AuthorisedLookup(props:Props){
+ const {user,loading}=useAuth();
+ if(loading||!user?.id||!user.tenantId||user.role!=='lecturer'||!user.roles?.includes('lecturer'))return null;
+ return <Lookup key={[user.id,user.tenantId,user.role,user.roles.join(','),props.module].join(':')} {...props} tenant={user.tenantId}/>;
+}
+function Lookup({module,roster,disabled,onMatch,onClear,tenant}:Props&{tenant:string}){
  const [reference,setReference]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('');
  const generation=useRef(0),lock=useRef(false);
- useEffect(()=>()=>{generation.current++;},[module,user?.id,user?.tenantId,user?.role]);
- if(!enabled||!user?.tenantId||user.role!=='lecturer'||!user.roles?.includes('lecturer'))return null;
- const tenant=user.tenantId,parsed=parseCardPayload(reference);
+ useEffect(()=>()=>{generation.current++;},[]);
+ const parsed=parseCardPayload(reference);
  async function lookup(){if(!parsed||disabled||lock.current)return;lock.current=true;setBusy(true);setError('');setMessage('');onClear();const token=++generation.current;
   try{const r=await db.rpc('lookup_unipathway_student_card',{p_module:module,p_reference:parsed});if(r.error)throw Error();
    const match=readCardLookup(r.data,tenant,module,parsed,roster);if(token!==generation.current)return;
