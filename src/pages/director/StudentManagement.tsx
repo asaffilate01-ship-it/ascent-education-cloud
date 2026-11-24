@@ -46,7 +46,7 @@ function ScopedStudentRegistry(){
     const profiles=new Map((ps.data||[]).filter(p=>p.tenant_id===tenant).map(p=>[p.user_id,p]));
     const titles=new Map((programmes.data||[]).map(p=>[p.id,p.title]));
     const moduleMap=new Map<string,string[]>();
-    for(const m of modules.data||[]){const list=moduleMap.get(m.programme_id)||[];list.push(m.code+' — '+m.title);moduleMap.set(m.programme_id,list);}
+    for(const m of modules.data||[]){const list=moduleMap.get(m.programme_id)||[];list.push([m.code,m.title].filter(Boolean).join(' — '));moduleMap.set(m.programme_id,list);}
     const marks=new Map<string,{present:number;total:number}>();
     for(const mark of attendance.data||[]){
      if(!['present','late','absent'].includes(mark.status))continue;

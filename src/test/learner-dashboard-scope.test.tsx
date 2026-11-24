@@ -75,5 +75,7 @@ it('prioritises learning, verified assessment and a compact support area without
  expect(screen.getByRole('link',{name:'Approved results'})).toHaveAttribute('href','/student/grades');
  expect(screen.getByRole('link',{name:'Ask the Welfare team'})).toHaveAttribute('href','/student/wellbeing');
  expect(screen.getByRole('link',{name:'All student services'})).toHaveAttribute('href','/workspace');
- expect(container.querySelector('details summary')).toHaveTextContent('Optional revision and linked services');
+ expect(screen.getByText('Optional revision and linked services',{selector:'summary'})).toBeInTheDocument();
+ expect(screen.getByText('1 programme module',{selector:'summary'})).toBeInTheDocument();
+ expect(container.querySelector('a[href="/student/module?module=m1"]')).toHaveTextContent('My module');
 });

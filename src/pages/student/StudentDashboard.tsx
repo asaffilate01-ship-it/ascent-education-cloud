@@ -137,7 +137,7 @@ function StudentDashboardContent() {
                   <div>
                     <p className="text-sm font-medium">{p.title}</p>
                     <p className="text-xs text-muted-foreground">{p.level} · {p.awarding_body}</p>
-                    <details className="mt-2"><summary className="cursor-pointer text-sm">{modules.filter(m=>m.programme_id===p.id).length} programme modules</summary><ul className="mt-2 space-y-1 text-sm">{modules.filter(m=>m.programme_id===p.id).map(m=><li key={m.id}><Link className="underline" to={'/student/module?module='+encodeURIComponent(m.id)}>{m.code} — {m.title}</Link></li>)}</ul><p className="text-xs text-muted-foreground">Modules in your enrolled programme curriculum; individual elective registration is not confirmed here.</p></details>
+                    <details className="mt-2"><summary className="cursor-pointer text-sm">{modules.filter(m=>m.programme_id===p.id).length} programme {modules.filter(m=>m.programme_id===p.id).length===1?'module':'modules'}</summary><ul className="mt-2 space-y-1 text-sm">{modules.filter(m=>m.programme_id===p.id).map(m=><li key={m.id}><Link className="underline" to={'/student/module?module='+encodeURIComponent(m.id)}>{[m.code,m.title].filter(Boolean).join(' — ')}</Link></li>)}</ul><p className="text-xs text-muted-foreground">Modules in your enrolled programme curriculum; individual elective registration is not confirmed here.</p></details>
                   </div>
                 </div>
               </div>

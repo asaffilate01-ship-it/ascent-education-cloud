@@ -16,6 +16,5 @@ with check (user_id=auth.uid() and tenant_id=public.current_unipathway_tenant_id
 and ((kind='student' and public.has_role(auth.uid(),'student'::app_role)) or (kind='lecturer' and public.has_role(auth.uid(),'lecturer'::app_role))));
 create policy "authorised application review" on public.onboarding_application_drafts for select to authenticated
 using (tenant_id=public.current_unipathway_tenant_id() and
-(public.has_role(auth.uid(),'centre_director'::app_role) or public.has_role(auth.uid(),'superadmin'::app_role)
-or (kind='student' and public.has_role(auth.uid(),'admissions_admin'::app_role))
-or (kind='lecturer' and public.has_role(auth.uid(),'hr_officer'::app_role))));
+(exists(select 1 from public.user_roles r where r.user_id=auth.uid() and r.tenant_id=onboarding_application_drafts.tenant_id and r.role::text='centre_director') or public.has_role(auth.uid(),'superadmin'::app_role)
+or (kind='student' and exists(select 1 from public.user_roles r where r.user_id=auth.uid() and r.tenant_id=onboarding_application_drafts.tenant_id and r.role::text='admissions_admin'))));
