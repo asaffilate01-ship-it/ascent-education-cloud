@@ -44,7 +44,7 @@ const STEPS = [
 ];
 
 const GERMANY_DOCS = [
-  'passport', 'transcripts', 'degree_certificates', 'aps_certificate',
+  'passport', 'transcripts', 'degree_certificates',
   'language_certificate', 'cv', 'motivation_letter', 'financial_evidence',
 ];
 const UK_DOCS = [
@@ -56,14 +56,13 @@ const DOC_LABELS: Record<string, string> = {
   passport: 'Valid passport',
   transcripts: 'Academic transcripts (attested)',
   degree_certificates: 'Degree certificate(s) (attested)',
-  aps_certificate: 'APS certificate (Pakistan applicants)',
   language_certificate: 'German or English language certificate',
-  english_evidence: 'Approved English language evidence',
+  english_evidence: 'English-language evidence accepted for your route',
   cv: 'CV / résumé',
   motivation_letter: 'Motivation letter / SOP',
   personal_statement: 'Personal statement',
-  financial_evidence: 'Financial evidence (Sperrkonto / bank statements)',
-  tb_test: 'TB test certificate (Pakistan)',
+  financial_evidence: 'Financial evidence accepted for your route, where required',
+  tb_test: 'TB test certificate, where required',
 };
 
 const EMPTY_FORM: FormState = {

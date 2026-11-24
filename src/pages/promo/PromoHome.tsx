@@ -53,7 +53,7 @@ export default function PromoHome() {
       <nav aria-label="Learning and student support" className="border-b bg-secondary/30">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-px px-5 py-3 sm:grid-cols-2 sm:px-8 lg:grid-cols-4">{([
           ['Explore courses', '/study', BookOpen], ['Funding & Foundation', '/scholarships', GraduationCap],
-          ['Study abroad support', '/student-support', Globe2], ['Student portal', '/login', Video],
+          ['International study & visa guidance', '/international-study', Globe2], ['Student portal', '/login', Video],
         ] as const).map(([label,to,Icon])=><Link key={to} to={to} className="group flex min-h-14 items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold hover:bg-success/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><Icon className="size-5 shrink-0 text-success"/><span className="min-w-0 break-words">{label}</span><ArrowRight className="ml-auto size-4 shrink-0 text-muted-foreground"/></Link>)}</div>
       </nav>
       <div className="mx-auto max-w-7xl px-5 pt-14 sm:px-8 sm:pt-20"><PhaseOneLaunch eyebrow="Now launching · Phase 1" /></div>

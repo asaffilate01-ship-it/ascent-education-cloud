@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import CompanyDetails from '@/components/CompanyDetails';
 import TenantNav from '@/components/TenantNav';
 import LanguageAcademy from '@/components/tenant/LanguageAcademy';
@@ -28,6 +29,7 @@ export default function GermanyPathway() {
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-14">
+        <Link to="/international-study/germany" className="inline-flex min-h-11 items-center rounded-md font-semibold text-primary underline underline-offset-4">Read the Germany student visa guide</Link>
         <StudyDestinationSections destination={studyDestinations.germany} compact />
 
         {/* Study levels */}
@@ -85,10 +87,9 @@ export default function GermanyPathway() {
             <h3 className="text-lg font-bold mb-3">Student visa (Pakistan applicants)</h3>
             <ol className="space-y-2 text-sm text-muted-foreground list-decimal list-inside">
               <li>Conditional or unconditional admission letter</li>
-              <li>Sperrkonto opened and funded, or scholarship equivalent</li>
+              <li>Financial evidence accepted for your case, such as a blocked account, qualifying scholarship or formal declaration of commitment</li>
               <li>Health insurance confirmation</li>
-              <li>APS certificate (Akademische Prüfstelle) for Pakistani applicants</li>
-              <li>National visa (D) appointment at the German Embassy Islamabad or Consulate</li>
+              <li>Follow the <a className="font-semibold text-primary underline underline-offset-4" href="https://pakistan.diplo.de/pk-en/service/2-study-visa-seite-1676104">German Missions in Pakistan instructions</a> for your consular area, including the current portal checklist and any appointment instructions</li>
             </ol>
             <p className="text-xs text-muted-foreground italic mt-4">The visa decision is made by the competent German authority. Immigration advice on individual cases is provided only by regulated advisers.</p>
           </div>
@@ -108,10 +109,10 @@ export default function GermanyPathway() {
           <h3 className="text-lg font-bold mb-4">Document checklist — Germany application</h3>
           <div className="grid sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
             {[
-              'Valid passport (min. 12 months validity)',
+              'Valid passport that meets the current portal checklist',
               'HSSC / A-Level / bachelor transcripts, notarised',
               'Degree certificates, notarised',
-              'APS certificate (Akademische Prüfstelle) — Pakistani applicants',
+              'Additional qualification documents specified in the university or consular application checklist',
               'Language certificate — TestDaF / telc / Goethe (German-taught) or IELTS / TOEFL (English-taught)',
               'CV / résumé in English or German',
               'Motivation letter / statement of purpose',

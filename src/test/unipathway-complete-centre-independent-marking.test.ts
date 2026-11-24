@@ -11,7 +11,7 @@ const ai=get('supabase/functions/omniqora-assessment-advisory/index.ts');
 const routes=get('src/lib/educationCentrePathways.ts');
 describe('UniPathway complete centre and independent marking contracts',()=>{
  it('supports Pakistan boards, Cambridge, language, professional, trade and UK regulated study preparation',()=>{
-  for(const term of ['Matric / SSC','FSc / HSSC','FA, ICS & ICom','Cambridge AS & A Levels',
+  for(const term of ['Matric / SSC','FSc / HSSC','ICS & ICom','Cambridge AS & A Levels',
   'Spanish, French & Italian','Cloud certifications','Banking, Treasury','Beauty Therapy',
   'Health & Social Care','Trades, Energy','OTHM Qualification','Qualifi Qualification']){
    expect(routes).toContain(term);

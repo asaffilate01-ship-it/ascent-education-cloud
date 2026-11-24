@@ -175,6 +175,7 @@ const FoundationScholarships = lazy(() => import("./pages/promo/FoundationSchola
 const OpportunityFundDashboard = lazy(() => import("./pages/director/OpportunityFundDashboard"));
 const UniversityProgressionDirectory = lazy(() => import("./pages/promo/UniversityProgressionDirectory"));
 const AcademyPage = lazy(() => import("./pages/promo/AcademyPage"));
+const InternationalStudy = lazy(() => import("./pages/promo/InternationalStudy"));
 const StudyDestinationPage = lazy(() => import("./pages/promo/StudyDestinationPage"));
 const EuropeStudyDirectory = lazy(() => import("./pages/promo/EuropeStudyDirectory"));
 const EuropeanCountryPage = lazy(() => import("./pages/promo/EuropeStudyDirectory").then(m => ({ default: m.EuropeanCountryPage })));
@@ -337,6 +338,8 @@ function AppRoutes() {
         <Route path="/university-progression" element={<UniversityProgressionDirectory />} />
         <Route path="/tech-academy" element={<AcademyPage kind="tech" />} />
         <Route path="/finance-academy" element={<AcademyPage kind="finance" />} />
+        <Route path="/international-study" element={<InternationalStudy />} />
+        <Route path="/international-study/:destination" element={<InternationalStudy />} />
         <Route path="/pakistan" element={<StudyDestinationPage destination={studyDestinations.pakistan} />} />
         <Route path="/usa" element={<StudyDestinationPage destination={studyDestinations.usa} />} />
         <Route path="/canada" element={<StudyDestinationPage destination={studyDestinations.canada} />} />

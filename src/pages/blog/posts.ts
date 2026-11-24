@@ -12,6 +12,7 @@ export interface BlogPost {
   author: string;
   date: string; // ISO
   readMinutes: number;
+  guidanceLinks?: { label: string; to: string }[];
   cover: string;
   coverAlt: string;
   body: string[]; // paragraphs (plain text)
@@ -20,59 +21,69 @@ export interface BlogPost {
 export const BLOG_POSTS: BlogPost[] = [
   {
     slug: 'uk-student-visa-2026-checklist',
-    title: 'UK Student Visa 2026 — Complete Checklist for Pakistani Applicants',
+    title: 'UK Student Visa 2026 — What Pakistani Applicants Should Check',
     excerpt:
-      'From CAS to maintenance funds and TB tests — the exact documents UKVI expects from Pakistani students in 2026.',
+      'Check CAS, financial evidence and other possible documents with GOV.UK. Requirements depend on your route and application date.',
     category: 'UK',
     author: 'UniPathway Editorial',
     date: '2026-06-02',
     readMinutes: 8,
     cover: ukVisaCover,
     coverAlt: 'UK passport and university acceptance letter with Westminster in the background',
+    guidanceLinks: [
+      { label: 'UK visa costs and application-date changes', to: '/uk#student-visa-costs' },
+      { label: 'GOV.UK: Student visa documents', to: 'https://www.gov.uk/student-visa/documents-you-must-provide' },
+      { label: 'GOV.UK: Tuberculosis testing', to: 'https://www.gov.uk/tb-test-visa' },
+    ],
     body: [
-      'Applying for a UK Student Visa from Pakistan in 2026 is straightforward if you prepare in the right order. This guide walks through every document UKVI expects, the current maintenance-fund thresholds, and the common reasons Pakistani applications are refused.',
-      'You need a Confirmation of Acceptance for Studies (CAS) from a licensed UK sponsor before you can apply. Your CAS is valid for six months and lists your course, start date, tuition, and any deposits already paid.',
-      'Maintenance funds must be held in your (or a parent’s) account for 28 consecutive days ending no more than 31 days before the application. London courses require higher monthly funds than the rest of the UK — check the current GOV.UK figures at the time you apply.',
-      'Tuberculosis testing at an IOM-approved clinic in Pakistan is mandatory. Bring your passport and appointment letter; the certificate is valid for six months.',
-      'UniPathway counsellors review your document set before submission and flag anything a caseworker is likely to query. This is education counselling — the final visa decision rests with UKVI.',
+      'Begin with your exact course and a Confirmation of Acceptance for Studies (CAS) from a licensed Student sponsor. Admission, CAS issuance and visa approval are separate decisions.',
+      'Check the course fees on your CAS and the GOV.UK financial amount and evidence rules for the date you apply. Where cash evidence is required, the funds generally must be held for 28 consecutive days with that period ending within 31 days before you apply. Other evidence routes and exemptions have separate rules.',
+      'Check whether you need a tuberculosis test, an ATAS certificate or specific English-language evidence. GOV.UK’s current checklist determines which documents apply; a university’s admissions checklist may be different.',
+      'UniPathway can help with education planning, not individual decisions about visa eligibility. Do not send passports, bank statements or visa documents in a general enquiry.',
     ],
   },
   {
     slug: 'germany-blocked-account-sperrkonto-explained',
-    title: 'Germany Sperrkonto (Blocked Account) — How Much You Really Need in 2026',
+    title: 'Germany Sperrkonto (Blocked Account) — What to Check Before You Pay',
     excerpt:
-      'The blocked account is Germany’s proof-of-funds requirement. Here is the current figure, the approved providers, and how to open one from Pakistan.',
+      'A blocked account is one way to show financing. Check current amounts, acceptable alternatives and provider terms with official sources.',
     category: 'Germany',
     author: 'UniPathway Editorial',
     date: '2026-05-18',
     readMinutes: 6,
     cover: germanySperrkontoCover,
     coverAlt: 'Euro banknotes and a banking dashboard on a laptop with the Brandenburg Gate behind',
+    guidanceLinks: [
+      { label: 'German Missions in Pakistan: How to finance your stay', to: 'https://pakistan.diplo.de/pk-en/service/1995528-1995528' },
+      { label: 'Germany student visa guide for Pakistan', to: '/international-study/germany' },
+    ],
     body: [
-      'To study in Germany, most Pakistani students must show proof of funds in a Sperrkonto (blocked account) before the German mission will issue a student visa.',
-      'The amount is set by the Federal Foreign Office and is reviewed each year. It is released to you monthly during your studies — you cannot withdraw the full amount at once.',
-      'Popular providers accepting Pakistani applicants include Expatrio, Fintiba, and Coracle. Each charges a setup fee and monthly maintenance fee — compare the total cost before you commit.',
-      'Open the account online, transfer the required amount from your Pakistani bank via an authorised remittance channel, and download the confirmation letter for your visa file.',
-      'UniPathway assists with the paperwork and interview preparation. The final residence-permit and visa decision is made by the German authority.',
+      'A blocked account can be used to show you can meet your living costs. The German Missions in Pakistan also list alternatives such as an accepted scholarship or a formal declaration of commitment. Ask the relevant mission which evidence is accepted in your case.',
+      'Check the official amount and the length of the period for your application before moving money. A blocked account releases funds in instalments; it is not the government visa fee.',
+      'The account terms are between you and the provider. Check provider fees, verification for the German mission and how you would recover funds if your study plans change.',
+      'Admission and financing evidence do not guarantee an immigration decision. Use the German mission’s current checklist for the visa route.',
     ],
   },
   {
     slug: 'ielts-vs-pte-vs-toefl-2026',
     title: 'IELTS vs PTE vs TOEFL in 2026 — Which One Should You Sit?',
     excerpt:
-      'Cost, speed, difficulty, and UK/Germany acceptance compared side by side so you pick the right English test.',
+      'Check how IELTS, PTE and TOEFL evidence differs across admissions and visas before you choose a test.',
     category: 'Language',
     author: 'UniPathway Language Team',
     date: '2026-04-27',
     readMinutes: 5,
     cover: englishExamsCover,
     coverAlt: 'Student taking an English language exam on a computer with headphones on',
+    guidanceLinks: [
+      { label: 'ETS: Current TOEFL iBT test content', to: 'https://www.ets.org/toefl/test-takers/ibt/about/content.html' },
+      { label: 'GOV.UK: Student visa English requirements', to: 'https://www.gov.uk/student-visa/knowledge-of-english' },
+    ],
     body: [
-      'All three tests are widely accepted, but they measure English differently and cost different amounts in Pakistan.',
-      'IELTS is the most familiar to UK universities and UKVI. Results usually arrive in 3–5 days for the computer-delivered version.',
-      'PTE Academic is fully computer-marked, so results are typically issued within 48 hours. Some UK universities prefer it for its objectivity.',
-      'TOEFL iBT is more common for US-linked programmes; some UK and German institutions accept it, but always confirm on the university page.',
-      'Our language academy offers targeted preparation for whichever test suits your goal. The official certificate is issued only by the examination body.',
+      'Start with the exact institution, course and intake. Check accepted test versions, minimum overall and section scores, delivery modes and any exemptions before booking.',
+      'IELTS Academic and PTE Academic are accepted by some universities. The English evidence a university accepts for admission may differ from the evidence required for a UK Student visa.',
+      'TOEFL iBT formats and scores changed in 2026. Confirm the version for your test date with ETS and ask your institution which delivery modes and scores it accepts. TOEFL iBT is not a UKVI-approved secure English language test (SELT); a UK Student sponsor’s assessment for eligible degree-level study is a separate route.',
+      'Ask UniPathway about TOEFL iBT preparation availability. Before paying for any test, check fees and result turnaround with the exam provider rather than relying on a general estimate.',
     ],
   },
   {

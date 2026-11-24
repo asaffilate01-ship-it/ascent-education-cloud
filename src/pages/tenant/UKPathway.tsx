@@ -1,3 +1,5 @@
+import { useLayoutEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import CompanyDetails from '@/components/CompanyDetails';
 import TenantNav from '@/components/TenantNav';
 import LanguageAcademy from '@/components/tenant/LanguageAcademy';
@@ -8,6 +10,12 @@ import { StudyDestinationSections } from '@/pages/promo/StudyDestinationPage';
 import { studyDestinations } from '@/lib/studyDestinations';
 
 export default function UKPathway() {
+  const { hash } = useLocation();
+  useLayoutEffect(() => {
+    if (hash === '#student-visa-costs') {
+      document.getElementById('student-visa-costs')?.scrollIntoView({ block: 'start' });
+    }
+  }, [hash]);
   return (
     <div className="public-site min-h-dvh bg-background text-foreground">
       <Seo title="Study in the UK from Pakistan — Degrees & Top-Ups | UniPathway" description="UK university pathways for Pakistani students: accredited diplomas, top-up degrees, IELTS preparation and student visa guidance." canonical="/uk" />
@@ -17,17 +25,18 @@ export default function UKPathway() {
         flag="🇬🇧"
         eyebrow="Study in the United Kingdom"
         title="Foundation, bachelor’s, master’s and top-up routes to the UK"
-        subtitle="One-year master’s programmes, wide English-taught delivery and a clear pathway from Pakistani HSSC or A-Levels — with structured Academic English and IELTS / PTE / TOEFL preparation."
+        subtitle="One-year master’s programmes, wide English-taught delivery and a clear pathway from Pakistani HSSC or A-Levels — with Academic English, IELTS and PTE preparation. Ask about TOEFL iBT preparation."
         bullets={[
           'One-year taught master’s across most disciplines',
           'Foundation and top-up routes for HSSC and Level 4/5 diploma holders',
           'Graduate and post-study immigration routes depend on current GOV.UK eligibility rules',
-          'Applications handled directly with the licensed Student sponsor institution',
+          'Check whether the institution can sponsor your exact course and study location',
         ]}
         destination="uk"
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-14">
+        <Link to="/international-study/uk" className="inline-flex min-h-11 items-center rounded-md font-semibold text-primary underline underline-offset-4">Read the UK student visa guide</Link>
         <StudyDestinationSections destination={studyDestinations.uk} compact />
 
         {/* Study levels */}
@@ -65,18 +74,26 @@ export default function UKPathway() {
             <p className="text-xs text-muted-foreground italic mt-4">Final equivalency is decided by the UK institution using UK ENIC.</p>
           </div>
 
-          <div className="surface-card p-6 rounded-2xl border border-border/50">
-            <Wallet className="w-6 h-6 text-primary mb-3" />
-            <h3 className="text-lg font-bold mb-3">Costs & maintenance funds (indicative)</h3>
-            <ul className="space-y-2.5 text-sm">
-              <li className="flex justify-between gap-4"><span className="text-muted-foreground">International tuition</span><span className="font-semibold">£12,000 – £28,000 / year</span></li>
-              <li className="flex justify-between gap-4"><span className="text-muted-foreground">Living — London</span><span className="font-semibold">£1,483 / month × 9</span></li>
-              <li className="flex justify-between gap-4"><span className="text-muted-foreground">Living — outside London</span><span className="font-semibold">£1,136 / month × 9</span></li>
-              <li className="flex justify-between gap-4"><span className="text-muted-foreground">Immigration Health Surcharge</span><span className="font-semibold">£776 / year</span></li>
-              <li className="flex justify-between gap-4"><span className="text-muted-foreground">Visa application fee</span><span className="font-semibold">£524 (outside UK)</span></li>
-            </ul>
-            <p className="text-xs text-muted-foreground italic mt-4">Current figures must be verified on GOV.UK Student Visa guidance at the time of application.</p>
-          </div>
+          <section id="student-visa-costs" aria-labelledby="student-visa-costs-heading" className="surface-card scroll-mt-32 rounded-2xl border border-border/50 p-5 sm:p-6">
+            <Wallet aria-hidden="true" className="mb-3 size-6 text-primary" />
+            <h2 id="student-visa-costs-heading" className="text-lg font-bold">UK Student visa costs and financial evidence</h2>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">For course fees, check the institution’s written offer. When financial evidence is needed, check the relevant fees on your Confirmation of Acceptance for Studies (CAS) and the <a className="font-semibold text-primary underline underline-offset-4" href="https://www.gov.uk/student-visa/money">GOV.UK money requirements</a>.</p>
+            <h3 className="mt-5 font-bold">Maintenance evidence by application date</h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Where it applies, the monthly requirement runs for up to nine months. These figures are evidence requirements, not a fee or an estimate of living costs.</p>
+            <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
+              <div className="rounded-xl border border-border p-3">
+                <dt className="font-semibold">Before 30 November 2026</dt>
+                <dd className="mt-1 text-muted-foreground">London: £1,529/month<br />Outside London: £1,171/month</dd>
+              </div>
+              <div className="rounded-xl border border-border p-3">
+                <dt className="font-semibold">From 30 November 2026</dt>
+                <dd className="mt-1 text-muted-foreground">London: £1,570/month<br />Outside London: £1,203/month</dd>
+              </div>
+            </dl>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">The <a className="font-semibold text-primary underline underline-offset-4" href="https://www.gov.uk/government/publications/statement-of-changes-to-the-immigration-rules-hc-584-3-september-2026/statement-of-changes-to-the-immigration-rules-hc-584-3-september-2026-accessible">Home Office rule change</a> uses the date you apply. Where cash evidence is required, the funds generally must be held for at least 28 consecutive days, with the period ending within 31 days before you apply. Other evidence routes and exemptions have their own rules.</p>
+            <h3 className="mt-5 font-bold">Separate application charges</h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Checked 24 November 2026: <a className="font-semibold text-primary underline underline-offset-4" href="https://www.gov.uk/student-visa">Student visa from outside the UK: £558</a>. The <a className="font-semibold text-primary underline underline-offset-4" href="https://www.gov.uk/healthcare-immigration-application/how-much-pay">student health surcharge rate is £776 per year</a>; the total depends on the visa length. Check the official charges again before applying.</p>
+          </section>
         </section>
 
         {/* Visa + post-study */}
@@ -85,12 +102,12 @@ export default function UKPathway() {
             <ShieldCheck className="w-6 h-6 text-primary mb-3" />
             <h3 className="text-lg font-bold mb-3">Student visa</h3>
             <ol className="space-y-2 text-sm text-muted-foreground list-decimal list-inside">
-              <li>Unconditional offer from a licensed UK Student sponsor</li>
+              <li>Offer from a licensed UK Student sponsor that meets the Student visa requirements</li>
               <li>Confirmation of Acceptance for Studies (CAS)</li>
-              <li>Financial evidence — tuition + 9 months maintenance</li>
-              <li>Approved English language evidence (SELT where required)</li>
+              <li>Course fees on your CAS and maintenance evidence where applicable, for up to nine months</li>
+              <li>English-language evidence that meets Student visa rules, including an approved SELT where required</li>
               <li>ATAS certificate for specified STEM subjects</li>
-              <li>TB test at an approved Pakistan clinic</li>
+              <li>TB test at an approved clinic if GOV.UK requires it</li>
             </ol>
             <p className="text-xs text-muted-foreground italic mt-4">CAS issuance is a decision of the sponsoring institution. Visa decisions are made by UKVI.</p>
           </div>
@@ -99,9 +116,9 @@ export default function UKPathway() {
             <Briefcase className="w-6 h-6 text-primary mb-3" />
             <h3 className="text-lg font-bold mb-3">Graduate Route (post-study work)</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Successful UK bachelor’s or master’s graduates may apply for the <strong className="text-foreground">Graduate Route</strong> to work or look for work in the UK. Duration, eligibility and work conditions must be checked against current official Graduate visa guidance; no immigration outcome is guaranteed.
+              Eligible graduates must apply from inside the UK and meet the separate <a className="font-semibold text-primary underline underline-offset-4" href="https://www.gov.uk/graduate-visa">Graduate visa requirements</a>. For eligible non-doctoral applicants, the published duration is two years if applying on or before 31 December 2026, and 18 months from 1 January 2027. It is three years for an eligible PhD or other doctoral qualification.
             </p>
-            <p className="text-xs text-muted-foreground italic mt-4">Rules and durations must be checked on GOV.UK at the time of graduation.</p>
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">A top-up or a course studied from Pakistan does not automatically qualify. Ask the UK institution to confirm the exact course, sponsor and mode, then check the official rules before applying.</p>
           </div>
         </section>
 
@@ -110,15 +127,15 @@ export default function UKPathway() {
           <h3 className="text-lg font-bold mb-4">Document checklist — UK application</h3>
           <div className="grid sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
             {[
-              'Valid passport (min. 6 months validity)',
-              'HSSC / A-Level / bachelor transcripts, attested',
-              'Degree certificates, attested',
-              'Approved English language evidence (IELTS / PTE / TOEFL / MOI where accepted)',
+              'Current passport or other valid travel documentation',
+              'Transcripts with attestations or translations where requested by the institution',
+              'Award certificates where requested',
+              'Check academic English evidence with the university and visa English evidence separately with GOV.UK',
               'CV / résumé',
               'Personal statement',
               'Two academic references (master’s)',
-              'Financial evidence — bank statements held 28 consecutive days',
-              'TB test certificate — approved Pakistan clinic',
+              'Financial evidence matching the applicable GOV.UK requirements',
+              'TB test certificate where required, from an approved clinic',
               'ATAS (specified STEM subjects only)',
             ].map((d, i) => (
               <div key={i} className="flex items-start gap-2 py-1.5">

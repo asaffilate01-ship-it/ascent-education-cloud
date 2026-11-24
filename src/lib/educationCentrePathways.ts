@@ -58,7 +58,7 @@ export const centrePathways:CentrePathway[]=[
   authorisation:'exam_external',courseLevel:'International GCSE / IAL',practical:true},
  {id:'english-tests',family:'Language examinations',title:'IELTS, PTE & TOEFL',
   route:'/ielts-preparation',subjects:['Academic reading','Listening','Speaking','Writing','Vocabulary','Test strategies'],
-  preparationFor:'IELTS Academic/General and separate PTE Academic or TOEFL iBT preparation',
+  preparationFor:'IELTS Academic/General and separate PTE Academic preparation. Enquire separately about TOEFL iBT preparation.',
   examAuthority:'External authorised test providers (as applicable)',
   assessment:'Timed speaking/writing rubrics, diagnostic mocks and examiner-calibrated review',
   authorisation:'exam_external',courseLevel:'Foundation to advanced',practical:false},

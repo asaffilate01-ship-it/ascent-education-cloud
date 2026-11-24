@@ -158,6 +158,56 @@
       "study in Europe from Pakistan"
     ]
   },
+  "/international-study": {
+    "title": "International Study & Visa Guidance | UniPathway",
+    "description": "Compare international admissions steps and find official student visa and permit guidance for nine study destinations from Pakistan.",
+    "keywords": ["international study Pakistan", "student visa guidance"]
+  },
+  "/international-study/uk": {
+    "title": "United Kingdom Student Visa & International Study | UniPathway",
+    "description": "Plan study in United Kingdom from Pakistan, with a separate admissions checklist and official immigration links.",
+    "keywords": ["international study Pakistan", "student visa guidance"]
+  },
+  "/international-study/italy": {
+    "title": "Italy Student Visa & International Study | UniPathway",
+    "description": "Plan study in Italy from Pakistan, with a separate admissions checklist and official immigration links.",
+    "keywords": ["international study Pakistan", "student visa guidance"]
+  },
+  "/international-study/germany": {
+    "title": "Germany Student Visa & International Study | UniPathway",
+    "description": "Plan study in Germany from Pakistan, with a separate admissions checklist and official immigration links.",
+    "keywords": ["international study Pakistan", "student visa guidance"]
+  },
+  "/international-study/australia": {
+    "title": "Australia Student Visa & International Study | UniPathway",
+    "description": "Plan study in Australia from Pakistan, with a separate admissions checklist and official immigration links.",
+    "keywords": ["international study Pakistan", "student visa guidance"]
+  },
+  "/international-study/canada": {
+    "title": "Canada Student Visa & International Study | UniPathway",
+    "description": "Plan study in Canada from Pakistan, with a separate admissions checklist and official immigration links.",
+    "keywords": ["international study Pakistan", "student visa guidance"]
+  },
+  "/international-study/usa": {
+    "title": "United States Student Visa & International Study | UniPathway",
+    "description": "Plan study in United States from Pakistan, with a separate admissions checklist and official immigration links.",
+    "keywords": ["international study Pakistan", "student visa guidance"]
+  },
+  "/international-study/france": {
+    "title": "France Student Visa & International Study | UniPathway",
+    "description": "Plan study in France from Pakistan, with a separate admissions checklist and official immigration links.",
+    "keywords": ["international study Pakistan", "student visa guidance"]
+  },
+  "/international-study/spain": {
+    "title": "Spain Student Visa & International Study | UniPathway",
+    "description": "Plan study in Spain from Pakistan, with a separate admissions checklist and official immigration links.",
+    "keywords": ["international study Pakistan", "student visa guidance"]
+  },
+  "/international-study/netherlands": {
+    "title": "Netherlands Student Visa & International Study | UniPathway",
+    "description": "Plan study in Netherlands from Pakistan, with a separate admissions checklist and official immigration links.",
+    "keywords": ["international study Pakistan", "student visa guidance"]
+  },
   "/pathways": {
     "title": "Study Abroad & University Pathways | UniPathway",
     "description": "Compare university pathways in the UK, Germany, USA, Canada and Australia. Explore qualification recognition and application guidance from Pakistan.",
@@ -256,18 +306,18 @@
     ]
   },
   "/blog/uk-student-visa-2026-checklist": {
-    "title": "UK Student Visa 2026 — Complete Checklist for Pakistani Applicants | UniPathway",
-    "description": "From CAS to maintenance funds and TB tests — the exact documents UKVI expects from Pakistani students in 2026.",
+    "title": "UK Student Visa 2026 — What Pakistani Applicants Should Check | UniPathway",
+    "description": "Check CAS, financial evidence and other possible documents with GOV.UK. Requirements depend on your route and application date.",
     "keywords": []
   },
   "/blog/germany-blocked-account-sperrkonto-explained": {
-    "title": "Germany Sperrkonto (Blocked Account) — How Much You Really Need in 2026 | UniPathway",
-    "description": "The blocked account is Germany’s proof-of-funds requirement. Here is the current figure, the approved providers, and how to open one from Pakistan.",
+    "title": "Germany Sperrkonto (Blocked Account) — What to Check Before You Pay | UniPathway",
+    "description": "A blocked account is one way to show financing. Check current amounts, acceptable alternatives and provider terms with official sources.",
     "keywords": []
   },
   "/blog/ielts-vs-pte-vs-toefl-2026": {
     "title": "IELTS vs PTE vs TOEFL in 2026 — Which One Should You Sit? | UniPathway",
-    "description": "Cost, speed, difficulty, and UK/Germany acceptance compared side by side so you pick the right English test.",
+    "description": "Check how IELTS, PTE and TOEFL evidence differs across admissions and visas before you choose a test.",
     "keywords": []
   },
   "/blog/testdaf-vs-telc-vs-goethe": {
