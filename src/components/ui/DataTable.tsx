@@ -1,8 +1,8 @@
-import { useState, useMemo, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { Trash2, Download, MoreHorizontal, X } from 'lucide-react';
+import { X, ArrowUpDown } from 'lucide-react';
 import EmptyState from '@/components/ui/EmptyState';
 
 interface Column<T> {
@@ -48,7 +48,16 @@ export default function DataTable<T extends { id: string }>({
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
-  const allSelected = data.length > 0 && selected.size === data.length;
+  const reduceMotion = useReducedMotion();
+  const selectedItems = useMemo(() => data.filter(d => selected.has(d.id)), [data, selected]);
+  const allSelected = data.length > 0 && selectedItems.length === data.length;
+  useEffect(() => {
+    setSelected(previous => {
+      const visible = new Set(data.map(row => row.id));
+      const next = new Set([...previous].filter(id => visible.has(id)));
+      return next.size === previous.size ? previous : next;
+    });
+  }, [data]);
 
   const toggleAll = useCallback(() => {
     if (allSelected) {
@@ -81,6 +90,7 @@ export default function DataTable<T extends { id: string }>({
     return [...data].sort((a, b) => {
       const aVal = (a as any)[sortKey];
       const bVal = (b as any)[sortKey];
+      if (aVal == null && bVal == null) return 0;
       if (aVal == null) return 1;
       if (bVal == null) return -1;
       const cmp = typeof aVal === 'number' ? aVal - bVal : String(aVal).localeCompare(String(bVal));
@@ -88,12 +98,7 @@ export default function DataTable<T extends { id: string }>({
     });
   }, [data, sortKey, sortDir]);
 
-  const selectedItems = useMemo(
-    () => data.filter((d) => selected.has(d.id)),
-    [data, selected]
-  );
-
-  const showBulkBar = selectable && selected.size > 0;
+  const showBulkBar = selectable && selectedItems.length > 0;
 
   return (
     <div className="surface-card overflow-hidden relative">
@@ -101,15 +106,15 @@ export default function DataTable<T extends { id: string }>({
       <AnimatePresence>
         {showBulkBar && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
+            initial={reduceMotion ? false : { height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: reduceMotion ? 0 : 0.2 }}
             className="overflow-hidden"
           >
-            <div className="flex items-center gap-2 px-5 py-2.5 bg-primary/5 border-b border-primary/10">
+            <div className="flex flex-wrap items-center gap-2 px-3 sm:px-5 py-2.5 bg-primary/5 border-b border-primary/10">
               <span className="text-xs font-semibold text-primary">
-                {selected.size} selected
+                {selectedItems.length} selected
               </span>
               <div className="flex-1" />
               {bulkActions.map((action) => (
@@ -117,7 +122,7 @@ export default function DataTable<T extends { id: string }>({
                   key={action.label}
                   size="sm"
                   variant={action.variant === 'destructive' ? 'destructive' : 'outline'}
-                  className="h-7 text-xs gap-1.5"
+                  className="min-h-11 h-auto whitespace-normal text-xs gap-1.5"
                   onClick={() => {
                     action.onClick(selectedItems);
                     setSelected(new Set());
@@ -127,20 +132,10 @@ export default function DataTable<T extends { id: string }>({
                   {action.label}
                 </Button>
               ))}
-              {bulkActions.length === 0 && (
-                <>
-                  <Button size="sm" variant="outline" className="h-7 text-xs gap-1.5">
-                    <Download className="w-3 h-3" /> Export
-                  </Button>
-                  <Button size="sm" variant="destructive" className="h-7 text-xs gap-1.5">
-                    <Trash2 className="w-3 h-3" /> Delete
-                  </Button>
-                </>
-              )}
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-7 w-7 p-0"
+                className="h-11 w-11 p-0" aria-label="Clear selection"
                 onClick={() => setSelected(new Set())}
               >
                 <X className="w-3 h-3" />
@@ -150,14 +145,15 @@ export default function DataTable<T extends { id: string }>({
         )}
       </AnimatePresence>
 
-      <div className="overflow-x-auto">
-        <table className="w-full">
+      <div className="overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary" tabIndex={0} role="region" aria-label="Scrollable records table">
+        <table className="w-full text-left">
           <thead>
             <tr className="surface-data">
               {selectable && (
-                <th className="w-10 pl-5 pr-1 py-3">
+                <th scope="col" className="w-10 pl-3 sm:pl-5 pr-1 py-3">
                   <Checkbox
-                    checked={allSelected}
+                    aria-label="Select all visible records"
+                    checked={allSelected ? true : selectedItems.length > 0 ? 'indeterminate' : false}
                     onCheckedChange={toggleAll}
                     className="data-[state=checked]:bg-primary"
                   />
@@ -166,29 +162,29 @@ export default function DataTable<T extends { id: string }>({
               {columns.map((col) => (
                 <th
                   key={col.key}
-                  onClick={col.sortable ? () => handleSort(col.key) : undefined}
-                  className={`text-label text-left px-4 py-3 first:pl-5 last:pr-5 ${
-                    col.sortable ? 'cursor-pointer hover:text-foreground select-none' : ''
-                  }`}
+                  scope="col"
+                  aria-sort={col.sortable ? (sortKey === col.key ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none') : undefined}
+                  className="text-label text-left px-3 sm:px-4 py-3 first:pl-3 last:pr-3"
                 >
-                  <span className="inline-flex items-center gap-1">
+                  {col.sortable ? <button type="button" className="inline-flex min-h-11 items-center gap-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded" onClick={() => handleSort(col.key)}>
                     {col.label}
-                    {col.sortable && sortKey === col.key && (
-                      <span className="text-[9px]">{sortDir === 'asc' ? '▲' : '▼'}</span>
-                    )}
-                  </span>
+                    <ArrowUpDown aria-hidden="true" className="size-3"/>
+                  </button> : col.label}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {sortedData.map((item, idx) => (
+            {sortedData.map((item) => (
               <motion.tr
                 key={item.id}
-                initial={{ opacity: 0 }}
+                initial={false}
                 animate={{ opacity: 1 }}
-                transition={{ delay: idx * 0.02, duration: 0.2 }}
-                onClick={() => onRowClick?.(item)}
+                transition={{ duration: reduceMotion ? 0 : 0.1 }}
+                onClick={e => {
+                  if ((e.target as HTMLElement).closest('button,a,input,select,textarea,summary,[role="button"],[role="checkbox"]')) return;
+                  onRowClick?.(item);
+                }}
                 className={`border-t border-border/30 transition-all duration-150 ${
                   onRowClick ? 'cursor-pointer hover:bg-primary/[0.02]' : 'hover:bg-muted/30'
                 } ${selected.has(item.id) ? 'bg-primary/5' : ''}`}
@@ -196,15 +192,17 @@ export default function DataTable<T extends { id: string }>({
                 {selectable && (
                   <td className="w-10 pl-5 pr-1 py-3" onClick={(e) => e.stopPropagation()}>
                     <Checkbox
+                      aria-label={`Select record ${item.id}`}
                       checked={selected.has(item.id)}
                       onCheckedChange={() => toggleOne(item.id)}
                       className="data-[state=checked]:bg-primary"
                     />
                   </td>
                 )}
-                {columns.map((col) => (
-                  <td key={col.key} className="px-4 py-3 text-sm first:pl-5 last:pr-5">
+                {columns.map((col, index) => (
+                  <td key={col.key} className="px-3 sm:px-4 py-3 text-sm align-top [overflow-wrap:anywhere]">
                     {col.render ? col.render(item) : (item as any)[col.key]}
+                    {index === 0 && onRowClick && <button type="button" className="mt-1 block min-h-11 text-xs font-medium underline underline-offset-4" onClick={() => onRowClick(item)}>Open record<span className="sr-only"> {item.id}</span></button>}
                   </td>
                 ))}
               </motion.tr>
