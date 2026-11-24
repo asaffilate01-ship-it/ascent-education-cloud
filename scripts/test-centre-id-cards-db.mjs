@@ -60,7 +60,10 @@ try{
  await deny(()=>revoke(director,cardId,'Different reason'));await deny(()=>issue(director,id(51)));
  await db.query("UPDATE public.kyc_documents SET status='verified' WHERE id=$1",[id(36)]);
  const replacement=await issue(director,id(51));assert.notEqual(replacement.reference,issued.reference);assert.equal((await lookup(teacher,mod,issued.reference)).match,null);checks+=2;
+ const foreignCard=await issue(otherDirector,id(53),foreign);assert.equal((await lookup(teacher,mod,foreignCard.reference)).match,null);checks++;
  const staff=await issue(director,id(52),teacher,'lecturer');assert.equal((await get(teacher,'lecturer')).card.id,staff.id);assert.equal((await lookup(teacher,mod,staff.reference)).match,null);checks+=2;
+ assert.equal((await roster(director)).cards.length,1);checks++;
+ await db.query("UPDATE unipathway_centre_cards.cards SET issued_on=((now() AT TIME ZONE 'Asia/Karachi')::date-2),expires_on=((now() AT TIME ZONE 'Asia/Karachi')::date-1) WHERE id=$1",[replacement.id]);assert.equal((await get(learner)).card.status,'expired');assert.equal((await lookup(teacher,mod,replacement.reference)).match,null);checks+=2;
  await db.query("DELETE FROM public.user_roles WHERE user_id=$1 AND role='student'",[learner]);
  assert.equal((await lookup(teacher,mod,replacement.reference)).match,null);checks++;await deny(()=>get(learner));
  console.log('Centre ID cards: '+checks+' isolated issue, revoke, role and register lookup checks passed');
