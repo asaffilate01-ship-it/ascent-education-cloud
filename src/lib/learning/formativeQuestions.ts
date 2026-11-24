@@ -1264,7 +1264,7 @@ export const FORMATIVE_QUESTIONS:readonly FormativeQuestion[]=[
   "subject": "German",
   "scope": "A1–A2 communication; independent practice",
   "topic": "Introductions",
-  "question": "Which means 'My name is Sara'?",
+  "question": "Which German phrase means 'My name is Sara'?",
   "options": [
    "Ich bin aus Sara.",
    "Ich habe Sara.",
@@ -1400,7 +1400,7 @@ export const FORMATIVE_QUESTIONS:readonly FormativeQuestion[]=[
   "subject": "Italian",
   "scope": "A1–A2 communication; independent practice",
   "topic": "Introductions",
-  "question": "Which means 'My name is Sara'?",
+  "question": "Which Italian phrase means 'My name is Sara'?",
   "options": [
    "Ho Sara.",
    "Parlo Sara.",
