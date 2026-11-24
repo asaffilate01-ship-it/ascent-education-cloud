@@ -1,3 +1,4 @@
+import ApplicationDraft from '@/components/admissions/ApplicationDraft';
 import IdentityConnectionStatus from '@/components/IdentityConnectionStatus';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useState, useEffect } from 'react';
@@ -16,7 +17,7 @@ import { motion } from 'framer-motion';
 
 const DOCUMENT_TYPES = [
   { key: 'passport', label: 'CNIC / B-form / Juvenile Card / Passport', icon: User, description: 'Government-issued photo ID for identity verification', required: true },
-  { key: 'selfie', label: 'Selfie for Face Match', icon: Camera, description: 'Clear photo for identity verification against your ID', required: true },
+  { key: 'selfie', label: 'Identity photograph (where required)', icon: Camera, description: 'Only provide when requested by authorised staff; guardian-led checks apply to minors', required: false },
   { key: 'transcript', label: 'Academic Transcripts', icon: FileText, description: 'Official transcripts from previous institution(s)', required: true },
   { key: 'qualification', label: 'Qualification Certificates', icon: GraduationCap, description: 'Degree/diploma certificates (originals or attested copies)', required: true },
   { key: 'english_cert', label: 'English Language Certificate', icon: FileText, description: 'IELTS, PTE, or equivalent English proficiency certificate', required: false },
@@ -103,6 +104,7 @@ export default function StudentOnboarding() {
   return (
     <DashboardLayout title="Student Onboarding">
       <IdentityConnectionStatus />
+      <ApplicationDraft kind="student" />
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Student Onboarding</h1>

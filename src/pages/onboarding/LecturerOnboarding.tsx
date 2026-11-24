@@ -1,3 +1,4 @@
+import ApplicationDraft from '@/components/admissions/ApplicationDraft';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { CheckCircle, Upload, FileText, Shield, Award, User, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -97,6 +98,7 @@ export default function LecturerOnboarding() {
       title="Part-time Tutor & Lecturer Onboarding"
       subtitle="All teaching appointments are part-time, whether classroom, remote or hybrid. Upload evidence for verification."
     >
+      <ApplicationDraft kind="lecturer" />
       {/* Progress */}
       <div className="surface-card p-5 mb-6">
         <div className="flex items-center justify-between mb-2">
