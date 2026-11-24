@@ -1,3 +1,5 @@
-import { db } from '@/lib/db';
-import DashboardLayout from '@/components/layout/DashboardLayout'; import StatusBadge from '@/components/ui/StatusBadge'; import {useEffect,useState} from 'react'; import {supabase} from '@/integrations/supabase/client';
-export default function MicrosoftAccountCentre(){const [a,setA]=useState<any>(null);useEffect(()=>{db.from('microsoft_education_accounts').select('*').maybeSingle().then(({data})=>setA(data))},[]);return <DashboardLayout title="My Microsoft Account" subtitle="UniPathway Outlook, Teams and Microsoft 365"><div className="surface-card p-6"><p className="text-label">Institutional email</p><div className="flex justify-between gap-3 mt-1"><h2 className="font-bold text-lg">{a?.institutional_email||'Account provisioning pending'}</h2><StatusBadge status={a?.provisioning_status||'pending'}/></div><p className="text-sm text-muted-foreground mt-5">Outlook · Teams · OneDrive · Word/Excel/PowerPoint web</p></div></DashboardLayout>}
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import MicrosoftAccountReadiness from '@/components/classroom/MicrosoftAccountReadiness';
+export default function MicrosoftAccountCentre(){
+ return <DashboardLayout title="My Microsoft account" subtitle="Institutional Microsoft 365 and Teams identity"><div className="mx-auto max-w-4xl"><MicrosoftAccountReadiness/></div></DashboardLayout>;
+}
