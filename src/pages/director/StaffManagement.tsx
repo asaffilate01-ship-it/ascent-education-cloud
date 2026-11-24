@@ -1,3 +1,4 @@
+import TeachingTimesheets from '@/components/lecturer/TeachingTimesheets';
 import {useMemo,useState} from 'react';
 import {Link} from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -92,6 +93,7 @@ function ScopedStaffDirectory(){
    <StatCard label="Lecturer accounts" value={staff.filter(s=>s.roles.includes('lecturer')).length} icon={BookOpen}/>
    <StatCard label="Role types recorded" value={new Set(staff.flatMap(s=>s.roles)).size} icon={Shield}/>
   </div>
+  <TeachingTimesheets/>
   <label className="mb-4 block max-w-xl text-sm font-semibold">Find staff or role
    <span className="relative mt-2 block"><Search className="absolute left-3 top-3 size-4 text-muted-foreground"/>
     <input aria-label="Find staff or role" type="search" maxLength={120} value={search}
