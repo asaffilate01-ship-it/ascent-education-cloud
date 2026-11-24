@@ -6,7 +6,7 @@ import {calendarDay} from '@/lib/academicCalendar';
 import {formatPkrPaisa} from '@/lib/teachingRemuneration';
 import {displayTeachingMinutes} from '@/lib/teachingLoad';
 import {rateDate,type RateRole} from '@/lib/teachingRateRegister';
-import {lastCompletedMonth,readGrossMonth,readGrossBatch,type GrossMonth,type GrossBatch} from '@/lib/grossPreparation';
+import {lastCompletedMonth,readGrossMonth,readGrossBatch,type GrossMonth} from '@/lib/grossPreparation';
 const enabled=import.meta.env.VITE_UNIPATHWAY_GROSS_PREPARATION_ENABLED==='true';
 const input='mt-1 block min-h-11 w-full min-w-0 rounded-lg border bg-background px-3 py-2 text-base';
 export default function GrossPreparation(){
