@@ -74,6 +74,8 @@ jobs:
         run: node scripts/test-onboarding-activation-db.mjs
       - name: Teaching timesheet claims, independent review and two-centre isolation
         run: node scripts/test-teaching-timesheets-db.mjs
+      - name: Teaching rate agreements and approved remuneration rehearsal
+        run: node scripts/test-teaching-rates-db.mjs
       - name: Fresh schema and access checks (hosted extensions deferred)
         run: npm run test:fresh-schema
   edge-tests:
