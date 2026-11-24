@@ -21,7 +21,7 @@ export function parseRatePaisa(raw:string):number|null{
  if(!/^\d{1,7}(?:\.\d{1,2})?$/.test(raw.trim()))return null;
  const [whole,decimal='']=raw.trim().split('.');const n=Number(whole)*100+Number(decimal.padEnd(2,'0'));return integer(n,1,999999999)?n:null;
 }
-function isRate(x:unknown,tenant:string):x is RateIdentity{
+function isRate(x:unknown,tenant:string):x is RateIdentity & Record<string,unknown>{
  return object(x)&&id(x.id)&&x.tenant_id===tenant&&id(x.lecturer_id)&&rateDate(x.effective_from)&&rateDate(x.effective_until)&&x.effective_from<=x.effective_until&&basis(x.basis)&&integer(x.rate_paisa,1,999999999)&&x.currency==='PKR'&&['pending','approved','rejected'].includes(String(x.status))&&text(x.agreement_reference)&&x.agreement_reference.trim().length>=5;
 }
 export function readRateRegister(raw:unknown,tenant:string,role:RateRole,month:string):RateRegister{
