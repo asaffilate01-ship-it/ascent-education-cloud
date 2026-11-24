@@ -1,0 +1,9 @@
+# Personal onboarding evidence — release boundary
+
+The student and lecturer onboarding pages now share a centre- and account-scoped evidence panel. The existing document types and storage bucket remain unchanged. The application reads minimum document metadata using the authenticated client and does not expose object paths or signed URLs. Student and lecturer users must have their respective verified active role. Managers should use their own review workspace.
+
+Submitted evidence is distinct from verified evidence. Required and optional items are separated, and an unsuccessful record read cannot appear as missing documents. Initial submissions and replacements of rejected or expired documents use a new pending metadata row rather than overwriting approval history. Existing verified or pending items direct the applicant to centre staff. Files are limited in the client to nonempty PDF, Word and JPG/PNG up to 20 MB, with compatible reported MIME types. These checks do not replace server-side content scanning, storage access policies or antivirus.
+
+A confirmed database rejection attempts cleanup of the new private object; an uncertain response retains the object for reconciliation and requires a record refresh. Verify duplicate prevention, storage cleanup, insert constraints and reviewer selection of the newest submission in the actual deployment before activating. Legacy records without a verified tenant assignment must be reconciled by authorised staff, not broadened by a client read.
+
+Production acceptance: both student and lecturer accounts in two separate centres; allowed and denied reads, inserts and storage paths; no change to verified history; malicious filenames and unsafe file contents; expired and rejected evidence; role switching; upload failure and recovery; narrow and wide screens, enlarged text, keyboard and screen reader. No provider connection, biometric verification, RLS change or production deployment is claimed.
