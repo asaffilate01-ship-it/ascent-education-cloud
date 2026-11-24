@@ -1,3 +1,4 @@
+import ApplicationReviewQueue from '@/components/admissions/ApplicationReviewQueue';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatCard from '@/components/ui/StatCard';
 import DataTable from '@/components/ui/DataTable';
@@ -52,6 +53,8 @@ export default function SuperadminDashboard() {
       subtitle="UniPathway — All tenants and metrics"
       actions={<Button size="sm" onClick={() => navigate('/landlord/onboarding')}>+ Onboard Tenant</Button>}
     >
+      <ApplicationReviewQueue kind="student" />
+      <ApplicationReviewQueue kind="lecturer" />
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Total Tenants" value={loading ? '...' : String(stats.totalTenants)} change={`${stats.activeTenants} active`} changeType="positive" icon={Building2} />
