@@ -9,7 +9,8 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import {useAuth,ROLE_HOME,ROLE_LABELS} from '@/contexts/AuthContext';
 import {Input} from '@/components/ui/input';
 import {workspaceCatalog} from '@/lib/workspaceCatalog';
-import {workspaceServiceMatches} from '@/lib/workspaceDirectory';
+import {ArrowRight} from 'lucide-react';
+import {workspaceServiceMatches,combineWorkspaceGroups} from '@/lib/workspaceDirectory';
 import {activeRoleVerified} from '@/lib/roleMembership';
 export default function RoleWorkspace(){
  const {user}=useAuth();
@@ -36,9 +37,8 @@ function Workspace(){
   return()=>document.removeEventListener('keydown',focusSearch);
  },[]);
  const curated=user?workspaceCatalog[user.role]||[]:[];
- const known=new Set(curated.flatMap(g=>g.items.map(i=>i.to)));
- const extra=user?(NAV_CONFIG[user.role]||[]).map(g=>({title:g.title||'Other services',items:g.items.filter(i=>!known.has(i.path)).map(i=>({label:i.label,to:i.path,description:'Open your authorised workspace.'}))})).filter(g=>g.items.length):[];
- const groups=[...curated,...extra];
+ const extra=user?(NAV_CONFIG[user.role]||[]).map(g=>({title:g.title||'Other services',items:g.items.map(i=>({label:i.label,to:i.path,description:'Open your authorised workspace.'}))})):[];
+ const groups=combineWorkspaceGroups(curated,extra);
  const shown=groups.filter(g=>area==='all'||g.title===area).map(g=>({
   ...g,items:g.items.filter(i=>workspaceServiceMatches(i.label,i.description,g.title,search))
  })).filter(g=>g.items.length);
@@ -46,7 +46,7 @@ function Workspace(){
  return <DashboardLayout title="My workspace" subtitle={user?ROLE_LABELS[user.role]:'Sign in'}>
  <div className="space-y-6">
   <StaffTaskBoard/><WorkspaceActions/>
-  <section className="rounded-2xl border border-border/70 bg-card p-5 sm:p-7" aria-labelledby="workspace-intro">
+  <section className="rounded-2xl border border-border/70 bg-card p-3 sm:p-5 lg:p-7" aria-labelledby="workspace-intro">
    <div className="flex flex-wrap items-start justify-between gap-4">
     <div className="max-w-2xl">
      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-success">Your authorised tools</p>
@@ -80,14 +80,14 @@ function Workspace(){
    <Button className="mt-4 min-h-11" variant="outline" onClick={clear}>Clear service filters</Button>
   </section>}
   {shown.map((g,index)=><section key={g.title} aria-labelledby={`workspace-group-${index}`}>
-   <div className="mb-3 flex items-baseline justify-between gap-3 border-b pb-3">
+   <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2 border-b pb-3">
     <h2 id={`workspace-group-${index}`} className="text-lg font-bold">{g.title}</h2>
     <span className="text-xs tabular-nums text-muted-foreground">{g.items.length} services</span>
    </div>
    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
     {g.items.map(i=><Link key={i.to} to={workspacePath(i.to,location.search)}
-      className="group flex min-h-28 min-w-0 flex-col justify-between rounded-xl border border-border/70 bg-card p-4 transition-colors hover:border-primary/40 hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-     <h3 className="break-words text-sm font-bold group-hover:text-primary">{i.label}</h3>
+      className="group flex min-h-20 min-w-0 flex-col rounded-xl border border-border/70 bg-card p-4 transition-colors hover:border-primary/40 hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+     <div className="flex items-start justify-between gap-2"><h3 className="min-w-0 break-words text-sm font-bold group-hover:text-primary">{i.label}</h3><ArrowRight className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true"/></div>
      <p className="mt-2 break-words text-sm leading-relaxed text-muted-foreground">{i.description}</p>
     </Link>)}
    </div>
