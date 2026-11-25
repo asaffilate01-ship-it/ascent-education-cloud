@@ -48,6 +48,18 @@ function Desk(){
    <div className="mt-3 grid gap-2 md:grid-cols-2">{filteredDevices.slice(0,100).map(d=><div key={d.id} className="rounded-lg border p-3"><p className="font-medium">{d.device_code}</p><p className="text-sm text-muted-foreground">{d.device_type} · {deviceHealth(d.status,d.last_health_at).replace('-', ' ')}</p></div>)}</div>
    {devices.data.length>0&&filteredDevices.length===0&&<p className="mt-3 text-sm">No registered devices match this filter.</p>}
    {filteredDevices.length>100&&<p className="mt-2 text-sm">Showing the first 100 of {filteredDevices.length} matching records. Request a server-exported inventory for a complete list.</p>}
+  </section><section className="mt-5 rounded-xl border bg-card p-5" aria-labelledby="facilities-readiness-heading">
+   <h2 id="facilities-readiness-heading" className="font-semibold">Fire safety and facilities readiness</h2>
+   <p className="mt-2 text-sm text-muted-foreground">Planning requirements for the centre, not a completed inspection or equipment register. Installation, location and service evidence must be confirmed on site by the responsible person.</p>
+   <div className="mt-4 grid gap-3 sm:grid-cols-2">{[
+    ['Fire alarms and detection','Verify installation, commissioning and documented tests.'],
+    ['Fire extinguishers','Record asset identifier, actual location, inspection and servicing evidence.'],
+    ['Emergency exits and signage','Confirm unobstructed exits, directional signs and emergency lighting.'],
+    ['Evacuation plans and assembly point','Obtain an approved floor plan and confirm accessible evacuation arrangements.'],
+    ['UPS and solar backup','Confirm installed equipment, maintenance and backup capacity.'],
+    ['Security post and access control','Confirm staffing, visitor procedures and safe emergency egress.'],
+   ].map(([label,detail])=><article key={label} className="rounded-lg border p-4"><h3 className="font-medium">{label}</h3><p className="mt-1 text-sm text-muted-foreground">{detail}</p><p className="mt-2 text-xs font-medium">Inspection evidence not available in this dashboard</p></article>)}</div>
+   <p className="mt-4 text-sm">Device health reports do not replace statutory inspection or on-site emergency procedures. No evacuation route or asset location is inferred.</p>
   </section><section className="mt-5 rounded-xl border bg-card p-5"><h2 className="font-semibold">Camera reporting</h2><p className="mt-2 text-sm text-muted-foreground">This overview never loads stream references, footage, passwords or provider tokens.</p>
    <p className="mt-3 text-sm">{cams.data.length} camera registry entries · {cams.data.filter(c=>deviceHealth(c.status,c.last_health_at)==='reported-online').length} recently reported online</p>
   </section></>}
