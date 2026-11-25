@@ -1,9 +1,10 @@
 import PublicFooter from '@/components/PublicFooter';
 import SocialIcons from '@/components/SocialIcons';
 import PublicHero from '@/components/PublicHero';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { courseEnquiryPrefill, courseInterestEditUrl } from '@/lib/courseInterest';
 import { internationalAdvicePrefill } from '@/lib/internationalAdvice';
+import { consultationPrefill } from '@/lib/consultationRequest';
 import { Button } from '@/components/ui/button';
 import { Mail, Clock, Send, Globe } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -16,13 +17,17 @@ import TurnstileChallenge from '@/components/enquiry/TurnstileChallenge';
 export default function TenantContactPage() {
   const {slug}=useParams();
   const [query]=useSearchParams();
-  const interestKey=['course','area','mode','level','advice'].map(key=>query.get(key)||'').join(':');
-  return <ContactWorkspace key={`${slug||'unipathway'}:${interestKey}`} slug={slug}/>;
+  const location=useLocation();
+  const interestKey=['course','area','mode','level','advice','request'].map(key=>query.get(key)||'').join(':');
+  return <ContactWorkspace key={`${slug||'unipathway'}:${interestKey}:${location.key}`} slug={slug}/>;
 }
 function ContactWorkspace({slug}:{slug?:string}) {
   const [params] = useSearchParams();
   const interest=courseEnquiryPrefill(params);
-  const advice=(slug||'unipathway')==='unipathway'&&!interest.summary?internationalAdvicePrefill(params):null;
+  const location=useLocation();
+  const allowAdvice=(slug||'unipathway')==='unipathway'&&!interest.summary;
+  const consultation=allowAdvice?consultationPrefill(params,location.state):null;
+  const advice=allowAdvice?(consultation??internationalAdvicePrefill(params)):null;
   const secureContact=import.meta.env.VITE_UNIPATHWAY_SECURE_CONTACT_ENABLED==='true'&&(slug||'unipathway')==='unipathway';
   const [privacyAcknowledged,setPrivacyAcknowledged]=useState(false);
   const [captchaToken,setCaptchaToken]=useState('');
@@ -108,9 +113,9 @@ function ContactWorkspace({slug}:{slug?:string}) {
 
             {/* Form */}
             <form id="contact-form" aria-busy={sending} onSubmit={handleSubmit} className="scroll-mt-28 min-w-0 lg:col-span-2 surface-card p-4 sm:p-6">
-              <h3 className="text-lg font-bold mb-4">{interest.summary?'Review your course enquiry':advice?'Review your advice enquiry':'Send us a message'}</h3>
+              <h3 className="text-lg font-bold mb-4">{interest.summary?'Review your course enquiry':consultation?'Review your consultation request':advice?'Review your advice enquiry':'Send us a message'}</h3>
               {interest.summary&&<div className="mb-4 rounded-lg border bg-secondary/40 p-3 text-sm"><p className="font-semibold">Your selected study interest</p><p className="mt-1 break-words">{interest.summary}</p><Link className="mt-2 inline-flex min-h-11 items-center font-semibold underline underline-offset-4" to={courseInterestEditUrl(params)}>Change study choices</Link><p className="mt-1 text-muted-foreground">Please review the course, level and study format in your message before sending. Admissions must confirm approval, fees and the next available intake. This is an enquiry, not an application or confirmed place.</p></div>}
-              {advice&&<div className="mb-4 rounded-lg border bg-secondary/40 p-3 text-sm"><p className="font-semibold">Your selected advice topic</p><p className="mt-1">{advice.title}</p><Link className="mt-2 inline-flex min-h-11 items-center font-semibold underline underline-offset-4" to="/international-study">Change advice topic</Link><p className="mt-1 text-muted-foreground">Review or edit your message before sending. This is an enquiry, not a service agreement or immigration assessment. Do not include passports, bank statements or other sensitive documents.</p></div>}
+              {advice&&<div className="mb-4 rounded-lg border bg-secondary/40 p-3 text-sm"><p className="font-semibold">Your selected advice topic</p><p className="mt-1">{advice.title}</p><Link className="mt-2 inline-flex min-h-11 items-center font-semibold underline underline-offset-4" to={consultation?"/consultation":"/international-study"}>{consultation?"Change consultation preferences":"Change advice topic"}</Link><p className="mt-1 text-muted-foreground">Review or edit your message before sending. This is an enquiry, not a service agreement or immigration assessment. Do not include passports, bank statements or other sensitive documents.</p></div>}
               {feedback&&<p role={feedback.kind==='error'?'alert':'status'} className="mb-4 rounded-lg border p-3 text-sm">{feedback.message}</p>}
               <fieldset disabled={sending} className="min-w-0">
               <legend className="sr-only">Admissions enquiry details</legend>
