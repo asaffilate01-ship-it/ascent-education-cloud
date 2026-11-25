@@ -47,7 +47,7 @@ BEGIN
 END $fn$;
 CREATE FUNCTION unipathway_muster.read_event(t uuid) RETURNS jsonb
 LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path='' AS $fn$
-DECLARE a uuid;e unipathway_muster.incidents%ROWTYPE; n integer; people jsonb:='[]'::jsonb;history jsonb:='[]'::jsonb; manager boolean;officer boolean;writable boolean;
+DECLARE a uuid;e unipathway_muster.incidents%ROWTYPE; n integer; people jsonb:='[]'::jsonb;history jsonb:='[]'::jsonb; audit_rows jsonb:='[]'::jsonb; manager boolean;officer boolean;writable boolean;
 BEGIN
  a:=unipathway_muster.actor(t,'read');
  manager:=EXISTS(SELECT 1 FROM public.user_roles r WHERE r.user_id=a AND ((r.role::text='centre_director' AND r.tenant_id=t) OR (r.role::text='superadmin' AND r.tenant_id IS NULL)));
@@ -66,8 +66,11 @@ BEGIN
  SELECT coalesce(jsonb_agg(to_jsonb(q) ORDER BY q.closed_at DESC,q.id),'[]'::jsonb) INTO history FROM(
   SELECT i.id,i.tenant_id,i.event_type,i.incident_reference,i.started_at,i.closed_at,i.unresolved_at_close,i.closure_note FROM unipathway_muster.incidents i WHERE i.tenant_id=t AND i.closed_at IS NOT NULL ORDER BY i.closed_at DESC,i.id LIMIT 10
  ) q;
+ SELECT coalesce(jsonb_agg(to_jsonb(q) ORDER BY q.recorded_at DESC,q.id),'[]'::jsonb) INTO audit_rows FROM(
+  SELECT h.id,h.tenant_id,h.incident_id,h.person_id,h.action,h.actor_id,h.note,h.recorded_at FROM unipathway_muster.audit h WHERE h.tenant_id=t ORDER BY h.recorded_at DESC,h.id LIMIT 100
+ ) q;
  RETURN jsonb_build_object('tenant_id',t,'manager',manager,'officer',officer,'writes_enabled',writable,
- 'incident',CASE WHEN e.id IS NULL THEN NULL ELSE jsonb_build_object('id',e.id,'tenant_id',t,'event_type',e.event_type,'incident_reference',e.incident_reference,'started_by',e.started_by,'started_at',e.started_at) END,'people',people,'history',history);
+ 'incident',CASE WHEN e.id IS NULL THEN NULL ELSE jsonb_build_object('id',e.id,'tenant_id',t,'event_type',e.event_type,'incident_reference',e.incident_reference,'started_by',e.started_by,'started_at',e.started_at) END,'people',people,'history',history,'audit',audit_rows);
 END $fn$;
 CREATE FUNCTION unipathway_muster.start_event(t uuid,r uuid,k text,ref text) RETURNS jsonb
 LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $fn$
@@ -110,7 +113,7 @@ BEGIN
  PERFORM pg_advisory_xact_lock(hashtextextended('muster-centre:'||t::text,0));
  IF NOT EXISTS(SELECT 1 FROM unipathway_muster.incidents i JOIN public.emergency_muster_events v ON v.id=i.id AND v.tenant_id=i.tenant_id WHERE i.id=e AND i.tenant_id=t AND i.closed_at IS NULL AND v.status='active') THEN RAISE EXCEPTION 'Active witnessed incident required';END IF;
  UPDATE unipathway_muster.people SET status=decision,revision=revision+1,observed_at=clock_timestamp(),observed_by=a,point=btrim(point)
- WHERE id=p AND tenant_id=t AND incident_id=e AND revision=expected AND status<>decision RETURNING * INTO rowdata;
+ WHERE id=p AND tenant_id=t AND incident_id=e AND revision=expected AND status<>decision AND label<>'Unmatched recorded occupant' RETURNING * INTO rowdata;
  IF NOT FOUND THEN RAISE EXCEPTION 'Roll-call record changed or already marked; refresh';END IF;
  UPDATE public.emergency_muster_status SET status=decision,confirmed_by=a,confirmed_at=rowdata.observed_at,muster_point=rowdata.point WHERE id=p AND tenant_id=t AND muster_event_id=e;
  IF NOT FOUND THEN RAISE EXCEPTION 'Underlying muster record missing';END IF;

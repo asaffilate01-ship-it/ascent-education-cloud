@@ -1,3 +1,4 @@
+import WitnessedMuster from '@/components/security/WitnessedMuster';
 
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import SecurityCentrePicker,{useSecurityPrincipal,securityLink} from '@/components/security/SecurityCentrePicker';
@@ -19,6 +20,7 @@ function ReadMuster(){
  return <DashboardLayout title="Recorded emergency muster" subtitle="Centre-scoped accountability, not a substitute for on-site emergency response">
   <SecurityCentrePicker/>
   <PhysicalSecurityReadiness/>
+  <WitnessedMuster/>
   {permitted&&loading&&<p role="status">Checking recorded muster events…</p>}
   {permitted&&failed&&<div role="alert" className="rounded-xl border p-4"><p>Emergency accountability data could not be fully verified. Follow the physical emergency plan.</p><Button onClick={()=>{events.refresh();rows.refresh();}}>Retry</Button></div>}
   {permitted&&!loading&&!failed&&<section className="mt-4 rounded-xl border bg-card p-5">
