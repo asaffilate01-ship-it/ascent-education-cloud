@@ -24,3 +24,16 @@ export const SOCIAL_LINKS = {
   google: socialUrl(import.meta.env.VITE_PUBLIC_GOOGLE_URL, ['google.com', 'maps.google.com', 'maps.app.goo.gl', 'g.page']),
   whatsapp: whatsappUrl(import.meta.env.VITE_PUBLIC_WHATSAPP_NUMBER),
 };
+
+/** Friendly dialling text for the configured WhatsApp number; empty when unconfigured. */
+export function whatsappDisplay(value: unknown): string {
+  const href = whatsappUrl(value);
+  if (!href) return '';
+  const digits = href.slice('https://wa.me/'.length).split('?')[0];
+  if (digits.startsWith('92') && digits.length === 12) {
+    return `+${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5, 8)} ${digits.slice(8)}`;
+  }
+  return `+${digits}`;
+}
+
+export const WHATSAPP_DISPLAY = whatsappDisplay(import.meta.env.VITE_PUBLIC_WHATSAPP_NUMBER);

@@ -1,5 +1,6 @@
 import PublicFooter from '@/components/PublicFooter';
-import SocialIcons from '@/components/SocialIcons';
+import SocialIcons, { SOCIAL_LINKS, WhatsappGlyph } from '@/components/SocialIcons';
+import { WHATSAPP_DISPLAY } from '@/lib/publicContact';
 import PublicHero from '@/components/PublicHero';
 import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { courseEnquiryPrefill, courseInterestEditUrl } from '@/lib/courseInterest';
@@ -90,6 +91,17 @@ function ContactWorkspace({slug}:{slug?:string}) {
           <div className="grid min-w-0 grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Contact Info */}
             <div className="min-w-0 space-y-4">
+              {WHATSAPP_DISPLAY && (
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <WhatsappGlyph className="w-4 h-4 text-primary" />
+                  </div>
+                  <div className="min-w-0 [overflow-wrap:anywhere]">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase">WhatsApp</p>
+                    <p className="text-sm"><a className="inline-flex min-h-11 items-center underline underline-offset-4" href={SOCIAL_LINKS.whatsapp} target="_blank" rel="noopener noreferrer">{WHATSAPP_DISPLAY}</a></p>
+                  </div>
+                </div>
+              )}
               {[
                 { icon: Mail, label: 'Email', value: 'admissions@unipathway.pk' },
                 { icon: Globe, label: 'Website', value: 'www.unipathway.pk' },
