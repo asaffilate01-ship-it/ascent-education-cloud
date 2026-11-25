@@ -1,3 +1,4 @@
+import MicrosoftAccountReadiness from '@/components/classroom/MicrosoftAccountReadiness';
 import TeachingTimesheets from '@/components/lecturer/TeachingTimesheets';
 import {Link} from 'react-router-dom';
 import {BookOpen,ArrowRight} from 'lucide-react';
@@ -35,6 +36,7 @@ function TeachingHome(){
    </nav>
   </section>
   <TodayTeachingPlan modules={modules}/>
+  <MicrosoftAccountReadiness compact/>
   <TeachingTimesheets/>
   <section className="rounded-xl border bg-card p-4 sm:p-5" aria-labelledby="lecturer-modules-title">
    <div className="flex flex-wrap items-center justify-between gap-3">

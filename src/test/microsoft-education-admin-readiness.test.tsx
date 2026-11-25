@@ -1,0 +1,12 @@
+import {afterEach,beforeEach,expect,it,vi} from 'vitest';
+import {cleanup,render,screen,fireEvent} from '@testing-library/react';
+import MicrosoftEducationAdmin from '@/pages/settings/MicrosoftEducationAdmin';
+const mock=vi.hoisted(()=>({user:{id:'director',tenantId:'centre-a',role:'centre_director',roles:['centre_director']},from:vi.fn(),results:{} as Record<string,unknown>,eq:vi.fn()}));
+vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:mock.user,loading:false})}));
+vi.mock('@/components/layout/DashboardLayout',()=>({default:({children}:any)=><main>{children}</main>}));
+vi.mock('@/components/classroom/MicrosoftAccountQueue',()=>({default:()=>null}));
+vi.mock('@/lib/db',()=>({db:{from:(name:string)=>{mock.from(name);const q={select:()=>q,eq:(k:string,v:unknown)=>{mock.eq(name,k,v);return q;},order:()=>q,limit:async()=>mock.results[name]};return q;}}}));
+const account={id:'a',tenant_id:'centre-a',institutional_email:'learner@example.invalid',role_type:'student',provisioning_status:'provisioned_disabled',license_sku:'sku',provisioned_at:'2026-11-24T10:00:00Z',disabled_at:'2026-11-24T10:00:00Z'};
+beforeEach(()=>{vi.clearAllMocks();mock.user={id:'director',tenantId:'centre-a',role:'centre_director',roles:['centre_director']};mock.results={microsoft_education_accounts:{data:[account],error:null},microsoft_brand_profiles:{data:null,error:{message:'unavailable'}},teams_class_templates:{data:null,error:{message:'unavailable'}}};});afterEach(cleanup);
+it('keeps valid centre account data usable when optional branding and teaching templates are unavailable',async()=>{render(<MicrosoftEducationAdmin/>);await screen.findByText(account.institutional_email);expect(screen.getByText(/Brand profiles unavailable/)).toBeInTheDocument();expect(screen.getByText(/Teaching templates unavailable/)).toBeInTheDocument();expect(mock.eq).toHaveBeenCalledWith('microsoft_education_accounts','tenant_id','centre-a');});
+it('fails closed for a foreign account and denies an unverified director role',async()=>{mock.results.microsoft_education_accounts={data:[{...account,tenant_id:'centre-b'}],error:null};const view=render(<MicrosoftEducationAdmin/>);await screen.findByText(/Account records could not be verified/);expect(screen.queryByText(account.institutional_email)).toBeNull();mock.user={...mock.user,roles:['student']};view.rerender(<MicrosoftEducationAdmin/>);expect(screen.getByText(/A verified centre director/)).toBeInTheDocument();});
