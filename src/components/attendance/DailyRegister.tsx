@@ -1,3 +1,4 @@
+import RegisterCardLookup from './RegisterCardLookup';
 import {Link} from 'react-router-dom';
 import AttendanceCorrectionForm from './AttendanceCorrectionForm';
 import {useEffect,useRef,useState} from 'react';
@@ -14,10 +15,11 @@ export default function DailyRegister({modules,initialModule='',initialDate=''}:
 }
 function Roster({module,date,onBusy}:{module:string;date:string;onBusy:(busy:boolean)=>void}){
  const [learners,setLearners]=useState<Learner[]>([]),[choices,setChoices]=useState<Record<string,string>>({}),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[refresh,setRefresh]=useState(0),[search,setSearch]=useState(''),[page,setPage]=useState(0);
+ const [cardStudent,setCardStudent]=useState('');
  const [pending,setPending]=useState<{student:string;status:string}|null>(null);
  const mounted=useRef(true),running=useRef(false);
  useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;};},[]);
- useEffect(()=>{let active=true;setLoading(true);setLearners([]);setError('');setPage(0);
+ useEffect(()=>{let active=true;setLoading(true);setLearners([]);setError('');setPage(0);setCardStudent('');
   void(async()=>{try{
    const r=await db.rpc('get_unipathway_daily_register',{p_module:module,p_date:date});
    if(!active)return;
@@ -39,8 +41,8 @@ function Roster({module,date,onBusy}:{module:string;date:string;onBusy:(busy:boo
   }catch{if(mounted.current)setNotice('Save could not be confirmed. Refresh to check the saved mark, or retry the same choice. Do not change an uncertain mark.');}
   finally{running.current=false;if(mounted.current){setBusy(false);onBusy(false);}}
  }
- const filtered=learners.filter(l=>l.name.toLowerCase().includes(search.toLowerCase()));
- return <section className="mt-4 space-y-3" aria-label="Daily register roster"><div className="flex flex-wrap gap-3"><Button variant="outline" disabled={busy||loading} onClick={()=>setRefresh(v=>v+1)}>Refresh register</Button><label>Search register<Input value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}}/></label></div>{notice&&<p role="status">{notice}</p>}{loading?<p role="status">Checking register…</p>:error?<p role="alert">{error}</p>:<>
+ const filtered=learners.filter(l=>(!cardStudent||l.student_id===cardStudent)&&l.name.toLowerCase().includes(search.toLowerCase()));
+ return <section className="mt-4 space-y-3" aria-label="Daily register roster"><div className="flex flex-wrap gap-3"><Button variant="outline" disabled={busy||loading} onClick={()=>setRefresh(v=>v+1)}>Refresh register</Button><label>Search register<Input value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}}/></label></div>{!loading&&!error&&<RegisterCardLookup module={module} roster={learners.map(l=>l.student_id)} disabled={busy||!!pending} onMatch={student=>{setCardStudent(student);setSearch('');setPage(0);}} onClear={()=>{setCardStudent('');setPage(0);}}/>}{notice&&<p role="status">{notice}</p>}{loading?<p role="status">Checking register…</p>:error?<p role="alert">{error}</p>:<>
  {pending&&<div className="rounded border p-3"><p>Unconfirmed choice: {learners.find(l=>l.student_id===pending.student)?.name||pending.student} — {pending.status}</p><Button disabled={busy} onClick={()=>void save(pending.student,pending.status)}>Retry same mark</Button><Button variant="outline" disabled={busy} onClick={()=>{setPending(null);setNotice('Local choice cleared. Any saved mark is unchanged; rechecking the register.');setRefresh(v=>v+1);}}>Clear pending choice</Button></div>}
  {!filtered.length&&<p>{search?'No matching learners.':'No active learners are enrolled in this module’s programme.'}</p>}
  {filtered.slice(page*20,page*20+20).map(l=><article className="rounded border p-3" key={l.student_id}><h3 className="font-semibold">{l.name}</h3>{l.marks.length?<><p>Recorded: {l.marks.map(m=>m.status).join(', ')}{l.marks.length>1?' — multiple historical records; contact your administrator.':''}</p>{l.marks.map(m=><details key={m.id}><summary className="cursor-pointer underline">Request correction to {m.status} ({m.method||'historical'})</summary><AttendanceCorrectionForm record={m}/></details>)}</>:<div className="flex flex-wrap gap-2"><label>Mark for {l.name}<select className="ml-2 rounded border bg-background p-2" disabled={busy||!!pending} value={choices[l.student_id]||''} onChange={e=>setChoices(c=>({...c,[l.student_id]:e.target.value}))}><option value="">Choose a mark</option>{statuses.map(s=><option key={s}>{s}</option>)}</select></label><Button disabled={busy||!!pending||!choices[l.student_id]} onClick={()=>void save(l.student_id,choices[l.student_id])}>Save {l.name}</Button></div>}</article>)}

@@ -1,3 +1,4 @@
+import CentreCardWorkspace from '@/components/admissions/CentreCardWorkspace';
 import ModuleRegistrationEditor from '@/components/admissions/ModuleRegistrationEditor';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import StatusBadge from '@/components/ui/StatusBadge';
@@ -98,6 +99,7 @@ function ScopedStudentRegistry(){
    <h2 className="flex items-center gap-2 font-semibold"><ShieldCheck className="size-4"/>Academic decisions remain independent</h2>
    <p className="mt-2 text-sm text-muted-foreground">Completion of an enrolment is not an external award, official certificate or university admission decision. Grades and certificates require verified independent assessment and authorised release.</p>
   </section>
+  <CentreCardWorkspace/>
   <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-3">
    <StatCard label="Enrolment records" value={students.length} icon={GraduationCap}/>
    <StatCard label="Active enrolments" value={students.filter(s=>s.status==='active').length} icon={BookOpen}/>

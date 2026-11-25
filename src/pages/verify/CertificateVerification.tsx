@@ -1,187 +1,54 @@
-import { useState } from 'react';
-import { Search, ShieldCheck, ShieldX, Award, Calendar, GraduationCap, Building2, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { supabase } from '@/integrations/supabase/client';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import {useEffect,useRef,useState} from 'react';
+import {Link} from 'react-router-dom';
+import {ShieldCheck,ShieldAlert,Search,Loader2,ArrowLeft} from 'lucide-react';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {db} from '@/lib/db';
 import Seo from '@/components/Seo';
+import {normaliseCertificateReference,readCertificateStatus,verificationMessage,type CertificateStatusReceipt} from '@/lib/certificateStatus';
 
-type CertResult = {
-  certificate_number: string;
-  student_name: string;
-  programme_title: string;
-  awarding_body: string;
-  level: string;
-  grade: string | null;
-  issue_date: string;
-  expiry_date: string | null;
-  status: string;
-};
-
-export default function CertificateVerification() {
-  const [query, setQuery] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<CertResult | null>(null);
-  const [searched, setSearched] = useState(false);
-
-  const handleVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query.trim()) return;
-    setLoading(true);
-    setResult(null);
-    setSearched(true);
-
-    const { data } = await supabase
-      .rpc('verify_certificate', { _cert_number: query.trim().toUpperCase() });
-
-    setResult((data as unknown as CertResult[])?.[0] || null);
-    setLoading(false);
-  };
-
-  return (
-    <div className="min-h-dvh bg-background">
-      <Seo title="Verify a Certificate — UniPathway" description="Check the authenticity of a UniPathway certificate by entering its certificate number." canonical="/verify" noindex />
-      {/* Header */}
-      <header className="border-b border-border/50 bg-card/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <ShieldCheck className="w-4 h-4 text-primary-foreground" />
-            </div>
-            <span className="font-bold text-sm">Certificate Verification</span>
-          </Link>
-          <Link to="/login">
-            <Button variant="outline" size="sm" className="text-xs">Staff Login</Button>
-          </Link>
-        </div>
-      </header>
-
-      <div className="max-w-2xl mx-auto px-4 py-16">
-        {/* Hero */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-10"
-        >
-          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-5">
-            <ShieldCheck className="w-8 h-8 text-primary" />
-          </div>
-          <h1 className="text-2xl md:text-3xl font-bold mb-2">Verify a Certificate</h1>
-          <p className="text-muted-foreground text-sm max-w-md mx-auto">
-            Enter the certificate number to verify the authenticity of a qualification issued by our accredited centres.
-          </p>
-        </motion.div>
-
-        {/* Search */}
-        <form onSubmit={handleVerify} className="flex gap-2 mb-8">
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value.toUpperCase())}
-            placeholder="e.g. CERT-2026-001234"
-            className="text-center font-mono tracking-wider"
-          />
-          <Button type="submit" disabled={loading || !query.trim()}>
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-          </Button>
-        </form>
-
-        {/* Result */}
-        <AnimatePresence mode="wait">
-          {loading && (
-            <motion.div
-              key="loading"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex justify-center py-12"
-            >
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </motion.div>
-          )}
-
-          {!loading && searched && result && (
-            <motion.div
-              key="found"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="surface-card p-6 rounded-xl border-2 border-green-500/30 bg-green-50/5"
-            >
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
-                  <ShieldCheck className="w-5 h-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-green-600">Certificate Verified</p>
-                  <p className="text-xs text-muted-foreground">This certificate is authentic and {result.status}</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="space-y-1">
-                  <p className="text-muted-foreground text-xs flex items-center gap-1"><Award className="w-3 h-3" /> Certificate No.</p>
-                  <p className="font-mono font-semibold">{result.certificate_number}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-muted-foreground text-xs flex items-center gap-1"><GraduationCap className="w-3 h-3" /> Student Name</p>
-                  <p className="font-semibold">{result.student_name}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-muted-foreground text-xs flex items-center gap-1"><Building2 className="w-3 h-3" /> Programme</p>
-                  <p className="font-medium">{result.programme_title}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-muted-foreground text-xs">Level</p>
-                  <p className="font-medium">{result.level}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-muted-foreground text-xs">Awarding Body</p>
-                  <p className="font-medium">{result.awarding_body}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-muted-foreground text-xs flex items-center gap-1"><Calendar className="w-3 h-3" /> Issue Date</p>
-                  <p className="font-medium">{new Date(result.issue_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-                </div>
-                {result.grade && (
-                  <div className="space-y-1">
-                    <p className="text-muted-foreground text-xs">Grade</p>
-                    <p className="font-semibold text-primary">{result.grade}</p>
-                  </div>
-                )}
-                {result.expiry_date && (
-                  <div className="space-y-1">
-                    <p className="text-muted-foreground text-xs">Valid Until</p>
-                    <p className="font-medium">{new Date(result.expiry_date).toLocaleDateString('en-GB')}</p>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          )}
-
-          {!loading && searched && !result && (
-            <motion.div
-              key="not-found"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="surface-card p-6 rounded-xl border-2 border-red-500/20 text-center"
-            >
-              <ShieldX className="w-10 h-10 text-red-500 mx-auto mb-3" />
-              <p className="font-semibold text-red-600 mb-1">Certificate Not Found</p>
-              <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                No certificate matches this number. Please double-check the certificate number or contact the issuing institution.
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Info */}
-        <div className="mt-12 text-center text-xs text-muted-foreground space-y-2">
-          <p>This verification portal confirms certificates issued by accredited centres registered on our platform.</p>
-          <p>For further enquiries, please <Link to="/apply" className="text-primary hover:underline">contact admissions</Link>.</p>
-        </div>
-      </div>
-    </div>
-  );
+export default function CertificateVerification(){
+ const [query,setQuery]=useState(''),[result,setResult]=useState<CertificateStatusReceipt|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false);
+ const active=useRef(true),lock=useRef(false);
+ useEffect(()=>{active.current=true;return()=>{active.current=false;};},[]);
+ async function verify(event:React.FormEvent){
+  event.preventDefault();if(lock.current)return;
+  setResult(null);setError('');
+  const reference=normaliseCertificateReference(query);
+  if(!reference){setError('Enter the certificate reference exactly as shown on the document (3–80 letters, numbers or reference punctuation).');return;}
+  lock.current=true;setBusy(true);
+  try{
+   const r=await db.rpc('verify_unipathway_certificate_status',{p_number:reference});
+   if(r.error)throw Error('Status lookup unavailable');
+   const checked=readCertificateStatus(r.data,reference);
+   if(active.current)setResult(checked);
+  }catch{if(active.current)setError('Certificate verification is currently unavailable. No validity decision has been made. Retry or contact the issuing institution.');}
+  finally{lock.current=false;if(active.current)setBusy(false);}
+ }
+ const message=result&&verificationMessage[result.status];
+ return <div className="min-h-dvh bg-background pb-20">
+  <Seo title="Verify a certificate — UniPathway" description="Check the recorded status of a certificate reference." canonical="/verify" noindex/>
+  <header className="border-b bg-card"><div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 px-4 py-3">
+   <Link to="/" className="inline-flex min-h-11 min-w-0 items-center gap-2 rounded-lg text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"><ArrowLeft className="size-4 shrink-0" aria-hidden="true"/>UniPathway home</Link>
+   <Button asChild variant="outline" className="min-h-11"><Link to="/login">Staff login</Link></Button>
+  </div></header>
+  <main className="mx-auto w-full min-w-0 max-w-2xl px-4 py-8 sm:py-14">
+   <section className="mb-6 space-y-3"><div className="inline-flex rounded-2xl bg-primary/10 p-3 text-primary"><ShieldCheck className="size-7" aria-hidden="true"/></div><h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Verify a certificate</h1><p className="text-sm leading-relaxed text-muted-foreground">Check the current status of a certificate reference in the UniPathway register. No holder names, grades or private academic records are displayed publicly.</p></section>
+   <section className="min-w-0 rounded-2xl border bg-card p-4 sm:p-6">
+    <form onSubmit={verify} aria-busy={busy} className="space-y-4">
+     <label htmlFor="certificate-reference" className="block text-sm font-semibold">Certificate reference</label>
+     <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]"><Input id="certificate-reference" autoComplete="off" autoCapitalize="characters" spellCheck={false} maxLength={80} value={query} disabled={busy} onChange={e=>{setQuery(e.target.value);setResult(null);setError('');}} placeholder="Enter the reference on the certificate" className="min-h-11 min-w-0 text-base" aria-describedby="certificate-help"/>
+     <Button type="submit" className="min-h-11" disabled={busy||!query.trim()}>{busy?<Loader2 className="mr-2 size-4 animate-spin motion-reduce:animate-none" aria-hidden="true"/>:<Search className="mr-2 size-4" aria-hidden="true"/>}{busy?'Checking…':'Check status'}</Button></div>
+     <p id="certificate-help" className="text-xs text-muted-foreground">Use the certificate reference only. Do not enter a name, CNIC, passport number or account password.</p>
+    </form>
+   </section>
+   {busy&&<p role="status" className="mt-4 text-sm">Checking the certificate register…</p>}
+   {error&&<div role="alert" className="mt-4 rounded-xl border border-destructive/40 p-4 text-sm"><p className="font-semibold">Unable to confirm status</p><p className="mt-2">{error}</p></div>}
+   {result&&message&&<section role="status" className="mt-5 min-w-0 space-y-3 rounded-2xl border bg-card p-4 sm:p-6" aria-label="Certificate status result">
+    <div className="flex items-start gap-3">{result.status==='valid'?<ShieldCheck className="mt-1 size-6 shrink-0 text-primary" aria-hidden="true"/>:<ShieldAlert className="mt-1 size-6 shrink-0 text-muted-foreground" aria-hidden="true"/>}<div className="min-w-0"><h2 className="font-semibold text-lg">{message.title}</h2><p className="mt-1 text-sm leading-relaxed text-muted-foreground">{message.detail}</p></div></div>
+    <dl className="grid gap-3 border-t pt-3 sm:grid-cols-2"><div className="min-w-0"><dt className="text-xs text-muted-foreground">Checked reference</dt><dd className="mt-1 break-all font-mono text-sm">{result.certificate_number}</dd></div><div><dt className="text-xs text-muted-foreground">Register check date (UTC)</dt><dd className="mt-1 text-sm">{result.checked_on}</dd></div></dl>
+   </section>}
+   <section className="mt-6 space-y-2 rounded-xl border p-4 text-sm"><h2 className="font-semibold">Need independent verification?</h2><p className="text-muted-foreground">For formal qualification recognition, contact the issuing or awarding organisation. This service does not issue certificates or prove that a centre is accredited.</p><Link to="/contact" className="inline-flex min-h-11 items-center font-medium text-primary underline underline-offset-4">Contact UniPathway</Link></section>
+  </main>
+ </div>;
 }

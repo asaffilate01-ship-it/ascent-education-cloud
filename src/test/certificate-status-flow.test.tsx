@@ -1,0 +1,13 @@
+import {afterEach,beforeEach,expect,it,vi} from 'vitest';
+import {cleanup,fireEvent,render,screen} from '@testing-library/react';
+import {MemoryRouter} from 'react-router-dom';
+const mock=vi.hoisted(()=>({rpc:vi.fn()}));
+vi.mock('@/lib/db',()=>({db:{rpc:mock.rpc}}));
+vi.mock('@/components/Seo',()=>({default:()=>null}));
+import CertificateVerification from '@/pages/verify/CertificateVerification';
+const reference='CERT-2026-001234';
+beforeEach(()=>mock.rpc.mockReset());afterEach(cleanup);
+const mount=()=>{render(<MemoryRouter><CertificateVerification/></MemoryRouter>);fireEvent.change(screen.getByLabelText('Certificate reference'),{target:{value:reference}});};
+it('reports an explicitly revoked record without exposing personal fields or calling the legacy RPC',async()=>{mock.rpc.mockResolvedValue({error:null,data:{certificate_number:reference,status:'revoked',checked_on:'2026-11-24'}});mount();fireEvent.click(screen.getByRole('button',{name:'Check status'}));expect(await screen.findByText('Certificate record revoked')).toBeInTheDocument();expect(screen.queryByText('Record marked valid')).toBeNull();expect(mock.rpc).toHaveBeenCalledWith('verify_unipathway_certificate_status',{p_number:reference});});
+it('distinguishes an unavailable service from a missing record and clears old status on edit',async()=>{mock.rpc.mockResolvedValueOnce({error:{message:'Unavailable'},data:null}).mockResolvedValueOnce({error:null,data:{certificate_number:reference,status:'not_found',checked_on:'2026-11-24'}});mount();fireEvent.click(screen.getByRole('button',{name:'Check status'}));expect(await screen.findByRole('alert')).toHaveTextContent('No validity decision has been made');expect(screen.queryByText('No matching certificate record')).toBeNull();fireEvent.click(screen.getByRole('button',{name:'Check status'}));await screen.findByText('No matching certificate record');fireEvent.change(screen.getByLabelText('Certificate reference'),{target:{value:'CERT-OTHER'}});expect(screen.queryByText('No matching certificate record')).toBeNull();});
+it('rejects legacy/full personal-record responses',async()=>{mock.rpc.mockResolvedValue({error:null,data:{certificate_number:reference,status:'valid',checked_on:'2026-11-24',student_name:'Private student',grade:'A'}});mount();fireEvent.click(screen.getByRole('button',{name:'Check status'}));expect(await screen.findByRole('alert')).toHaveTextContent('No validity decision');expect(screen.queryByText('Private student')).toBeNull();expect(screen.queryByText('Record marked valid')).toBeNull();});
