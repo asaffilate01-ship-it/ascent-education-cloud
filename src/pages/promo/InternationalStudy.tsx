@@ -14,7 +14,7 @@ function AdvisoryServices() {
   return <section aria-labelledby="advisory-services" className="space-y-5">
     <div className="max-w-3xl">
       <p className="text-xs font-bold uppercase tracking-widest text-success">Personalised support</p>
-      <h2 id="advisory-services" className="mt-2 text-2xl font-bold sm:text-3xl">How our education advisers can help</h2>
+      <h2 id="advisory-services" className="scroll-mt-28 mt-2 text-2xl font-bold sm:text-3xl">How our education advisers can help</h2>
       <p className="mt-3 text-sm leading-relaxed text-muted-foreground">Whether you study with UniPathway or apply from another institution, choose a topic and send an enquiry about the next steps. Availability and fees are confirmed individually.</p>
     </div>
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{internationalAdviceTopics.map(topic=><article key={topic.id} className="flex min-w-0 flex-col rounded-2xl border border-border bg-card p-5">
@@ -72,6 +72,7 @@ export default function InternationalStudy() {
               <p className="mt-4 max-w-2xl text-base leading-relaxed">Find out how to research courses, then check the separate student visa or study permit process with the official authority. Start with a destination below.</p>
             </>
           )}
+          {(!destination||guide)&&<a href="#advisory-services" className="mt-6 inline-flex min-h-11 max-w-full items-center gap-2 rounded-lg bg-background px-4 py-3 text-sm font-bold text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4">Explore adviser support <ArrowRight aria-hidden="true" className="size-4 shrink-0"/></a>}
         </header>
         {!destination && <>
           <section aria-labelledby="destination-guides">
