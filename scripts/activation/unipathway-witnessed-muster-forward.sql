@@ -72,13 +72,13 @@ BEGIN
  RETURN jsonb_build_object('tenant_id',t,'manager',manager,'officer',officer,'writes_enabled',writable,
  'incident',CASE WHEN e.id IS NULL THEN NULL ELSE jsonb_build_object('id',e.id,'tenant_id',t,'event_type',e.event_type,'incident_reference',e.incident_reference,'started_by',e.started_by,'started_at',e.started_at) END,'people',people,'history',history,'audit',audit_rows);
 END $fn$;
-CREATE FUNCTION unipathway_muster.start_event(t uuid,r uuid,k text,ref text) RETURNS jsonb
+CREATE FUNCTION unipathway_muster.start_event(t uuid,r uuid,k text,ref text,reported boolean) RETURNS jsonb
 LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $fn$
 DECLARE a uuid;h text;prior jsonb;receipt jsonb;cnt integer;stamp timestamptz:=clock_timestamp();
 BEGIN
  a:=unipathway_muster.actor(t,'officer',true);
- IF k IS NULL OR k NOT IN ('drill','reported_emergency') OR length(btrim(coalesce(ref,''))) NOT BETWEEN 5 AND 200 THEN RAISE EXCEPTION 'Incident type and reference required'; END IF;
- h:=unipathway_site_ops.fingerprint(jsonb_build_array(k,btrim(ref)));prior:=unipathway_site_ops.prior(t,r,a,'muster_start',h);IF prior IS NOT NULL THEN RETURN prior;END IF;
+ IF reported IS DISTINCT FROM true OR k IS NULL OR k NOT IN ('drill','reported_emergency') OR length(btrim(coalesce(ref,''))) NOT BETWEEN 5 AND 200 THEN RAISE EXCEPTION 'Incident type and reference required'; END IF;
+ h:=unipathway_site_ops.fingerprint(jsonb_build_array(k,btrim(ref),reported));prior:=unipathway_site_ops.prior(t,r,a,'muster_start',h);IF prior IS NOT NULL THEN RETURN prior;END IF;
  PERFORM pg_advisory_xact_lock(hashtextextended('muster-centre:'||t::text,0));
  IF EXISTS(SELECT 1 FROM public.emergency_muster_events WHERE tenant_id=t AND status='active') THEN RAISE EXCEPTION 'An active recorded incident already exists';END IF;
  -- Freeze only the recorded occupancy snapshot. Never assert completeness or trigger an alarm.
@@ -140,11 +140,11 @@ BEGIN
  INSERT INTO unipathway_site_ops.receipts(tenant_id,request_id,actor_id,action,digest,result) VALUES(t,r,a,'muster_close',h,receipt);RETURN receipt;
 END $fn$;
 REVOKE ALL ON ALL FUNCTIONS IN SCHEMA unipathway_muster FROM PUBLIC,anon,authenticated;
-GRANT EXECUTE ON FUNCTION unipathway_muster.read_event(uuid),unipathway_muster.start_event(uuid,uuid,text,text),unipathway_muster.observe(uuid,uuid,uuid,uuid,integer,text,text,text,boolean),unipathway_muster.close_event(uuid,uuid,uuid,integer,text,boolean) TO authenticated;
+GRANT EXECUTE ON FUNCTION unipathway_muster.read_event(uuid),unipathway_muster.start_event(uuid,uuid,text,text,boolean),unipathway_muster.observe(uuid,uuid,uuid,uuid,integer,text,text,text,boolean),unipathway_muster.close_event(uuid,uuid,uuid,integer,text,boolean) TO authenticated;
 CREATE FUNCTION public.get_unipathway_witnessed_muster(p_tenant uuid) RETURNS jsonb LANGUAGE sql STABLE SECURITY INVOKER SET search_path='' AS $fn$ SELECT unipathway_muster.read_event(p_tenant) $fn$;
-CREATE FUNCTION public.start_unipathway_witnessed_muster(p_tenant uuid,p_request uuid,p_kind text,p_reference text) RETURNS jsonb LANGUAGE sql SECURITY INVOKER SET search_path='' AS $fn$ SELECT unipathway_muster.start_event(p_tenant,p_request,p_kind,p_reference) $fn$;
+CREATE FUNCTION public.start_unipathway_witnessed_muster(p_tenant uuid,p_request uuid,p_kind text,p_reference text,p_reported boolean) RETURNS jsonb LANGUAGE sql SECURITY INVOKER SET search_path='' AS $fn$ SELECT unipathway_muster.start_event(p_tenant,p_request,p_kind,p_reference,p_reported) $fn$;
 CREATE FUNCTION public.observe_unipathway_witnessed_muster(p_tenant uuid,p_request uuid,p_event uuid,p_person uuid,p_revision integer,p_status text,p_point text,p_note text,p_witnessed boolean) RETURNS jsonb LANGUAGE sql SECURITY INVOKER SET search_path='' AS $fn$ SELECT unipathway_muster.observe(p_tenant,p_request,p_event,p_person,p_revision,p_status,p_point,p_note,p_witnessed) $fn$;
 CREATE FUNCTION public.close_unipathway_witnessed_muster(p_tenant uuid,p_request uuid,p_event uuid,p_unresolved integer,p_note text,p_authorised boolean) RETURNS jsonb LANGUAGE sql SECURITY INVOKER SET search_path='' AS $fn$ SELECT unipathway_muster.close_event(p_tenant,p_request,p_event,p_unresolved,p_note,p_authorised) $fn$;
-REVOKE ALL ON FUNCTION public.get_unipathway_witnessed_muster(uuid),public.start_unipathway_witnessed_muster(uuid,uuid,text,text),public.observe_unipathway_witnessed_muster(uuid,uuid,uuid,uuid,integer,text,text,text,boolean),public.close_unipathway_witnessed_muster(uuid,uuid,uuid,integer,text,boolean) FROM PUBLIC,anon;
-GRANT EXECUTE ON FUNCTION public.get_unipathway_witnessed_muster(uuid),public.start_unipathway_witnessed_muster(uuid,uuid,text,text),public.observe_unipathway_witnessed_muster(uuid,uuid,uuid,uuid,integer,text,text,text,boolean),public.close_unipathway_witnessed_muster(uuid,uuid,uuid,integer,text,boolean) TO authenticated;
+REVOKE ALL ON FUNCTION public.get_unipathway_witnessed_muster(uuid),public.start_unipathway_witnessed_muster(uuid,uuid,text,text,boolean),public.observe_unipathway_witnessed_muster(uuid,uuid,uuid,uuid,integer,text,text,text,boolean),public.close_unipathway_witnessed_muster(uuid,uuid,uuid,integer,text,boolean) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.get_unipathway_witnessed_muster(uuid),public.start_unipathway_witnessed_muster(uuid,uuid,text,text,boolean),public.observe_unipathway_witnessed_muster(uuid,uuid,uuid,uuid,integer,text,text,text,boolean),public.close_unipathway_witnessed_muster(uuid,uuid,uuid,integer,text,boolean) TO authenticated;
 NOTIFY pgrst,'reload schema';

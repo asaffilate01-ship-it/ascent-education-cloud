@@ -1,4 +1,5 @@
 // Synthetic PGlite installation and acceptance; never touches hosted data or physical hardware.
+import {readFileSync} from 'node:fs';
 import {PGlite} from '@electric-sql/pglite';
 import assert from 'node:assert/strict';
 import {buildSiteOperations} from './activation/build-unipathway-site-operations.mjs';
@@ -88,6 +89,42 @@ try{
  await deny(()=>asset(otherDirector,b,id(53),created.asset_id,checked.id));
  await db.query("INSERT INTO public.cctv_access_events(tenant_id,camera_id,user_id,mode) VALUES($1,$2,$3,'live'),($1,$2,$4,'playback')",[a,cam,guard,director]);
  assert.equal((await read(guard,a,'cctv_audit')).rows.length,1);assert.equal((await read(owner,a,'cctv_audit')).rows.length,2);checks+=2;
+
+ // Witnessed muster extension: exact installed site schema, separate disabled gate.
+ await db.exec(readFileSync('scripts/activation/unipathway-witnessed-muster-forward.sql','utf8'));
+ const getMuster=(u,t=a)=>val(u,'SELECT public.get_unipathway_witnessed_muster($1) value',[t]);
+ const startMuster=(u,t,r,reported=true)=>val(u,'SELECT public.start_unipathway_witnessed_muster($1,$2,$3,$4,$5) value',[t,r,'drill','Physical drill reference',reported]);
+ const markMuster=(u,t,r,e,p,rev,status='safe',witnessed=true)=>val(u,'SELECT public.observe_unipathway_witnessed_muster($1,$2,$3,$4,$5,$6,$7,$8,$9) value',[t,r,e,p,rev,status,status==='safe'?'Surveyed assembly point':null,'Witnessed roll-call reference',witnessed]);
+ const closeMuster=(u,t,r,e,n,authorised=true)=>val(u,'SELECT public.close_unipathway_witnessed_muster($1,$2,$3,$4,$5,$6) value',[t,r,e,n,'Responsible official handover reference',authorised]);
+ // Two actual recorded occupants from synthetic reception and card records.
+ const guest=await sign(guard,a,id(100));const sc=await card(director,a,id(101),lecturer,'OPAQUE-STAFF-001');
+ await observe(guard,a,id(102),'OPAQUE-STAFF-001');
+ await sign(otherGuard,b,id(103));
+ assert.equal((await getMuster(guard)).incident,null);checks++;
+ await deny(()=>startMuster(guard,a,id(104)));await db.exec('UPDATE unipathway_muster.gate SET writes_enabled=true');
+ await deny(()=>startMuster(guard,a,id(104),false));await deny(()=>startMuster(director,a,id(104)));await deny(()=>startMuster(otherGuard,a,id(104)));
+ const incident=await startMuster(guard,a,id(104));assert.equal(incident.snapshot_count,2);assert.deepEqual(await startMuster(guard,a,id(104)),incident);checks+=2;
+ await deny(()=>startMuster(guard,a,id(105)));
+ const state=await getMuster(guard);assert.equal(state.people.length,2);assert(state.people.every(p=>p.status==='unaccounted'));assert.equal(state.audit.length,1);checks+=3;
+ assert.equal((await getMuster(owner,b)).incident,null);checks++;await deny(()=>getMuster(guard,b));await deny(()=>getMuster(learner));
+ await deny(()=>actor(guard,'SELECT * FROM unipathway_muster.people'));
+ const person=state.people.find(p=>p.person_type==='staff'),visitor=state.people.find(p=>p.person_type==='visitor');
+ await deny(()=>markMuster(guard,a,id(106),incident.incident_id,person.id,0,'safe',false));await deny(()=>markMuster(otherGuard,a,id(106),incident.incident_id,person.id,0));await deny(()=>markMuster(director,a,id(106),incident.incident_id,person.id,0));
+ const safe=await markMuster(guard,a,id(106),incident.incident_id,person.id,0);assert.equal(safe.revision,1);assert.deepEqual(await markMuster(guard,a,id(106),incident.incident_id,person.id,0),safe);checks+=2;
+ await deny(()=>markMuster(guard,a,id(107),incident.incident_id,person.id,0,'unaccounted'));
+ const correction=await markMuster(guard,a,id(107),incident.incident_id,person.id,1,'unaccounted');assert.equal(correction.revision,2);checks++;
+ await markMuster(guard,a,id(108),incident.incident_id,person.id,2);
+ // Later gate records do not rewrite the initial snapshot.
+ await val(guard,'SELECT public.unipathway_checkout_centre_visitor($1,$2,$3,$4) value',[a,guest.id,'Reception',id(109)]);
+ assert.equal((await getMuster(guard)).people.length,2);checks++;
+ await deny(()=>closeMuster(guard,a,id(110),incident.incident_id,1));await deny(()=>closeMuster(director,a,id(110),incident.incident_id,0));await deny(()=>closeMuster(director,a,id(110),incident.incident_id,1,false));
+ const closed=await closeMuster(director,a,id(110),incident.incident_id,1);assert.equal(closed.unresolved_at_close,1);assert.deepEqual(await closeMuster(director,a,id(110),incident.incident_id,1),closed);checks+=2;
+ const history=await getMuster(owner);assert.equal(history.incident,null);assert.equal(history.history[0].unresolved_at_close,1);assert.equal(history.audit.length,5);checks+=3;
+ await deny(()=>markMuster(guard,a,id(111),incident.incident_id,visitor.id,0));
+ const empty=await startMuster(otherGuard,b,id(112));assert.equal(empty.snapshot_count,1);checks++;
+ await deny(()=>closeMuster(director,b,id(113),empty.incident_id,1));
+ await closeMuster(otherDirector,b,id(113),empty.incident_id,1);
+
  await db.query("UPDATE public.tenants SET status='suspended' WHERE id=$1",[a]);await deny(()=>read(owner,a,'audit'));await deny(()=>camera(owner,a,'superadmin'));
  console.log('Site operations installation: '+checks+' synthetic permission, audit, card and safety asset checks passed');
 }finally{await db.close();}

@@ -1,0 +1,11 @@
+import {describe,it,expect} from 'vitest';
+import {readWitnessedMuster,witnessedCounts} from '@/lib/witnessedMuster';
+const id=(n:number)=>'00000000-0000-4000-8000-'+String(n).padStart(12,'0'),tenant=id(1),event=id(2),time='2026-11-25T06:00:00Z';
+const incident={id:event,tenant_id:tenant,event_type:'drill',incident_reference:'Physical drill reference',started_by:id(3),started_at:time};
+const person={id:id(4),tenant_id:tenant,incident_id:event,label:'Example learner',person_type:'student',status:'unaccounted',revision:0,point:null,observed_at:null};
+const snapshot={tenant_id:tenant,incident,people:[person],history:[],audit:[],manager:false,officer:true,writes_enabled:true};
+describe('witnessed muster receipt and accountability',()=>{
+ it('does not treat an occupancy snapshot or zero records as verified safe',()=>{expect(witnessedCounts(readWitnessedMuster(snapshot,tenant).people)).toEqual({expected:1,safe:0,unresolved:1});expect(witnessedCounts([])).toEqual({expected:0,safe:0,unresolved:0});});
+ it('accepts only an explicit witnessed-safe record and rejects foreign, duplicate or unbound people',()=>{const safe={...person,status:'safe',revision:1,point:'Assembly point A',observed_at:time};expect(witnessedCounts(readWitnessedMuster({...snapshot,people:[safe]},tenant).people)).toEqual({expected:1,safe:1,unresolved:0});for(const rows of [[{...person,tenant_id:id(9)}],[{...person,incident_id:id(9)}],[person,person],[{...safe,point:null}],[{...safe,revision:0}]])expect(()=>readWitnessedMuster({...snapshot,people:rows},tenant)).toThrow();expect(()=>readWitnessedMuster({...snapshot,incident:null},tenant)).toThrow();});
+ it('retains unresolved counts in closed records and verifies audit identity',()=>{const history={id:id(8),tenant_id:tenant,event_type:'drill',incident_reference:'Physical drill reference',started_at:time,closed_at:'2026-11-25T06:30:00Z',unresolved_at_close:1,closure_note:'Handover reference'};const audit={id:id(9),tenant_id:tenant,incident_id:history.id,person_id:null,action:'closed',actor_id:id(3),note:'Handover reference',recorded_at:history.closed_at};expect(readWitnessedMuster({...snapshot,incident:null,people:[],history:[history],audit:[audit]},tenant).history[0].unresolved_at_close).toBe(1);expect(()=>readWitnessedMuster({...snapshot,audit:[{...audit,tenant_id:id(7)}]},tenant)).toThrow();});
+});
