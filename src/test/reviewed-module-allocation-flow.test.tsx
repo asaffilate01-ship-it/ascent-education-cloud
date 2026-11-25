@@ -8,7 +8,7 @@ const scope={module_id:moduleId,programme_id:id(6),module_title:'Mathematics',mo
 const evidence={id:review,slot:1,subject:'Mathematics',framework:'Cambridge',maximum_level:'A Level',reviewed_at:time};
 const context=(target:string|null=null,writes=true)=>({tenant_id:tenant,module_id:moduleId,current_lecturer:null,updated_at:time,module_scope:scope,people:[{id:lecturer,name:'Example lecturer'}],selected_lecturer:target,reviews:target?[evidence]:[],latest_decision:null,decision_current:false,writes_enabled:writes});
 const success=(data:unknown)=>({error:null,data});
-beforeEach(()=>mock.rpc.mockReset());afterEach(cleanup);
+beforeEach(()=>{mock.rpc.mockReset();});afterEach(cleanup);
 function open(onSaved=vi.fn()){render(<ReviewedModuleAllocation uid={uid} tenant={tenant} moduleId={moduleId} onSaved={onSaved}/>);fireEvent.click(screen.getByRole('button',{name:'Open allocation review'}));fireEvent.click(screen.getByRole('button',{name:'Load module and eligible lecturers'}));return onSaved;}
 async function selectEvidence(){await screen.findByLabelText('Lecturer for reviewed allocation');fireEvent.change(screen.getByLabelText('Lecturer for reviewed allocation'),{target:{value:lecturer}});fireEvent.click(await screen.findByRole('radio',{name:/Mathematics.*Cambridge/}));fireEvent.change(screen.getByLabelText('Module-specific academic fit and evidence reference'),{target:{value:'Reviewed module specification reference'}});}
 it('requires current evidence, explicit confirmation and exact retry before acknowledging a reviewed assignment',async()=>{
