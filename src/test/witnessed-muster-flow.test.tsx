@@ -4,7 +4,7 @@ const mock=vi.hoisted(()=>({rpc:vi.fn(),user:{id:'00000000-0000-4000-8000-000000
 vi.mock('@/components/security/SecurityCentrePicker',()=>({useSecurityPrincipal:()=>({user:mock.user,loading:false})}));
 vi.mock('@/lib/db',()=>({db:{rpc:mock.rpc}}));
 let WitnessedMuster:typeof import('@/components/security/WitnessedMuster')['default'];
-beforeAll(async()=>{vi.stubEnv('VITE_UNIPATHWAY_SITE_OPERATIONS_ENABLED','true');vi.stubEnv('VITE_UNIPATHWAY_WITNESSED_MUSTER_ENABLED','true');WitnessedMuster=(await import('@/components/security/WitnessedMuster')).default;});
+beforeAll(async()=>{vi.stubEnv('VITE_UNIPATHWAY_PHYSICAL_SECURITY_ENABLED','true');vi.stubEnv('VITE_UNIPATHWAY_SITE_OPERATIONS_ENABLED','true');vi.stubEnv('VITE_UNIPATHWAY_WITNESSED_MUSTER_ENABLED','true');WitnessedMuster=(await import('@/components/security/WitnessedMuster')).default;});
 afterAll(()=>vi.unstubAllEnvs());afterEach(cleanup);
 const id=(n:number)=>'00000000-0000-4000-8000-'+String(n).padStart(12,'0'),tenant=id(1),event=id(2),uid=id(3),time='2026-11-25T06:00:00Z';
 const incident={id:event,tenant_id:tenant,event_type:'drill',incident_reference:'Physical drill reference',started_by:uid,started_at:time};

@@ -1,4 +1,4 @@
-import WitnessedMuster from '@/components/security/WitnessedMuster';
+import WitnessedMuster,{WITNESSED_MUSTER_ENABLED} from '@/components/security/WitnessedMuster';
 
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import SecurityCentrePicker,{useSecurityPrincipal,securityLink} from '@/components/security/SecurityCentrePicker';
@@ -6,7 +6,7 @@ import {useScopedSecurityRows} from '@/hooks/useScopedSecurityRows';
 import PhysicalSecurityReadiness from '@/components/security/PhysicalSecurityReadiness';
 import {physicalSecurityScope,PHYSICAL_SECURITY_ENABLED,displayTime,type MusterEvent,type MusterRow} from '@/lib/physicalSecurity';
 import {Button} from '@/components/ui/button';
-export default function MusterMode(){const {user}=useSecurityPrincipal();return <ReadMuster key={`${user?.id}:${user?.tenantId}:${user?.role}:${user?.roles?.join(',')}`}/>;}
+export default function MusterMode(){const {user}=useSecurityPrincipal();if(WITNESSED_MUSTER_ENABLED)return <DashboardLayout title="Recorded emergency muster" subtitle="Witnessed accountability and independent administrative closure"><SecurityCentrePicker/><PhysicalSecurityReadiness/><WitnessedMuster/></DashboardLayout>;return <ReadMuster key={`${user?.id}:${user?.tenantId}:${user?.role}:${user?.roles?.join(',')}`}/>;}
 function ReadMuster(){
  const {user}=useSecurityPrincipal(),permitted=!!physicalSecurityScope(user)&&PHYSICAL_SECURITY_ENABLED;
  const events=useScopedSecurityRows<MusterEvent>(user,'emergency_muster_events','id,tenant_id,status,started_at,ended_at','id');
@@ -20,7 +20,6 @@ function ReadMuster(){
  return <DashboardLayout title="Recorded emergency muster" subtitle="Centre-scoped accountability, not a substitute for on-site emergency response">
   <SecurityCentrePicker/>
   <PhysicalSecurityReadiness/>
-  <WitnessedMuster/>
   {permitted&&loading&&<p role="status">Checking recorded muster events…</p>}
   {permitted&&failed&&<div role="alert" className="rounded-xl border p-4"><p>Emergency accountability data could not be fully verified. Follow the physical emergency plan.</p><Button onClick={()=>{events.refresh();rows.refresh();}}>Retry</Button></div>}
   {permitted&&!loading&&!failed&&<section className="mt-4 rounded-xl border bg-card p-5">

@@ -1,17 +1,17 @@
 import {useEffect,useRef,useState} from 'react';
 import {Button} from '@/components/ui/button';
 import {db} from '@/lib/db';
-import {displayTime} from '@/lib/physicalSecurity';
+import {displayTime,PHYSICAL_SECURITY_ENABLED} from '@/lib/physicalSecurity';
 import {SITE_OPERATIONS_ENABLED,siteRole,siteReceipt} from '@/lib/siteOperations';
 import {useSecurityPrincipal} from '@/components/security/SecurityCentrePicker';
 import {readWitnessedMuster,witnessedCounts,type WitnessedMuster,type WitnessedPerson,type MusterKind} from '@/lib/witnessedMuster';
-const enabled=SITE_OPERATIONS_ENABLED&&import.meta.env.VITE_UNIPATHWAY_WITNESSED_MUSTER_ENABLED==='true';
+export const WITNESSED_MUSTER_ENABLED=PHYSICAL_SECURITY_ENABLED&&SITE_OPERATIONS_ENABLED&&import.meta.env.VITE_UNIPATHWAY_WITNESSED_MUSTER_ENABLED==='true';
 const field='mt-1 block min-h-11 w-full min-w-0 rounded-lg border bg-background px-3 py-2 text-base';
 const label=(kind:MusterKind)=>kind==='drill'?'Drill':'Reported emergency';
 export default function WitnessedMuster(){
  const {user,loading}=useSecurityPrincipal(),tenant=siteRole(user);
  if(loading||!tenant||!user)return null;
- if(!enabled)return <section className="mt-4 rounded-xl border bg-card p-4"><h2 className="font-semibold">Witnessed emergency roll-call</h2><p className="mt-2 text-sm text-muted-foreground">Recording drills and witnessed accountability requires separate centre activation. Follow the physical evacuation plan and on-site roll-call regardless of application availability.</p></section>;
+ if(!WITNESSED_MUSTER_ENABLED)return <section className="mt-4 rounded-xl border bg-card p-4"><h2 className="font-semibold">Witnessed emergency roll-call</h2><p className="mt-2 text-sm text-muted-foreground">Recording drills and witnessed accountability requires separate centre activation. Follow the physical evacuation plan and on-site roll-call regardless of application availability.</p></section>;
  return <Desk key={[user.id,tenant,user.role,user.roles.join(',')].join(':')} uid={user.id} tenant={tenant} role={user.role}/>;
 }
 function Desk({uid,tenant,role}:{uid:string;tenant:string;role:string}){
