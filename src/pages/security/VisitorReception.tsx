@@ -23,7 +23,7 @@ function VisitorDesk(){
  const [checkinAttempt,setCheckinAttempt]=useState<CheckInAttempt|null>(null);
  const [checkoutAttempt,setCheckoutAttempt]=useState<CheckOutAttempt|null>(null);
  const stats=visitorStats(visitors.data);
- const canCheckIn=writer&&!inFlight&&attested&&name.trim().length>=2&&purpose.trim().length>=2&&gate.trim().length>=2;
+ const canCheckIn=writer&&!inFlight&&!checkoutAttempt&&attested&&name.trim().length>=2&&purpose.trim().length>=2&&gate.trim().length>=2;
  async function checkIn(){
   if(!tenant||!canCheckIn)return;
   const attempt=checkinAttempt||{requestId:crypto.randomUUID(),name:name.trim(),purpose:purpose.trim(),gate:gate.trim()};
@@ -43,7 +43,7 @@ function VisitorDesk(){
   }finally{setInFlight(false);}
  }
  async function checkOut(visitor:CentreVisitor){
-  if(!tenant||!writer||inFlight||visitor.tenant_id!==tenant||visitor.status!=='in_building')return;
+  if(!tenant||!writer||inFlight||checkinAttempt||visitor.tenant_id!==tenant|| (visitor.status!=='in_building'&&!(checkoutAttempt?.visitorId===visitor.id&&visitor.status==='checked_out')))return;
   if(checkoutAttempt&&checkoutAttempt.visitorId!==visitor.id)return;
   if(!window.confirm(`Record checkout for pass ${visitor.pass_number}? This will update the recorded occupancy and access log.`))return;
   const attempt=checkoutAttempt||{requestId:crypto.randomUUID(),visitorId:visitor.id};
@@ -54,7 +54,7 @@ function VisitorDesk(){
    validateVisitorReceipt(data,tenant,'checked_out',visitor.id);
    setCheckoutAttempt(null);visitors.refresh();
   }catch{
-   setActionError('Checkout confirmation is uncertain. Review the register before creating a different checkout. Retrying the same request preserves its request identifier.');
+   setActionError('Checkout confirmation is uncertain. Review the register before creating a different checkout. Retrying the same request preserves its request identifier.');visitors.refresh();
   }finally{setInFlight(false);}
  }
  return <DashboardLayout title="Visitor reception" subtitle="Recorded passes, centre-bound check-in and check-out">
@@ -62,11 +62,12 @@ function VisitorDesk(){
   {allowed&&visitors.loading&&<p role="status" className="mt-4">Loading authorised visitor register…</p>}
   {allowed&&visitors.error&&<div role="alert" className="mt-4 rounded-xl border p-4"><p>Visitor records could not be fully verified; no partial list is shown.</p><Button variant="outline" className="mt-2" onClick={visitors.refresh}>Retry register</Button></div>}
   {allowed&&!visitors.loading&&!visitors.error&&<>
-   <section className="mt-4 grid grid-cols-3 gap-3">{[
+   <section className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">{[
     ['Inside (recorded)',stats.inside],['Pre-registered',stats.preRegistered],['Checked out',stats.checkedOut]
    ].map(([label,value])=><article className="rounded-xl border bg-card p-4" key={label}><p className="text-sm text-muted-foreground">{label}</p><p className="mt-2 text-xl font-semibold">{value}</p></article>)}</section>
    <p className="mt-3 text-sm text-muted-foreground">Pass statuses are stored records, not biometric identification. Physical ID verification, host consent and restricted-zone supervision remain on-site duties.</p>
    {actionError&&<p role="alert" className="mt-4 rounded-lg border p-4">{actionError}</p>}
+   {checkoutAttempt&&<div className="mt-3 rounded-lg border p-4"><p className="text-sm">An earlier checkout has an uncertain result. Review the refreshed register before clearing this request.</p><Button type="button" variant="outline" className="mt-2" disabled={inFlight} onClick={()=>{if(window.confirm('Have you verified the recorded checkout and resolved the uncertain request?')){setCheckoutAttempt(null);setActionError('');visitors.refresh();}}}>I verified the register — clear pending checkout</Button></div>}
    {writer?<section className="mt-5 rounded-xl border bg-card p-5"><h2 className="font-semibold">Register a visitor and issue a pass</h2>
     <form className="mt-3 grid gap-3 md:grid-cols-2" onSubmit={e=>{e.preventDefault();void checkIn();}}>
      <label className="text-sm font-medium">Visitor's name<Input required maxLength={120} value={name} disabled={inFlight||!!checkinAttempt} onChange={e=>setName(e.target.value)} /></label>
@@ -83,7 +84,7 @@ function VisitorDesk(){
     <div className="mt-3 divide-y">{[...visitors.data].sort((a,b)=>Date.parse(b.created_at)-Date.parse(a.created_at)).slice(0,100).map(v=><article className="flex flex-wrap items-center justify-between gap-3 py-4" key={v.id}>
      <div><p className="font-semibold">{v.full_name}</p><p className="text-sm text-muted-foreground">Pass {v.pass_number} · {v.purpose||'Purpose not recorded'}</p>
       <p className="text-xs text-muted-foreground">{v.status} · In {displayTime(v.checked_in_at)} PKT · Out {displayTime(v.checked_out_at)} PKT</p></div>
-     {writer&&v.status==='in_building'&&<Button type="button" variant="outline" disabled={inFlight||(!!checkoutAttempt&&checkoutAttempt.visitorId!==v.id)} onClick={()=>void checkOut(v)}>{checkoutAttempt?.visitorId===v.id?'Retry checkout':'Record checkout'}</Button>}
+     {writer&&(v.status==='in_building'||(checkoutAttempt?.visitorId===v.id&&v.status==='checked_out'))&&<Button type="button" variant="outline" disabled={inFlight||!!checkinAttempt||(!!checkoutAttempt&&checkoutAttempt.visitorId!==v.id)} onClick={()=>void checkOut(v)}>{checkoutAttempt?.visitorId===v.id?'Retry checkout':'Record checkout'}</Button>}
     </article>)}</div>
     {visitors.data.length>100&&<p className="mt-2 text-xs">Latest 100 of {visitors.data.length} returned visitor records. Use a reviewed server report for complete historical exports.</p>}
    </section>
