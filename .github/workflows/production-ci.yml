@@ -62,6 +62,8 @@ jobs:
         run: node scripts/test-unipathway-office-and-tech-db.mjs
       - name: Centre physical security, visitor idempotency and two-tenant RLS rehearsal
         run: node scripts/test-unipathway-physical-security-db.mjs
+      - name: Private student application planning and cross-centre access rehearsal
+        run: node scripts/test-student-application-planner-db.mjs
       - name: Exam session planning, reviewer independence, disabled gates and multi-centre RLS rehearsal
         run: node scripts/test-unipathway-exam-operations-db.mjs
       - name: Candidate roster F2, active enrolment, provisional seats and independent approval rehearsal
