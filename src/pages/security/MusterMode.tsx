@@ -18,16 +18,18 @@ function ReadMuster(){
  const unaccounted=expected.filter(r=>r.status!=='safe').length;
  return <DashboardLayout title="Recorded emergency muster" subtitle="Centre-scoped accountability, not a substitute for on-site emergency response">
   <PhysicalSecurityReadiness/>
+  {permitted&&<div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card p-4"><p className="text-sm font-medium">Recorded snapshot only — refresh to retrieve the latest available records. Follow the physical emergency plan without delay.</p><Button variant="outline" disabled={loading} onClick={()=>{events.refresh();rows.refresh();}}>Refresh recorded muster</Button></div>}
   {permitted&&loading&&<p role="status">Checking recorded muster events…</p>}
   {permitted&&failed&&<div role="alert" className="rounded-xl border p-4"><p>Emergency accountability data could not be fully verified. Follow the physical emergency plan.</p><Button onClick={()=>{events.refresh();rows.refresh();}}>Retry</Button></div>}
   {permitted&&!loading&&!failed&&<section className="mt-4 rounded-xl border bg-card p-5">
    {active.length>1?<p role="alert">Multiple active muster events exist. No authoritative headcount can be shown; contact the responsible centre official.</p>:
    !current?<><h2 className="font-semibold">No active muster recorded</h2><p className="mt-2 text-sm text-muted-foreground">This is only a database observation. For alarms or incidents, use the centre's physical emergency plan immediately.</p></>:
    <><h2 className="font-semibold">Muster recorded at {displayTime(current.started_at)} PKT</h2>
-    {!rows.data.length&&<p role="alert" className="mt-3">No accountability records are associated with this active muster. Do not interpret zero as all accounted for. Follow the on-site emergency roll-call.</p>}
-    <div className="mt-4 grid grid-cols-3 gap-3">{[['Expected records',expected.length],['Marked safe',accounted],['Not marked safe',unaccounted]].map(([label,value])=><div key={label} className="rounded-lg border p-3"><p className="text-sm">{label}</p><p className="mt-2 text-xl font-semibold">{value}</p></div>)}</div>
+    {!expected.length&&<p role="alert" className="mt-3">No expected-inside accountability records are associated with this active muster. Do not interpret zero as all accounted for. Follow the on-site emergency roll-call.</p>}
+    <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">{[['Expected records',expected.length],['Marked safe',accounted],['Not marked safe',unaccounted]].map(([label,value])=><div key={label} className="rounded-lg border p-3"><p className="text-sm">{label}</p><p className="mt-2 text-xl font-semibold">{value}</p></div>)}</div>
     <p className="mt-3 text-sm text-muted-foreground">Numbers cover stored status rows only; missing registration rows are not detectable here. Human roll-call and emergency services remain authoritative.</p>
     <div className="mt-4 divide-y">{expected.slice(0,80).map((row,i)=><div key={row.id} className="flex flex-wrap justify-between gap-3 py-3 text-sm"><span>{row.person_type} · record {i+1}</span><span>{row.status==='safe'?'Marked safe':'Not confirmed'}{row.muster_point?' · '+row.muster_point:''}</span></div>)}</div>
+    {expected.length>80&&<p className="mt-3 text-sm text-muted-foreground">Showing the first 80 of {expected.length} expected records; the totals above include all returned expected records.</p>}
    </>}
   </section>}
  </DashboardLayout>;
