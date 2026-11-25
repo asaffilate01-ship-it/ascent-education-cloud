@@ -13,6 +13,8 @@ import {
  type ProgressionBody,type ProgressionCountry,type ProgressionInstitution,
 } from '@/lib/universityProgressionDirectory';
 
+import {filterProgressionResearch,researchSubjects,researchLevels} from '@/lib/progressionResearch';
+
 type CountryFilter='All'|ProgressionCountry;
 type BodyFilter='All'|ProgressionBody;
 const filterCountry:('All'|ProgressionCountry)[]=['All',...progressionCountries];
@@ -24,14 +26,10 @@ export default function UniversityProgressionDirectory(){
  const [country,setCountry]=useState<CountryFilter>('All');
  const [body,setBody]=useState<BodyFilter>('All');
  const [search,setSearch]=useState('');
+ const [subject,setSubject]=useState('all');
+ const [level,setLevel]=useState('all');
  const all=useMemo(()=>getProgressionInstitutions(),[]);
- const matches=useMemo(()=>{
-  const q=search.toLowerCase().trim();
-  return all
-   .filter(u=>country==='All'||u.country===country)
-   .map(u=>({...u,records:u.records.filter(r=>body==='All'||r.body===body)}))
-   .filter(u=>u.records.length>0 && (!q||`${u.name} ${u.country} ${u.records.map(r=>r.route).join(' ')}`.toLowerCase().includes(q)));
- },[all,country,body,search]);
+ const matches=useMemo(()=>filterProgressionResearch(all,{country,body,subject,level,search}),[all,country,body,subject,level,search]);
  const countryCount=(c:ProgressionCountry)=>all.filter(x=>x.country===c).length;
  return <div className="public-site min-h-dvh bg-background">
   <Seo canonical="/university-progression" title="OTHM & Qualifi University Progression Directory | UniPathway" description="Find named universities in the UK, USA and Australia appearing on OTHM and Qualifi progression lists, with private UniPathway eligibility guidance and no offsite links."/>
@@ -63,7 +61,12 @@ export default function UniversityProgressionDirectory(){
        {filterBodies.map(x=><option value={x} key={x}>{x==='All'?'OTHM and Qualifi':x}</option>)}
       </select></label>
      </div>
-     <p className="mt-3 text-sm text-muted-foreground" role="status">{matches.length} named universities match your search.</p>
+     <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      <label className="block min-w-0 text-sm font-medium">Subject area<select id="progression-subject" className="mt-1 block min-h-11 w-full rounded-md border bg-background px-3" value={subject} onChange={e=>setSubject(e.target.value)}><option value="all">All subjects</option>{researchSubjects.map(item=><option key={item.id} value={item.id}>{item.label}</option>)}</select></label>
+      <label className="block min-w-0 text-sm font-medium">Qualification level mentioned<select id="progression-level" className="mt-1 block min-h-11 w-full rounded-md border bg-background px-3" value={level} onChange={e=>setLevel(e.target.value)}><option value="all">All levels / unspecified</option>{researchLevels.map(item=><option key={item} value={item}>Level {item}</option>)}</select></label>
+     </div>
+     <div className="mt-3 flex flex-wrap items-center justify-between gap-2"><p className="mt-3 text-sm text-muted-foreground" role="status">{matches.length} named universities match your search.</p><Button type="button" variant="outline" onClick={()=>{setCountry('All');setBody('All');setSearch('');setSubject('all');setLevel('all');}}>Clear filters</Button></div>
+     <p className="mt-2 text-xs text-muted-foreground">Filters search published route summaries only. General listings without explicit details may be excluded. Matching text is a research lead, not confirmation of admission, credits or eligibility.</p>
     </div>
 
     {country==='Canada'&&<div className="rounded-xl border bg-secondary/40 p-6">
