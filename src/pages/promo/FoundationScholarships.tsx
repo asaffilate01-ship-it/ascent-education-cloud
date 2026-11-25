@@ -1,5 +1,6 @@
 import PublicHero from '@/components/PublicHero';
 import PageContents from '@/components/PageContents';
+import ScholarshipResearchPlanner from '@/components/public/ScholarshipResearchPlanner';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Award, BookOpenCheck, GraduationCap, HandHeart, HeartHandshake, ShieldCheck } from 'lucide-react';
 import PublicNav from '@/components/PublicNav';
@@ -44,6 +45,7 @@ export default function FoundationScholarships(){
    </section>
    <section aria-labelledby="foundation-careers" className="rounded-xl border bg-secondary/40 p-6"><h2 id="foundation-careers" className="text-2xl font-bold">From supported learning to work opportunities</h2><p className="mt-3 text-sm text-muted-foreground">Alongside fee support, participating employers can discuss mentoring, workplace visits, supervised internships, work experience and suitable job opportunities. We aim to connect learning with practical experience and a route into employment.</p><p className="mt-3 text-sm text-muted-foreground">Placements and recruitment are separate from scholarship decisions and depend on suitability, employer checks, available roles and student choice. Funding does not guarantee an internship or job, require a learner to accept one, or give an employer automatic access to student records. Under-18 opportunities require appropriate safeguarding and verified parent or guardian consent.</p><div className="mt-5 flex flex-wrap gap-3"><Button asChild variant="outline"><Link to={sponsorEnquiry}>Offer funding, mentoring or placements</Link></Button><Button asChild variant="outline"><Link to="/careers">Explore careers and internships</Link></Button></div></section>
    <section className="rounded-xl border p-6"><Award className="size-7 text-success"/><h2 className="mt-3 text-xl font-bold">What scholarships may support</h2><p className="mt-3 text-sm text-muted-foreground">Subject to each published fund's eligibility and budget, awards may contribute towards online tuition, UK or international qualification fees, exam preparation, technology or finance training, supervised residential learning costs, and other approved educational expenses. Actual awards, payment arrangements and conditions will be detailed in an individual written offer.</p></section>
+   <ScholarshipResearchPlanner/>
   </main><PublicFooter/>
  </div>;
 }
