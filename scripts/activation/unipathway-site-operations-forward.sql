@@ -74,10 +74,18 @@ BEGIN
   SELECT coalesce(jsonb_agg(to_jsonb(q) ORDER BY q.floor_label,q.asset_code,q.id),'[]'::jsonb) INTO data FROM(
    SELECT DISTINCT ON(asset_id) id,tenant_id,asset_id,asset_code,asset_type,floor_label,location_label,plan_reference,x,y,condition,next_review,note,recorded_by,recorded_at FROM unipathway_site_ops.facility_checks WHERE tenant_id=t ORDER BY asset_id,recorded_at DESC,id DESC LIMIT 501
   ) q;
+ ELSIF k='facility_history' THEN
+  SELECT coalesce(jsonb_agg(to_jsonb(q) ORDER BY q.recorded_at DESC,q.id),'[]'::jsonb) INTO data FROM(
+   SELECT id,tenant_id,asset_id,asset_code,asset_type,floor_label,location_label,plan_reference,x,y,condition,next_review,note,recorded_by,recorded_at FROM unipathway_site_ops.facility_checks WHERE tenant_id=t ORDER BY recorded_at DESC,id LIMIT 100
+  ) q;
+ ELSIF k='card_audit' THEN
+  SELECT coalesce(jsonb_agg(to_jsonb(q) ORDER BY q.created_at DESC,q.id),'[]'::jsonb) INTO data FROM(
+   SELECT id,tenant_id,credential_id,action,actor_id,note,created_at FROM unipathway_site_ops.card_changes WHERE tenant_id=t ORDER BY created_at DESC,id LIMIT 100
+  ) q;
  ELSIF k='cards' THEN
   SELECT coalesce(jsonb_agg(to_jsonb(q) ORDER BY q.name,q.id),'[]'::jsonb) INTO data FROM(
    SELECT c.id,c.tenant_id,c.holder_user_id,coalesce(nullif(p.full_name,''),'Former holder') AS name,c.holder_type,c.valid_from,c.valid_until,
-   CASE WHEN c.status='active' AND (c.valid_until<now() OR c.valid_from>now()) THEN 'expired' WHEN c.status='active' AND unipathway_site_ops.person_kind(t,c.holder_user_id) IS DISTINCT FROM c.holder_type THEN 'eligibility_review' ELSE c.status END AS status
+   CASE WHEN c.status='active' AND (c.valid_until<=now() OR c.valid_from>now()) THEN 'expired' WHEN c.status='active' AND unipathway_site_ops.person_kind(t,c.holder_user_id) IS DISTINCT FROM c.holder_type THEN 'eligibility_review' ELSE c.status END AS status
    FROM public.centre_access_credentials c LEFT JOIN public.profiles p ON p.user_id=c.holder_user_id AND p.tenant_id=c.tenant_id WHERE c.tenant_id=t AND c.credential_type='card' ORDER BY c.id LIMIT 501
   ) q;
   IF manager THEN SELECT coalesce(jsonb_agg(to_jsonb(q) ORDER BY q.name,q.id),'[]'::jsonb) INTO roster FROM(
@@ -86,7 +94,11 @@ BEGIN
  ELSIF k='audit' THEN
   -- Deliberately limited recent audit, never a full export or credential hash.
   SELECT coalesce(jsonb_agg(to_jsonb(q) ORDER BY q.event_at DESC,q.id),'[]'::jsonb) INTO data FROM(
-   SELECT id,tenant_id,gate_id AS location,direction AS action,decision AS outcome,security_user_id AS actor_id,occurred_at AS event_at FROM public.centre_access_events WHERE tenant_id=t ORDER BY occurred_at DESC,id LIMIT 100
+   SELECT e.id,e.tenant_id,e.gate_id AS location,e.direction AS action,e.decision AS outcome,e.security_user_id AS actor_id,e.occurred_at AS event_at,
+   coalesce(v.full_name,p.full_name) AS subject_name,CASE WHEN v.id IS NOT NULL THEN 'visitor' WHEN c.id IS NOT NULL THEN c.holder_type ELSE 'unmatched' END AS subject_kind
+   FROM public.centre_access_events e LEFT JOIN public.centre_visitors v ON v.id=e.visitor_id AND v.tenant_id=e.tenant_id
+   LEFT JOIN public.centre_access_credentials c ON c.id=e.credential_id AND c.tenant_id=e.tenant_id LEFT JOIN public.profiles p ON p.user_id=c.holder_user_id AND p.tenant_id=e.tenant_id
+   WHERE e.tenant_id=t ORDER BY e.occurred_at DESC,e.id LIMIT 100
   ) q;
  ELSIF k='visitor_signatures' THEN
   SELECT coalesce(jsonb_agg(to_jsonb(q) ORDER BY q.signed_at DESC,q.visitor_id),'[]'::jsonb) INTO data FROM(
@@ -175,6 +187,8 @@ BEGIN
  h:=unipathway_site_ops.fingerprint(jsonb_build_array(p_asset,p_previous,btrim(p_code),p_type,btrim(p_floor),btrim(p_location),btrim(p_plan),p_x,p_y,p_condition,p_next,btrim(p_note)));
  old:=unipathway_site_ops.prior(t,r,a,'facility',h);IF old IS NOT NULL THEN RETURN old; END IF;
  aid:=coalesce(p_asset,r);
+ PERFORM pg_advisory_xact_lock(hashtextextended('facility-code:'||t::text||':'||lower(btrim(p_code)),0));
+ IF EXISTS(SELECT 1 FROM unipathway_site_ops.facility_checks z WHERE z.tenant_id=t AND lower(z.asset_code)=lower(btrim(p_code)) AND z.asset_id<>aid) THEN RAISE EXCEPTION 'Asset reference already registered'; END IF;
  PERFORM pg_advisory_xact_lock(hashtextextended('facility:'||t::text||':'||aid::text,0));
  SELECT * INTO last FROM unipathway_site_ops.facility_checks WHERE tenant_id=t AND asset_id=aid ORDER BY recorded_at DESC,id DESC LIMIT 1;
  IF p_asset IS NULL THEN
@@ -221,4 +235,26 @@ CREATE FUNCTION public.list_unipathway_security_centres() RETURNS jsonb LANGUAGE
 CREATE FUNCTION public.get_unipathway_security_camera_inventory(p_tenant uuid,p_role text) RETURNS jsonb LANGUAGE sql STABLE SECURITY INVOKER SET search_path='' AS $fn$ SELECT unipathway_site_ops.camera_inventory(p_tenant,p_role) $fn$;
 REVOKE ALL ON FUNCTION public.list_unipathway_security_centres(),public.get_unipathway_security_camera_inventory(uuid,text) FROM PUBLIC,anon;
 GRANT EXECUTE ON FUNCTION public.list_unipathway_security_centres(),public.get_unipathway_security_camera_inventory(uuid,text) TO authenticated;
+-- Harden existing public CCTV metadata grants. Owner cross-centre viewing uses explicit scoped RPC.
+CREATE FUNCTION unipathway_site_ops.cctv_direct(t uuid,p_manager boolean DEFAULT false) RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path='' AS $fn$
+ SELECT auth.uid() IS NOT NULL AND EXISTS(SELECT 1 FROM public.tenants n WHERE n.id=t AND n.status::text='active') AND EXISTS(SELECT 1 FROM public.profiles p WHERE p.user_id=auth.uid() AND p.tenant_id=t)
+ AND EXISTS(SELECT 1 FROM public.user_roles r WHERE r.user_id=auth.uid() AND r.tenant_id=t AND (r.role::text='centre_director' OR (NOT p_manager AND r.role::text='security_officer')))
+$fn$;
+REVOKE ALL ON FUNCTION unipathway_site_ops.cctv_direct(uuid,boolean) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION unipathway_site_ops.cctv_direct(uuid,boolean) TO authenticated;
+ALTER TABLE public.unipathway_cctv_cameras ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.cctv_access_events ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "cctv authorised inventory" ON public.unipathway_cctv_cameras;
+DROP POLICY IF EXISTS "cctv centre managers" ON public.unipathway_cctv_cameras;
+DROP POLICY IF EXISTS "cctv audit managers" ON public.cctv_access_events;
+REVOKE ALL ON public.unipathway_cctv_cameras,public.cctv_access_events FROM PUBLIC,anon,authenticated;
+GRANT SELECT(id,tenant_id,name,location,enabled,security_live,security_playback) ON public.unipathway_cctv_cameras TO authenticated;
+GRANT INSERT(tenant_id,name,location,provider_camera_id,enabled,security_live,security_playback),UPDATE(enabled,security_live,security_playback) ON public.unipathway_cctv_cameras TO authenticated;
+CREATE POLICY "site cctv metadata boundary" ON public.unipathway_cctv_cameras AS RESTRICTIVE FOR SELECT TO authenticated USING(unipathway_site_ops.cctv_direct(tenant_id,false) AND (unipathway_site_ops.cctv_direct(tenant_id,true) OR (enabled AND (security_live OR security_playback))));
+CREATE POLICY "site cctv metadata read" ON public.unipathway_cctv_cameras FOR SELECT TO authenticated USING(unipathway_site_ops.cctv_direct(tenant_id,false));
+CREATE POLICY "site cctv director insert" ON public.unipathway_cctv_cameras FOR INSERT TO authenticated WITH CHECK(unipathway_site_ops.cctv_direct(tenant_id,true));
+CREATE POLICY "site cctv insert boundary" ON public.unipathway_cctv_cameras AS RESTRICTIVE FOR INSERT TO authenticated WITH CHECK(unipathway_site_ops.cctv_direct(tenant_id,true));
+CREATE POLICY "site cctv director update" ON public.unipathway_cctv_cameras FOR UPDATE TO authenticated USING(unipathway_site_ops.cctv_direct(tenant_id,true)) WITH CHECK(unipathway_site_ops.cctv_direct(tenant_id,true));
+CREATE POLICY "site cctv update boundary" ON public.unipathway_cctv_cameras AS RESTRICTIVE FOR UPDATE TO authenticated USING(unipathway_site_ops.cctv_direct(tenant_id,true)) WITH CHECK(unipathway_site_ops.cctv_direct(tenant_id,true));
 NOTIFY pgrst,'reload schema';
