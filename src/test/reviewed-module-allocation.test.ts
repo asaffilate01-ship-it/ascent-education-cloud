@@ -1,0 +1,10 @@
+import {describe,it,expect} from 'vitest';
+import {readAllocationContext,readAllocationReceipt} from '@/lib/reviewedModuleAllocation';
+const id=(n:number)=>'00000000-0000-4000-8000-'+String(n).padStart(12,'0'),tenant=id(1),module=id(2),lecturer=id(3),actor=id(4),review=id(5),time='2026-11-25T05:00:00Z';
+const scope={module_id:module,programme_id:id(6),module_title:'Maths',module_code:'M1',programme_title:'A Level',level:'3',awarding_body:'Cambridge'};
+const receipt={id:id(7),tenant_id:tenant,module_id:module,previous_lecturer:null,lecturer_id:lecturer,review_id:review,module_scope:scope,recorded_by:actor,recorded_at:time};
+const ctx={tenant_id:tenant,module_id:module,current_lecturer:lecturer,updated_at:time,module_scope:scope,people:[{id:lecturer,name:'Example lecturer'}],selected_lecturer:lecturer,reviews:[{id:review,slot:1,subject:'Maths',framework:'Cambridge',maximum_level:'A Level',reviewed_at:time}],latest_decision:receipt,decision_current:true,writes_enabled:true};
+describe('reviewed module allocation response',()=>{
+ it('checks centre, module, selected lecturer and exact independent receipt',()=>{expect(readAllocationContext(ctx,tenant,module,lecturer,actor)).toEqual(ctx);expect(readAllocationReceipt(receipt,tenant,module,{id:receipt.id,lecturer,review,previous:null,scope,actor})).toEqual(receipt);for(const bad of [{...receipt,lecturer_id:actor},{...receipt,tenant_id:id(9)},{...receipt,review_id:id(9)},{...receipt,module_scope:{...scope,level:'4'}}])expect(()=>readAllocationReceipt(bad,tenant,module,{id:receipt.id,lecturer,review,previous:null,scope,actor})).toThrow();});
+ it('rejects duplicate or foreign competency evidence and inconsistent current decisions',()=>{for(const invalid of [{...ctx,people:[...ctx.people,...ctx.people]},{...ctx,reviews:[...ctx.reviews,...ctx.reviews]},{...ctx,selected_lecturer:id(9)},{...ctx,latest_decision:null},{...ctx,current_lecturer:id(9)},{...ctx,people:[{id:actor,name:'Manager'}]},{...ctx,module_scope:{...scope,module_id:id(9)}}])expect(()=>readAllocationContext(invalid,tenant,module,lecturer,actor)).toThrow();});
+});
