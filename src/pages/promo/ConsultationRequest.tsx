@@ -1,11 +1,11 @@
 import {useState,type FormEvent} from 'react';
-import {Link,useNavigate} from 'react-router-dom';
+import {Link,useLocation,useNavigate} from 'react-router-dom';
 import {ArrowRight,CalendarDays,ClipboardCheck,ShieldCheck} from 'lucide-react';
 import PublicNav from '@/components/PublicNav';
 import PublicFooter from '@/components/PublicFooter';
 import Seo from '@/components/Seo';
 import {Button} from '@/components/ui/button';
-import {consultationOptions,defaultConsultation,preparationItems,consultationContactUrl,type ConsultationChoices,type ConsultationState} from '@/lib/consultationRequest';
+import {consultationOptions,defaultConsultation,preparationItems,consultationContactUrl,normaliseConsultation,normalisePreparation,type ConsultationChoices,type ConsultationState} from '@/lib/consultationRequest';
 
 const fields:{key:keyof ConsultationChoices;label:string}[]=[
  {key:'destination',label:'Preferred study destination'},
@@ -17,8 +17,9 @@ const fields:{key:keyof ConsultationChoices;label:string}[]=[
 
 export default function ConsultationRequest(){
  const navigate=useNavigate();
- const [choices,setChoices]=useState<ConsultationChoices>(defaultConsultation);
- const [prepared,setPrepared]=useState<string[]>([]);
+ const {state}=useLocation();
+ const [choices,setChoices]=useState<ConsultationChoices>(()=>state?normaliseConsultation(state.consultation):defaultConsultation);
+ const [prepared,setPrepared]=useState<string[]>(()=>normalisePreparation(state?.prepared));
  function continueToContact(event:FormEvent<HTMLFormElement>){
   event.preventDefault();
   const state:ConsultationState={consultation:choices,prepared};
