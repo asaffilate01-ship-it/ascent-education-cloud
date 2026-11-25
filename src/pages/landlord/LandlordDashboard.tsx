@@ -87,6 +87,7 @@ export default function LandlordDashboard() {
         </div>
       }
     >
+      <section className="my-5 rounded-xl border bg-card p-4 sm:p-5 space-y-3"><h2 className="font-semibold">Centre security and facilities</h2><p className="text-sm text-muted-foreground">Select an authorised centre context before opening private security records. Hardware connections must be verified on site.</p><div className="flex flex-wrap gap-2"><Button asChild variant="outline"><Link to="/security">CCTV viewing</Link></Button><Button asChild variant="outline"><Link to="/security/operations">Security command</Link></Button><Button asChild variant="outline"><Link to="/security/facilities">Facilities and access cards</Link></Button></div></section>
       <ApplicationReviewQueue kind="student" />
       <ApplicationReviewQueue kind="lecturer" />
       <section aria-label="Next actions" className="mb-6 grid gap-3 sm:grid-cols-3">

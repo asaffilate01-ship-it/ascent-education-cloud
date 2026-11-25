@@ -9,6 +9,7 @@ describe('UniPathway physical security permissions and operational honesty',()=>
   expect(physicalSecurityScope(user('security_officer',['security_officer'],'centre-a'))).toBe('centre-a');
   expect(physicalSecurityScope(user('centre_director',['centre_director'],'centre-a'))).toBe('centre-a');
   expect(physicalSecurityScope(user('superadmin',['superadmin']))).toBeNull();
+  expect(physicalSecurityScope(user('superadmin',['superadmin'],'centre-a'))).toBe('centre-a');
   expect(physicalSecurityScope(user('security_officer',['security_officer']))).toBeNull();
  });
  it('denies a mixed-centre response instead of silently counting another centre',()=>{
@@ -35,7 +36,7 @@ describe('UniPathway physical security permissions and operational honesty',()=>
   const app=readFileSync('src/App.tsx','utf8');
   const gate=readFileSync('src/components/security/PhysicalSecurityReadiness.tsx','utf8');
   const hook=readFileSync('src/hooks/useScopedSecurityRows.ts','utf8');
-  for(const route of ['/security/operations','/security/centre','/security/visitors','/security/muster'])expect(app).toContain(`path="${route}" element={<RoleGuard allowed={['security_officer','centre_director']}`);
+  for(const route of ['/security/operations','/security/centre','/security/visitors','/security/muster'])expect(app).toContain(`path="${route}" element={<RoleGuard allowed={['security_officer','centre_director','superadmin']}`);
   expect(gate).toContain('PHYSICAL_SECURITY_ENABLED');
   expect(hook).toContain(".rpc('get_unipathway_security_operations_rows'");
   expect(hook).toContain('p_tenant:tenant');

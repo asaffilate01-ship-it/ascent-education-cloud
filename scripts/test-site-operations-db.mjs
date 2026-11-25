@@ -1,0 +1,130 @@
+// Synthetic PGlite installation and acceptance; never touches hosted data or physical hardware.
+import {readFileSync} from 'node:fs';
+import {PGlite} from '@electric-sql/pglite';
+import assert from 'node:assert/strict';
+import {buildSiteOperations} from './activation/build-unipathway-site-operations.mjs';
+const db=new PGlite(),id=n=>'00000000-0000-4000-8000-'+String(n).padStart(12,'0');
+const a=id(1),b=id(2),guard=id(10),otherGuard=id(11),director=id(12),owner=id(13),learner=id(14),lecturer=id(15),wrong=id(16),withdrawn=id(17),otherDirector=id(18);
+const cam=id(30),foreignCam=id(31);
+let checks=0;
+try{
+ await db.exec(`
+ CREATE ROLE authenticated;CREATE ROLE anon;CREATE SCHEMA auth;
+ CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE SET search_path='' AS $$SELECT nullif(current_setting('test.uid',true),'')::uuid$$;
+ CREATE TABLE public.tenants(id uuid PRIMARY KEY,name text,status text);
+ CREATE TABLE public.profiles(user_id uuid PRIMARY KEY,tenant_id uuid,full_name text);
+ CREATE TABLE public.user_roles(user_id uuid,tenant_id uuid,role text);
+ CREATE TABLE public.student_enrolments(student_id uuid,tenant_id uuid,status text);
+ CREATE TABLE public.unipathway_cctv_cameras(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),tenant_id uuid NOT NULL,name text,location text,provider_camera_id text,enabled boolean,security_live boolean,security_playback boolean);
+ CREATE TABLE public.cctv_access_events(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),tenant_id uuid,camera_id uuid,user_id uuid,mode text,reason text,starts_at timestamptz,ends_at timestamptz,created_at timestamptz DEFAULT now());
+ GRANT USAGE ON SCHEMA public,auth TO authenticated,anon;
+ GRANT ALL ON public.unipathway_cctv_cameras,public.cctv_access_events TO authenticated,anon;
+ ALTER TABLE public.unipathway_cctv_cameras ENABLE ROW LEVEL SECURITY;
+ CREATE POLICY "Legacy overly broad" ON public.unipathway_cctv_cameras FOR ALL TO authenticated USING(true) WITH CHECK(true);
+ INSERT INTO public.tenants VALUES('${a}','Centre A','active'),('${b}','Centre B','active');
+ `);
+ for(const [u,t,r,rt] of [[guard,a,'security_officer',a],[otherGuard,b,'security_officer',b],[director,a,'centre_director',a],[owner,null,'superadmin',null],[learner,a,'student',a],[lecturer,a,'lecturer',a],[wrong,a,'security_officer',b],[withdrawn,a,'student',a],[otherDirector,b,'centre_director',b]]){
+  await db.query('INSERT INTO public.profiles VALUES($1,$2,$3)',[u,t,'Example '+r]);await db.query('INSERT INTO public.user_roles VALUES($1,$2,$3)',[u,rt,r]);
+ }
+ await db.query("INSERT INTO public.student_enrolments VALUES($1,$2,'active'),($3,$2,'withdrawn')",[learner,a,withdrawn]);
+ await db.query("INSERT INTO public.unipathway_cctv_cameras VALUES($1,$2,'Entrance camera','Surveyed entrance','provider-opaque-a',true,true,false),($3,$4,'Other camera','Other entrance','provider-opaque-b',true,true,true)",[cam,a,foreignCam,b]);
+ await db.exec(buildSiteOperations());checks++;
+ await assert.rejects(()=>db.exec(buildSiteOperations()),/Existing physical table/);await db.exec('ROLLBACK');checks++;
+ const expiry=(await db.query("SELECT ((now() AT TIME ZONE 'Asia/Karachi')::date+30)::text d")).rows[0].d;
+ async function actor(u,sql,args=[],role='authenticated'){await db.query("SELECT set_config('test.uid',$1,false)",[u||'']);await db.exec('SET ROLE '+role);try{return await db.query(sql,args)}finally{await db.exec('RESET ROLE');}}
+ const val=async(u,s,args=[],role='authenticated')=>(await actor(u,s,args,role)).rows[0].value;
+ async function deny(fn){await assert.rejects(fn);checks++;}
+ const read=(u,t,k)=>val(u,'SELECT public.get_unipathway_site_operations($1,$2) value',[t,k]);
+ const camera=(u,t,r)=>val(u,'SELECT public.get_unipathway_security_camera_inventory($1,$2) value',[t,r]);
+ const sign=(u,t,r,sig='Example visitor',accept=true,host='Appointment 001')=>val(u,'SELECT public.sign_unipathway_visitor($1,$2,$3,$4,$5,$6,$7,$8,$9) value',[t,r,'Example visitor','Academic appointment','Reception','guest',host,sig,accept]);
+ const card=(u,t,r,h=learner,ref='OPAQUE-REF-001')=>val(u,'SELECT public.register_unipathway_access_card($1,$2,$3,$4,$5,$6) value',[t,r,h,ref,expiry,'Reviewed controller allocation']);
+ const observe=(u,t,r,ref='OPAQUE-REF-001',direction='in',seen=true)=>val(u,'SELECT public.observe_unipathway_access_card($1,$2,$3,$4,$5,$6) value',[t,r,ref,'Main reception',direction,seen]);
+ const revoke=(u,t,r,c)=>val(u,'SELECT public.revoke_unipathway_access_card($1,$2,$3,$4) value',[t,r,c,'Reported replacement required']);
+ const asset=(u,t,r,assetId=null,prev=null,location='Surveyed lobby',condition='not_checked',code='EXIT-01')=>val(u,'SELECT public.record_unipathway_facility_check($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) value',[t,r,assetId,prev,code,'fire_exit','Ground floor',location,'Approved plan A',20,30,condition,expiry,'Observed reference 001']);
+ await deny(()=>read(guard,a,'facilities'));await deny(()=>sign(guard,a,id(40)));
+ assert.equal((await val(owner,'SELECT public.list_unipathway_security_centres() value')).length,2);checks++;
+ await deny(()=>val(guard,'SELECT public.list_unipathway_security_centres() value'));
+ const inv=await camera(guard,a,'security_officer');assert.equal(inv.length,1);assert.equal(inv[0].id,cam);assert.equal('provider_camera_id' in inv[0],false);checks+=3;
+ await deny(()=>camera(guard,b,'security_officer'));await deny(()=>camera(wrong,a,'security_officer'));await deny(()=>camera(learner,a,'superadmin'));
+ assert.equal((await camera(owner,b,'superadmin'))[0].id,foreignCam);checks++;
+ await deny(()=>actor(guard,'SELECT provider_camera_id FROM public.unipathway_cctv_cameras'));
+ assert.equal((await actor(guard,'SELECT id FROM public.unipathway_cctv_cameras')).rows.length,1);checks++;
+ await deny(()=>actor(guard,'INSERT INTO public.unipathway_cctv_cameras(tenant_id,name,location,provider_camera_id,enabled,security_live,security_playback) VALUES($1,$2,$3,$4,true,true,true)',[a,'Denied','No','REF']));
+ assert.equal((await actor(guard,'UPDATE public.unipathway_cctv_cameras SET enabled=false WHERE id=$1 RETURNING id',[cam])).rows.length,0);checks++;
+ await db.exec('UPDATE unipathway_security.activation_gate SET physical_reads_enabled=true');
+ assert.deepEqual((await read(guard,a,'facilities')).rows,[]);checks++;
+ assert.equal((await read(owner,b,'facilities')).tenant_id,b);checks++;
+ await deny(()=>read(guard,b,'facilities'));await deny(()=>read(learner,a,'cards'));await deny(()=>read(wrong,a,'audit'));
+ await deny(()=>asset(director,a,id(41)));await deny(()=>card(director,a,id(42)));
+ await db.exec('UPDATE unipathway_site_ops.gate SET writes_enabled=true');
+ await deny(()=>sign(guard,a,id(40)));
+ await db.exec('UPDATE unipathway_security.activation_gate SET visitor_writes_enabled=true');
+ await deny(()=>sign(guard,a,id(40),'Wrong name'));await deny(()=>sign(guard,a,id(40),'Example visitor',false));await deny(()=>sign(director,a,id(40)));await deny(()=>sign(guard,b,id(40)));
+ await deny(()=>val(guard,'SELECT public.unipathway_register_centre_visitor($1,$2,$3,$4,true,$5) value',[a,'No signature','Visit','Reception',id(41)]));
+ const v=await sign(guard,a,id(40));assert.equal(v.status,'in_building');assert.deepEqual(await sign(guard,a,id(40)),v);checks+=2;
+ await deny(()=>sign(guard,a,id(40),'Example visitor',true,'Changed host'));
+ const signatures=(await read(guard,a,'visitor_signatures')).rows;assert.equal(signatures.length,1);assert.equal(signatures[0].kind,'guest');assert.equal(signatures[0].attested_by,guard);checks+=3;
+ const out=await val(guard,'SELECT public.unipathway_checkout_centre_visitor($1,$2,$3,$4) value',[a,v.id,'Reception',id(43)]);assert.equal(out.status,'checked_out');checks++;
+ await deny(()=>card(guard,a,id(44)));await deny(()=>card(director,a,id(44),withdrawn));await deny(()=>card(otherDirector,a,id(44)));
+ const c=await card(director,a,id(44));assert.equal(c.status,'active');assert.deepEqual(await card(director,a,id(44)),c);checks+=2;
+ await deny(()=>card(director,a,id(45)));await deny(()=>card(director,a,id(44),learner,'CHANGED-REF-001'));
+ const cardList=(await read(guard,a,'cards')).rows;assert.equal(cardList.length,1);assert.equal('credential_reference_hash' in cardList[0],false);checks+=2;
+ await deny(()=>actor(guard,'SELECT * FROM public.centre_access_credentials'));await deny(()=>actor(guard,'SELECT * FROM unipathway_site_ops.receipts'));
+ await deny(()=>observe(guard,a,id(46),'OPAQUE-REF-001','in',false));await deny(()=>observe(director,a,id(46)));await deny(()=>observe(otherGuard,a,id(46)));
+ const entry=await observe(guard,a,id(46));assert.equal(entry.decision,'allowed');assert.deepEqual(await observe(guard,a,id(46)),entry);checks+=2;
+ const recorded=(await db.query("SELECT in_building FROM public.centre_occupancy WHERE tenant_id=$1 AND user_id=$2",[a,learner])).rows[0];assert.equal(recorded.in_building,true);checks++;
+ await db.query("UPDATE public.student_enrolments SET status='withdrawn' WHERE student_id=$1",[learner]);
+ const exit=await observe(guard,a,id(47),'OPAQUE-REF-001','out');assert.equal(exit.decision,'denied');checks++;
+ assert.equal((await db.query("SELECT in_building FROM public.centre_occupancy WHERE tenant_id=$1 AND user_id=$2",[a,learner])).rows[0].in_building,false);checks++;
+ assert.equal((await revoke(director,a,id(48),c.id)).status,'revoked');checks++;
+ assert.equal((await observe(guard,a,id(49))).decision,'denied');checks++;
+ assert.equal((await read(guard,a,'card_audit')).rows.length,2);checks++;
+ const log=(await read(owner,a,'audit')).rows;assert.equal(log.length,5);assert(log.some(e=>e.subject_kind==='student'));assert(log.some(e=>e.subject_kind==='visitor'));checks+=3;
+ assert.equal((await read(otherGuard,b,'audit')).rows.length,0);checks++;
+ await deny(()=>asset(guard,a,id(50)));const created=await asset(director,a,id(50));assert.equal(created.asset_id,id(50));checks++;
+ await deny(()=>asset(director,a,id(51),null,null,'Another location'));await deny(()=>asset(guard,a,id(51),created.asset_id,created.id,'Changed location','observed_ok'));
+ const checked=await asset(guard,a,id(52),created.asset_id,created.id,'Surveyed lobby','attention_required');assert.equal(checked.condition,'attention_required');checks++;
+ await deny(()=>asset(guard,a,id(53),created.asset_id,created.id));
+ assert.equal((await read(guard,a,'facilities')).rows.length,1);assert.equal((await read(guard,a,'facility_history')).rows.length,2);checks+=2;
+ await deny(()=>asset(otherDirector,b,id(53),created.asset_id,checked.id));
+ await db.query("INSERT INTO public.cctv_access_events(tenant_id,camera_id,user_id,mode) VALUES($1,$2,$3,'live'),($1,$2,$4,'playback')",[a,cam,guard,director]);
+ assert.equal((await read(guard,a,'cctv_audit')).rows.length,1);assert.equal((await read(owner,a,'cctv_audit')).rows.length,2);checks+=2;
+
+ // Witnessed muster extension: exact installed site schema, separate disabled gate.
+ await db.exec(readFileSync('scripts/activation/unipathway-witnessed-muster-forward.sql','utf8'));
+ const getMuster=(u,t=a)=>val(u,'SELECT public.get_unipathway_witnessed_muster($1) value',[t]);
+ const startMuster=(u,t,r,reported=true)=>val(u,'SELECT public.start_unipathway_witnessed_muster($1,$2,$3,$4,$5) value',[t,r,'drill','Physical drill reference',reported]);
+ const markMuster=(u,t,r,e,p,rev,status='safe',witnessed=true)=>val(u,'SELECT public.observe_unipathway_witnessed_muster($1,$2,$3,$4,$5,$6,$7,$8,$9) value',[t,r,e,p,rev,status,status==='safe'?'Surveyed assembly point':null,'Witnessed roll-call reference',witnessed]);
+ const closeMuster=(u,t,r,e,n,authorised=true)=>val(u,'SELECT public.close_unipathway_witnessed_muster($1,$2,$3,$4,$5,$6) value',[t,r,e,n,'Responsible official handover reference',authorised]);
+ // Two actual recorded occupants from synthetic reception and card records.
+ const guest=await sign(guard,a,id(100));const sc=await card(director,a,id(101),lecturer,'OPAQUE-STAFF-001');
+ await observe(guard,a,id(102),'OPAQUE-STAFF-001');
+ await sign(otherGuard,b,id(103));
+ assert.equal((await getMuster(guard)).incident,null);checks++;
+ await deny(()=>startMuster(guard,a,id(104)));await db.exec('UPDATE unipathway_muster.gate SET writes_enabled=true');
+ await deny(()=>startMuster(guard,a,id(104),false));await deny(()=>startMuster(director,a,id(104)));await deny(()=>startMuster(otherGuard,a,id(104)));
+ const incident=await startMuster(guard,a,id(104));assert.equal(incident.snapshot_count,2);assert.deepEqual(await startMuster(guard,a,id(104)),incident);checks+=2;
+ await deny(()=>startMuster(guard,a,id(105)));
+ const state=await getMuster(guard);assert.equal(state.people.length,2);assert(state.people.every(p=>p.status==='unaccounted'));assert.equal(state.audit.length,1);checks+=3;
+ assert.equal((await getMuster(owner,b)).incident,null);checks++;await deny(()=>getMuster(guard,b));await deny(()=>getMuster(learner));
+ await deny(()=>actor(guard,'SELECT * FROM unipathway_muster.people'));
+ const person=state.people.find(p=>p.person_type==='staff'),visitor=state.people.find(p=>p.person_type==='visitor');
+ await deny(()=>markMuster(guard,a,id(106),incident.incident_id,person.id,0,'safe',false));await deny(()=>markMuster(otherGuard,a,id(106),incident.incident_id,person.id,0));await deny(()=>markMuster(director,a,id(106),incident.incident_id,person.id,0));
+ const safe=await markMuster(guard,a,id(106),incident.incident_id,person.id,0);assert.equal(safe.revision,1);assert.deepEqual(await markMuster(guard,a,id(106),incident.incident_id,person.id,0),safe);checks+=2;
+ await deny(()=>markMuster(guard,a,id(107),incident.incident_id,person.id,0,'unaccounted'));
+ const correction=await markMuster(guard,a,id(107),incident.incident_id,person.id,1,'unaccounted');assert.equal(correction.revision,2);checks++;
+ await markMuster(guard,a,id(108),incident.incident_id,person.id,2);
+ // Later gate records do not rewrite the initial snapshot.
+ await val(guard,'SELECT public.unipathway_checkout_centre_visitor($1,$2,$3,$4) value',[a,guest.id,'Reception',id(109)]);
+ assert.equal((await getMuster(guard)).people.length,2);checks++;
+ await deny(()=>closeMuster(guard,a,id(110),incident.incident_id,1));await deny(()=>closeMuster(director,a,id(110),incident.incident_id,0));await deny(()=>closeMuster(director,a,id(110),incident.incident_id,1,false));
+ const closed=await closeMuster(director,a,id(110),incident.incident_id,1);assert.equal(closed.unresolved_at_close,1);assert.deepEqual(await closeMuster(director,a,id(110),incident.incident_id,1),closed);checks+=2;
+ const history=await getMuster(owner);assert.equal(history.incident,null);assert.equal(history.history[0].unresolved_at_close,1);assert.equal(history.audit.length,5);checks+=3;
+ await deny(()=>markMuster(guard,a,id(111),incident.incident_id,visitor.id,0));
+ const empty=await startMuster(otherGuard,b,id(112));assert.equal(empty.snapshot_count,1);checks++;
+ await deny(()=>closeMuster(director,b,id(113),empty.incident_id,1));
+ await closeMuster(otherDirector,b,id(113),empty.incident_id,1);
+
+ await db.query("UPDATE public.tenants SET status='suspended' WHERE id=$1",[a]);await deny(()=>read(owner,a,'audit'));await deny(()=>camera(owner,a,'superadmin'));
+ console.log('Site operations installation: '+checks+' synthetic permission, audit, card and safety asset checks passed');
+}finally{await db.close();}

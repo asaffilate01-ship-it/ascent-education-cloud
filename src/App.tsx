@@ -16,6 +16,7 @@ const SecurityCommandCentre = lazy(() => import('./pages/security/SecurityComman
 const CentreSecurity = lazy(() => import('./pages/security/CentreSecurity'));
 const VisitorReception = lazy(() => import('./pages/security/VisitorReception'));
 const MusterMode = lazy(() => import('./pages/security/MusterMode'));
+const CentreFacilities = lazy(() => import('./pages/security/CentreFacilities'));
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { studyDestinations } from "@/lib/studyDestinations";
 import RouteIndexing from '@/components/RouteIndexing';
@@ -388,10 +389,11 @@ function AppRoutes() {
         <Route path="/blog/:slug" element={<BlogPostPage />} />
         <Route path="/verify" element={<CertificateVerification />} />
         <Route path="/security" element={<RoleGuard allowed={['security_officer','centre_director','superadmin']}><SecurityWorkspace /></RoleGuard>} />
-        <Route path="/security/operations" element={<RoleGuard allowed={['security_officer','centre_director']}><SecurityCommandCentre /></RoleGuard>} />
-        <Route path="/security/centre" element={<RoleGuard allowed={['security_officer','centre_director']}><CentreSecurity /></RoleGuard>} />
-        <Route path="/security/visitors" element={<RoleGuard allowed={['security_officer','centre_director']}><VisitorReception /></RoleGuard>} />
-        <Route path="/security/muster" element={<RoleGuard allowed={['security_officer','centre_director']}><MusterMode /></RoleGuard>} />
+        <Route path="/security/operations" element={<RoleGuard allowed={['security_officer','centre_director','superadmin']}><SecurityCommandCentre /></RoleGuard>} />
+        <Route path="/security/centre" element={<RoleGuard allowed={['security_officer','centre_director','superadmin']}><CentreSecurity /></RoleGuard>} />
+        <Route path="/security/visitors" element={<RoleGuard allowed={['security_officer','centre_director','superadmin']}><VisitorReception /></RoleGuard>} />
+        <Route path="/security/facilities" element={<RoleGuard allowed={['security_officer','centre_director','superadmin']}><CentreFacilities /></RoleGuard>} />
+        <Route path="/security/muster" element={<RoleGuard allowed={['security_officer','centre_director','superadmin']}><MusterMode /></RoleGuard>} />
         <Route path="/live-classroom" element={<P><LiveClassroom /></P>} />
 
         {/* ========== LANDLORD ========== */}

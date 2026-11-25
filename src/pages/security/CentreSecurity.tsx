@@ -1,18 +1,19 @@
 
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import {useAuth} from '@/contexts/AuthContext';
+import SecurityCentrePicker,{useSecurityPrincipal,securityLink} from '@/components/security/SecurityCentrePicker';
 import {useScopedSecurityRows} from '@/hooks/useScopedSecurityRows';
 import PhysicalSecurityReadiness from '@/components/security/PhysicalSecurityReadiness';
 import {physicalSecurityScope,PHYSICAL_SECURITY_ENABLED,occupancyStats,displayTime,type CentreAccessEvent,type CentreOccupant} from '@/lib/physicalSecurity';
 import {Button} from '@/components/ui/button';
-export default function CentreSecurity(){const {user}=useAuth();return <GateActivity key={`${user?.id}:${user?.tenantId}:${user?.role}:${user?.roles?.join(',')}`}/>;}
+export default function CentreSecurity(){const {user}=useSecurityPrincipal();return <GateActivity key={`${user?.id}:${user?.tenantId}:${user?.role}:${user?.roles?.join(',')}`}/>;}
 function GateActivity(){
- const {user}=useAuth(),permitted=!!physicalSecurityScope(user)&&PHYSICAL_SECURITY_ENABLED;
+ const {user}=useSecurityPrincipal(),permitted=!!physicalSecurityScope(user)&&PHYSICAL_SECURITY_ENABLED;
  const occupancy=useScopedSecurityRows<CentreOccupant>(user,'centre_occupancy','tenant_id,person_type,in_building,last_event_at,last_gate_id','person_key');
  const events=useScopedSecurityRows<CentreAccessEvent>(user,'centre_access_events','id,tenant_id,gate_id,direction,decision,occurred_at','id');
  const loading=occupancy.loading||events.loading,failed=occupancy.error||events.error;
  const inside=occupancyStats(occupancy.data);
  return <DashboardLayout title="Gate activity and occupancy" subtitle="Centre-authorised, recorded entries and exits">
+  <SecurityCentrePicker/>
   <PhysicalSecurityReadiness/>
   {permitted&&loading&&<p role="status">Loading the recorded access log…</p>}
   {permitted&&failed&&<div role="alert" className="rounded-xl border p-5"><p>Access events and occupancy could not both be verified. No partial counts are displayed.</p><Button onClick={()=>{occupancy.refresh();events.refresh();}}>Retry</Button></div>}
