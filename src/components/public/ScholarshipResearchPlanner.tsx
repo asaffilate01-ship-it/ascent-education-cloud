@@ -1,9 +1,11 @@
 import {useState} from 'react';
 import {Link} from 'react-router-dom';
-import {ArrowUpRight,CalendarDays,Search,ShieldCheck} from 'lucide-react';
+import {ArrowUpRight,CalendarDays,Download,Search,ShieldCheck} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {scholarshipSources,scholarshipSourcesReviewed,deadlineKinds,validateDeadline,calendarDateInPakistan,deadlineStatus,sortDeadlines,type DeadlineDraft,type DeadlineRecord,type DeadlineKind} from '@/lib/scholarshipResearch';
+
+import {buildApplicationCalendar,calendarEligibleRecords} from '@/lib/applicationCalendarExport';
 
 const emptyDraft:DeadlineDraft={title:'',kind:'Scholarship',date:'',source:''};
 const statusLabels={completed:'Marked completed',past:'Past planning date',today:'Planning date today','next-seven-days':'Within 7 days',upcoming:'Upcoming planning date'} as const;
@@ -15,10 +17,23 @@ export default function ScholarshipResearchPlanner(){
  const [records,setRecords]=useState<DeadlineRecord[]>([]);
  const [error,setError]=useState('');
  const [notice,setNotice]=useState('');
+ const [calendarReminder,setCalendarReminder]=useState(false);
  const today=calendarDateInPakistan();
  const q=query.trim().toLowerCase();
  const sources=scholarshipSources.filter(s=>(country==='all'||s.id===country)&&(!q||[s.country,s.provider,s.title,s.detail].join(' ').toLowerCase().includes(q)));
  const ordered=sortDeadlines(records);
+ const exportable=calendarEligibleRecords(records,today);
+ function exportCalendar(){
+  if(!exportable.length)return;
+  try{
+   const content=buildApplicationCalendar(exportable,today,calendarReminder);
+   const url=URL.createObjectURL(new Blob([content],{type:'text/calendar;charset=utf-8'}));
+   const anchor=document.createElement('a');anchor.href=url;anchor.download='unipathway-application-planning.ics';
+   document.body.appendChild(anchor);anchor.click();anchor.remove();
+   window.setTimeout(()=>URL.revokeObjectURL(url),1000);
+   setNotice('Calendar file requested. Open or import the file in your calendar app and verify the dates.');setError('');
+  }catch{setError('Calendar file could not be created. Please try again.');}
+ }
  function addDeadline(event:React.FormEvent<HTMLFormElement>){
   event.preventDefault();
   const item=validateDeadline(draft);
@@ -40,7 +55,7 @@ export default function ScholarshipResearchPlanner(){
   <section aria-labelledby="deadline-planner-title" className="rounded-2xl border bg-card p-5 sm:p-7">
    <h2 id="deadline-planner-title" className="flex items-center gap-2 text-2xl font-bold"><CalendarDays aria-hidden="true" className="size-6 shrink-0"/>Application and scholarship deadline planner</h2>
    <p className="mt-3 text-sm text-muted-foreground">Record dates you have checked yourself. Use an earlier personal planning date when the official cutoff is in another timezone. Dates are compared with the Pakistan calendar; this does not determine exact official deadline times.</p>
-   <p className="mt-3 rounded-lg border p-3 text-xs text-muted-foreground">Entries are held only while this page is open. They are not saved to an account, synced to a calendar or used to send reminders. Do not enter personal identifiers, application numbers or documents.</p>
+   <p className="mt-3 rounded-lg border p-3 text-xs text-muted-foreground">Entries are held only while this page is open. They are not saved to an account or automatically synced to a calendar. You can choose to export your upcoming planning dates below. Do not enter personal identifiers, application numbers or documents.</p>
    <form onSubmit={addDeadline} className="mt-5 grid gap-3 sm:grid-cols-2">
     <label className="block min-w-0 text-sm font-semibold">Application or award name<Input className="mt-2 min-h-11" required maxLength={120} value={draft.title} onChange={e=>setDraft(old=>({...old,title:e.target.value}))} placeholder="Name of institution or funding programme"/></label>
     <label className="block min-w-0 text-sm font-semibold">Planning category<select className={inputClass} value={draft.kind} onChange={e=>setDraft(old=>({...old,kind:e.target.value as DeadlineKind}))}>{deadlineKinds.map(k=><option key={k}>{k}</option>)}</select></label>
@@ -52,6 +67,7 @@ export default function ScholarshipResearchPlanner(){
    <p role="status" className="mt-4 text-sm text-muted-foreground">{notice||records.length+' planning entries'} · Pakistan date: {today}</p>
    <div className="mt-3 divide-y">{ordered.map(r=><article key={r.id} className="flex flex-wrap items-start justify-between gap-3 py-4"><div className="min-w-0 flex-1"><p className="break-words font-semibold">{r.title}</p><p className="mt-1 text-sm text-muted-foreground">{r.kind} · {r.date}</p><p className="mt-1 text-sm font-medium">{statusLabels[deadlineStatus(r.date,today,r.completed)]}</p>{r.source&&<p className="mt-1 break-all text-xs text-muted-foreground">Your recorded source: {r.source}</p>}</div><div className="flex flex-wrap gap-2"><Button type="button" variant="outline" onClick={()=>{setRecords(old=>old.map(item=>item.id===r.id?{...item,completed:!item.completed}:item));setNotice(r.completed?'Entry reopened.':'Entry marked completed.');}}>{r.completed?'Reopen':'Mark completed'}</Button><Button type="button" variant="outline" onClick={()=>{setRecords(old=>old.filter(item=>item.id!==r.id));setNotice('Planning entry removed.');}} aria-label={'Remove '+r.title}>Remove</Button></div></article>)}</div>
    {!records.length&&<p className="mt-3 text-sm text-muted-foreground">No personal planning entries yet.</p>}
+   <div className="mt-5 rounded-xl border bg-muted/30 p-4"><h3 className="font-semibold">Export upcoming planning dates</h3><p className="mt-2 text-sm text-muted-foreground">{exportable.length} unfinished entries dated today or later can be exported as all-day events. Import the .ics file into your calendar application; this is a one-time export, not automatic synchronisation. Your entered source URLs are not exported.</p><label className="mt-3 flex min-h-11 items-center gap-3 text-sm font-medium"><input type="checkbox" checked={calendarReminder} onChange={e=>setCalendarReminder(e.target.checked)} className="size-5 shrink-0 accent-primary"/>Request a calendar reminder one day before each planning date</label><p className="mt-1 text-xs text-muted-foreground">Reminder delivery depends on the calendar application, notification settings and import support. Verify actual official cutoffs separately. Use generic titles on shared calendars.</p><Button type="button" className="mt-4 min-h-11" disabled={!exportable.length} onClick={exportCalendar}><Download aria-hidden="true" className="mr-2 size-4"/>Export calendar (.ics)</Button></div>
    <div className="mt-5 flex flex-wrap items-center gap-3 border-t pt-4"><ShieldCheck aria-hidden="true" className="size-5 shrink-0 text-success"/><p className="min-w-0 flex-1 text-sm text-muted-foreground">A planning entry is not an application, scholarship decision or proof of admission.</p><Button asChild variant="outline"><Link to="/consultation">Discuss your plans with an adviser</Link></Button></div>
   </section>
  </div>;
