@@ -102,17 +102,17 @@ BEGIN
  INSERT INTO unipathway_site_ops.receipts(tenant_id,request_id,actor_id,action,digest,result) VALUES(t,r,a,'muster_start',h,receipt);
  RETURN receipt;
 END $fn$;
-CREATE FUNCTION unipathway_muster.observe(t uuid,r uuid,e uuid,p uuid,expected integer,decision text,point text,note text,witnessed boolean) RETURNS jsonb
+CREATE FUNCTION unipathway_muster.observe(t uuid,r uuid,e uuid,p uuid,expected integer,decision text,p_point text,note text,witnessed boolean) RETURNS jsonb
 LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $fn$
 DECLARE a uuid;h text;prior jsonb;receipt jsonb;rowdata unipathway_muster.people%ROWTYPE;
 BEGIN
  a:=unipathway_muster.actor(t,'officer',true);
  IF e IS NULL OR p IS NULL OR expected IS NULL OR expected<0 OR decision IS NULL OR decision NOT IN ('safe','unaccounted') OR witnessed IS DISTINCT FROM true
- OR length(btrim(coalesce(note,''))) NOT BETWEEN 5 AND 500 OR (decision='safe' AND length(btrim(coalesce(point,''))) NOT BETWEEN 2 AND 160) OR (decision='unaccounted' AND point IS NOT NULL) THEN RAISE EXCEPTION 'Witnessed roll-call or correction evidence required';END IF;
- h:=unipathway_site_ops.fingerprint(jsonb_build_array(e,p,expected,decision,btrim(point),btrim(note),witnessed));prior:=unipathway_site_ops.prior(t,r,a,'muster_observe',h);IF prior IS NOT NULL THEN RETURN prior;END IF;
+ OR length(btrim(coalesce(note,''))) NOT BETWEEN 5 AND 500 OR (decision='safe' AND length(btrim(coalesce(p_point,''))) NOT BETWEEN 2 AND 160) OR (decision='unaccounted' AND p_point IS NOT NULL) THEN RAISE EXCEPTION 'Witnessed roll-call or correction evidence required';END IF;
+ h:=unipathway_site_ops.fingerprint(jsonb_build_array(e,p,expected,decision,btrim(p_point),btrim(note),witnessed));prior:=unipathway_site_ops.prior(t,r,a,'muster_observe',h);IF prior IS NOT NULL THEN RETURN prior;END IF;
  PERFORM pg_advisory_xact_lock(hashtextextended('muster-centre:'||t::text,0));
  IF NOT EXISTS(SELECT 1 FROM unipathway_muster.incidents i JOIN public.emergency_muster_events v ON v.id=i.id AND v.tenant_id=i.tenant_id WHERE i.id=e AND i.tenant_id=t AND i.closed_at IS NULL AND v.status='active') THEN RAISE EXCEPTION 'Active witnessed incident required';END IF;
- UPDATE unipathway_muster.people SET status=decision,revision=revision+1,observed_at=clock_timestamp(),observed_by=a,point=btrim(point)
+ UPDATE unipathway_muster.people SET status=decision,revision=revision+1,observed_at=clock_timestamp(),observed_by=a,point=btrim(p_point)
  WHERE id=p AND tenant_id=t AND incident_id=e AND revision=expected AND status<>decision AND label<>'Unmatched recorded occupant' RETURNING * INTO rowdata;
  IF NOT FOUND THEN RAISE EXCEPTION 'Roll-call record changed or already marked; refresh';END IF;
  UPDATE public.emergency_muster_status SET status=decision,confirmed_by=a,confirmed_at=rowdata.observed_at,muster_point=rowdata.point WHERE id=p AND tenant_id=t AND muster_event_id=e;
