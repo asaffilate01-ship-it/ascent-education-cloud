@@ -14,6 +14,13 @@ describe('public contact destinations', () => {
     expect(whatsappUrl(configured)).toContain('https://wa.me/923090737000');
     expect(whatsappDisplay(configured)).toBe('+92 309 073 7000');
   });
+  it('publishes the official Facebook and Instagram profiles in the committed production settings', () => {
+    const env = readFileSync(resolve(__dirname, '../../.env.production'), 'utf8');
+    const facebook = /VITE_PUBLIC_FACEBOOK_URL="?([^"\n]+)"?/.exec(env)?.[1];
+    const instagram = /VITE_PUBLIC_INSTAGRAM_URL="?([^"\n]+)"?/.exec(env)?.[1];
+    expect(socialUrl(facebook, ['facebook.com'])).toBe('https://www.facebook.com/unipathwayofficial');
+    expect(socialUrl(instagram, ['instagram.com'])).toBe('https://www.instagram.com/unipathwayofficial');
+  });
   it('normalizes an international number and encodes the draft message', () => {
     expect(whatsappUrl('+44 (7700) 900123', 'Courses & fees?')).toBe('https://wa.me/447700900123?text=Courses%20%26%20fees%3F');
   });
