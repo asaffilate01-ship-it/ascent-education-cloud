@@ -84,6 +84,8 @@ jobs:
         run: node scripts/test-certificate-status-db.mjs
       - name: Reviewed lecturer allocation and direct-write guard rehearsal
         run: node scripts/test-module-allocation-db.mjs
+      - name: Centre security, signed visitors, card access and safety rehearsal
+        run: node scripts/test-site-operations-db.mjs
       - name: Fresh schema and access checks (hosted extensions deferred)
         run: npm run test:fresh-schema
   edge-tests:
