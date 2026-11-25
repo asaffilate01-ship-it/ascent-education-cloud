@@ -16,6 +16,7 @@ import ServiceActivationQueue from '@/components/admissions/ServiceActivationQue
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
 import { admissionsPath, applicationReviewAction } from '@/lib/admissionsNavigation';
+import {consultationTriage,parseConsultationLead} from '@/lib/consultationTriage';
 
 const PIPELINE_STAGES = [
   { key: 'lead', label: 'Lead' },
@@ -48,7 +49,7 @@ export default function AdmissionsCRM() {
   const search = params.get('q') || '';
   const stageFilter = PIPELINE_STAGES.some(stage => stage.key === params.get('stage')) ? params.get('stage')! : 'all';
   const destFilter = ['pakistan', 'germany', 'uk', 'usa', 'canada', 'australia'].includes(params.get('destination') || '') ? params.get('destination')! : 'all';
-  const sourceFilter = ['ielts', 'university'].includes(params.get('source') || '') ? params.get('source')! : 'all';
+  const sourceFilter = ['ielts', 'university', 'consultation'].includes(params.get('source') || '') ? params.get('source')! : 'all';
   const setFilter = (key: 'q' | 'stage' | 'source' | 'destination' | 'view', value: string) => {
     setParams(current => {
       const next = new URLSearchParams(current);
@@ -67,9 +68,11 @@ export default function AdmissionsCRM() {
   if(error)return <DashboardLayout title="Admissions Pipeline"><div role="alert" className="rounded border border-destructive p-4">Applications could not be loaded. <Button onClick={()=>void refetch()}>Retry</Button></div></DashboardLayout>;
 
   const scoped=applications.filter(app=>app.tenant_id===tenant);
+  const consultationQueue=consultationTriage(scoped,tenant);
   const filtered = scoped.filter((app) => {
     if (stageFilter !== 'all' && app.stage !== stageFilter) return false;
     const source = (app.source || '').toLowerCase();
+    if (sourceFilter === 'consultation' && !parseConsultationLead(app)) return false;
     if (sourceFilter === 'ielts' && source !== 'ielts_preparation') return false;
     if (sourceFilter === 'university' && !source.startsWith('university_progression_')) return false;
     if (destFilter !== 'all') {
@@ -128,6 +131,12 @@ export default function AdmissionsCRM() {
         ['Identity documents','/admissions/documents'],['Eligibility','/admissions/eligibility'],['Offers & acceptance','/admissions/offers'],['Module allocation','/admissions/allocations']
        ].map(([name,to])=><Link key={to} to={admissionsPath(to, params.toString(), null)} className="inline-flex min-h-11 items-center rounded-lg border px-3 text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{name}</Link>)}</div>
       </section>
+      <section className="mb-5 rounded-xl border bg-card p-4 sm:p-5" aria-labelledby="consultation-triage-title">
+       <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 id="consultation-triage-title" className="font-semibold">Consultation request triage</h2><p className="mt-1 text-sm text-muted-foreground">{consultationQueue.length} recognised early-stage consultation requests</p></div><Button variant="outline" onClick={()=>setParams(current=>{const next=new URLSearchParams(current);next.set('source','consultation');next.delete('q');next.delete('stage');next.delete('destination');return next;})}>Filter consultation enquiries</Button></div>
+       <p className="mt-3 text-xs leading-relaxed text-muted-foreground">Applicant-entered preferences from the existing contact form. Requests are not confirmed appointments; edited messages may require manual review. Review the original enquiry and confirm adviser availability, date and fees before contacting applicants.</p>
+       {consultationQueue.length===0?<p className="mt-3 text-sm text-muted-foreground">No recognisable early-stage consultation requests in this centre's loaded records.</p>:<div className="mt-3 divide-y">{consultationQueue.slice(0,10).map(({application,preferences})=><article key={application.id} className="flex flex-wrap items-start justify-between gap-3 py-3"><div className="min-w-0 flex-1"><h3 className="break-words text-sm font-semibold">{application.student_name}</h3><p className="mt-1 text-xs text-muted-foreground">{application.stage.replace(/_/g,' ')} · Counsellor: {application.counsellor||'Unassigned'}</p><p className="mt-1 text-sm">{preferences.destination||'Destination to confirm'} · {preferences.format||'Meeting format to confirm'}</p><p className="mt-1 text-sm text-muted-foreground">Requested date: {preferences.preferredDate||'Flexible / to confirm'} · {preferences.window||'Time to confirm'}</p></div><Button asChild variant="outline"><Link to={admissionsPath(applicationReviewAction(application.stage).path,'',application.id)} aria-label={'Review consultation request for '+application.student_name}>Review request</Link></Button></article>)}</div>}
+       {consultationQueue.length>10&&<p className="mt-2 text-xs text-muted-foreground">Showing the first 10 requests by preferred date. Use the consultation filter for all recognised enquiries.</p>}
+      </section>
       <AdmissionHandover applications={scoped} onRefetch={()=>void refetch()}/>
       <details className="surface-card p-5 mb-6"><summary className="cursor-pointer font-semibold">IELTS and consultancy service activation</summary><div className="mt-4"><ServiceActivationQueue /></div></details>
       <details className="mb-6"><summary className="cursor-pointer text-sm font-medium">Pipeline totals · {totalLeads} applications</summary><div className="grid min-w-0 grid-cols-[repeat(auto-fit,minmax(min(100%,max(9rem,calc(50%_-_0.5rem))),1fr))] gap-4 mt-4 lg:grid-cols-[repeat(auto-fit,minmax(min(100%,9rem),1fr))]">
@@ -160,6 +169,7 @@ export default function AdmissionsCRM() {
             <SelectItem value="all">All lead sources</SelectItem>
             <SelectItem value="ielts">IELTS enquiries</SelectItem>
             <SelectItem value="university">University progression</SelectItem>
+            <SelectItem value="consultation">Consultation requests</SelectItem>
           </SelectContent>
         </Select>
         <Select value={destFilter} onValueChange={value => setFilter('destination', value)}>
