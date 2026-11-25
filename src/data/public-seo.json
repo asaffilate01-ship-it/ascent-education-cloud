@@ -160,7 +160,8 @@
   },
   "/consultation": {
     "title": "Request an education consultation | UniPathway",
-    "description": "Prepare for a UniPathway education consultation in Jhelum or online, compare study goals and request an adviser appointment."
+    "description": "Prepare for a UniPathway education consultation in Jhelum or online, compare study goals and request an adviser appointment.",
+    "keywords": ["education consultation", "study abroad counselling", "Jhelum admissions advice", "UniPathway"]
   },
   "/international-study": {
     "title": "International Study & Visa Guidance | UniPathway",
