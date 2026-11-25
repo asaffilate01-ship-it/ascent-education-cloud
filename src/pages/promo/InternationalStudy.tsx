@@ -6,7 +6,25 @@ import Seo from '@/components/Seo';
 import { Button } from '@/components/ui/button';
 import { findInternationalStudyGuide, immigrationSourcesChecked, internationalStudyGuides } from '@/lib/internationalStudy';
 
+import { internationalAdviceTopics, internationalAdviceUrl } from '@/lib/internationalAdvice';
+
 const hub = '/international-study';
+
+function AdvisoryServices() {
+  return <section aria-labelledby="advisory-services" className="space-y-5">
+    <div className="max-w-3xl">
+      <p className="text-xs font-bold uppercase tracking-widest text-success">Personalised support</p>
+      <h2 id="advisory-services" className="mt-2 text-2xl font-bold sm:text-3xl">How our education advisers can help</h2>
+      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">Whether you study with UniPathway or apply from another institution, choose a topic and send an enquiry about the next steps. Availability and fees are confirmed individually.</p>
+    </div>
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{internationalAdviceTopics.map(topic=><article key={topic.id} className="flex min-w-0 flex-col rounded-2xl border border-border bg-card p-5">
+      <h3 className="text-lg font-bold">{topic.title}</h3>
+      <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{topic.detail}</p>
+      <Link to={internationalAdviceUrl(topic.id)} className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-md text-sm font-semibold text-primary underline underline-offset-4 focus-visible:outline focus-visible:outline-2">Enquire about {topic.title.toLowerCase()} <ArrowRight aria-hidden="true" className="size-4 shrink-0"/></Link>
+    </article>)}</div>
+    <aside className="rounded-xl border border-border p-4 text-sm text-muted-foreground">We focus on education and preparation. Immigration advice and visa decisions are separate; individual immigration advice is referred to appropriately authorised professionals where required. No admissions, scholarship or visa outcome is guaranteed.</aside>
+  </section>;
+}
 
 function GuidanceBoundary() {
   return (
@@ -102,6 +120,7 @@ export default function InternationalStudy() {
           <div><Button variant="outline" asChild><Link to={hub}>Compare other destinations <ArrowRight aria-hidden="true" /></Link></Button></div>
         </>}
         {destination && !guide && <Button asChild><Link to={hub}>Open the guide directory</Link></Button>}
+        {(!destination||guide)&&<AdvisoryServices />}
         <GuidanceBoundary />
       </div>
       <PublicFooter />
