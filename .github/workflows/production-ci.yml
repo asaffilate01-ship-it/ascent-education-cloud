@@ -82,6 +82,8 @@ jobs:
         run: node scripts/test-centre-id-cards-db.mjs
       - name: Public certificate status and legacy lookup privacy rehearsal
         run: node scripts/test-certificate-status-db.mjs
+      - name: Reviewed lecturer allocation and direct-write guard rehearsal
+        run: node scripts/test-module-allocation-db.mjs
       - name: Fresh schema and access checks (hosted extensions deferred)
         run: npm run test:fresh-schema
   edge-tests:
