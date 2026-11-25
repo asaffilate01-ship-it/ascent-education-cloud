@@ -53,7 +53,7 @@ BEGIN
  IF NOT FOUND THEN RETURN NULL; END IF;
  prefix:='Competency '||r.slot||' — ';
  snapshot:=jsonb_build_object('subject',coalesce(d->>(prefix||'Subject'),''),'framework',coalesce(d->>(prefix||'Curriculum / awarding body'),''),'level',coalesce(d->>(prefix||'Maximum level / grade'),''),'experience',coalesce(d->>(prefix||'Relevant qualification or experience'),''));
- IF snapshot IS DISTINCT FROM r.declaration OR btrim(snapshot->>'subject')='' OR btrim(snapshot->>'framework')='' OR btrim(snapshot->>'level')='' THEN RETURN NULL; END IF;
+ IF snapshot IS DISTINCT FROM r.declaration OR r.subject IS DISTINCT FROM snapshot->>'subject' OR r.framework IS DISTINCT FROM snapshot->>'framework' OR r.maximum_level IS DISTINCT FROM snapshot->>'level' OR btrim(snapshot->>'subject')='' OR btrim(snapshot->>'framework')='' OR btrim(snapshot->>'level')='' THEN RETURN NULL; END IF;
  RETURN snapshot;
 END $$;
 CREATE FUNCTION unipathway_module_allocation.receipt(d unipathway_module_allocation.decisions) RETURNS jsonb
