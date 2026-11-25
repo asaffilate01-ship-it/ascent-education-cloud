@@ -10,7 +10,7 @@ import { internationalAdviceTopics, internationalAdviceUrl } from '@/lib/interna
 
 const hub = '/international-study';
 
-function AdvisoryServices() {
+function AdvisoryServices({destination}:{destination?:string}) {
   return <section aria-labelledby="advisory-services" className="space-y-5">
     <div className="max-w-3xl">
       <p className="text-xs font-bold uppercase tracking-widest text-success">Personalised support</p>
@@ -22,7 +22,7 @@ function AdvisoryServices() {
       <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{topic.detail}</p>
       <Link to={internationalAdviceUrl(topic.id)} className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-md text-sm font-semibold text-primary underline underline-offset-4 focus-visible:outline focus-visible:outline-2">Enquire about {topic.title.toLowerCase()} <ArrowRight aria-hidden="true" className="size-4 shrink-0"/></Link>
     </article>)}</div>
-    <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border bg-card p-5"><div><h3 className="font-bold">Prepare for your initial consultation</h3><p className="mt-1 text-sm text-muted-foreground">Choose your study goals, meeting preferences and preparation checklist before sending an enquiry.</p></div><Button asChild className="min-h-11"><Link to="/consultation">Request a consultation <ArrowRight aria-hidden="true" className="ml-2 size-4"/></Link></Button></div>
+    <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border bg-card p-5"><div><h3 className="font-bold">Prepare for your initial consultation</h3><p className="mt-1 text-sm text-muted-foreground">Choose your study goals, meeting preferences and preparation checklist before sending an enquiry.</p></div><Button asChild className="min-h-11"><Link to={destination?"/consultation?"+new URLSearchParams({destination}).toString():"/consultation"}>Request a consultation <ArrowRight aria-hidden="true" className="ml-2 size-4"/></Link></Button></div>
     <aside className="rounded-xl border border-border p-4 text-sm text-muted-foreground">We focus on education and preparation. Immigration advice and visa decisions are separate; individual immigration advice is referred to appropriately authorised professionals where required. No admissions, scholarship or visa outcome is guaranteed.</aside>
   </section>;
 }
@@ -122,7 +122,7 @@ export default function InternationalStudy() {
           <div><Button variant="outline" asChild><Link to={hub}>Compare other destinations <ArrowRight aria-hidden="true" /></Link></Button></div>
         </>}
         {destination && !guide && <Button asChild><Link to={hub}>Open the guide directory</Link></Button>}
-        {(!destination||guide)&&<AdvisoryServices />}
+        {(!destination||guide)&&<AdvisoryServices destination={guide?.slug} />}
         <GuidanceBoundary />
       </div>
       <PublicFooter />
