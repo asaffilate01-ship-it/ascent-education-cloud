@@ -6,6 +6,7 @@ import {useAuth} from '@/contexts/AuthContext';
 import {useScopedSecurityRows} from '@/hooks/useScopedSecurityRows';
 import PhysicalSecurityReadiness from '@/components/security/PhysicalSecurityReadiness';
 import {PHYSICAL_SECURITY_ENABLED,physicalSecurityScope,deviceHealth,occupancyStats,type CentreOccupant,type CentreCamera,type CentreDevice,type MusterEvent} from '@/lib/physicalSecurity';
+import FacilitiesRegister from '@/components/security/FacilitiesRegister';
 import FacilitiesInspectionPlanner from '@/components/security/FacilitiesInspectionPlanner';
 import {Button} from '@/components/ui/button';
 
@@ -61,7 +62,7 @@ function Desk(){
     ['Security post and access control','Confirm staffing, visitor procedures and safe emergency egress.'],
    ].map(([label,detail])=><article key={label} className="rounded-lg border p-4"><h3 className="font-medium">{label}</h3><p className="mt-1 text-sm text-muted-foreground">{detail}</p><p className="mt-2 text-xs font-medium">Inspection evidence not available in this dashboard</p></article>)}</div>
    <p className="mt-4 text-sm">Device health reports do not replace statutory inspection or on-site emergency procedures. No evacuation route or asset location is inferred.</p>
-  </section><FacilitiesInspectionPlanner/><section className="mt-5 rounded-xl border bg-card p-5"><h2 className="font-semibold">Camera reporting</h2><p className="mt-2 text-sm text-muted-foreground">This overview never loads stream references, footage, passwords or provider tokens.</p>
+  </section><FacilitiesRegister/><FacilitiesInspectionPlanner/><section className="mt-5 rounded-xl border bg-card p-5"><h2 className="font-semibold">Camera reporting</h2><p className="mt-2 text-sm text-muted-foreground">This overview never loads stream references, footage, passwords or provider tokens.</p>
    <p className="mt-3 text-sm">{cams.data.length} camera registry entries · {cams.data.filter(c=>deviceHealth(c.status,c.last_health_at)==='reported-online').length} recently reported online</p>
   </section></>}
  </DashboardLayout>;
