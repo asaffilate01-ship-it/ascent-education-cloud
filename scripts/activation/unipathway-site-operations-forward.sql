@@ -80,7 +80,7 @@ BEGIN
   ) q;
  ELSIF k='card_audit' THEN
   SELECT coalesce(jsonb_agg(to_jsonb(q) ORDER BY q.created_at DESC,q.id),'[]'::jsonb) INTO data FROM(
-   SELECT id,tenant_id,credential_id,action,actor_id,note,created_at FROM unipathway_site_ops.card_changes WHERE tenant_id=t ORDER BY created_at DESC,id LIMIT 100
+   SELECT h.id,h.tenant_id,h.credential_id,h.action,h.actor_id,h.note,h.created_at FROM unipathway_site_ops.card_changes h WHERE h.tenant_id=t ORDER BY h.created_at DESC,h.id LIMIT 100
   ) q;
  ELSIF k='cards' THEN
   SELECT coalesce(jsonb_agg(to_jsonb(q) ORDER BY q.name,q.id),'[]'::jsonb) INTO data FROM(

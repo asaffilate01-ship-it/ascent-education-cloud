@@ -7,7 +7,7 @@ import {calendarDay} from '@/lib/academicCalendar';
 import {displayTime} from '@/lib/physicalSecurity';
 import {ASSET_TYPES,ASSET_LABELS,CONDITIONS,SITE_OPERATIONS_ENABLED,readSite,siteRole,siteDate,siteReceipt,type SafetyAsset,type AssetType,type AssetCondition,type AccessCard,type SiteKind} from '@/lib/siteOperations';
 const field='mt-1 block min-h-11 w-full min-w-0 rounded-lg border bg-background px-3 py-2 text-base';
-const pretty=(s:string)=>s.replaceAll('_',' ');
+const pretty=(s:string)=>s.replace(/_/g,' ');
 function useSiteAction(tenant:string,reload:()=>void){
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
  const lock=useRef(false),mounted=useRef(true),pending=useRef<{key:string;id:string}|null>(null);
