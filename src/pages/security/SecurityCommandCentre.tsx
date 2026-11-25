@@ -1,4 +1,5 @@
 
+import {useState} from 'react';
 import {Link} from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {useAuth} from '@/contexts/AuthContext';
@@ -9,6 +10,7 @@ import {Button} from '@/components/ui/button';
 
 export default function SecurityCommandCentre(){const {user}=useAuth();return <Desk key={`${user?.id}:${user?.tenantId}:${user?.role}:${user?.roles?.join(',')}`}/>;}
 function Desk(){
+ const [deviceFilter,setDeviceFilter]=useState('all');
  const {user}=useAuth();const permitted=!!physicalSecurityScope(user)&&PHYSICAL_SECURITY_ENABLED;
  const occ=useScopedSecurityRows<CentreOccupant>(user,'centre_occupancy','tenant_id,person_type,in_building,last_event_at,last_gate_id','person_key');
  const cams=useScopedSecurityRows<CentreCamera>(user,'cctv_cameras','id,tenant_id,camera_code,display_name,status,last_health_at','id');
@@ -16,8 +18,11 @@ function Desk(){
  const muster=useScopedSecurityRows<MusterEvent>(user,'emergency_muster_events','id,tenant_id,status,started_at,ended_at','id');
  const sources=[occ,cams,devices,muster];const loading=sources.some(s=>s.loading),failed=sources.some(s=>s.error);
  const stats=occupancyStats(occ.data),active=muster.data.filter(e=>e.status==='active');
+ const deviceTypes=[...new Set(devices.data.map(d=>d.device_type))].sort();
+ const filteredDevices=devices.data.filter(d=>deviceFilter==='all'||d.device_type===deviceFilter);
  return <DashboardLayout title="Centre security operations" subtitle="Centre-scoped reception, occupancy and emergency readiness">
   <PhysicalSecurityReadiness/>
+  {permitted&&<div className="mt-4 flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-muted-foreground">Recorded snapshots only. Refresh to retrieve the latest available reports.</p><Button variant="outline" disabled={loading} onClick={()=>sources.forEach(s=>s.refresh())}>Refresh centre status</Button></div>}
   {permitted&&loading&&<p role="status" className="mt-4">Verifying all centre operations sources…</p>}
   {permitted&&failed&&<div role="alert" className="mt-4 rounded-xl border p-5"><p>One or more security feeds could not be verified. No partial occupancy or emergency totals are shown.</p><Button variant="outline" className="mt-3" onClick={()=>sources.forEach(s=>s.refresh())}>Retry all sources</Button></div>}
   {permitted&&!loading&&!failed&&<><section className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Recorded centre status">
@@ -36,9 +41,13 @@ function Desk(){
     ['/security','CCTV workspace','Provider-gated live/playback requests'],
    ].map(([path,label,description])=><Link key={path} to={path} className="rounded-xl border bg-card p-5 hover:bg-accent"><h2 className="font-semibold">{label}</h2><p className="mt-2 text-sm text-muted-foreground">{description}</p></Link>)}
   </section><section className="mt-5 rounded-xl border bg-card p-5"><h2 className="font-semibold">Device inventory and freshness</h2>
+   <p className="mt-2 text-sm text-muted-foreground">Only registered devices are listed. Absence of a fire alarm, access controller or power device from this inventory does not establish whether it is installed or working.</p>
+   <label className="mt-3 block text-sm font-medium">Device type<select className="mt-1 block min-h-11 w-full rounded-lg border bg-background p-2 sm:max-w-xs" value={deviceFilter} onChange={e=>setDeviceFilter(e.target.value)}><option value="all">All registered types</option>{deviceTypes.map(type=><option key={type} value={type}>{type}</option>)}</select></label>
+   <div className="mt-3 grid gap-2 sm:grid-cols-3">{(['reported-online','stale','offline'] as const).map(health=><div key={health} className="rounded-lg border p-3"><p className="text-sm">{health==='reported-online'?'Recently reported online':health==='stale'?'Stale report':'Not reported online'}</p><p className="font-semibold">{filteredDevices.filter(d=>deviceHealth(d.status,d.last_health_at)===health).length}</p></div>)}</div>
    {!devices.data.length&&<p className="mt-3 text-sm">No devices were returned from the authorised centre inventory.</p>}
-   <div className="mt-3 grid gap-2 md:grid-cols-2">{devices.data.slice(0,100).map(d=><div key={d.id} className="rounded-lg border p-3"><p className="font-medium">{d.device_code}</p><p className="text-sm text-muted-foreground">{d.device_type} · {deviceHealth(d.status,d.last_health_at).replace('-', ' ')}</p></div>)}</div>
-   {devices.data.length>100&&<p className="mt-2 text-sm">Showing the first 100 device records. Request a server-exported inventory for all {devices.data.length} returned entries.</p>}
+   <div className="mt-3 grid gap-2 md:grid-cols-2">{filteredDevices.slice(0,100).map(d=><div key={d.id} className="rounded-lg border p-3"><p className="font-medium">{d.device_code}</p><p className="text-sm text-muted-foreground">{d.device_type} · {deviceHealth(d.status,d.last_health_at).replace('-', ' ')}</p></div>)}</div>
+   {devices.data.length>0&&filteredDevices.length===0&&<p className="mt-3 text-sm">No registered devices match this filter.</p>}
+   {filteredDevices.length>100&&<p className="mt-2 text-sm">Showing the first 100 of {filteredDevices.length} matching records. Request a server-exported inventory for a complete list.</p>}
   </section><section className="mt-5 rounded-xl border bg-card p-5"><h2 className="font-semibold">Camera reporting</h2><p className="mt-2 text-sm text-muted-foreground">This overview never loads stream references, footage, passwords or provider tokens.</p>
    <p className="mt-3 text-sm">{cams.data.length} camera registry entries · {cams.data.filter(c=>deviceHealth(c.status,c.last_health_at)==='reported-online').length} recently reported online</p>
   </section></>}
