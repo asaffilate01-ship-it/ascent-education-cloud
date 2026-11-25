@@ -10,10 +10,10 @@ export type MusterRow={id:string;tenant_id:string;muster_event_id:string;person_
 export const PHYSICAL_SECURITY_ENABLED=import.meta.env.VITE_UNIPATHWAY_PHYSICAL_SECURITY_ENABLED==='true';
 export const VISITOR_WRITES_ENABLED=PHYSICAL_SECURITY_ENABLED && import.meta.env.VITE_UNIPATHWAY_PHYSICAL_VISITOR_WRITES_ENABLED==='true';
 
-/** A superadmin's global role alone is NOT a centre assignment. Require an explicit centre director/security membership. */
+/** A global owner must have a centre-bound profile; the server checks exact role membership. */
 export function physicalSecurityScope(user:{id:string;tenantId?:string;role:string;roles?:readonly string[]}|null|undefined):string|null{
  if(!user?.id||!user.tenantId||!Array.isArray(user.roles)||!user.roles.includes(user.role))return null;
- return user.role==='security_officer'||user.role==='centre_director'?user.tenantId:null;
+ return user.role==='security_officer'||user.role==='centre_director'||user.role==='superadmin'?user.tenantId:null;
 }
 export function visitorWriter(user:{id:string;tenantId?:string;role:string;roles?:readonly string[]}|null|undefined):boolean{
  return !!physicalSecurityScope(user)&&user?.role==='security_officer'&&VISITOR_WRITES_ENABLED;

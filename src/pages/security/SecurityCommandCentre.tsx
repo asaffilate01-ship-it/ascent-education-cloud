@@ -17,6 +17,7 @@ function Desk(){
  const sources=[occ,cams,devices,muster];const loading=sources.some(s=>s.loading),failed=sources.some(s=>s.error);
  const stats=occupancyStats(occ.data),active=muster.data.filter(e=>e.status==='active');
  return <DashboardLayout title="Centre security operations" subtitle="Centre-scoped reception, occupancy and emergency readiness">
+  <section className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{[['/security','CCTV viewing'],['/security/facilities','Facilities, cards and audit'],['/security/visitors','Visitor and guest reception']].map(([to,label])=><Link key={to} to={to} className="flex min-h-12 items-center rounded-xl border bg-card px-4 py-3 text-sm font-semibold hover:bg-accent">{label}</Link>)}</section>
   <PhysicalSecurityReadiness/>
   {permitted&&loading&&<p role="status" className="mt-4">Verifying all centre operations sources…</p>}
   {permitted&&failed&&<div role="alert" className="mt-4 rounded-xl border p-5"><p>One or more security feeds could not be verified. No partial occupancy or emergency totals are shown.</p><Button variant="outline" className="mt-3" onClick={()=>sources.forEach(s=>s.refresh())}>Retry all sources</Button></div>}
@@ -34,6 +35,7 @@ function Desk(){
     ['/security/visitors','Visitor reception','Review passes and authorised check-in/out'],
     ['/security/muster','Emergency muster','Review recorded accountability and exceptions'],
     ['/security','CCTV workspace','Provider-gated live/playback requests'],
+    ['/security/facilities','Fire safety and access cards','Surveyed facility assets, local access register and audit'],
    ].map(([path,label,description])=><Link key={path} to={path} className="rounded-xl border bg-card p-5 hover:bg-accent"><h2 className="font-semibold">{label}</h2><p className="mt-2 text-sm text-muted-foreground">{description}</p></Link>)}
   </section><section className="mt-5 rounded-xl border bg-card p-5"><h2 className="font-semibold">Device inventory and freshness</h2>
    {!devices.data.length&&<p className="mt-3 text-sm">No devices were returned from the authorised centre inventory.</p>}

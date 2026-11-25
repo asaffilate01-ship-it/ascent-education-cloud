@@ -1,4 +1,7 @@
-import {useEffect,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
+import {Link} from 'react-router-dom';
+import SiteOperations from '@/components/security/SiteOperations';
+import {SITE_OPERATIONS_ENABLED} from '@/lib/siteOperations';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {useAuth} from '@/contexts/AuthContext';
 import {db} from '@/lib/db';
@@ -6,11 +9,12 @@ import {supabase} from '@/integrations/supabase/client';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {toast} from 'sonner';
-type Camera={id:string;name:string;location:string;enabled:boolean;security_live:boolean;security_playback:boolean};
+type Camera={id:string;tenant_id:string;name:string;location:string;enabled:boolean;security_live:boolean;security_playback:boolean};
 type Session={url:string;expiresAt:string;mimeType:string};
 export default function SecurityWorkspace(){const {user}=useAuth();return <SecurityDesk key={`${user?.id}:${user?.tenantId}:${user?.role}:${user?.roles?.join(',')}`}/>;}
 function SecurityDesk(){
  const {user}=useAuth();
+ const alive=useRef(true);useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
  const verified=!!user?.id&&!!user.tenantId&&user.roles?.includes(user.role)&&
   ['security_officer','centre_director','superadmin'].includes(user.role);
  const manager=verified&&['centre_director','superadmin'].includes(user!.role);
@@ -22,11 +26,11 @@ function SecurityDesk(){
   let active=true;setLoading(true);setError('');setCameras([]);setSelected('');setSession(null);
   if(!verified){setLoading(false);return()=>{active=false;};}
   void db.from('unipathway_cctv_cameras')
-   .select('id,name,location,enabled,security_live,security_playback')
+   .select('id,tenant_id,name,location,enabled,security_live,security_playback')
    .eq('tenant_id',user!.tenantId!).order('name')
    .then(({data,error:e})=>{
     if(!active)return;
-    if(e||!Array.isArray(data))setError('Centre camera inventory could not be verified. No camera access is available.');
+    if(e||!Array.isArray(data)||data.some((c:Camera)=>!c||c.tenant_id!==user!.tenantId||typeof c.id!=='string'||typeof c.name!=='string'||typeof c.location!=='string'||typeof c.enabled!=='boolean'||typeof c.security_live!=='boolean'||typeof c.security_playback!=='boolean'))setError('Centre camera inventory could not be verified. No camera access is available.');
     else setCameras(data);
     setLoading(false);
    },()=>{if(active){setError('Camera inventory could not be verified.');setLoading(false);}});
@@ -44,19 +48,20 @@ function SecurityDesk(){
    }
   }
   setBusy(true);setSession(null);setMediaError(false);setError('');try{
-  const result=await supabase.functions.invoke('cctv-access',{body:{cameraId:camera.id,mode,startsAt:start?new Date(start).toISOString():null,endsAt:end?new Date(end).toISOString():null,reason}});
+  const result=await supabase.functions.invoke('cctv-access',{body:{cameraId:camera.id,tenantId:user!.tenantId,role:user!.role,mode,startsAt:start?new Date(start).toISOString():null,endsAt:end?new Date(end).toISOString():null,reason}});
   if(result.error){let message='CCTV is unavailable. Ask your administrator to check the gateway connection.';try{message=(await result.error.context.json()).error||message;}catch{/* Non-JSON provider errors retain the safe fallback message. */}throw Error(message);}
   if(!result.data?.url||!result.data?.expiresAt)throw Error('No viewing session returned.');
   const stream=new URL(result.data.url);
   const expiry=Date.parse(result.data.expiresAt);
   if(stream.protocol!=='https:'||!Number.isFinite(expiry)||expiry<=Date.now())
    throw Error('The camera provider did not return a current secure viewing session.');
-  setSession(result.data);
+  if(alive.current)setSession(result.data);
  }catch(e){setError(e instanceof Error?e.message:'Unable to open camera');}finally{setBusy(false);}}
  async function save(){if(!manager||!user?.tenantId||busy)return;setBusy(true);try{const result=await db.from('unipathway_cctv_cameras').insert({...draft,tenant_id:user.tenantId}).select('id,tenant_id').single();
   if(result.error||!result.data?.id||result.data.tenant_id!==user.tenantId)throw Error('Camera registration was not confirmed for this centre.');setDraft({name:'',location:'',provider_camera_id:'',enabled:false,security_live:false,security_playback:false});setRefresh(n=>n+1);toast.success('Camera registered');}catch{toast.error('Camera could not be saved. Check the centre and camera reference.');}finally{setBusy(false);}}
- return <DashboardLayout title="Security · CCTV" subtitle="Authorised live view and recorded playback">
-  <section className="mb-5 rounded-2xl border bg-card p-5"><h2 className="font-bold">Centre camera workspace</h2><p className="mt-2 text-sm text-muted-foreground">Choose an authorised camera to request a short-lived viewing session. Playback requires a time range and reason. Viewing requests are logged. Video becomes available after your CCTV provider is connected.</p></section>
+ return <DashboardLayout title="Security · CCTV" subtitle="Authorised Hikvision / NVR gateway live view and recorded playback">
+  <section className="mb-5 rounded-2xl border bg-card p-5"><h2 className="font-bold">Centre camera workspace · Hikvision gateway</h2><p className="mt-2 text-sm text-muted-foreground">Choose an authorised camera to request a short-lived viewing session. Playback requires a time range and reason. Viewing requests are logged. Hikvision live video and playback require the approved on-site HikCentral or device gateway and verified camera permissions. No live connection is assumed.</p></section>
+  <Link to="/security/facilities" className="mb-4 inline-flex min-h-11 items-center rounded-lg border bg-card px-3 text-sm font-medium">Facilities, card access and audit</Link>
   {!verified&&<p role="alert" className="mb-4 rounded-xl border p-4">An active, verified Security Officer or centre leadership role and a centre assignment are required.</p>}
   {verified&&loading&&<p role="status">Loading centre cameras…</p>}
   {error&&<p role="alert" className="mb-4 rounded-xl border border-destructive p-4">{error}</p>}
@@ -71,5 +76,6 @@ function SecurityDesk(){
   {manager&&cameras.length>0&&<section className="mt-6 space-y-3 rounded-2xl border bg-card p-5"><h2 className="font-bold">Camera permissions</h2>{cameras.map(c=><div key={c.id} className="flex flex-wrap items-center gap-4 border-b py-3"><span className="font-semibold">{c.name}</span>{(['enabled','security_live','security_playback'] as const).map(key=><label key={key} className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" disabled={busy} checked={c[key]} onChange={async e=>{setBusy(true);setSession(null);const result=await db.from('unipathway_cctv_cameras').update({[key]:e.target.checked}).eq('id',c.id).eq('tenant_id',user!.tenantId!).select('id,tenant_id').single();
     if(result.error||!result.data?.id||result.data.tenant_id!==user!.tenantId)toast.error('Permission update could not be confirmed for this centre.');setBusy(false);setRefresh(n=>n+1);}}/>{key==='enabled'?'Enabled':key==='security_live'?'Security live':'Security playback'}</label>)}</div>)}</section>}
   {manager&&<details className="mt-6 rounded-2xl border bg-card p-5"><summary className="cursor-pointer font-bold">Register a camera</summary><p className="my-3 text-sm text-muted-foreground">Register the provider camera reference only. Store passwords and gateway credentials server-side. Enable viewing only after connecting the gateway.</p><form onSubmit={e=>{e.preventDefault();void save();}} className="grid gap-3 sm:grid-cols-2">{(['name','location','provider_camera_id'] as const).map(key=><label key={key}>{key==='provider_camera_id'?'Provider camera reference':key==='name'?'Camera name':'Location'}<Input required maxLength={key==='name'?100:160} value={draft[key]} onChange={e=>setDraft({...draft,[key]:e.target.value})}/></label>)}{(['enabled','security_live','security_playback'] as const).map(key=><label key={key} className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={draft[key]} onChange={e=>setDraft({...draft,[key]:e.target.checked})}/>{key==='enabled'?'Enable camera':key==='security_live'?'Allow security live view':'Allow security playback'}</label>)}<Button disabled={busy||!user?.tenantId} type="submit">Save camera</Button></form></details>}
+ {verified&&SITE_OPERATIONS_ENABLED&&<div className="mt-5"><SiteOperations kind="cctv_audit"/></div>}
  </DashboardLayout>;
 }
