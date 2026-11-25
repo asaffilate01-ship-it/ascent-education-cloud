@@ -29,13 +29,13 @@ ALTER TABLE unipathway_site_ops.card_changes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE unipathway_site_ops.facility_checks ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON ALL TABLES IN SCHEMA unipathway_site_ops FROM PUBLIC,anon,authenticated;
 
--- Explicit selected-centre profile required even for a global owner. No cross-centre wildcard.
+-- Explicit active centre required; only exact global owner may select a centre beyond their profile.
 CREATE OR REPLACE FUNCTION unipathway_security.verified_reader(p_tenant uuid) RETURNS boolean
 LANGUAGE sql STABLE SECURITY DEFINER SET search_path='' AS $fn$
  SELECT auth.uid() IS NOT NULL AND EXISTS(SELECT 1 FROM unipathway_security.activation_gate a WHERE a.singleton AND a.physical_reads_enabled)
  AND EXISTS(SELECT 1 FROM public.tenants t WHERE t.id=p_tenant AND t.status::text='active')
- AND EXISTS(SELECT 1 FROM public.profiles p WHERE p.user_id=auth.uid() AND p.tenant_id=p_tenant)
- AND EXISTS(SELECT 1 FROM public.user_roles r WHERE r.user_id=auth.uid() AND ((r.tenant_id=p_tenant AND r.role::text IN ('security_officer','centre_director')) OR (r.tenant_id IS NULL AND r.role::text='superadmin')))
+ AND EXISTS(SELECT 1 FROM public.profiles p WHERE p.user_id=auth.uid())
+ AND EXISTS(SELECT 1 FROM public.user_roles r WHERE r.user_id=auth.uid() AND ((r.tenant_id=p_tenant AND r.role::text IN ('security_officer','centre_director') AND EXISTS(SELECT 1 FROM public.profiles p WHERE p.user_id=auth.uid() AND p.tenant_id=p_tenant)) OR (r.tenant_id IS NULL AND r.role::text='superadmin')))
 $fn$;
 CREATE FUNCTION unipathway_site_ops.actor(t uuid,kind text,p_write boolean DEFAULT false) RETURNS uuid
 LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path='' AS $fn$
@@ -197,4 +197,28 @@ CREATE FUNCTION public.observe_unipathway_access_card(p_tenant uuid,p_request uu
 CREATE FUNCTION public.record_unipathway_facility_check(p_tenant uuid,p_request uuid,p_asset uuid,p_previous uuid,p_code text,p_type text,p_floor text,p_location text,p_plan text,p_x integer,p_y integer,p_condition text,p_next date,p_note text) RETURNS jsonb LANGUAGE sql SECURITY INVOKER SET search_path='' AS $fn$ SELECT unipathway_site_ops.facility(p_tenant,p_request,p_asset,p_previous,p_code,p_type,p_floor,p_location,p_plan,p_x,p_y,p_condition,p_next,p_note) $fn$;
 REVOKE ALL ON FUNCTION public.get_unipathway_site_operations(uuid,text),public.sign_unipathway_visitor(uuid,uuid,text,text,text,text,text,text,boolean),public.register_unipathway_access_card(uuid,uuid,uuid,text,date,text),public.revoke_unipathway_access_card(uuid,uuid,uuid,text),public.observe_unipathway_access_card(uuid,uuid,text,text,text,boolean),public.record_unipathway_facility_check(uuid,uuid,uuid,uuid,text,text,text,text,text,integer,integer,text,date,text) FROM PUBLIC,anon;
 GRANT EXECUTE ON FUNCTION public.get_unipathway_site_operations(uuid,text),public.sign_unipathway_visitor(uuid,uuid,text,text,text,text,text,text,boolean),public.register_unipathway_access_card(uuid,uuid,uuid,text,date,text),public.revoke_unipathway_access_card(uuid,uuid,uuid,text),public.observe_unipathway_access_card(uuid,uuid,text,text,text,boolean),public.record_unipathway_facility_check(uuid,uuid,uuid,uuid,text,text,text,text,text,integer,integer,text,date,text) TO authenticated;
+CREATE FUNCTION unipathway_site_ops.owner_centres() RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path='' AS $fn$
+DECLARE rows jsonb;
+BEGIN
+ IF auth.uid() IS NULL OR NOT EXISTS(SELECT 1 FROM public.user_roles r WHERE r.user_id=auth.uid() AND r.role::text='superadmin' AND r.tenant_id IS NULL) OR NOT EXISTS(SELECT 1 FROM public.profiles p WHERE p.user_id=auth.uid()) THEN RAISE EXCEPTION 'Verified global owner required' USING ERRCODE='42501'; END IF;
+ SELECT coalesce(jsonb_agg(to_jsonb(q) ORDER BY q.name,q.id),'[]'::jsonb) INTO rows FROM(SELECT id,name FROM public.tenants WHERE status::text='active' ORDER BY id LIMIT 501) q;
+ IF jsonb_array_length(rows)>500 THEN RAISE EXCEPTION 'Centre list exceeds review limit'; END IF;
+ RETURN rows;
+END $fn$;
+CREATE FUNCTION unipathway_site_ops.camera_inventory(t uuid,p_role text) RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path='' AS $fn$
+DECLARE rows jsonb;a uuid:=auth.uid();manager boolean;
+BEGIN
+ IF a IS NULL OR p_role IS NULL OR p_role NOT IN ('security_officer','centre_director','superadmin') OR NOT EXISTS(SELECT 1 FROM public.tenants n WHERE n.id=t AND n.status::text='active')
+ OR NOT EXISTS(SELECT 1 FROM public.profiles p WHERE p.user_id=a AND (p_role='superadmin' OR p.tenant_id=t))
+ OR NOT EXISTS(SELECT 1 FROM public.user_roles r WHERE r.user_id=a AND r.role::text=p_role AND ((p_role='superadmin' AND r.tenant_id IS NULL) OR (p_role<>'superadmin' AND r.tenant_id=t))) THEN RAISE EXCEPTION 'Verified viewing scope required' USING ERRCODE='42501'; END IF;
+ manager:=p_role IN ('superadmin','centre_director');
+ SELECT coalesce(jsonb_agg(to_jsonb(q) ORDER BY q.name,q.id),'[]'::jsonb) INTO rows FROM(SELECT id,tenant_id,name,location,enabled,security_live,security_playback FROM public.unipathway_cctv_cameras WHERE tenant_id=t AND (manager OR (enabled AND (security_live OR security_playback))) ORDER BY id LIMIT 501) q;
+ IF jsonb_array_length(rows)>500 THEN RAISE EXCEPTION 'Camera inventory exceeds review limit'; END IF;RETURN rows;
+END $fn$;
+REVOKE ALL ON FUNCTION unipathway_site_ops.owner_centres(),unipathway_site_ops.camera_inventory(uuid,text) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION unipathway_site_ops.owner_centres(),unipathway_site_ops.camera_inventory(uuid,text) TO authenticated;
+CREATE FUNCTION public.list_unipathway_security_centres() RETURNS jsonb LANGUAGE sql STABLE SECURITY INVOKER SET search_path='' AS $fn$ SELECT unipathway_site_ops.owner_centres() $fn$;
+CREATE FUNCTION public.get_unipathway_security_camera_inventory(p_tenant uuid,p_role text) RETURNS jsonb LANGUAGE sql STABLE SECURITY INVOKER SET search_path='' AS $fn$ SELECT unipathway_site_ops.camera_inventory(p_tenant,p_role) $fn$;
+REVOKE ALL ON FUNCTION public.list_unipathway_security_centres(),public.get_unipathway_security_camera_inventory(uuid,text) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.list_unipathway_security_centres(),public.get_unipathway_security_camera_inventory(uuid,text) TO authenticated;
 NOTIFY pgrst,'reload schema';

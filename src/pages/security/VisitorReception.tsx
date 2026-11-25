@@ -5,7 +5,7 @@ import {SITE_OPERATIONS_ENABLED} from '@/lib/siteOperations';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
-import {useAuth} from '@/contexts/AuthContext';
+import SecurityCentrePicker,{useSecurityPrincipal,securityLink} from '@/components/security/SecurityCentrePicker';
 import {db} from '@/lib/db';
 import {useScopedSecurityRows} from '@/hooks/useScopedSecurityRows';
 import PhysicalSecurityReadiness from '@/components/security/PhysicalSecurityReadiness';
@@ -13,9 +13,9 @@ import {physicalSecurityScope,PHYSICAL_SECURITY_ENABLED,visitorWriter,visitorSta
 
 type CheckInAttempt={requestId:string;name:string;purpose:string;gate:string;kind:'visitor'|'guest';host:string;signature:string};
 type CheckOutAttempt={requestId:string;visitorId:string};
-export default function VisitorReception(){const {user}=useAuth();return <VisitorDesk key={`${user?.id}:${user?.tenantId}:${user?.role}:${user?.roles?.join(',')}`}/>;}
+export default function VisitorReception(){const {user}=useSecurityPrincipal();return <VisitorDesk key={`${user?.id}:${user?.tenantId}:${user?.role}:${user?.roles?.join(',')}`}/>;}
 function VisitorDesk(){
- const {user}=useAuth();
+ const {user}=useSecurityPrincipal();
  const tenant=physicalSecurityScope(user);
  const allowed=!!tenant&&PHYSICAL_SECURITY_ENABLED;
  const writer=visitorWriter(user)&&SITE_OPERATIONS_ENABLED;
@@ -61,6 +61,7 @@ function VisitorDesk(){
   }finally{setInFlight(false);}
  }
  return <DashboardLayout title="Visitor reception" subtitle="Recorded passes, centre-bound check-in and check-out">
+  <SecurityCentrePicker/>
   <PhysicalSecurityReadiness/>
   {allowed&&visitors.loading&&<p role="status" className="mt-4">Loading authorised visitor register…</p>}
   {allowed&&visitors.error&&<div role="alert" className="mt-4 rounded-xl border p-4"><p>Visitor records could not be fully verified; no partial list is shown.</p><Button variant="outline" className="mt-2" onClick={visitors.refresh}>Retry register</Button></div>}

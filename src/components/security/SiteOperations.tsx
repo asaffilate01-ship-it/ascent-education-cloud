@@ -1,7 +1,7 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {Link} from 'react-router-dom';
 import {Button} from '@/components/ui/button';
-import {useAuth} from '@/contexts/AuthContext';
+import {useSecurityPrincipal} from '@/components/security/SecurityCentrePicker';
 import {db} from '@/lib/db';
 import {calendarDay} from '@/lib/academicCalendar';
 import {displayTime} from '@/lib/physicalSecurity';
@@ -25,7 +25,7 @@ function useSiteAction(tenant:string,reload:()=>void){
  return {run,busy,error,notice};
 }
 export default function SiteOperations({kind='facilities'}:{kind:'facilities'|'cards'|'audit'|'visitor_signatures'|'cctv_audit'}){
- const {user,loading}=useAuth(),tenant=siteRole(user);
+ const {user,loading}=useSecurityPrincipal(),tenant=siteRole(user);
  if(loading||!tenant)return <p role="status">An active assigned security or centre leadership role and selected centre are required.</p>;
  if(!SITE_OPERATIONS_ENABLED)return <section className="rounded-xl border bg-card p-4"><h2 className="font-semibold">Site operations activation pending</h2><p className="mt-2 text-sm text-muted-foreground">The reviewed security and facilities database must be installed and accepted before these records can be opened. Physical alarms, doors and evacuation procedures remain independent.</p></section>;
  return <SitePanel key={[user!.id,tenant,user!.role,user!.roles.join(','),kind].join(':')} tenant={tenant} role={user!.role} kind={kind}/>;

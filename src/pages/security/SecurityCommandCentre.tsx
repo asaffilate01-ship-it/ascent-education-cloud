@@ -1,15 +1,15 @@
 
 import {Link} from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import {useAuth} from '@/contexts/AuthContext';
+import SecurityCentrePicker,{useSecurityPrincipal,securityLink} from '@/components/security/SecurityCentrePicker';
 import {useScopedSecurityRows} from '@/hooks/useScopedSecurityRows';
 import PhysicalSecurityReadiness from '@/components/security/PhysicalSecurityReadiness';
 import {PHYSICAL_SECURITY_ENABLED,physicalSecurityScope,deviceHealth,occupancyStats,type CentreOccupant,type CentreCamera,type CentreDevice,type MusterEvent} from '@/lib/physicalSecurity';
 import {Button} from '@/components/ui/button';
 
-export default function SecurityCommandCentre(){const {user}=useAuth();return <Desk key={`${user?.id}:${user?.tenantId}:${user?.role}:${user?.roles?.join(',')}`}/>;}
+export default function SecurityCommandCentre(){const {user}=useSecurityPrincipal();return <Desk key={`${user?.id}:${user?.tenantId}:${user?.role}:${user?.roles?.join(',')}`}/>;}
 function Desk(){
- const {user}=useAuth();const permitted=!!physicalSecurityScope(user)&&PHYSICAL_SECURITY_ENABLED;
+ const {user}=useSecurityPrincipal();const permitted=!!physicalSecurityScope(user)&&PHYSICAL_SECURITY_ENABLED;
  const occ=useScopedSecurityRows<CentreOccupant>(user,'centre_occupancy','tenant_id,person_type,in_building,last_event_at,last_gate_id','person_key');
  const cams=useScopedSecurityRows<CentreCamera>(user,'cctv_cameras','id,tenant_id,camera_code,display_name,status,last_health_at','id');
  const devices=useScopedSecurityRows<CentreDevice>(user,'security_devices','id,tenant_id,device_code,device_type,status,last_health_at','id');
@@ -17,7 +17,8 @@ function Desk(){
  const sources=[occ,cams,devices,muster];const loading=sources.some(s=>s.loading),failed=sources.some(s=>s.error);
  const stats=occupancyStats(occ.data),active=muster.data.filter(e=>e.status==='active');
  return <DashboardLayout title="Centre security operations" subtitle="Centre-scoped reception, occupancy and emergency readiness">
-  <section className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{[['/security','CCTV viewing'],['/security/facilities','Facilities, cards and audit'],['/security/visitors','Visitor and guest reception']].map(([to,label])=><Link key={to} to={to} className="flex min-h-12 items-center rounded-xl border bg-card px-4 py-3 text-sm font-semibold hover:bg-accent">{label}</Link>)}</section>
+  <section className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{[['/security','CCTV viewing'],['/security/facilities','Facilities, cards and audit'],['/security/visitors','Visitor and guest reception']].map(([to,label])=><Link key={to} to={securityLink(to,user?.tenantId,user?.role)} className="flex min-h-12 items-center rounded-xl border bg-card px-4 py-3 text-sm font-semibold hover:bg-accent">{label}</Link>)}</section>
+  <SecurityCentrePicker/>
   <PhysicalSecurityReadiness/>
   {permitted&&loading&&<p role="status" className="mt-4">Verifying all centre operations sources…</p>}
   {permitted&&failed&&<div role="alert" className="mt-4 rounded-xl border p-5"><p>One or more security feeds could not be verified. No partial occupancy or emergency totals are shown.</p><Button variant="outline" className="mt-3" onClick={()=>sources.forEach(s=>s.refresh())}>Retry all sources</Button></div>}
@@ -36,7 +37,7 @@ function Desk(){
     ['/security/muster','Emergency muster','Review recorded accountability and exceptions'],
     ['/security','CCTV workspace','Provider-gated live/playback requests'],
     ['/security/facilities','Fire safety and access cards','Surveyed facility assets, local access register and audit'],
-   ].map(([path,label,description])=><Link key={path} to={path} className="rounded-xl border bg-card p-5 hover:bg-accent"><h2 className="font-semibold">{label}</h2><p className="mt-2 text-sm text-muted-foreground">{description}</p></Link>)}
+   ].map(([path,label,description])=><Link key={path} to={securityLink(path,user?.tenantId,user?.role)} className="rounded-xl border bg-card p-5 hover:bg-accent"><h2 className="font-semibold">{label}</h2><p className="mt-2 text-sm text-muted-foreground">{description}</p></Link>)}
   </section><section className="mt-5 rounded-xl border bg-card p-5"><h2 className="font-semibold">Device inventory and freshness</h2>
    {!devices.data.length&&<p className="mt-3 text-sm">No devices were returned from the authorised centre inventory.</p>}
    <div className="mt-3 grid gap-2 md:grid-cols-2">{devices.data.slice(0,100).map(d=><div key={d.id} className="rounded-lg border p-3"><p className="font-medium">{d.device_code}</p><p className="text-sm text-muted-foreground">{d.device_type} · {deviceHealth(d.status,d.last_health_at).replace('-', ' ')}</p></div>)}</div>
