@@ -2,7 +2,12 @@ import {validateDeadline,type DeadlineRecord} from './scholarshipResearch';
 
 const textEncoder=new TextEncoder();
 function escapeCalendarText(value:string){
- return value.replace(/\\/g,'\\\\').replace(/\r\n|\r|\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;').replace(/[\u0000-\u0009\u000B\u000C\u000E-\u001F\u007F]/g,'');
+ // Strip disallowed control characters without a control-character regex.
+ const safe=Array.from(value).filter(character=>{
+  const code=character.charCodeAt(0);
+  return code===10||code===13||(code>=32&&code!==127);
+ }).join('');
+ return safe.replace(/\\/g,'\\\\').replace(/\r\n|\r|\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');
 }
 /** iCalendar folds content lines at 75 UTF-8 octets, without splitting code points. */
 function foldLine(line:string):string{
