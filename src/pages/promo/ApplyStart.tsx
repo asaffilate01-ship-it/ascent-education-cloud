@@ -92,6 +92,7 @@ export default function ApplyStart(){
      </article>)}
     </section>
    </div>
+   <section className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl border bg-card p-5"><div><h2 className="text-lg font-bold">Not sure which route is right for you?</h2><p className="mt-2 text-sm text-muted-foreground">Prepare your study preferences and request a conversation with an education adviser.</p></div><Link to="/consultation" className="inline-flex min-h-12 items-center rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring">Request a consultation</Link></section>
    <p className="mt-8 text-sm text-muted-foreground">Already enrolled? <Link to="/login" className="inline-flex min-h-11 items-center font-semibold underline underline-offset-4">Sign in to your student portal</Link>.</p>
   </main>
   <PublicFooter/>

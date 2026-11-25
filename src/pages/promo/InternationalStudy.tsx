@@ -22,6 +22,7 @@ function AdvisoryServices() {
       <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{topic.detail}</p>
       <Link to={internationalAdviceUrl(topic.id)} className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-md text-sm font-semibold text-primary underline underline-offset-4 focus-visible:outline focus-visible:outline-2">Enquire about {topic.title.toLowerCase()} <ArrowRight aria-hidden="true" className="size-4 shrink-0"/></Link>
     </article>)}</div>
+    <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border bg-card p-5"><div><h3 className="font-bold">Prepare for your initial consultation</h3><p className="mt-1 text-sm text-muted-foreground">Choose your study goals, meeting preferences and preparation checklist before sending an enquiry.</p></div><Button asChild className="min-h-11"><Link to="/consultation">Request a consultation <ArrowRight aria-hidden="true" className="ml-2 size-4"/></Link></Button></div>
     <aside className="rounded-xl border border-border p-4 text-sm text-muted-foreground">We focus on education and preparation. Immigration advice and visa decisions are separate; individual immigration advice is referred to appropriately authorised professionals where required. No admissions, scholarship or visa outcome is guaranteed.</aside>
   </section>;
 }
