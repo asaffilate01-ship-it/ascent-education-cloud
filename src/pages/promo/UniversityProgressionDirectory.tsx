@@ -1,4 +1,6 @@
 import PublicHero from '@/components/PublicHero';
+import UniversityResearchComparison from '@/components/public/UniversityResearchComparison';
+import {MAX_SHORTLIST,universityResearchKey,resolveUniversityShortlist,toggleUniversityShortlist} from '@/lib/universityShortlist';
 import PageContents from '@/components/PageContents';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -33,6 +35,10 @@ export default function UniversityProgressionDirectory(){
    .filter(u=>u.records.length>0 && (!q||`${u.name} ${u.country} ${u.records.map(r=>r.route).join(' ')}`.toLowerCase().includes(q)));
  },[all,country,body,search]);
  const countryCount=(c:ProgressionCountry)=>all.filter(x=>x.country===c).length;
+ const [shortlist,setShortlist]=useState<string[]>([]);
+ const compared=useMemo(()=>resolveUniversityShortlist(all,shortlist),[all,shortlist]);
+ const selectedKeys=compared.map(universityResearchKey);
+ const toggle=(key:string)=>setShortlist(old=>toggleUniversityShortlist(all,old,key));
  return <div className="public-site min-h-dvh bg-background">
   <Seo canonical="/university-progression" title="OTHM & Qualifi University Progression Directory | UniPathway" description="Find named universities in the UK, USA and Australia appearing on OTHM and Qualifi progression lists, with private UniPathway eligibility guidance and no offsite links."/>
   <PublicNav/>
@@ -52,6 +58,7 @@ export default function UniversityProgressionDirectory(){
     </article>)}
    </section>
 
+   <UniversityResearchComparison universities={compared} onRemove={toggle} onClear={()=>setShortlist([])}/>
    <section className="space-y-5" aria-label="Search university progression listings">
     <div className="rounded-xl border bg-card p-5">
      <div className="flex flex-wrap gap-2" role="group" aria-label="Destination country">
@@ -87,9 +94,11 @@ export default function UniversityProgressionDirectory(){
         </div>)}
        </div>
       </details>
-      <Button className="mt-auto pt-4" asChild variant="outline">
+      <div className="mt-auto flex flex-col gap-2 pt-4"><Button type="button" variant="outline" aria-pressed={selectedKeys.includes(universityResearchKey(university))} disabled={selectedKeys.length>=MAX_SHORTLIST&&!selectedKeys.includes(universityResearchKey(university))} onClick={()=>toggle(universityResearchKey(university))}>{selectedKeys.includes(universityResearchKey(university))?'Remove from shortlist':selectedKeys.length>=MAX_SHORTLIST?'Shortlist full':'Add to shortlist'}</Button>
+      {selectedKeys.includes(universityResearchKey(university))&&<a href="#university-shortlist" className="inline-flex min-h-11 items-center text-sm font-semibold text-primary underline underline-offset-4">View comparison</a>}
+      <Button asChild variant="outline">
        <Link to={`/pathways?destination=${routeCountry[university.country]}&university=${encodeURIComponent(university.name)}&body=${university.records[0].body}`}>Check my eligibility <ArrowRight className="ml-1 size-4"/></Link>
-      </Button>
+      </Button></div>
      </article>)}
     </div>
     {matches.length===0&&country!=='Canada'&&<p className="rounded-xl border p-6 text-sm text-muted-foreground">No named routes match these filters. Try another qualification, subject or country, or request individual admissions guidance.</p>}
