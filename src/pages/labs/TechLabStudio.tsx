@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
+import {verifiedLabScope,labPrincipalKey,type LabScope} from '@/lib/labs/labScope';
 import { TECH_EXERCISES, TECH_TRACKS, exerciseById, type TrackId } from '@/data/labs/techLabCatalogue';
 import { callCoach, myAttempts, saveAttempt, useLiveLab, type Attempt } from '@/lib/labs/labApi';
 import LiveLabBar from '@/components/labs/interactive/LiveLabBar';
@@ -14,17 +15,26 @@ import ExerciseWorkspace, { type CheckedWork } from '@/components/labs/interacti
 
 const TRACK_ICONS: Record<TrackId, typeof Brain> = { ai: Brain, python: Terminal, web: Globe, javascript: Code2, sql: Database, data: LineChart, cyber: ShieldCheck };
 
-export default function TechLabStudio() {
-  const { user } = useAuth();
+export default function TechLabStudio(){
+  const {user,loading}=useAuth();
+  const scope=verifiedLabScope(user);
+  if(loading||!scope)return <DashboardLayout title="Tech Lab"><p role="status">{loading?'Checking lab access…':'A verified account and centre assignment are required.'}</p></DashboardLayout>;
+  return <TechLabWorkspace key={labPrincipalKey(scope)} scope={scope}/>;
+}
+function TechLabWorkspace({scope}:{scope:LabScope}){
+  const user=scope;
   const [params, setParams] = useSearchParams();
   const exerciseId = params.get('exercise');
   const track = (params.get('track') as TrackId) || 'ai';
   const view = params.get('view');
   const exercise = exerciseById(exerciseId);
-  const live = useLiveLab('tech', !!user?.id);
+  const live = useLiveLab('tech', scope);
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [loadError, setLoadError] = useState('');
   const lastRevision = useRef<number | null>(null);
+  const loadGeneration=useRef(0);
+  const active=useRef(false);
+  useEffect(()=>{active.current=true;return()=>{active.current=false;loadGeneration.current++;};},[]);
 
   const go = useCallback((next: Record<string, string | null>) => setParams(prev => {
     const p = new URLSearchParams(prev);
@@ -34,14 +44,19 @@ export default function TechLabStudio() {
 
   const load = useCallback(async () => {
     if (!user?.id) return;
-    try { setAttempts(await myAttempts(user.id, 'tech')); setLoadError(''); } catch (e) { setLoadError(e instanceof Error ? e.message : 'Could not load your progress.'); }
-  }, [user?.id]);
+    if(!active.current)return;
+    const token=++loadGeneration.current;
+    try {
+      const rows=await myAttempts(user.id,user.tenantId,'tech');
+      if(active.current&&token===loadGeneration.current){setAttempts(rows);setLoadError('');}
+    }catch(e){if(active.current&&token===loadGeneration.current){setAttempts([]);setLoadError(e instanceof Error?e.message:'Could not load your progress.');}}
+  },[user.id,user.tenantId]);
   useEffect(() => { void load(); }, [load]);
 
   // Follow the exercise the teacher pushes to the class.
   useEffect(() => {
     const s = live.session;
-    if (!s || s.status !== 'live') return;
+    if (!s || s.status !== 'live') {lastRevision.current=null;return;}
     if (lastRevision.current === null) { lastRevision.current = s.activity_revision; if (s.activity_id && !exerciseId) go({ exercise: s.activity_id, view: null }); return; }
     if (s.activity_revision !== lastRevision.current) {
       lastRevision.current = s.activity_revision;
@@ -55,12 +70,13 @@ export default function TechLabStudio() {
   const best = useCallback((id: string) => Math.max(-1, ...attempts.filter(a => a.activity_id === id).map(a => Number(a.score ?? 0))), [attempts]);
 
   const onChecked = useCallback(async (work: CheckedWork) => {
-    if (!user?.id || !user.tenantId || !exercise) return;
+    if (!active.current || !user?.id || !user.tenantId || !exercise) return;
     try {
       await saveAttempt({ userId: user.id, tenantId: user.tenantId, sessionId: live.session?.status === 'live' ? live.session.id : null, kind: 'tech', activityId: exercise.id, content: work.content, score: work.score, passed: work.passed, result: work.result });
+      if (!active.current)return;
       if (work.passed) void live.sendPresence({ status: 'done' });
       void load();
-    } catch (e) { toast.error(e instanceof Error ? e.message : 'Could not save your work.'); }
+    } catch (e) { if(active.current)toast.error(e instanceof Error ? e.message : 'Could not save your work.'); }
   }, [user?.id, user?.tenantId, exercise, live, load]);
 
   const feedback = attempts.filter(a => a.teacher_feedback).slice(0, 5);
