@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
+import {labSessionMatches,labAttemptMatches,validLabSessionId,readScopedLabSession,writeScopedLabSession,type LabScope,type LabKind} from './labScope';
+export type {LabKind} from './labScope';
 
-export type LabKind = 'tech' | 'language';
 export interface LiveSession {
   id: string; kind: LabKind; title: string; join_code: string; status: 'live' | 'ended';
   activity_id: string | null; activity_revision: number; broadcast: Broadcast; locked: boolean; created_at: string; created_by: string;
@@ -12,7 +13,7 @@ export interface Broadcast { mode?: 'repeat' | 'dictation' | 'speaking'; item_id
 export interface Participant { id: string; session_id: string; user_id: string; display_name: string; location: 'in_class' | 'remote'; status: 'working' | 'stuck' | 'done'; hand_raised: boolean; current_activity: string | null; last_seen: string; joined_at: string }
 export interface Attempt { id: string; user_id: string; session_id: string | null; lab_kind: LabKind; activity_id: string; content: string; score: number | null; passed: boolean | null; result: Record<string, unknown>; audio_path: string | null; teacher_feedback: string | null; feedback_at: string | null; created_at: string }
 
-const SESSION_COLUMNS = 'id,kind,title,join_code,status,activity_id,activity_revision,broadcast,locked,created_at,created_by';
+const SESSION_COLUMNS = 'id,tenant_id,kind,title,join_code,status,activity_id,activity_revision,broadcast,locked,created_at,created_by';
 
 async function functionError(error: unknown, fallback: string) {
   const ctx = (error as { context?: Response })?.context;
@@ -65,58 +66,82 @@ export async function saveAttempt(input: { userId: string; tenantId: string; ses
   return data.id as string;
 }
 
-export async function myAttempts(userId: string, kind: LabKind, limit = 200) {
+export async function myAttempts(userId: string, tenantId: string, kind: LabKind, limit = 200) {
   const { data, error } = await supabase.from('interactive_lab_attempts')
-    .select('id,user_id,session_id,lab_kind,activity_id,content,score,passed,result,audio_path,teacher_feedback,feedback_at,created_at')
-    .eq('user_id', userId).eq('lab_kind', kind).order('created_at', { ascending: false }).limit(limit);
+    .select('id,user_id,tenant_id,session_id,lab_kind,activity_id,content,score,passed,result,audio_path,teacher_feedback,feedback_at,created_at')
+    .eq('user_id', userId).eq('tenant_id', tenantId).eq('lab_kind', kind).order('created_at', { ascending: false }).limit(limit);
   if (error) throw new Error('Your saved lab work could not be loaded.');
-  return (data || []) as unknown as Attempt[];
+  if (!Array.isArray(data) || data.some(row => !labAttemptMatches(row,{id:userId,tenantId},kind))) throw new Error('Your saved lab work could not be verified.');
+  return data as unknown as Attempt[];
 }
 
-const storageKey = (kind: LabKind) => `unipathway-live-lab-${kind}`;
+const browserStorage=()=>{try{return typeof window==='undefined'?null:window.sessionStorage;}catch{return null;}};
 
-/** A learner's connection to a teacher-led live session (works the same in class and remotely). */
-export function useLiveLab(kind: LabKind, enabled: boolean) {
-  const [sessionId, setSessionId] = useState<string | null>(() => (typeof window !== 'undefined' ? sessionStorage.getItem(storageKey(kind)) : null));
+/** Called by an account-keyed workspace. RLS remains authoritative for every operation. */
+export function useLiveLab(kind: LabKind, scope:LabScope) {
+  const {id:ownerId,tenantId,role}=scope;
+  const [sessionId, setSessionId] = useState<string | null>(()=>readScopedLabSession(browserStorage(),kind,scope));
   const [session, setSession] = useState<LiveSession | null>(null);
   const [error, setError] = useState('');
-  const presence = useRef({ status: 'working' as Participant['status'], hand: false, activity: null as string | null });
+  const initialPresence=()=>({ status:'working' as Participant['status'], hand:false, activity:null as string|null });
+  const presence=useRef(initialPresence());
+  const generation=useRef(0);
+  const active=useRef(false);
+  const joined=useRef<string|null>(sessionId);
+  useEffect(()=>{active.current=true;return()=>{active.current=false;generation.current++;};},[]);
 
-  const leave = useCallback(() => { sessionStorage.removeItem(storageKey(kind)); setSessionId(null); setSession(null); }, [kind]);
+  const leave=useCallback(()=>{
+   generation.current++;joined.current=null;
+   writeScopedLabSession(browserStorage(),kind,{id:ownerId,tenantId,role},null);
+   presence.current={status:'working',hand:false,activity:null};setSessionId(null);setSession(null);setError('');
+  },[kind,ownerId,tenantId,role]);
 
-  const join = useCallback(async (code: string, location: 'in_class' | 'remote') => {
-    setError('');
-    const { data, error: e } = await supabase.rpc('join_interactive_lab', { p_code: code.trim().toUpperCase(), p_location: location });
-    if (e || !data) { setError(e?.message?.includes('code') || e?.message?.includes('closed') ? e.message : 'That code did not work. Check it with your teacher.'); return false; }
-    const { data: row } = await supabase.from('interactive_lab_sessions').select(SESSION_COLUMNS).eq('id', data as string).maybeSingle();
-    if (!row || row.kind !== kind) {
-      setError(row ? `That code is for the ${row.kind === 'tech' ? 'tech lab' : 'language lab'}. Open that lab to join.` : 'Session not found.');
-      return false;
-    }
-    sessionStorage.setItem(storageKey(kind), row.id); setSessionId(row.id); setSession(row as unknown as LiveSession);
-    return true;
-  }, [kind]);
+  const join=useCallback(async(code:string,location:'in_class'|'remote')=>{
+   if(!active.current||!/^[A-Z0-9]{6}$/.test(code.trim().toUpperCase()))return false;
+   const token=++generation.current;
+   const current=()=>active.current&&generation.current===token;
+   setError('');
+   try{
+    const {data,error:e}=await supabase.rpc('join_interactive_lab',{p_code:code.trim().toUpperCase(),p_location:location});
+    if(!current())return false;
+    if(e||!validLabSessionId(data)){setError('That code did not work. Check it with your teacher.');return false;}
+    const result=await supabase.from('interactive_lab_sessions').select(SESSION_COLUMNS).eq('id',data).eq('tenant_id',tenantId).maybeSingle();
+    if(!current())return false;
+    if(result.error||!labSessionMatches(result.data,{id:ownerId,tenantId,role},kind,data)){setError('This session could not be verified for your lab and centre.');return false;}
+    joined.current=data;presence.current={status:'working',hand:false,activity:null};
+    writeScopedLabSession(browserStorage(),kind,{id:ownerId,tenantId,role},data);
+    setSessionId(data);setSession(result.data as unknown as LiveSession);return true;
+   }catch{if(current())setError('Unable to join the class. Check your connection and retry.');return false;}
+  },[kind,ownerId,tenantId,role]);
 
-  const sendPresence = useCallback(async (patch: Partial<typeof presence.current>) => {
-    presence.current = { ...presence.current, ...patch };
-    if (!sessionId) return;
-    await supabase.rpc('touch_interactive_lab', { p_session: sessionId, p_status: presence.current.status, p_hand: presence.current.hand, p_activity: presence.current.activity ?? '' });
-  }, [sessionId]);
+  const sendPresence=useCallback(async(patch:Partial<typeof presence.current>)=>{
+   if(!active.current)return;
+   presence.current={...presence.current,...patch};
+   if(!sessionId||joined.current!==sessionId)return;
+   try{await supabase.rpc('touch_interactive_lab',{p_session:sessionId,p_status:presence.current.status,p_hand:presence.current.hand,p_activity:presence.current.activity??''});}catch{/* The next verified poll will retry connectivity. */}
+  },[sessionId]);
 
-  useEffect(() => {
-    if (!enabled || !sessionId) return;
-    let active = true;
-    const poll = async () => {
-      const { data, error: e } = await supabase.from('interactive_lab_sessions').select(SESSION_COLUMNS).eq('id', sessionId).maybeSingle();
-      if (!active) return;
-      if (e) { setError('Connection to the class session dropped. Retrying…'); return; }
-      if (!data) { leave(); return; }
-      setError(''); setSession(data as unknown as LiveSession);
-    };
-    void poll(); void sendPresence({});
-    const a = setInterval(poll, 3000), b = setInterval(() => void sendPresence({}), 15000);
-    return () => { active = false; clearInterval(a); clearInterval(b); };
-  }, [enabled, sessionId, leave, sendPresence]);
+  useEffect(()=>{
+   if(!sessionId)return;
+   let running=true,verified=false,inFlight=false;
+   const current=()=>running&&active.current&&joined.current===sessionId;
+   const poll=async()=>{
+    if(inFlight||!current())return;
+    inFlight=true;
+    try{
+     const {data,error:e}=await supabase.from('interactive_lab_sessions').select(SESSION_COLUMNS).eq('id',sessionId).eq('tenant_id',tenantId).maybeSingle();
+     if(!current())return;
+     if(e){verified=false;setSession(null);setError('Connection to the class session dropped. Retrying…');return;}
+     if(!labSessionMatches(data,{id:ownerId,tenantId,role},kind,sessionId)){leave();setError('Saved class session could not be verified for this centre.');return;}
+     setSession(data as unknown as LiveSession);setError('');
+     if(!verified){verified=true;void sendPresence({});}
+    }catch{if(current()){verified=false;setSession(null);setError('Class session verification failed. Retrying…');}}
+    finally{inFlight=false;}
+   };
+   void poll();
+   const a=setInterval(poll,3000),b=setInterval(()=>{if(current()&&verified)void sendPresence({});},15000);
+   return()=>{running=false;clearInterval(a);clearInterval(b);};
+  },[kind,ownerId,tenantId,role,sessionId,leave,sendPresence]);
 
   return { sessionId, session, error, join, leave, sendPresence, hand: presence.current.hand };
 }
