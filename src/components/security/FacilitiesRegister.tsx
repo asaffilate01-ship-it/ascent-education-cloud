@@ -6,14 +6,16 @@ import {Input} from '@/components/ui/input';
 import {physicalSecurityScope,PHYSICAL_SECURITY_ENABLED} from '@/lib/physicalSecurity';
 import {inspectionTiming,pakistanCalendarDate} from '@/lib/facilitiesPlanning';
 import {verifyFacilitiesRegister,type FacilityRegister} from '@/lib/facilitiesRegister';
+import {FACILITIES_WRITE_ENABLED,facilitiesWriterScope} from '@/lib/facilitiesCommands';
+import FacilitiesRecordCommands from '@/components/security/FacilitiesRecordCommands';
 
 const enabled=import.meta.env.VITE_UNIPATHWAY_FACILITIES_REGISTER_ENABLED==='true';
 export default function FacilitiesRegister(){
  const {user}=useAuth();
  const tenant=physicalSecurityScope(user);
- return <RegisterView key={`${user?.id}:${tenant}:${user?.role}`} tenant={tenant}/>;
+ return <RegisterView key={`${user?.id}:${tenant}:${user?.role}:${user?.roles?.join(',')}`} tenant={tenant} writer={!!facilitiesWriterScope(user)&&FACILITIES_WRITE_ENABLED}/>;
 }
-function RegisterView({tenant}:{tenant:string|null}){
+function RegisterView({tenant,writer}:{tenant:string|null;writer:boolean}){
  const permitted=!!tenant&&PHYSICAL_SECURITY_ENABLED&&enabled;
  const [revision,setRevision]=useState(0);
  const [state,setState]=useState<{revision:number;data:FacilityRegister|null;error:boolean}>({revision:-1,data:null,error:false});
@@ -33,6 +35,7 @@ function RegisterView({tenant}:{tenant:string|null}){
   return()=>{active=false;};
  },[permitted,tenant,revision]);
  const snapshot=state.revision===revision?state.data:null;
+ const refresh=()=>setRevision(n=>n+1);
  const failed=state.revision===revision&&state.error;
  const waiting=permitted&&!snapshot&&!failed;
  const today=pakistanCalendarDate();
@@ -44,8 +47,9 @@ function RegisterView({tenant}:{tenant:string|null}){
   {!permitted&&<p className="mt-3 text-sm text-muted-foreground">Persistent facilities records are not enabled for this session. No records have been fetched.</p>}
   {waiting&&<p role="status" className="mt-3 text-sm">Verifying centre facilities records…</p>}
   {failed&&<p role="alert" className="mt-3 text-sm text-destructive">The facilities register could not be verified. Check activation or centre permission before relying on it.</p>}
+  {permitted&&tenant&&writer&&<FacilitiesRecordCommands tenant={tenant} snapshot={snapshot} refresh={refresh}/>}
   {snapshot&&<>
-   <p className="mt-3 text-sm text-muted-foreground">Recorded inspection outcomes are not certification of equipment safety. Dates are compared in Pakistan time. This workspace is read-only.</p>
+   <p className="mt-3 text-sm text-muted-foreground">Recorded inspection outcomes are not certification of equipment safety. Dates are compared in Pakistan time. {writer?'Recording requires a verified director and a separate server write gate.':'This workspace is read-only.'}</p>
    <div className="mt-4 grid gap-3 sm:grid-cols-3">{[['Registered assets',snapshot.assets.length],['Inspection records',snapshot.inspections.length],['Assets with a recorded defect',snapshot.assets.filter(a=>snapshot.inspections.find(i=>i.asset_id===a.id)?.outcome==='defect').length]].map(([label,n])=><article className="rounded-lg border p-3" key={label}><p className="text-sm text-muted-foreground">{label}</p><p className="mt-1 text-xl font-semibold">{n}</p></article>)}</div>
    <label className="mt-4 block text-sm font-medium">Find an asset<Input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Asset reference, category or location"/></label>
    {!visible.length&&<p className="mt-3 text-sm">{snapshot.assets.length?'No matching assets.':'No registered assets were returned for this verified centre.'}</p>}
