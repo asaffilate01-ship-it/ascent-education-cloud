@@ -27,3 +27,7 @@ verify_jwt = false
 # and the frontend secure-contact flag have passed hosted acceptance.
 [functions.unipathway-secure-contact]
 verify_jwt = false
+
+# Meta webhook uses raw-body HMAC SHA-256 validation rather than a user JWT.
+[functions.unipathway-whatsapp-webhook]
+verify_jwt = false
