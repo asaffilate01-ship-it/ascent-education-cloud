@@ -109,6 +109,7 @@ it('does not allow an existing mandatory waiver to clear a launch check',async()
  }]:[],error:null}));
  render(<ProductionReadiness/>);
  expect(await screen.findByText('This critical launch check requires a current evidenced pass. An exemption cannot clear it.')).toBeInTheDocument();
+ fireEvent.click(screen.getByText('Record a review'));
  expect(screen.getByRole('option',{name:'not_applicable'})).toBeDisabled();
  expect(screen.getByText('Save review')).toBeDisabled();
  fireEvent.change(screen.getByLabelText('Decision'),{target:{value:'blocked'}});
@@ -122,6 +123,6 @@ it('retains a documented optional exemption decision for an out-of-scope capabil
   status:'pending',revision:1,evidence_reference:null,checked_at:null,checked_by:null,notes:null,valid_until:null,
  }]:[],error:null}));
  render(<ProductionReadiness/>);
- await screen.findByText('Record a review');
+ fireEvent.click(await screen.findByText('Record a review'));
  expect(screen.getByRole('option',{name:'not_applicable'})).toBeEnabled();
 });
