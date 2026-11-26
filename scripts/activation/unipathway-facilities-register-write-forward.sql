@@ -35,7 +35,7 @@ DECLARE v_actor uuid:=(SELECT auth.uid()); v_id uuid; v_old record;
  v_code text; v_location text; v_category text; v_date date; v_next date;
  v_asset uuid; v_outcome text; v_notes text; v_normal jsonb;
 BEGIN
- IF NOT unipathway_security.facilities_writer(p_tenant)
+ IF v_actor IS NULL OR NOT coalesce(unipathway_security.facilities_writer(p_tenant),false)
  OR NOT EXISTS(SELECT 1 FROM unipathway_security.facilities_write_activation WHERE singleton AND enabled)
  THEN RAISE EXCEPTION 'Verified facilities writer and write gate required' USING ERRCODE='42501';END IF;
  IF p_request_id IS NULL OR p_kind IS NULL OR p_kind NOT IN ('asset','inspection')
@@ -43,7 +43,7 @@ BEGIN
  THEN RAISE EXCEPTION 'Invalid facilities command' USING ERRCODE='22023';END IF;
  -- Serialize commands per centre, including capacity checks and same-request replay.
  PERFORM 1 FROM public.tenants WHERE id=p_tenant AND status::text='active' FOR UPDATE;
- IF NOT FOUND OR NOT unipathway_security.facilities_writer(p_tenant)
+ IF NOT FOUND OR NOT coalesce(unipathway_security.facilities_writer(p_tenant),false)
  OR NOT EXISTS(SELECT 1 FROM unipathway_security.facilities_write_activation WHERE singleton AND enabled)
  THEN RAISE EXCEPTION 'Active facilities writer required' USING ERRCODE='42501';END IF;
  IF p_kind='asset' THEN
