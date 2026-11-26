@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { findInternationalStudyGuide, immigrationSourcesChecked, internationalStudyGuides } from '@/lib/internationalStudy';
 
 import { internationalAdviceTopics, internationalAdviceUrl } from '@/lib/internationalAdvice';
+import {scholarshipResearchUrl} from '@/lib/scholarshipResearch';
 
 const hub = '/international-study';
 
@@ -123,6 +124,7 @@ export default function InternationalStudy() {
         </>}
         {destination && !guide && <Button asChild><Link to={hub}>Open the guide directory</Link></Button>}
         {(!destination||guide)&&<AdvisoryServices destination={guide?.slug} />}
+        {(!destination||guide)&&<section className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border bg-card p-5"><div><h2 className="text-lg font-bold">Funding and application planning</h2><p className="mt-2 text-sm text-muted-foreground">Research official funding sources, record verified dates and export your own planning calendar.</p></div><Button asChild variant="outline"><Link to={scholarshipResearchUrl(guide?.slug)}>Scholarship and deadline planner <ArrowRight aria-hidden="true" className="ml-2 size-4"/></Link></Button></section>}
         <GuidanceBoundary />
       </div>
       <PublicFooter />
