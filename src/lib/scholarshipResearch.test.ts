@@ -1,15 +1,23 @@
 import {describe,it,expect} from 'vitest';
-import {scholarshipSources,validateDeadline,calendarDateInPakistan,deadlineStatus,sortDeadlines,type DeadlineDraft,type DeadlineRecord} from './scholarshipResearch';
+import {scholarshipSources,scholarshipResearchDestination,scholarshipResearchUrl,validateDeadline,calendarDateInPakistan,deadlineStatus,sortDeadlines,type DeadlineDraft,type DeadlineRecord} from './scholarshipResearch';
 const draft:DeadlineDraft={title:' Example award ',kind:'Scholarship',date:'2027-01-31',source:'https://example.org/award'};
 describe('scholarship research and planning',()=>{
  it('uses unique official HTTPS source entries',()=>{
   expect(new Set(scholarshipSources.map(s=>s.id)).size).toBe(scholarshipSources.length);
   expect(scholarshipSources.every(s=>new URL(s.url).protocol==='https:')).toBe(true);
  });
+ it('prefills only recognised official funding categories',()=>{
+  expect(scholarshipResearchDestination('germany')).toBe('germany');
+  expect(scholarshipResearchDestination('france')).toBe('europe');
+  expect(scholarshipResearchDestination('unknown')).toBe('all');
+  expect(scholarshipResearchUrl('uk')).toBe('/scholarships?funding=uk#international-scholarship-research');
+  expect(scholarshipResearchUrl('untrusted text')).toBe('/scholarships#international-scholarship-research');
+ });
  it('validates actual calendar dates and optional secure source URLs',()=>{
   expect(validateDeadline(draft)?.title).toBe('Example award');
   expect(validateDeadline({...draft,source:''})).not.toBeNull();
   expect(validateDeadline({...draft,date:'2027-02-29'})).toBeNull();
+  expect(validateDeadline({...draft,date:'0000-01-01'})).toBeNull();
   expect(validateDeadline({...draft,date:'2028-02-29'})).not.toBeNull();
   for(const source of ['javascript:alert(1)','http://example.org','https://user:secret@example.org','not-a-url'])expect(validateDeadline({...draft,source})).toBeNull();
   expect(validateDeadline({...draft,title:'   '})).toBeNull();
