@@ -5,7 +5,7 @@ import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {scholarshipSources,scholarshipSourcesReviewed,scholarshipResearchDestination,deadlineKinds,calendarDateInPakistan,deadlineStatus,sortDeadlines,type DeadlineDraft,type DeadlineRecord,type DeadlineKind} from '@/lib/scholarshipResearch';
 
-import {buildAdmissionsCalendar,saveDeadlineEntry,MAX_DEADLINE_ENTRIES} from '@/lib/admissionsCalendar';
+import {buildAdmissionsCalendar,calendarExportEntries,saveDeadlineEntry,MAX_DEADLINE_ENTRIES} from '@/lib/admissionsCalendar';
 
 const emptyDraft:DeadlineDraft={title:'',kind:'Scholarship',date:'',source:''};
 const statusLabels={completed:'Marked completed',past:'Past planning date',today:'Planning date today','next-seven-days':'Within 7 days',upcoming:'Upcoming planning date'} as const;
@@ -18,18 +18,20 @@ export default function ScholarshipResearchPlanner(){
  const [records,setRecords]=useState<DeadlineRecord[]>([]);
  const [editingId,setEditingId]=useState<string|null>(null);
  const [deadlineFilter,setDeadlineFilter]=useState('all');
+ const [calendarReminder,setCalendarReminder]=useState(false);
  const [error,setError]=useState('');
  const [notice,setNotice]=useState('');
  const today=calendarDateInPakistan();
  const q=query.trim().toLowerCase();
  const sources=scholarshipSources.filter(s=>(country==='all'||s.id===country)&&(!q||[s.country,s.provider,s.title,s.detail].join(' ').toLowerCase().includes(q)));
  const ordered=sortDeadlines(records).filter(r=>deadlineFilter==='all'||(deadlineFilter==='unfinished'&&!r.completed)||(deadlineFilter==='completed'&&r.completed)||(deadlineFilter==='due'&&!r.completed&&['past','today','next-seven-days'].includes(deadlineStatus(r.date,today,false))));
- const pendingCount=records.filter(r=>!r.completed).length;
+ const pendingCount=calendarExportEntries(records,today).length;
  function clearDraft(){setDraft(emptyDraft);setEditingId(null);setError('');}
  function editDeadline(record:DeadlineRecord){setDraft({title:record.title,kind:record.kind,date:record.date,source:record.source});setEditingId(record.id);setError('');setNotice('Editing planning entry.');document.getElementById('deadline-entry-title')?.focus();}
  function exportCalendar(){
   try{
-   const content=buildAdmissionsCalendar(records);
+   if(!pendingCount)return;
+   const content=buildAdmissionsCalendar(records,new Date(),calendarReminder);
    const url=URL.createObjectURL(new Blob([content],{type:'text/calendar;charset=utf-8'}));
    const link=document.createElement('a');link.href=url;link.download='unipathway-planning-dates.ics';document.body.appendChild(link);link.click();link.remove();
    window.setTimeout(()=>URL.revokeObjectURL(url),1000);
@@ -56,7 +58,7 @@ export default function ScholarshipResearchPlanner(){
   <section aria-labelledby="deadline-planner-title" className="rounded-2xl border bg-card p-5 sm:p-7">
    <h2 id="deadline-planner-title" className="flex items-center gap-2 text-2xl font-bold"><CalendarDays aria-hidden="true" className="size-6 shrink-0"/>Application and scholarship deadline planner</h2>
    <p className="mt-3 text-sm text-muted-foreground">Record dates you have checked yourself. Use an earlier personal planning date when the official cutoff is in another timezone. Dates are compared with the Pakistan calendar; this does not determine exact official deadline times.</p>
-   <p className="mt-3 rounded-lg border p-3 text-xs text-muted-foreground">Entries are held only while this page is open. Export unfinished entries as an all-day calendar file to keep a copy in your own calendar. There is no account storage, automatic sync or automatic reminder service. Do not enter personal identifiers, application numbers or documents.</p>
+   <p className="mt-3 rounded-lg border p-3 text-xs text-muted-foreground">Entries are held only while this page is open. Export unfinished entries dated today or later as an all-day calendar file to keep a copy in your own calendar. There is no account storage, automatic sync or automatic reminder service. Do not enter personal identifiers, application numbers or documents.</p>
    <form onSubmit={addDeadline} className="mt-5 grid gap-3 sm:grid-cols-2" aria-label={editingId?"Edit planning entry":"Add planning entry"}>
     <label className="block min-w-0 text-sm font-semibold">Application or award name<Input id="deadline-entry-title" className="mt-2 min-h-11" required maxLength={120} value={draft.title} onChange={e=>setDraft(old=>({...old,title:e.target.value}))} placeholder="Name of institution or funding programme"/></label>
     <label className="block min-w-0 text-sm font-semibold">Planning category<select className={inputClass} value={draft.kind} onChange={e=>setDraft(old=>({...old,kind:e.target.value as DeadlineKind}))}>{deadlineKinds.map(k=><option key={k}>{k}</option>)}</select></label>
@@ -66,7 +68,8 @@ export default function ScholarshipResearchPlanner(){
    </form>
    {error&&<p role="alert" className="mt-3 text-sm text-destructive">{error}</p>}
    <p role="status" className="mt-4 text-sm text-muted-foreground">{notice||records.length+' planning entries'} · Pakistan date: {today}</p>
-   <div className="mt-4 flex flex-wrap items-end justify-between gap-3"><label className="text-sm font-semibold">Show planning entries<select className={inputClass} value={deadlineFilter} onChange={e=>setDeadlineFilter(e.target.value)}><option value="all">All entries</option><option value="unfinished">Unfinished</option><option value="due">Past due / next 7 days</option><option value="completed">Completed</option></select></label><Button type="button" variant="outline" disabled={!pendingCount} onClick={exportCalendar}><Download aria-hidden="true" className="mr-2 size-4"/>Export unfinished dates (.ics)</Button></div><p className="mt-2 text-xs text-muted-foreground">Calendar import is manual. Repeat imports may create duplicates; update or remove old events in your calendar. Source URLs are excluded from the export.</p>
+   <div className="mt-4 flex flex-wrap items-end justify-between gap-3"><label className="text-sm font-semibold">Show planning entries<select className={inputClass} value={deadlineFilter} onChange={e=>setDeadlineFilter(e.target.value)}><option value="all">All entries</option><option value="unfinished">Unfinished</option><option value="due">Past due / next 7 days</option><option value="completed">Completed</option></select></label><Button type="button" variant="outline" disabled={!pendingCount} onClick={exportCalendar}><Download aria-hidden="true" className="mr-2 size-4"/>Export unfinished dates (.ics)</Button></div><p className="mt-2 text-xs text-muted-foreground">Only unfinished dates from today onward are exported. Calendar import is manual. Repeat imports may create duplicates; update or remove old events in your calendar. Source URLs are excluded from the export.</p>
+   <label className="mt-3 flex min-h-11 items-start gap-3 text-sm"><input type="checkbox" className="mt-1 size-5 shrink-0 accent-primary" checked={calendarReminder} onChange={e=>setCalendarReminder(e.target.checked)}/><span>Request a calendar reminder one day before each planning date. Reminder delivery depends on your calendar application and notification settings.</span></label>
    <div className="mt-3 divide-y">{ordered.map(r=><article key={r.id} className="flex flex-wrap items-start justify-between gap-3 py-4"><div className="min-w-0 flex-1"><p className="break-words font-semibold">{r.title}</p><p className="mt-1 text-sm text-muted-foreground">{r.kind} · {r.date}</p><p className="mt-1 text-sm font-medium">{statusLabels[deadlineStatus(r.date,today,r.completed)]}</p>{r.source&&<p className="mt-1 break-all text-xs text-muted-foreground">Your recorded source: {r.source}</p>}</div><div className="flex flex-wrap gap-2"><Button type="button" variant="outline" onClick={()=>editDeadline(r)}>Edit</Button><Button type="button" variant="outline" onClick={()=>{setRecords(old=>old.map(item=>item.id===r.id?{...item,completed:!item.completed}:item));setNotice(r.completed?'Entry reopened.':'Entry marked completed.');}}>{r.completed?'Reopen':'Mark completed'}</Button><Button type="button" variant="outline" onClick={()=>{setRecords(old=>old.filter(item=>item.id!==r.id));if(editingId===r.id)clearDraft();setNotice('Planning entry removed.');}} aria-label={'Remove '+r.title}>Remove</Button></div></article>)}</div>
    {!ordered.length&&<p className="mt-3 text-sm text-muted-foreground">{records.length?'No entries match the selected filter.':'No personal planning entries yet.'}</p>}
    <div className="mt-5 flex flex-wrap items-center gap-3 border-t pt-4"><ShieldCheck aria-hidden="true" className="size-5 shrink-0 text-success"/><p className="min-w-0 flex-1 text-sm text-muted-foreground">A planning entry is not an application, scholarship decision or proof of admission.</p><Button asChild variant="outline"><Link to="/consultation">Discuss your plans with an adviser</Link></Button></div>
