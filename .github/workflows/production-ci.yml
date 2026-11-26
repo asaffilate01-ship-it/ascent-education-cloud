@@ -17,6 +17,8 @@ jobs:
         run: node scripts/ci/verify-root-lockfile.mjs
       - name: Check manifest preflight regression cases
         run: node --test scripts/ci/verify-root-lockfile.test.mjs
+      - name: Redacted client environment inventory
+        run: node scripts/audit-activation-switches.mjs
   typecheck:
     needs: manifest-preflight
     runs-on: ubuntu-24.04
