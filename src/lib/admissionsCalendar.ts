@@ -14,7 +14,8 @@ export function saveDeadlineEntry(records:readonly DeadlineRecord[],draft:Deadli
 }
 
 function escapeText(value:string){
- return value.replace(/\\/g,'\\\\').replace(/\r\n|\r|\n/g,'\\n').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g,'').replace(/;/g,'\\;').replace(/,/g,'\\,');
+ const safe=Array.from(value).filter(char=>{const code=char.charCodeAt(0);return code===9||code===10||code===13||(code>=32&&code!==127);}).join('');
+ return safe.replace(/\\/g,'\\\\').replace(/\r\n|\r|\n/g,'\\n').replace(/;/g,'\\;').replace(/,/g,'\\,');
 }
 
 /** Fold each content line to at most 75 UTF-8 octets, without splitting a code point. */
