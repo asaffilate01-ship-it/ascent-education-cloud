@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest';
-import {baselineChecks,integrationCurrent,evidenceCurrent,readinessGaps,verifyReadinessHistory,verifyReadinessSnapshot,type ReadinessCheck} from './readiness';
+import {baselineChecks,nonWaivableLaunchChecks,integrationCurrent,evidenceCurrent,readinessCheckCurrent,readinessGaps,verifyReadinessHistory,verifyReadinessSnapshot,type ReadinessCheck} from './readiness';
 const now=Date.parse('2026-10-15T12:00:00Z');
 const check={status:'pass',checked_by:'reviewer',checked_at:'2026-10-15T11:00:00Z',evidence_reference:'evidence/123',valid_until:'2026-10-16T12:00:00Z',notes:null} as ReadinessCheck;
 describe('launch evidence gates',()=>{
@@ -83,5 +83,42 @@ describe('Phase 19: centre-isolated production evidence',()=>{
   expect(verifyReadinessSnapshot([],[],centre)).toEqual({integrations:[],checks:[]});
   expect(()=>verifyReadinessSnapshot(null,[],centre)).toThrow(/Unverified/);
   expect(()=>verifyReadinessSnapshot([],null,centre)).toThrow(/Unverified/);
+ });
+});
+
+describe('Phase 24: mandatory launch decisions cannot be waived',()=>{
+ const prepared=(key:string,status='pass'):ReadinessCheck=>({
+  ...check,check_key:key,status,notes:status==='not_applicable'?'Reviewed exception for a limited online pilot':null,
+ });
+ const verifiedProviders=[
+  integration({integration_key:'microsoft_education',id:'ms'}),
+  integration({integration_key:'institutional_payments',id:'payments'}),
+ ] as never;
+ it('requires documented passes for every non-waivable security and recovery gate',()=>{
+  for(const key of nonWaivableLaunchChecks)expect(baselineChecks).toContain(key);
+  const all=baselineChecks.map(key=>prepared(key));
+  const clean=readinessGaps(all,verifiedProviders,now);
+  expect(clean).toMatchObject({checks:0,integrations:0});
+  for(const key of nonWaivableLaunchChecks){
+   const waived=all.map(row=>row.check_key===key?prepared(key,'not_applicable'):row);
+   expect(evidenceCurrent(waived.find(row=>row.check_key===key)!,now)).toBe(true);
+   expect(readinessCheckCurrent(waived.find(row=>row.check_key===key)!,now)).toBe(false);
+   expect(readinessGaps(waived,verifiedProviders,now).checks).toBe(1);
+  }
+ });
+ it('does not treat a failed, pending or expired pass as satisfied',()=>{
+  for(const row of [
+   prepared('full_migration_replay','blocked'),
+   prepared('full_migration_replay','pending'),
+   {...prepared('full_migration_replay'),valid_until:'2026-10-15T10:00:00Z'},
+   {...prepared('full_migration_replay'),evidence_reference:''},
+  ])expect(readinessCheckCurrent(row,now)).toBe(false);
+ });
+ it('allows only documented optional waivers without pretending they are a provider health check',()=>{
+  const optional=prepared('cctv_security_playback','not_applicable');
+  expect(nonWaivableLaunchChecks).not.toContain(optional.check_key);
+  expect(readinessCheckCurrent(optional,now)).toBe(true);
+  expect(readinessCheckCurrent({...optional,notes:''},now)).toBe(false);
+  expect(readinessGaps([optional],[],now).integrations).toBe(2);
  });
 });

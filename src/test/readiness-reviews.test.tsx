@@ -100,3 +100,18 @@ it('clears previously accepted audit history when a new history response fails c
  expect(await screen.findByText('Review history unavailable. Retry.')).toBeInTheDocument();
  expect(screen.queryByText(/Revision 2: pending/)).toBeNull();
 });
+
+it('does not count a critical not-applicable decision as a completed launch check',async()=>{
+ mocks.rows.mockImplementation(async(_db,table)=>({data:table==='production_readiness_checks'?[{
+  id:'critical-check',tenant_id:'centre-1',check_key:'full_migration_replay',
+  category:'security',status:'not_applicable',revision:5,
+  evidence_reference:'audit-123',checked_by:'reviewer-1',
+  checked_at:'2026-11-18T11:00:00Z',notes:'Proposed waiver for pilot',
+  valid_until:null,
+ }]:[],error:null}));
+ render(<ProductionReadiness/>);
+ expect(await screen.findByText(/23 checks outstanding/)).toBeInTheDocument();
+ expect(screen.getByText(/An exemption cannot clear it/)).toBeInTheDocument();
+ expect(screen.getByText(/This mandatory gate cannot be cleared/)).toBeInTheDocument();
+ expect(screen.queryByText(/Recorded launch checks have current evidence/)).toBeNull();
+});
