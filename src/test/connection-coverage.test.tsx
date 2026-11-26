@@ -1,6 +1,6 @@
 import {render,screen,fireEvent,cleanup,within} from '@testing-library/react';
 import {afterEach,it,expect} from 'vitest';
-import ConnectionCoverage from '@/components/progression/ConnectionCoverage';
+import ConnectionCoverage,{connectionCoverage} from '@/components/progression/ConnectionCoverage';
 afterEach(cleanup);
 it('distinguishes source implementation from live health',()=>{render(<ConnectionCoverage/>);expect(screen.getByText(/not live health/)).toBeInTheDocument();const teams=screen.getByRole('article',{name:'Teams and recordings'});expect(within(teams).getByText('Provider activation required')).toBeInTheDocument();expect(within(teams).getByText(/Source code does not establish account activation/)).toBeInTheDocument();});
 it('filters incomplete connectors without changing recorded integration status',()=>{render(<ConnectionCoverage/>);fireEvent.change(screen.getByLabelText('Filter implementation status'),{target:{value:'Merchant connection required'}});expect(screen.getByRole('article',{name:'Pakistan payments'})).toBeInTheDocument();expect(screen.queryByRole('article',{name:'Admissions'})).not.toBeInTheDocument();expect(screen.queryByRole('button',{name:/activate/i})).not.toBeInTheDocument();});
@@ -9,13 +9,15 @@ it('searches next steps, combines status filters and recovers from no results',(
  const search=screen.getByLabelText('Find an integration');
  fireEvent.change(search,{target:{value:'retrieval'}});
  expect(screen.getByRole('article',{name:'Teams and recordings'})).toBeInTheDocument();
- expect(screen.getByRole('status')).toHaveTextContent('1 of 14 integration areas shown');
+ expect(screen.getByRole('status')).toHaveTextContent(`1 of ${connectionCoverage.length} integration areas shown`);
  fireEvent.change(screen.getByLabelText('Filter implementation status'),{target:{value:'Merchant connection required'}});
  expect(screen.queryByRole('article')).toBeNull();
  expect(screen.getByRole('heading',{name:'No integration areas match'})).toBeInTheDocument();
  fireEvent.click(screen.getByRole('button',{name:'Clear integration filters'}));
  expect(search).toHaveValue('');expect(search).toHaveFocus();
  expect(screen.getByLabelText('Filter implementation status')).toHaveValue('all');
- expect(screen.getAllByRole('article')).toHaveLength(14);
+ expect(screen.getAllByRole('article')).toHaveLength(connectionCoverage.length);
  expect(screen.getByText(/not live health/)).toBeInTheDocument();
 });
+
+it('includes the newly reviewed activation areas without claiming live health',()=>{render(<ConnectionCoverage/>);for(const name of ['Student application planning','Public enquiry security','Facilities inspection records']){const article=screen.getByRole('article',{name});expect(within(article).getByText('Hosted activation required')).toBeInTheDocument();}expect(new Set(connectionCoverage.map(row=>row.name)).size).toBe(connectionCoverage.length);});
