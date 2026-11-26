@@ -28,14 +28,14 @@ export const connectionCoverage=[
   },
   {
     "name": "Language lab",
-    "state": "Browser lab working; classroom trial pending",
-    "detail": "Listen-and-repeat with speech checking, dictation, timed speaking with AI practice feedback, an AI conversation partner and teacher-led live sessions work for classroom and remote learners. Live pair audio and teacher intercom are not included.",
+    "state": "Browser lab implemented; classroom trial pending",
+    "detail": "Listen-and-repeat with speech checking, dictation, timed speaking with AI practice feedback, an AI conversation partner and teacher-led live sessions are implemented for classroom and remote learners; hosted acceptance remains required. Live pair audio and teacher intercom are not included.",
     "next": "Trial with a real class on students' phones and headsets; decide whether pair/group audio is needed."
   },
   {
     "name": "Virtual tech labs",
-    "state": "Browser labs working; cloud provider required",
-    "detail": "Marked AI, Python, web, JavaScript, SQL, data and cyber exercises, an AI coach and teacher-led live sessions run in the browser. Managed cloud environments (Linux desktops, servers) remain separate.",
+    "state": "Browser labs implemented; cloud provider required",
+    "detail": "Marked AI, Python, web, JavaScript, SQL, data and cyber exercises, an AI coach and teacher-led live sessions are implemented in the browser; hosted acceptance remains required. Managed cloud environments (Linux desktops, servers) remain separate.",
     "next": "Choose the cloud provider and complete provisioning, saved work, expiry, shutdown, capacity and cost limits."
   },
   {
@@ -81,10 +81,28 @@ export const connectionCoverage=[
     "next": "Obtain authorised NADRA access and choose camera/NVR hardware; implement and verify consent, security-role viewing and playback."
   },
   {
+    "name": "Student application planning",
+    "state": "Hosted activation required",
+    "detail": "Public scholarship research, university comparison and calendar downloads are implemented. The private student planner has a separately gated reviewed database patch.",
+    "next": "Rehearse the private planner patch against the actual predecessor schema; verify student ownership, centre separation and retention before enabling the server and browser gates."
+  },
+  {
+    "name": "Public enquiry security",
+    "state": "Hosted activation required",
+    "detail": "Both contact handlers validate an active tenant and return safe public errors. The protected route has Turnstile and a durable quota, with a server-side legacy bypass prevention switch.",
+    "next": "Verify hosted handlers, challenge and quota, CRM routing and the coordinated secure-only server and client switches."
+  },
+  {
+    "name": "Facilities inspection records",
+    "state": "Hosted activation required",
+    "detail": "The facilities register is read-only by default in the interface; reviewed forward patches provide gated centre-specific asset and inspection reads.",
+    "next": "Rehearse both facilities patches, verify physical security roles and server gates, and complete verified registration and inspection submission workflows. Do not infer compliance from planning entries."
+  },
+  {
     "name": "Public information",
     "state": "Institutional details required",
     "detail": "ATHE, Pearson BTEC and VTCT guidance does not establish centre approval or an available intake.",
-    "next": "Supply approved course claims, fees/intakes, social URLs and WhatsApp number; leave TikTok unlinked until provided."
+    "next": "Verify the published WhatsApp, Facebook and Instagram links; confirm remaining official channel URLs and approved course claims, fees and intakes."
   }
 ];
 export default function ConnectionCoverage(){
@@ -96,7 +114,7 @@ export default function ConnectionCoverage(){
  const clear=()=>{setFilter('all');setSearch('');searchInput.current?.focus();};
  return <details className="surface-card p-5 space-y-4">
   <summary className="min-h-11 font-semibold cursor-pointer">Implementation and connection guide · {connectionCoverage.length} areas</summary>
-  <p className="text-sm text-muted-foreground">Source review: 26 October 2026. This guide describes implementation boundaries, not live health. Use the recorded checks above for evidence and decisions. Never put credentials in review notes.</p>
+  <p className="text-sm text-muted-foreground">Source review: 26 November 2026. This guide describes implementation boundaries, not live health. Use the recorded checks above for evidence and decisions. Never put credentials in review notes.</p>
   <div className="grid gap-4 sm:grid-cols-2">
    <label className="block text-sm font-medium">Find an integration<Input ref={searchInput} type="search" placeholder="Try recordings, payments or offline" value={search} onChange={e=>setSearch(e.target.value)}/></label>
    <label className="block text-sm font-medium">Filter implementation status<select className="mt-1 min-h-11 block w-full min-w-0 rounded-lg border p-2 bg-background" value={filter} onChange={e=>setFilter(e.target.value)}><option value="all">All areas</option>{[...new Set(connectionCoverage.map(r=>r.state))].map(state=><option key={state}>{state}</option>)}</select></label>
