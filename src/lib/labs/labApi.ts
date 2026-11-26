@@ -88,10 +88,11 @@ export function useLiveLab(kind: LabKind, scope:LabScope) {
   const generation=useRef(0);
   const active=useRef(false);
   const joined=useRef<string|null>(sessionId);
+  const verifiedSession=useRef<string|null>(null);
   useEffect(()=>{active.current=true;return()=>{active.current=false;generation.current++;};},[]);
 
   const leave=useCallback(()=>{
-   generation.current++;joined.current=null;
+   generation.current++;joined.current=null;verifiedSession.current=null;
    writeScopedLabSession(browserStorage(),kind,{id:ownerId,tenantId,role},null);
    presence.current={status:'working',hand:false,activity:null};setSessionId(null);setSession(null);setError('');
   },[kind,ownerId,tenantId,role]);
@@ -108,7 +109,8 @@ export function useLiveLab(kind: LabKind, scope:LabScope) {
     const result=await supabase.from('interactive_lab_sessions').select(SESSION_COLUMNS).eq('id',data).eq('tenant_id',tenantId).maybeSingle();
     if(!current())return false;
     if(result.error||!labSessionMatches(result.data,{id:ownerId,tenantId,role},kind,data)){setError('This session could not be verified for your lab and centre.');return false;}
-    joined.current=data;presence.current={status:'working',hand:false,activity:null};
+    if(result.data?.status!=='live'){setError('This class has ended. Ask your teacher for a new session code.');return false;}
+    joined.current=data;verifiedSession.current=data;presence.current={status:'working',hand:false,activity:null};
     writeScopedLabSession(browserStorage(),kind,{id:ownerId,tenantId,role},data);
     setSessionId(data);setSession(result.data as unknown as LiveSession);return true;
    }catch{if(current())setError('Unable to join the class. Check your connection and retry.');return false;}
@@ -117,7 +119,7 @@ export function useLiveLab(kind: LabKind, scope:LabScope) {
   const sendPresence=useCallback(async(patch:Partial<typeof presence.current>)=>{
    if(!active.current)return;
    presence.current={...presence.current,...patch};
-   if(!sessionId||joined.current!==sessionId)return;
+   if(!sessionId||joined.current!==sessionId||verifiedSession.current!==sessionId)return;
    try{await supabase.rpc('touch_interactive_lab',{p_session:sessionId,p_status:presence.current.status,p_hand:presence.current.hand,p_activity:presence.current.activity??''});}catch{/* The next verified poll will retry connectivity. */}
   },[sessionId]);
 
@@ -131,11 +133,12 @@ export function useLiveLab(kind: LabKind, scope:LabScope) {
     try{
      const {data,error:e}=await supabase.from('interactive_lab_sessions').select(SESSION_COLUMNS).eq('id',sessionId).eq('tenant_id',tenantId).maybeSingle();
      if(!current())return;
-     if(e){verified=false;setSession(null);setError('Connection to the class session dropped. Retrying…');return;}
+     if(e){verified=false;verifiedSession.current=null;setSession(null);setError('Connection to the class session dropped. Retrying…');return;}
      if(!labSessionMatches(data,{id:ownerId,tenantId,role},kind,sessionId)){leave();setError('Saved class session could not be verified for this centre.');return;}
      setSession(data as unknown as LiveSession);setError('');
-     if(!verified){verified=true;void sendPresence({});}
-    }catch{if(current()){verified=false;setSession(null);setError('Class session verification failed. Retrying…');}}
+     verifiedSession.current=data?.status==='live'?sessionId:null;
+     if(!verified){verified=true;if(verifiedSession.current===sessionId)void sendPresence({});}
+    }catch{if(current()){verified=false;verifiedSession.current=null;setSession(null);setError('Class session verification failed. Retrying…');}}
     finally{inFlight=false;}
    };
    void poll();
