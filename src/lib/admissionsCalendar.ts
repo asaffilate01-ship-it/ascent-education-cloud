@@ -1,4 +1,4 @@
-import {sortDeadlines,validateDeadline,type DeadlineDraft,type DeadlineRecord} from './scholarshipResearch';
+import {calendarDateInPakistan,sortDeadlines,validateDeadline,type DeadlineDraft,type DeadlineRecord} from './scholarshipResearch';
 
 export const MAX_DEADLINE_ENTRIES=30;
 
@@ -32,9 +32,12 @@ export function foldCalendarLine(line:string){
  return parts.join('\r\n');
 }
 
-export function buildAdmissionsCalendar(records:readonly DeadlineRecord[],now=new Date()){
+export function calendarExportEntries(records:readonly DeadlineRecord[],today:string){
+ return sortDeadlines(records.filter(r=>!r.completed&&r.date>=today));
+}
+export function buildAdmissionsCalendar(records:readonly DeadlineRecord[],now=new Date(),reminder=false){
  if(!Number.isFinite(now.getTime()))throw Error('Invalid calendar export timestamp.');
- const pending=sortDeadlines(records.filter(r=>!r.completed));
+ const pending=calendarExportEntries(records,calendarDateInPakistan(now));
  if(pending.length>MAX_DEADLINE_ENTRIES)throw Error('Too many planning entries.');
  const used=new Set<string>();
  const stamp=now.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}Z$/,'Z');
@@ -43,7 +46,9 @@ export function buildAdmissionsCalendar(records:readonly DeadlineRecord[],now=ne
   const item=validateDeadline(record);
   if(!item||item.date.startsWith('0000-')||!record.id||used.has(record.id))throw Error('Invalid or duplicate planning entry.');
   used.add(record.id);
-  lines.push('BEGIN:VEVENT','UID:'+encodeURIComponent(record.id)+'@unipathway.pk','DTSTAMP:'+stamp,'DTSTART;VALUE=DATE:'+item.date.replace(/-/g,''),'SUMMARY:'+escapeText(item.title),'DESCRIPTION:'+escapeText(item.kind+' — Personal planning date only; verify the official cutoff and timezone separately. No confirmed appointment or admission.'),'TRANSP:TRANSPARENT','END:VEVENT');
+  lines.push('BEGIN:VEVENT','UID:'+encodeURIComponent(record.id)+'@unipathway.pk','DTSTAMP:'+stamp,'DTSTART;VALUE=DATE:'+item.date.replace(/-/g,''),'SUMMARY:'+escapeText(item.title),'DESCRIPTION:'+escapeText(item.kind+' — Personal planning date only; verify the official cutoff and timezone separately. No confirmed appointment or admission.'),'TRANSP:TRANSPARENT');
+  if(reminder)lines.push('BEGIN:VALARM','TRIGGER:-P1D','ACTION:DISPLAY','DESCRIPTION:Review your personal planning date','END:VALARM');
+  lines.push('END:VEVENT');
  }
  lines.push('END:VCALENDAR');
  return lines.map(foldCalendarLine).join('\r\n')+'\r\n';
