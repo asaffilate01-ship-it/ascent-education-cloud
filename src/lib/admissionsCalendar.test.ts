@@ -3,6 +3,7 @@ import {buildAdmissionsCalendar,foldCalendarLine,saveDeadlineEntry} from './admi
 import type {DeadlineDraft,DeadlineRecord} from './scholarshipResearch';
 const draft:DeadlineDraft={title:'Study, plan; review',kind:'Scholarship',date:'2027-01-31',source:'https://example.org/award'};
 const entry:DeadlineRecord={...draft,id:'example-1',completed:false};
+const now=new Date('2026-11-26T07:00:00Z');
 describe('admissions calendar',()=>{
  it('edits in place without changing identity or completion status',()=>{
   const completed={...entry,completed:true};
@@ -29,10 +30,17 @@ describe('admissions calendar',()=>{
   expect(output.endsWith('END:VCALENDAR\r\n')).toBe(true);
  });
  it('escapes event text and prevents calendar property injection',()=>{
-  const output=buildAdmissionsCalendar([{...entry,title:'Example\r\nATTENDEE:mailto:example@example.org'}]);
+  const output=buildAdmissionsCalendar([{...entry,title:'Example\r\nATTENDEE:mailto:example@example.org'}],now);
   expect(output).toContain('SUMMARY:Example\\nATTENDEE:mailto:');
   expect(output).not.toContain('\r\nATTENDEE:');
-  expect(()=>buildAdmissionsCalendar([entry,entry])).toThrow();
+  expect(()=>buildAdmissionsCalendar([entry,entry],now)).toThrow();
+ });
+ it('excludes overdue dates and adds a display alarm only when requested',()=>{
+  const overdue={...entry,id:'past',date:'2026-11-25'};
+  const calendar=buildAdmissionsCalendar([entry,overdue],now,true);
+  expect(calendar).not.toContain('UID:past@');
+  expect(calendar).toContain('BEGIN:VALARM\r\nTRIGGER:-P1D\r\n');
+  expect(buildAdmissionsCalendar([entry],now)).not.toContain('BEGIN:VALARM');
  });
  it('folds multibyte text at the correct byte limit',()=>{
   const line='SUMMARY:'+('学習🎓'.repeat(25));
