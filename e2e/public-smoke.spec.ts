@@ -138,7 +138,11 @@ test('selected overseas university and awarding body stay in UniPathway enquiry'
   const consent=page.getByRole('dialog',{name:'Cookie preferences'});
   if(await consent.isVisible())await consent.getByRole('button',{name:'Reject all'}).click();
   await expect(page.getByRole('heading',{name:/Find universities that list OTHM or Qualifi/i})).toBeVisible();
-  await expect(page.locator('main a[href^="http"]')).toHaveCount(0);
+  // The App shell also wraps navigation, footer and public social links in a main element.
+  // Restrict this assertion to the university directory's own content, not the public contact surfaces.
+  const directory=page.locator('#main-content main').filter({has:page.getByRole('heading',{name:/Find universities that list OTHM or Qualifi/i})});
+  await expect(directory).toHaveCount(1);
+  await expect(directory.locator('a[href^="http"],a[href^="//"]')).toHaveCount(0);
   await page.getByRole('button',{name:'USA',exact:true}).click();
   const card=page.locator('article').filter({has:page.getByRole('heading',{name:'Thomas Edison State University'})});
   await expect(card).toBeVisible();
