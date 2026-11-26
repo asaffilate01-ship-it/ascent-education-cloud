@@ -8,6 +8,15 @@ export const scholarshipSources=[
  {id:'europe',country:'Europe / multiple countries',provider:'European Commission · Erasmus+',title:'Erasmus Mundus Joint Masters',url:'https://erasmus-plus.ec.europa.eu/opportunities/individuals/students/erasmus-mundus-joint-masters',detail:'Check participating master’s programmes, current calls and consortium application instructions.'},
 ] as const;
 export const scholarshipSourcesReviewed='2026-11-25';
+export function scholarshipResearchDestination(value:unknown):string{
+ if(typeof value!=='string')return 'all';
+ if(scholarshipSources.some(s=>s.id===value))return value;
+ return ['france','spain','netherlands'].includes(value)?'europe':'all';
+}
+export function scholarshipResearchUrl(destination?:string){
+ const country=scholarshipResearchDestination(destination);
+ return '/scholarships'+(country==='all'?'':'?'+new URLSearchParams({funding:country}).toString())+'#international-scholarship-research';
+}
 export const deadlineKinds=['Scholarship','University application','Document submission','Language test','Other'] as const;
 export type DeadlineKind=typeof deadlineKinds[number];
 export type DeadlineDraft={title:string;kind:DeadlineKind;date:string;source:string};
@@ -15,7 +24,7 @@ export type DeadlineRecord=DeadlineDraft&{id:string;completed:boolean};
 export function validateDeadline(draft:DeadlineDraft):DeadlineDraft|null{
  const title=draft.title.trim(),source=draft.source.trim();
  if(!title||title.length>120||!deadlineKinds.includes(draft.kind)||source.length>300)return null;
- if(!/^\d{4}-\d{2}-\d{2}$/.test(draft.date))return null;
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(draft.date)||draft.date.startsWith('0000-'))return null;
  const date=new Date(draft.date+'T00:00:00Z');
  if(!Number.isFinite(date.getTime())||date.toISOString().slice(0,10)!==draft.date)return null;
  if(source){try{const parsed=new URL(source);if(parsed.protocol!=='https:'||parsed.username||parsed.password)return null;}catch{return null;}}
