@@ -51,7 +51,7 @@ Deno.serve(async(req:Request)=>{
   const quota=await admin.rpc('consume_unipathway_enquiry_quota',{p_digest:digest,p_limit:4});
   if(quota.error||quota.data===null)return json({error:'Unable to verify enquiry quota. Retry later.'},503);
   if(quota.data!==true)return json({error:'Too many enquiries. Please try again later.'},429);
-  const tenant=await admin.from('tenants').select('id').eq('slug','unipathway').maybeSingle();
+  const tenant=await admin.from('tenants').select('id').eq('slug','unipathway').eq('status','active').maybeSingle();
   if(tenant.error||!tenant.data?.id)return json({error:'Admissions are temporarily unavailable.'},503);
   const notes=[
     'Subject: '+data.subject,
