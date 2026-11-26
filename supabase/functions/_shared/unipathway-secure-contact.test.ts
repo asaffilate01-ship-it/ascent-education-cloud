@@ -12,6 +12,9 @@ Deno.test('secure contact parser accepts a restricted UniPathway enquiry only',(
   throw new Error('Valid synthetic contact data was not normalised');
  }
 });
+Deno.test('blank optional topic normalises to General Enquiry',()=>{
+ if(validateSecureContact({...valid,subject:''})?.subject!=='General Enquiry')throw Error('Optional subject rejected');
+});
 Deno.test('invalid, cross-tenant, consentless, malformed and forged requests fail closed',()=>{
  const bad=[
   null,[],{}, {...valid,tenant_slug:'other-centre'},
