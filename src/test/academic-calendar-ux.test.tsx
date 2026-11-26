@@ -1,5 +1,6 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import type { ReactNode } from 'react';
+import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AcademicEvent } from '@/lib/academicCalendar';
 
@@ -73,7 +74,9 @@ describe('Calendar access and read feedback', () => {
   ])('matches the existing calendar write policy for an active $role', ({role, manage}) => {
     mocks.user = {...mocks.user, role, roles: [role]};
     mocks.read.data = [calendarEvent()];
-    render(<AcademicCalendar />);
+    render(<AcademicCalendar />, {wrapper: MemoryRouter});
+    expect(Boolean(screen.queryByRole('heading', {name: 'My application planning dates'}))).toBe(role==='student');
+    if(role==='student')expect(screen.getByRole('link', {name: 'Use the temporary scholarship planner'})).toHaveAttribute('href','/scholarships#international-scholarship-research');
     expect(mocks.query).toHaveBeenLastCalledWith('academic_events', expect.objectContaining({enabled: true}));
     expect(Boolean(screen.queryByRole('button', {name: 'Add Event'}))).toBe(manage);
     fireEvent.click(screen.getByRole('button', {name: /Saturday, 7 November 2026, 1 event\. View day details/}));

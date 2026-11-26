@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import StudentApplicationPlans from '@/components/calendar/StudentApplicationPlans';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -209,6 +210,7 @@ function CalendarWorkspace({ user, authLoading }: { user: CalendarUser; authLoad
       </DialogContent>
     </Dialog>}>
     <p className="mb-4 text-sm text-muted-foreground">Current centre · Pakistan time (UTC+5). Select a day or event to see its details.</p>
+    {canRead && user && centreId && canUseActiveRole(user, ['student']) && <StudentApplicationPlans tenant={centreId} owner={user.id}/>}
     {notice && <p role="status" className="mb-4 rounded-lg border border-success/30 bg-success/5 p-3 text-sm">{notice}</p>}
     {authLoading ? <p role="status" className="surface-card p-6">Checking calendar access…</p>
       : !authorised ? <p role="alert" className="surface-card p-6">Your active role could not be verified. Refresh your account or contact your centre.</p>
