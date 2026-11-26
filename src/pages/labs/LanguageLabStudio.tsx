@@ -48,7 +48,7 @@ function LanguageLabWorkspace({scope}:{scope:LabScope}){
   return (
     <DashboardLayout title="Language Lab" subtitle="Listen, repeat, write and speak with instant feedback — on your own or in a live class led by your teacher.">
       <LiveLabBar live={live} label="language lab" />
-      {live.session?.status === 'live' && <TeacherBroadcast live={live} />}
+      {live.session?.status === 'live' && <TeacherBroadcast key={live.session.id} live={live} />}
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <fieldset className="flex gap-2" aria-label="Language">
