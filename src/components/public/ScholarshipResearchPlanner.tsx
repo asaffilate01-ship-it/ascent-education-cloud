@@ -1,9 +1,9 @@
 import {useState} from 'react';
-import {Link} from 'react-router-dom';
+import {Link,useSearchParams} from 'react-router-dom';
 import {ArrowUpRight,CalendarDays,Download,Search,ShieldCheck} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
-import {scholarshipSources,scholarshipSourcesReviewed,deadlineKinds,calendarDateInPakistan,deadlineStatus,sortDeadlines,type DeadlineDraft,type DeadlineRecord,type DeadlineKind} from '@/lib/scholarshipResearch';
+import {scholarshipSources,scholarshipSourcesReviewed,scholarshipResearchDestination,deadlineKinds,calendarDateInPakistan,deadlineStatus,sortDeadlines,type DeadlineDraft,type DeadlineRecord,type DeadlineKind} from '@/lib/scholarshipResearch';
 
 import {buildAdmissionsCalendar,saveDeadlineEntry,MAX_DEADLINE_ENTRIES} from '@/lib/admissionsCalendar';
 
@@ -11,7 +11,8 @@ const emptyDraft:DeadlineDraft={title:'',kind:'Scholarship',date:'',source:''};
 const statusLabels={completed:'Marked completed',past:'Past planning date',today:'Planning date today','next-seven-days':'Within 7 days',upcoming:'Upcoming planning date'} as const;
 const inputClass='mt-2 block min-h-11 w-full min-w-0 rounded-lg border border-input bg-background px-3 py-2 text-base font-normal';
 export default function ScholarshipResearchPlanner(){
- const [country,setCountry]=useState('all');
+ const [params]=useSearchParams();
+ const [country,setCountry]=useState(()=>scholarshipResearchDestination(params.get('funding')));
  const [query,setQuery]=useState('');
  const [draft,setDraft]=useState<DeadlineDraft>(emptyDraft);
  const [records,setRecords]=useState<DeadlineRecord[]>([]);
