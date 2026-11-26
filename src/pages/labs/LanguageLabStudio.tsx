@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import {verifiedLabScope,labPrincipalKey,type LabScope} from '@/lib/labs/labScope';
 import { CONVERSATIONS, DRILL_SENTENCES, LAB_LANGUAGES, SPEAKING_PROMPTS, promptById, sentenceById, type LabLanguage } from '@/data/labs/languageLabCatalogue';
 import { myAttempts, recordingUrl, useLiveLab, type Attempt } from '@/lib/labs/labApi';
 import { speak, speechSupported } from '@/lib/labs/speech';
@@ -20,13 +21,18 @@ const MODES = [
 ] as const;
 type Mode = typeof MODES[number]['id'];
 
-export default function LanguageLabStudio() {
-  const { user } = useAuth();
+export default function LanguageLabStudio(){
+  const {user,loading}=useAuth();
+  const scope=verifiedLabScope(user);
+  if(loading||!scope)return <DashboardLayout title="Language Lab"><p role="status">{loading?'Checking lab access…':'A verified account and centre assignment are required.'}</p></DashboardLayout>;
+  return <LanguageLabWorkspace key={labPrincipalKey(scope)} scope={scope}/>;
+}
+function LanguageLabWorkspace({scope}:{scope:LabScope}){
   const [params, setParams] = useSearchParams();
   const mode = (params.get('mode') as Mode) || 'repeat';
   const lang = (params.get('lang') as LabLanguage) || 'en';
   const set = (k: string, v: string) => setParams(prev => { const p = new URLSearchParams(prev); p.set(k, v); return p; });
-  const live = useLiveLab('language', !!user?.id);
+  const live = useLiveLab('language', scope);
 
   const sentences = DRILL_SENTENCES.filter(s => s.language === lang);
   const prompts = SPEAKING_PROMPTS.filter(p => p.language === lang);
@@ -42,7 +48,7 @@ export default function LanguageLabStudio() {
   return (
     <DashboardLayout title="Language Lab" subtitle="Listen, repeat, write and speak with instant feedback — on your own or in a live class led by your teacher.">
       <LiveLabBar live={live} label="language lab" />
-      {live.session?.status === 'live' && <TeacherBroadcast live={live} />}
+      {live.session?.status === 'live' && <TeacherBroadcast key={live.session.id} live={live} />}
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <fieldset className="flex gap-2" aria-label="Language">
@@ -82,7 +88,7 @@ export default function LanguageLabStudio() {
           </label>
           <ConversationPartner scenario={scenario} lang={lang} />
         </>}
-        {mode === 'history' && <History userId={user?.id} />}
+        {mode === 'history' && <History userId={scope.id} tenantId={scope.tenantId} />}
       </section>
       <p className="mt-4 text-xs text-muted-foreground">Sentences are read by your device’s voice. Speech checking, speaking feedback and the conversation partner use Lovable AI and are limited each day. Speaking-test recordings are private to you and your teachers.</p>
     </DashboardLayout>
@@ -124,11 +130,16 @@ function label(activity: string) {
   return `${mode === 'repeat' ? 'Listen & repeat' : mode === 'dictation' ? 'Dictation' : mode === 'speaking' ? 'Speaking' : 'Conversation'} — ${name}`;
 }
 
-function History({ userId }: { userId?: string }) {
+function History({userId,tenantId}:{userId:string;tenantId:string}){
   const [rows, setRows] = useState<Attempt[] | null>(null);
   const [error, setError] = useState('');
   const [audio, setAudio] = useState<Record<string, string>>({});
-  useEffect(() => { if (userId) myAttempts(userId, 'language', 60).then(setRows).catch(e => setError(e.message)); }, [userId]);
+  const generation=useRef(0);
+  useEffect(()=>{
+    const token=++generation.current;
+    void myAttempts(userId,tenantId,'language',60).then(result=>{if(generation.current===token)setRows(result);}).catch(()=>{if(generation.current===token)setError('Your saved language work could not be verified.');});
+    return()=>{generation.current++;};
+  },[userId,tenantId]);
   if (error) return <p role="alert" className="text-sm text-destructive">{error}</p>;
   if (!rows) return <p role="status">Loading your work…</p>;
   if (!rows.length) return <p>No saved language work yet. Try a speaking test or dictation.</p>;
