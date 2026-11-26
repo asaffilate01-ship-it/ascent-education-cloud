@@ -1,5 +1,6 @@
 import CourseOfferEditor from '@/components/assessment/CourseOfferEditor';
 import ConnectionCoverage from '@/components/progression/ConnectionCoverage';
+import ActivationRegister from '@/components/progression/ActivationRegister';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import type {SupabaseClient} from '@supabase/supabase-js';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -13,7 +14,7 @@ import {localDateTime,supportDueValue} from '@/lib/supportDesk';
 const db:SupabaseClient=supabase;
 export default function ProductionReadiness(){
  const {user}=useAuth();const allowed=!!user&&['superadmin','centre_director'].includes(user.role)&&user.roles?.includes(user.role)===true;
- return <DashboardLayout title="Production Readiness" subtitle="Launch decisions require recorded operational evidence">{allowed&&user?.tenantId?<>{user.role==='superadmin'&&<CourseOfferEditor/>}<Workspace key={`${user.tenantId}-${user.id}-${user.role}`} tenant={user.tenantId}/><ConnectionCoverage/></>:<p role="alert">An active, verified centre leadership role is required. Switch back to an authorised role to review launch evidence.</p>}</DashboardLayout>;
+ return <DashboardLayout title="Production Readiness" subtitle="Launch decisions require recorded operational evidence">{allowed&&user?.tenantId?<>{user.role==='superadmin'&&<CourseOfferEditor/>}<Workspace key={`${user.tenantId}-${user.id}-${user.role}`} tenant={user.tenantId}/><ActivationRegister/><ConnectionCoverage/></>:<p role="alert">An active, verified centre leadership role is required. Switch back to an authorised role to review launch evidence.</p>}</DashboardLayout>;
 }
 function Workspace({tenant}:{tenant:string}){
  const [integrations,setIntegrations]=useState<EducationTables['production_integrations']['Row'][]>([]),[checks,setChecks]=useState<ReadinessCheck[]>([]);
