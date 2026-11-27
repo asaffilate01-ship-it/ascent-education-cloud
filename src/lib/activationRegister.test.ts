@@ -18,6 +18,13 @@ describe('production activation register',()=>{
    expect(status({...inputs,VITE_UNIPATHWAY_PHYSICAL_SECURITY_ENABLED:'true'},key).state).toBe('enabled_unverified');
   }
  });
+ it('requires both physical security and facilities reads before facilities writes',()=>{
+  const key='VITE_UNIPATHWAY_FACILITIES_WRITES_ENABLED';
+  const inputs={[key]:'true'};
+  expect(status(inputs,key)).toMatchObject({state:'blocked',blockers:['VITE_UNIPATHWAY_PHYSICAL_SECURITY_ENABLED','VITE_UNIPATHWAY_FACILITIES_REGISTER_ENABLED']});
+  expect(status({...inputs,VITE_UNIPATHWAY_FACILITIES_REGISTER_ENABLED:'true'},key).state).toBe('blocked');
+  expect(status({...inputs,VITE_UNIPATHWAY_PHYSICAL_SECURITY_ENABLED:'true',VITE_UNIPATHWAY_FACILITIES_REGISTER_ENABLED:'true'},key).state).toBe('enabled_unverified');
+ });
  it('requires a configured public site key and never serialises its value',()=>{
   const key='VITE_UNIPATHWAY_SECURE_CONTACT_ENABLED';
   expect(status({[key]:'true'},key)).toMatchObject({state:'blocked',blockers:['VITE_TURNSTILE_SITE_KEY']});
