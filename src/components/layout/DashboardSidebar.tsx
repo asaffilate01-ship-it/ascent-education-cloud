@@ -642,10 +642,10 @@ export default function DashboardSidebar({collapsed: collapsedProp, onCollapsedC
         <p id="sidebar-search-count" role="status" className={navSearch.trim()?'mb-2 px-3 text-xs text-sidebar-foreground/70':'sr-only'}>{navSearch.trim()? `${sections.reduce((count,section)=>count+section.items.length,0)} matching pages`:'Search your authorised workspace pages by keyword.'}</p>
         {navSearch && !sections.some(s => s.items.length) && <p className="px-3 text-sm">No matching pages. Try another name.</p>}
         {sections.map((section, si) => (
-          <details key={`${user.role}-${si}-${navSearch}`} open={collapsed || si === 0 || !!navSearch || section.items.some(i => i.path === location.pathname)} className={si > 0 ? 'mt-5' : ''}>
+          <details key={`${user.role}-${si}-${navSearch}`} open={collapsed || si === 0 || !!navSearch || section.items.some(i => i.path === location.pathname)} className={si > 0 ? (collapsed ? 'mt-2 border-t border-sidebar-border pt-2' : 'mt-5') : ''}>
             {(
 
-              <summary className="min-h-11 cursor-pointer rounded-lg px-3 py-3 text-xs font-semibold text-sidebar-foreground/70 hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring">
+              <summary className={collapsed ? "sr-only" : "min-h-11 cursor-pointer rounded-lg px-3 py-3 text-xs font-semibold text-sidebar-foreground/70 hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"}>
                 {section.title || 'Navigation'}
               </summary>
             )}
