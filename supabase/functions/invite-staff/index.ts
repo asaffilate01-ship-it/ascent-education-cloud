@@ -47,6 +47,8 @@ Deno.serve(async req=>{
    typeof role!=='string'||!safeRoles.has(role)||
    (tenantId!==undefined&&tenantId!==null&&(typeof tenantId!=='string'||!uuid.test(tenantId))))
    return json({error:'Only an approved staff role and valid name, email and centre may be invited.'},400);
+  if(Deno.env.get('UNIPATHWAY_INSTITUTIONAL_AUTH_ENABLED')==='true'&&!/^[a-z0-9][a-z0-9._+-]{0,63}@unipathway[.]pk$/.test(email.trim().toLowerCase()))
+   return json({error:'Use the assigned @unipathway.pk institutional email address.'},400);
   const overrides=validPermissions(permissions);
   if(overrides===null||(!officeRoles.has(role)&&Object.keys(overrides).length))
    return json({error:'The requested personal permissions are not allowed for this role.'},400);
