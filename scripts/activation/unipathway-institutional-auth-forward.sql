@@ -79,4 +79,38 @@ CREATE VIEW unipathway_identity.current_login_sessions WITH (security_invoker=tr
  SELECT s.id AS session_id,s.user_id,s.created_at,s.updated_at,s.ip,s.user_agent,s.aal
  FROM auth.sessions s JOIN unipathway_identity.approved_accounts a ON a.user_id=s.user_id;
 REVOKE ALL ON unipathway_identity.current_login_sessions FROM PUBLIC,anon,authenticated,supabase_auth_admin;
+-- Explicitly approved private retention of session events. Auth is the source
+-- of IP and user-agent values; no browser-supplied location or GPS is accepted.
+CREATE TABLE unipathway_identity.login_events(
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+ session_id uuid NOT NULL,
+ user_id uuid NOT NULL,
+ event_kind text NOT NULL CHECK(event_kind IN ('session_created','assurance_changed','network_changed')),
+ occurred_at timestamptz NOT NULL DEFAULT now(),
+ ip inet,
+ user_agent text,
+ aal text
+);
+ALTER TABLE unipathway_identity.login_events ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON unipathway_identity.login_events FROM PUBLIC,anon,authenticated,supabase_auth_admin;
+CREATE INDEX institutional_login_events_by_user ON unipathway_identity.login_events(user_id,occurred_at DESC);
+CREATE FUNCTION unipathway_identity.capture_session_event()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
+AS $fn$
+DECLARE kind text;
+BEGIN
+ IF NOT EXISTS(SELECT 1 FROM unipathway_identity.approved_accounts a WHERE a.user_id=NEW.user_id AND a.revoked_at IS NULL) THEN RETURN NEW;END IF;
+ IF TG_OP='INSERT' THEN kind:='session_created';
+ ELSIF OLD.aal IS DISTINCT FROM NEW.aal THEN kind:='assurance_changed';
+ ELSIF OLD.ip IS DISTINCT FROM NEW.ip THEN kind:='network_changed';
+ ELSE RETURN NEW;
+ END IF;
+ INSERT INTO unipathway_identity.login_events(session_id,user_id,event_kind,ip,user_agent,aal)
+ VALUES(NEW.id,NEW.user_id,kind,NEW.ip,left(NEW.user_agent,1024),NEW.aal::text);
+ RETURN NEW;
+END;$fn$;
+REVOKE ALL ON FUNCTION unipathway_identity.capture_session_event() FROM PUBLIC,anon,authenticated,supabase_auth_admin;
+-- Rehearse the trigger against the actual hosted Auth schema before applying.
+CREATE TRIGGER unipathway_capture_session_event AFTER INSERT OR UPDATE OF aal,ip ON auth.sessions
+ FOR EACH ROW EXECUTE FUNCTION unipathway_identity.capture_session_event();
 COMMIT;
