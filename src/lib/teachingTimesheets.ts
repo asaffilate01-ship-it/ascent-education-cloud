@@ -1,3 +1,4 @@
+import {matchesLocalSearch} from '@/lib/localSearch';
 export type TimesheetRole='lecturer'|'centre_director'|'finance_officer';
 export type TeachingSlot={schedule_id:string;module_id:string;module_title:string;start_time:string;end_time:string;updated_at:string;planned_minutes:number};
 export type TeachingClaim={id:string;tenant_id:string;lecturer_id:string;lecturer_name:string;schedule_id:string;module_id:string;module_title:string;teaching_date:string;scheduled_start:string;scheduled_end:string;planned_minutes:number;actual_minutes:number;status:'submitted'|'approved'|'rejected';revision:1|2;submitted_at:string;reviewed_at:string|null;evidence_reference:string|null;review_note:string|null};
@@ -43,4 +44,9 @@ export function approvedLecturerTotals(rows:readonly TeachingClaim[]){
  const staff=new Map<string,{id:string;name:string;minutes:number;sessions:number}>();
  for(const r of rows){if(r.status!=='approved')continue;const total=staff.get(r.lecturer_id)||{id:r.lecturer_id,name:r.lecturer_name,minutes:0,sessions:0};total.minutes+=r.actual_minutes;total.sessions++;staff.set(r.lecturer_id,total);}
  return [...staff.values()].sort((a,b)=>a.name.localeCompare(b.name)||a.id.localeCompare(b.id));
+}
+
+/** Filter only already-authorised records; monthly totals remain independent. */
+export function filterTeachingClaims(rows:readonly TeachingClaim[],status:TeachingClaim['status']|'all',search:string){
+ return rows.filter(r=>(status==='all'||r.status===status)&&matchesLocalSearch([r.lecturer_name,r.module_title,r.teaching_date,r.id,r.scheduled_start.slice(0,5),r.scheduled_end.slice(0,5)].join(' '),search));
 }

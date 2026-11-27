@@ -4,7 +4,7 @@ import {useAuth} from '@/contexts/AuthContext';
 import {db} from '@/lib/db';
 import {calendarDay,calendarDayLabel} from '@/lib/academicCalendar';
 import {displayTeachingMinutes} from '@/lib/teachingLoad';
-import {readTeachingSlots,readTeachingClaims,readClaimReceipt,teachingClaimTotals,approvedLecturerTotals,type TeachingSlot,type TeachingClaim,type TimesheetRole} from '@/lib/teachingTimesheets';
+import {readTeachingSlots,readTeachingClaims,readClaimReceipt,teachingClaimTotals,approvedLecturerTotals,filterTeachingClaims,type TeachingSlot,type TeachingClaim,type TimesheetRole} from '@/lib/teachingTimesheets';
 
 const enabled=import.meta.env.VITE_UNIPATHWAY_TEACHING_TIMESHEETS_ENABLED==='true';
 const input='mt-1 block min-h-11 w-full min-w-0 rounded-lg border bg-background px-3 py-2 text-base';
@@ -20,6 +20,7 @@ function Workspace({uid,tenant,role}:{uid:string;tenant:string;role:TimesheetRol
  const [open,setOpen]=useState(false),[date,setDate]=useState(today),[month,setMonth]=useState(today.slice(0,7));
  const [slots,setSlots]=useState<TeachingSlot[]|null>(null),[selected,setSelected]=useState(''),[minutes,setMinutes]=useState(''),[evidence,setEvidence]=useState('');
  const [rows,setRows]=useState<TeachingClaim[]|null>(null),[page,setPage]=useState(0),[filter,setFilter]=useState<'all'|'submitted'|'approved'|'rejected'>('all');
+ const [search,setSearch]=useState('');
  const [reviewId,setReviewId]=useState(''),[reviewNote,setReviewNote]=useState(''),[decision,setDecision]=useState<'approved'|'rejected'>('approved');
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
  const active=useRef(true),lock=useRef(false);
@@ -33,12 +34,12 @@ function Workspace({uid,tenant,role}:{uid:string;tenant:string;role:TimesheetRol
   try{await action();}catch{if(active.current)setError(fallback);}
   finally{lock.current=false;if(active.current)setBusy(false);}
  }
- async function loadSlots(){setSlots(null);setSelected('');setMinutes('');setEvidence('');await perform(async()=>{
+ async function loadSlots(){if(!enabled||lock.current||!date||date>today)return;setSlots(null);setSelected('');setMinutes('');setEvidence('');await perform(async()=>{
   const r=await db.rpc('get_unipathway_teaching_slots',{p_date:date});
   if(r.error)throw Error();const verified=readTeachingSlots(r.data,tenant,date);
   if(active.current)setSlots(verified);
  },'Teaching slots could not be verified. Check service activation and your timetable.');}
- async function loadMonth(){setRows(null);setPage(0);setReviewId('');setReviewNote('');await perform(async()=>{
+ async function loadMonth(){if(!enabled||lock.current||!month||month>today.slice(0,7))return;setRows(null);setPage(0);setReviewId('');setReviewNote('');await perform(async()=>{
   const r=await db.rpc('get_unipathway_teaching_timesheets',{p_month:month+'-01',p_role:role});
   if(r.error)throw Error();const verified=readTeachingClaims(r.data,tenant,role,month,uid);
   if(active.current)setRows(verified);
@@ -60,7 +61,7 @@ function Workspace({uid,tenant,role}:{uid:string;tenant:string;role:TimesheetRol
   },'The review was not confirmed. Your decision and note are retained; retry the same review or reload the month to reconcile.');
  }
  const totals=rows?teachingClaimTotals(rows):null,financeRows=rows&&role==='finance_officer'?approvedLecturerTotals(rows):[];
- const filtered=rows?.filter(r=>filter==='all'||r.status===filter)||[],pages=Math.max(1,Math.ceil(filtered.length/10)),current=Math.min(page,pages-1);
+ const filtered=filterTeachingClaims(rows||[],filter,search),pages=Math.max(1,Math.ceil(filtered.length/10)),current=Math.min(page,pages-1);
  return <section aria-label="Teaching timesheets" className="my-5 min-w-0 space-y-4 rounded-xl border bg-card p-3 sm:p-5">
   <div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0 flex-1"><h2 className="text-lg font-semibold">Teaching timesheets</h2><p className="mt-1 text-sm text-muted-foreground">{role==='lecturer'?'Submit actual teaching minutes for completed timetable sessions.':role==='centre_director'?'Review dated teaching claims independently.':'Review approved teaching time for remuneration preparation.'}</p></div><Button type="button" variant="outline" disabled={busy} aria-expanded={open} className="min-h-11" onClick={()=>setOpen(v=>!v)}>{open?'Hide timesheets':'Open timesheets'}</Button></div>
   {open&&(!enabled?<p role="status" className="text-sm">Teaching timesheets require centre activation. No claims, approvals or payroll records have been created by this screen.</p>:<>
@@ -74,12 +75,14 @@ function Workspace({uid,tenant,role}:{uid:string;tenant:string;role:TimesheetRol
     </>)}
    </section>}
    <section aria-label="Monthly teaching claims" className="space-y-3 rounded-lg border p-3">
-    <h3 className="font-semibold">Monthly teaching records</h3><div className="grid gap-3 sm:grid-cols-2 sm:items-end"><label className="block min-w-0 text-sm font-medium">Teaching month (PKT)<input type="month" min="2000-01" max={today.slice(0,7)} className={input} value={month} disabled={busy} onChange={e=>{setMonth(e.target.value);setRows(null);setReviewId('');setReviewNote('');setPage(0);setFilter('all');setNotice('');setError('');}}/></label><Button type="button" variant="outline" disabled={busy||!month||month>today.slice(0,7)} onClick={()=>void loadMonth()}>Load teaching month</Button></div>
+    <h3 className="font-semibold">Monthly teaching records</h3><div className="grid gap-3 sm:grid-cols-2 sm:items-end"><label className="block min-w-0 text-sm font-medium">Teaching month (PKT)<input type="month" min="2000-01" max={today.slice(0,7)} className={input} value={month} disabled={busy} onChange={e=>{setMonth(e.target.value);setRows(null);setReviewId('');setReviewNote('');setPage(0);setFilter('all');setSearch('');setNotice('');setError('');}}/></label><Button type="button" variant="outline" disabled={busy||!month||month>today.slice(0,7)} onClick={()=>void loadMonth()}>Load teaching month</Button></div>
     {rows&&totals&&<>
      <dl className="grid gap-2 sm:grid-cols-3">{(role==='finance_officer'?['approved'] as const:['submitted','approved','rejected'] as const).map(status=><div className="min-w-0 rounded-lg border p-3" key={status}><dt className="text-sm text-muted-foreground">{labels[status]}</dt><dd className="mt-1 text-lg font-semibold tabular-nums">{displayTeachingMinutes(totals[status].minutes)}</dd><dd className="text-xs text-muted-foreground">{totals[status].sessions} sessions</dd></div>)}</dl>
      {role==='finance_officer'&&financeRows.length>0&&<div className="space-y-2"><h4 className="font-medium text-sm">Approved time by lecturer</h4>{financeRows.map(r=><div className="flex flex-wrap justify-between gap-2 rounded-lg border p-3 text-sm" key={r.id}><span className="min-w-0 [overflow-wrap:anywhere]">{r.name}</span><span className="tabular-nums">{displayTeachingMinutes(r.minutes)} · {r.sessions} sessions</span></div>)}</div>}
      {role!=='finance_officer'&&<label className="block max-w-xs text-sm font-medium">Claim status<select className={input} value={filter} disabled={busy} onChange={e=>{setFilter(e.target.value as typeof filter);setPage(0);setReviewId('');setReviewNote('');}}><option value="all">All claims</option><option value="submitted">Awaiting review</option><option value="approved">Approved</option><option value="rejected">Not approved</option></select></label>}
-     <p role="status" className="text-sm text-muted-foreground">{filtered.length} of {rows.length} verified claim records shown</p>
+     <div className="flex flex-wrap items-end gap-2"><label className="min-w-0 flex-[1_1_14rem] text-sm font-medium">Search teaching claims<input type="search" className={input} maxLength={120} value={search} disabled={busy} onChange={e=>{setSearch(e.target.value);setPage(0);setReviewId('');setReviewNote('');}} placeholder="Module, lecturer, date or claim reference"/></label>{(search||filter!=='all')&&<Button type="button" variant="outline" disabled={busy} onClick={()=>{setSearch('');setFilter('all');setPage(0);setReviewId('');setReviewNote('');}}>Clear claim filters</Button>}</div>
+     <p className="text-xs text-muted-foreground">Search and status filters apply to the claim list only. Totals above cover the verified teaching month.</p>
+     <p role="status" aria-label="Teaching claim results" className="text-sm text-muted-foreground">{filtered.length} of {rows.length} verified claim records match</p>
      {!filtered.length?<p className="text-sm">No matching claims in this month.</p>:<ul className="grid gap-2 xl:grid-cols-2">{filtered.slice(current*10,current*10+10).map(r=><li key={r.id} className="min-w-0 space-y-2 rounded-lg border p-3 text-sm [overflow-wrap:anywhere]"><h4 className="font-semibold">{r.module_title}</h4><p className="text-xs text-muted-foreground">{calendarDayLabel(r.teaching_date)} · {r.scheduled_start.slice(0,5)}–{r.scheduled_end.slice(0,5)} PKT</p>{role!=='lecturer'&&<p>{r.lecturer_name}</p>}<p>{labels[r.status]} · {displayTeachingMinutes(r.actual_minutes)} claimed / {displayTeachingMinutes(r.planned_minutes)} scheduled</p>{r.evidence_reference&&<p className="text-xs">Evidence reference: {r.evidence_reference}</p>}{r.review_note&&<p className="text-xs">Review note: {r.review_note}</p>}{role==='centre_director'&&r.status==='submitted'&&r.lecturer_id!==uid&&<Button type="button" variant="outline" disabled={busy} aria-expanded={reviewId===r.id} onClick={()=>{setReviewId(v=>v===r.id?'':r.id);setReviewNote('');setDecision('approved');}}>Review claim<span className="sr-only"> {r.module_title} {r.teaching_date}</span></Button>}{reviewId===r.id&&role==='centre_director'&&<div className="space-y-3 border-t pt-3"><label className="block text-sm">Decision<select className={input} disabled={busy} value={decision} onChange={e=>setDecision(e.target.value as typeof decision)}><option value="approved">Approve recorded minutes</option><option value="rejected">Do not approve</option></select></label><label className="block text-sm">Independent evidence review note<textarea className={input} disabled={busy} rows={3} maxLength={500} value={reviewNote} onChange={e=>setReviewNote(e.target.value)}/></label><p className="text-xs text-muted-foreground">Confirm the evidence before recording a final review. This does not authorise payment.</p><Button type="button" disabled={busy||reviewNote.trim().length<5} onClick={()=>void review()}>Record teaching review</Button></div>}</li>)}</ul>}
      {pages>1&&<nav aria-label="Teaching claim pages" className="flex flex-wrap items-center gap-2"><Button type="button" variant="outline" disabled={busy||current===0} onClick={()=>{setPage(current-1);setReviewId('');}}>Previous claims</Button><span className="text-sm">Page {current+1} of {pages}</span><Button type="button" variant="outline" disabled={busy||current+1>=pages} onClick={()=>{setPage(current+1);setReviewId('');}}>Next claims</Button></nav>}
     </>}
