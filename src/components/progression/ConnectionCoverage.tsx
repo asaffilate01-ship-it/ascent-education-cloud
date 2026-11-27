@@ -95,8 +95,8 @@ export const connectionCoverage=[
   {
     "name": "Facilities inspection records",
     "state": "Hosted activation required",
-    "detail": "The facilities register is read-only by default in the interface; reviewed forward patches provide gated centre-specific asset and inspection reads.",
-    "next": "Rehearse both facilities patches, verify physical security roles and server gates, and complete verified registration and inspection submission workflows. Do not infer compliance from planning entries."
+    "detail": "The facilities register includes centre-specific reads, separately gated director recording commands and a maintenance review queue derived from verified inspection history.",
+    "next": "Rehearse all three facilities patches; verify hosted centre permissions, separate server gates and idempotent recording commands. Review actual inspection evidence. The maintenance queue is not an automated reminder or safety certification."
   },
   {
     "name": "Public information",
