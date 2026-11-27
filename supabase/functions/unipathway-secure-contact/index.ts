@@ -30,6 +30,7 @@ async function contactDigest(email:string):Promise<string|null>{
 Deno.serve(async(req:Request)=>{
  if(req.method==='OPTIONS')return new Response(null,{headers:corsHeaders});
  if(req.method!=='POST')return json({error:'Method not allowed'},405);
+ if(Deno.env.get('UNIPATHWAY_REQUIRE_BRANDED_MESSAGES')==='true')return json({error:'Please refresh and use the current UniPathway enquiry form.'},403);
  if(Number(req.headers.get('content-length')||0)>16000)return json({error:'Request too large'},413);
  if(!rateLimit(getClientIp(req),4,60000))return rateLimitResponse();
  let input:unknown;

@@ -37,3 +37,4 @@ export function whatsappDisplay(value: unknown): string {
 }
 
 export const WHATSAPP_DISPLAY = whatsappDisplay(import.meta.env.VITE_PUBLIC_WHATSAPP_NUMBER);
+export const waRecruitmentUrl=whatsappUrl(import.meta.env.VITE_PUBLIC_WHATSAPP_NUMBER,'Hello UniPathway recruitment, I would like to enquire about part-time teaching opportunities.');
