@@ -280,3 +280,21 @@ test('student bottom navigation follows the active task on phones and tablets an
  await expect(page.getByRole('navigation',{name:'Dashboard mobile tabs'})).toHaveCount(0);
  await expect(page.getByRole('navigation',{name:'Quick navigation'}).getByRole('link',{name:'Courses'})).toHaveAttribute('aria-current','page');
 });
+
+
+test('desktop sidebar collapse releases workspace space and retains specialist navigation', async ({context,page})=>{
+  await records(context,'admissions_admin',{});
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.setViewportSize({width:1440,height:1000});
+  await page.goto('/admissions');
+  await dismissConsent(page);
+  const nav=page.getByRole('complementary',{name:'Dashboard navigation'});
+  const main=page.locator('#dashboard-content');
+  await expect(nav).toBeVisible();
+  const expanded=await main.boundingBox();
+  await page.getByRole('button',{name:'Collapse navigation'}).click();
+  await expect.poll(async()=> (await main.boundingBox())?.x ?? 1440).toBeLessThan((expanded?.x??0)-100);
+  await expect(nav.getByRole('link',{name:'Reports',exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Expand navigation'}).click();
+  await expect.poll(async()=> (await main.boundingBox())?.x ?? 0).toBeGreaterThanOrEqual((expanded?.x??0)-1);
+});
