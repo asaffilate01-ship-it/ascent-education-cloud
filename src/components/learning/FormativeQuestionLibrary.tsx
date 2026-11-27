@@ -2,11 +2,12 @@ import {useMemo,useState} from 'react';
 import {BookOpen,ChevronLeft,ChevronRight,CheckCircle2} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import FormativePracticeStudio from './FormativePracticeStudio';
+import FormativeDraftIntake from './FormativeDraftIntake';
 import {FORMATIVE_QUESTIONS} from '@/lib/learning/formativeQuestions';
 import {FORMATIVE_SUBJECTS,filterFormativeQuestions,formativeFeedback} from '@/lib/learning/formativeQuestionSearch';
 const pageSize=6;
 export default function FormativeQuestionLibrary(){
- const [mode,setMode]=useState<'browse'|'practice'>('browse');
+ const [mode,setMode]=useState<'browse'|'practice'|'draft'>('browse');
  const [open,setOpen]=useState(false),[subject,setSubject]=useState('all'),[query,setQuery]=useState(''),[page,setPage]=useState(0);
  const matches=useMemo(()=>filterFormativeQuestions(subject,query),[subject,query]);
  const pages=Math.max(1,Math.ceil(matches.length/pageSize)),current=Math.min(page,pages-1);
@@ -14,11 +15,11 @@ export default function FormativeQuestionLibrary(){
   <div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0 flex-1"><h2 className="flex items-center gap-2 text-lg font-semibold"><BookOpen aria-hidden="true" className="size-5 shrink-0"/>Formative question library</h2><p className="mt-1 text-sm text-muted-foreground">{FORMATIVE_QUESTIONS.length} original draft questions · {FORMATIVE_SUBJECTS.length} subject areas · worked explanations</p></div><Button type="button" variant="outline" aria-expanded={open} className="h-auto min-h-11 max-w-full whitespace-normal" onClick={()=>setOpen(v=>!v)}>{open?'Hide question library':'Explore question library'}</Button></div>
   <p className="text-sm leading-relaxed text-muted-foreground">Preview independent practice for lesson preparation. These are review drafts, not official board questions, published course material or secure examination items. Confirm suitability and the current syllabus before using them. Do not reuse bundled practice answers in timed or graded assessments.</p>
   {open&&<>
-   <div className="grid grid-cols-2 gap-2 rounded-xl border bg-muted/30 p-1" role="group" aria-label="Question library mode">{(['browse','practice'] as const).map(value=><Button key={value} type="button" variant={mode===value?'default':'ghost'} aria-pressed={mode===value} className="h-auto min-h-11 min-w-0 whitespace-normal" onClick={()=>{if(mode==='practice'&&value==='browse'&&!window.confirm('Leave focused practice? Temporary responses will be cleared.'))return;setMode(value);}}>{value==='browse'?'Browse and review':'Focused practice'}</Button>)}</div>
+   <div className="grid gap-2 rounded-xl sm:grid-cols-3 border bg-muted/30 p-1" role="group" aria-label="Question library mode">{(['browse','practice','draft'] as const).map(value=><Button key={value} type="button" variant={mode===value?'default':'ghost'} aria-pressed={mode===value} className="h-auto min-h-11 min-w-0 whitespace-normal" onClick={()=>{if(mode==='practice'&&value!=='practice'&&!window.confirm('Leave focused practice? Temporary responses will be cleared.'))return;if(mode==='draft'&&value!=='draft'&&!window.confirm('Leave draft review? Temporary input will be cleared.'))return;setMode(value);}}>{value==='browse'?'Browse and review':value==='practice'?'Focused practice':'Draft review'}</Button>)}</div>
    <div className="grid gap-3 sm:grid-cols-2"><label className="block min-w-0 text-sm font-medium">Practice subject<select value={subject} onChange={e=>{setSubject(e.target.value);setPage(0);}} className="mt-1 block min-h-11 w-full min-w-0 rounded-lg border bg-background px-3 text-sm"><option value="all">All subjects</option>{FORMATIVE_SUBJECTS.map(s=><option key={s}>{s}</option>)}</select></label>
    <label className="block min-w-0 text-sm font-medium">Search practice questions<input type="search" maxLength={120} value={query} onChange={e=>{setQuery(e.target.value);setPage(0);}} className="mt-1 block min-h-11 w-full min-w-0 rounded-lg border bg-background px-3 text-base" placeholder="Subject, topic or question"/></label></div>
    <div className="flex flex-wrap items-center justify-between gap-2"><p role="status" className="text-sm text-muted-foreground">{matches.length} matching draft questions</p>{(subject!=='all'||query)&&<Button variant="outline" type="button" onClick={()=>{setSubject('all');setQuery('');setPage(0);}}>Clear question filters</Button>}</div>
-   {mode==='practice'?<FormativePracticeStudio matches={matches}/>:<>
+   {mode==='draft'?<FormativeDraftIntake subject={subject}/>:mode==='practice'?<FormativePracticeStudio matches={matches}/>:<>
    {!matches.length?<p className="rounded-lg border p-3 text-sm">No practice questions match these filters.</p>:<div className="grid gap-3 xl:grid-cols-2">{matches.slice(current*pageSize,current*pageSize+pageSize).map(q=><Question key={q.id} question={q}/>)}</div>}
    {pages>1&&<nav aria-label="Practice question pages" className="flex flex-wrap items-center gap-2"><Button type="button" variant="outline" disabled={current===0} onClick={()=>setPage(current-1)}><ChevronLeft aria-hidden="true" className="size-4"/>Previous questions</Button><span className="text-sm">Page {current+1} of {pages}</span><Button type="button" variant="outline" disabled={current+1>=pages} onClick={()=>setPage(current+1)}>Next questions<ChevronRight aria-hidden="true" className="size-4"/></Button></nav>}
    </>}
