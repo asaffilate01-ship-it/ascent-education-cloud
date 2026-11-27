@@ -185,7 +185,7 @@ it('recovers a rejected preflight promise without losing the lecturer draft or l
 
  it('uses explicit viewport bounds while preserving scrollable assessment details and actions', async () => {
    show(); const dialog = await reviewBrief();
-   expect(dialog.getAttribute('style')).toContain('width: calc(100vw - 32px)');
+   expect(dialog.style.maxWidth).toBe('calc(100% - 32px)');
    expect(dialog.getAttribute('style')).toContain('max-height: calc(100dvh - 32px)');
    expect(dialog.className).toContain('overflow-y-auto');
    expect(dialog.className).toContain('overscroll-contain');
