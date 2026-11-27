@@ -26,7 +26,7 @@ Deno.serve(async(req:Request)=>{
     if(error)throw Error('Lead insert failed');
     return typeof data?.id==='string'?data.id:null;
    },
-  },Deno.env.get('UNIPATHWAY_REQUIRE_SECURE_CONTACT')==='true');
+  },Deno.env.get('UNIPATHWAY_REQUIRE_SECURE_CONTACT')==='true'||Deno.env.get('UNIPATHWAY_REQUIRE_BRANDED_MESSAGES')==='true');
   return json(result.body,result.status);
  }catch{
   return json({error:'Enquiries are temporarily unavailable.'},503);
