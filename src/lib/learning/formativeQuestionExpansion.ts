@@ -23,7 +23,7 @@ const groups:readonly Group[]=[
  ['Genetics','A diploid cell with 46 chromosomes undergoes ordinary mitosis. How many chromosomes does each daughter cell have?','46','23','92','12','Mitosis normally preserves the chromosome number in each daughter cell.']
  ]},
  {code:'ENG',subject:'School English',scope:'Classes 8–12 / independent practice',items:[
- ['Grammar','Choose the sentence with correct subject–verb agreement.','The students are ready.','The students is ready.','The student are ready.','The students was ready.','The plural subject students takes are in the present tense.'],
+ ['Grammar','Which sentence uses the present perfect tense correctly?','She has finished her homework.','She have finished her homework.','She has finish her homework.','She is finished her homework yesterday.','The present perfect uses has or have followed by a past participle; finished is the past participle here.'],
  ['Reading','What is an inference?','A conclusion supported by clues in the text','A direct quotation only','The title of the text','An unrelated personal preference','An inference combines textual evidence with reasoning.'],
  ['Writing','Which connective signals a contrast?','However','Furthermore','Therefore','Similarly','However introduces a contrasting point.']
  ]},
