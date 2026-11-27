@@ -9,6 +9,7 @@ import {facilitiesMaintenanceRows,maintenanceCounts,type MaintenanceTiming} from
 import {verifyFacilitiesRegister,type FacilityRegister} from '@/lib/facilitiesRegister';
 import {FACILITIES_WRITE_ENABLED,facilitiesWriterScope} from '@/lib/facilitiesCommands';
 import FacilitiesRecordCommands from '@/components/security/FacilitiesRecordCommands';
+import FacilitiesReminderCalendar from '@/components/security/FacilitiesReminderCalendar';
 
 const enabled=import.meta.env.VITE_UNIPATHWAY_FACILITIES_REGISTER_ENABLED==='true';
 const timingLabels:Record<MaintenanceTiming,string>={overdue:'Overdue',due_today:'Due today',next_seven_days:'Next seven days',later:'Later',unscheduled:'Next date not recorded'};
@@ -67,6 +68,7 @@ function RegisterView({tenant,writer}:{tenant:string|null;writer:boolean}){
     <div className="mt-3 grid min-w-0 gap-3 sm:grid-cols-2"><label className="block min-w-0 text-sm font-medium">Find an asset<Input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Asset reference, category or location"/></label><label className="block min-w-0 text-sm font-medium">Inspection review filter<select className="mt-1 min-h-11 w-full min-w-0 rounded-lg border bg-background px-3" value={filter} onChange={e=>setFilter(e.target.value)}>{filters.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label></div>
     <div className="mt-3 flex flex-wrap items-center justify-between gap-3"><p role="status" className="text-sm text-muted-foreground">{visible.length} of {rows.length} registered assets shown · Pakistan date: {today}</p>{(search||filter!=='all')&&<Button variant="outline" onClick={()=>{setSearch('');setFilter('all');}}>Clear filters</Button>}</div>
    </div>
+   {writer&&<FacilitiesReminderCalendar rows={rows}/>}
    {!visible.length&&<p className="mt-3 text-sm">{snapshot.assets.length?'No matching assets.':'No registered assets were returned for this verified centre.'}</p>}
    <div className="mt-3 divide-y">{visible.map(({asset:a,latest,dueDate,timing})=>{
     return <article key={a.id} className="flex flex-wrap items-center justify-between gap-3 py-3"><div className="min-w-0 flex-1 break-words"><p className="font-medium">{a.asset_code} · {a.category.replace(/_/g,' ')}</p><p className="text-sm text-muted-foreground">{a.location} · {dueDate?'Inspection due '+dueDate+' ('+timingLabels[timing]+')':timingLabels[timing]}</p><p className="text-sm">{latest?'Latest recorded outcome: '+latest.outcome.replace(/_/g,' '):'No inspection recorded'}</p></div><Button variant="outline" onClick={()=>setSelected(s=>s===a.id?'':a.id)} aria-expanded={selected===a.id}>{selected===a.id?'Close history':'View history'}</Button></article>;

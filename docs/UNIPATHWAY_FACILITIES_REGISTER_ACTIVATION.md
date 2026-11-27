@@ -39,3 +39,9 @@ The interface retains an uncertain command and its request identifier only while
 The existing verified snapshot now drives a read-only, prioritised maintenance review queue. It distinguishes the latest recorded defect, due or overdue inspections, dates within seven days, missing next dates and missing/unverified inspection evidence. Categories overlap; the totals are not safety scores. A completed inspection without a next date is explicitly unscheduled rather than reverting to its original due date. A satisfactory record is not certification, and the queue does not assert a repair is complete.
 
 The queue requires the existing physical-security and facilities read gates. Only a verified centre director with the separate write switch and server gate can record a new observation. No notification delivery, maintenance assignment, calendar sync, repair-order persistence or equipment activation is provided by this change. Keep actual maintenance and emergency procedures in place. Verify the hosted register and role isolation before relying on the queue.
+
+## Inspection calendar reminders
+
+An authorised centre director with the facilities write browser switch can export upcoming verified review dates within a 7, 30 or 90 day horizon. Calendar alarms can be requested for one or seven days before the date. The file contains generic all-day events grouped by date, not asset identifiers, centre IDs, locations, findings, staff details or inspection notes. The on-screen count is not included in the export. Past and unscheduled dates remain in the review queue.
+
+Manual import and the receiving calendar's notification settings determine whether reminders are delivered. Repeat exports have new event IDs and can create duplicates. Remove previous imported events when dates change. No background scheduler, automatic email, WhatsApp delivery, inspection booking or live provider connection is activated.
