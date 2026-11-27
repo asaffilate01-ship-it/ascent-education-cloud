@@ -69,7 +69,7 @@ const groups:readonly Group[]=[
  ]},
  {code:'FR',subject:'French',scope:'A1–A2 independent practice',items:[
  ['Greetings','What does “Bonsoir” mean?','Good evening','Good morning','Goodbye only','Thank you','Bonsoir is an evening greeting.'],
- ['Present tense','Complete: Nous ___ français. (parler)','parlons','parlez','parle','parlent','Nous takes the ending -ons with regular -er verbs.'],
+ ['Present tense','Complete: Vous ___ à Jhelum. (habiter)','habitez','habitons','habite','habitent','Vous takes the ending -ez with regular -er verbs.'],
  ['Travel','What does “Où est la gare ?” mean?','Where is the station?','How much is this?','What is your name?','What time is it?','Où means where; la gare is the railway station.']
  ]},
  {code:'IT',subject:'Italian',scope:'A1–A2 independent practice',items:[
