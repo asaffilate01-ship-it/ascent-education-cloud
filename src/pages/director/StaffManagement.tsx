@@ -2,6 +2,7 @@ import GrossPreparation from '@/components/finance/GrossPreparation';
 import TeachingRateRegister from '@/components/finance/TeachingRateRegister';
 import TeachingTimesheets from '@/components/lecturer/TeachingTimesheets';
 import {useMemo,useState} from 'react';
+import {matchesLocalSearch} from '@/lib/localSearch';
 import {Link} from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import DataTable from '@/components/ui/DataTable';
@@ -32,6 +33,7 @@ function ScopedStaffDirectory(){
  const allowed=!!user&&(platform||scoped);
  const canInvite=!!user&&['superadmin','centre_director'].includes(user.role)&&user.roles?.includes(user.role);
  const [search,setSearch]=useState(''),[page,setPage]=useState(0),[addOpen,setAddOpen]=useState(false);
+ const [roleFilter,setRoleFilter]=useState<UserRole|'all'>('all');
  const scope=user?.tenantId?[{column:'tenant_id',operator:'eq' as const,value:user.tenantId}]:[];
  // Platform-wide enumeration is only used for an active, verified superadmin.
  const profileQuery=useSupabaseQuery('profiles',{
@@ -69,8 +71,8 @@ function ScopedStaffDirectory(){
     tenantId:p.tenant_id,moduleCount:assigned.get(p.user_id)||0} satisfies StaffMember;
   }).sort((a,b)=>a.name.localeCompare(b.name)||a.id.localeCompare(b.id));
  },[profileQuery.data,roleQuery.data,moduleQuery.data,platform,user?.tenantId]);
- const term=search.trim().toLocaleLowerCase();
- const filtered=staff.filter(s=>[s.name,s.email,s.roleLabels,s.tenantId||''].some(value=>value.toLocaleLowerCase().includes(term)));
+ const availableRoles=[...new Set(staff.flatMap(s=>s.roles))].sort((a,b)=>ROLE_LABELS[a].localeCompare(ROLE_LABELS[b]));
+ const filtered=staff.filter(s=>(roleFilter==='all'||s.roles.includes(roleFilter))&&matchesLocalSearch([s.name,s.email,s.roleLabels,s.tenantId||''].join(' '),search));
  const pages=Math.max(1,Math.ceil(filtered.length/20)),current=Math.min(page,pages-1);
  const columns=[
   {key:'name',label:'Staff member',render:(s:StaffMember)=><div><p className="font-semibold">{s.name}</p><p className="text-xs text-muted-foreground">{s.email}</p></div>},
@@ -90,7 +92,7 @@ function ScopedStaffDirectory(){
    <p className="mt-2 text-sm text-muted-foreground">This list shows authorised account memberships, not verified employment, DBS clearance, active payroll or awarding-body accreditation. Roles are issued only through server-authorised workflows.</p>
    {platform&&!user?.tenantId&&<p className="mt-2 text-xs text-muted-foreground">This platform view covers every centre. Open a centre to review its staff.</p>}
   </section>
-  <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-3">
+  <div className="mb-5 grid grid-cols-1 min-[380px]:grid-cols-2 gap-3 lg:grid-cols-3">
    <StatCard label="Staff accounts" value={staff.length} icon={Users}/>
    <StatCard label="Lecturer accounts" value={staff.filter(s=>s.roles.includes('lecturer')).length} icon={BookOpen}/>
    <StatCard label="Role types recorded" value={new Set(staff.flatMap(s=>s.roles)).size} icon={Shield}/>
@@ -98,7 +100,8 @@ function ScopedStaffDirectory(){
   <TeachingTimesheets/>
       <TeachingRateRegister/>
       <GrossPreparation/>
-  <label className="mb-4 block max-w-xl text-sm font-semibold">Find staff or role
+  <section aria-label="Staff directory filters" className="mb-4 min-w-0 space-y-3 rounded-xl border bg-card p-3 sm:p-4">
+  <label className="block max-w-xl text-sm font-semibold">Find staff or role
    <span className="relative mt-2 block"><Search className="absolute left-3 top-3 size-4 text-muted-foreground"/>
     <input aria-label="Find staff or role" type="search" maxLength={120} value={search}
      onChange={e=>{setSearch(e.target.value);setPage(0);}}
@@ -106,6 +109,8 @@ function ScopedStaffDirectory(){
      placeholder="Name, role or assigned centre"/>
    </span>
   </label>
+  <div className="flex flex-wrap items-end gap-2"><label className="min-w-0 flex-[1_1_12rem] max-w-xl text-sm font-medium">Verified staff role<select value={roleFilter} onChange={e=>{setRoleFilter(e.target.value as UserRole|'all');setPage(0);}} className="mt-1 block min-h-11 w-full rounded-lg border bg-background px-3 py-2"><option value="all">All roles</option>{availableRoles.map(role=><option key={role} value={role}>{ROLE_LABELS[role]}</option>)}{roleFilter!=='all'&&!availableRoles.includes(roleFilter)&&<option value={roleFilter}>{ROLE_LABELS[roleFilter]} (no current records)</option>}</select></label><Button variant="outline" onClick={()=>{void profileQuery.refetch();void roleQuery.refetch();void moduleQuery.refetch();}}>Refresh staff</Button>{(search||roleFilter!=='all')&&<Button variant="ghost" onClick={()=>{setSearch('');setRoleFilter('all');setPage(0);}}>Clear filters</Button>}</div>
+  </section>
   <p role="status" className="mb-3 text-sm text-muted-foreground">{filtered.length} of {staff.length} authorised staff accounts match.</p>
   <DataTable data={filtered.slice(current*20,current*20+20)} columns={columns}
    emptyTitle="No staff memberships found" emptyDescription="No authorised staff records match the current centre and filters."/>
