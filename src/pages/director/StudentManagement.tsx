@@ -10,6 +10,9 @@ import {useEffect,useMemo,useState} from 'react';
 import {Link} from 'react-router-dom';
 import {supabase} from '@/integrations/supabase/client';
 import {useAuth} from '@/contexts/AuthContext';
+import {pagedRows} from '@/lib/pagedRows';
+import {matchesLocalSearch} from '@/lib/localSearch';
+import type {Tables} from '@/integrations/supabase/types';
 import {DashboardSkeleton} from '@/components/ui/Skeletons';
 
 type StudentRow={
@@ -18,12 +21,12 @@ type StudentRow={
 };
 export default function StudentManagement(){
  const {user}=useAuth();
- return <ScopedStudentRegistry key={[user?.id,user?.tenantId,user?.role].join(':')}/>;
+ return <ScopedStudentRegistry key={[user?.id,user?.tenantId,user?.role,user?.roles?.join(',')].join(':')}/>;
 }
 function ScopedStudentRegistry(){
  const {user}=useAuth();
  const teacher=user?.role==='lecturer';
- const authorised=!!user&&['centre_director','programme_leader','superadmin'].includes(user.role);
+ const authorised=!!user?.id&&user.roles?.includes(user.role)===true&&['centre_director','programme_leader','superadmin'].includes(user.role);
  const tenant=user?.tenantId;
  const [search,setSearch]=useState('');
  const [page,setPage]=useState(0);
@@ -37,26 +40,30 @@ function ScopedStudentRegistry(){
   setLoading(true);setError('');setStudents([]);
   void (async()=>{
    try{
+    const current=()=>live;
     const [es,ps,programmes,attendance,modules]=await Promise.all([
-     supabase.from('student_enrolments').select('id,student_id,programme_id,status,enrolled_at').eq('tenant_id',tenant),
-     supabase.from('profiles').select('user_id,tenant_id,full_name,email').eq('tenant_id',tenant),
-     supabase.from('programmes').select('id,title').eq('tenant_id',tenant),
-     supabase.from('attendance_records').select('student_id,status').eq('tenant_id',tenant),
-     supabase.from('modules').select('id,programme_id,title,code').eq('tenant_id',tenant),
+     pagedRows<Pick<Tables<'student_enrolments'>,'id'|'student_id'|'programme_id'|'status'|'enrolled_at'>>(()=>supabase.from('student_enrolments').select('id,student_id,programme_id,status,enrolled_at').eq('tenant_id',tenant),current),
+     pagedRows<Pick<Tables<'profiles'>,'id'|'user_id'|'tenant_id'|'full_name'|'email'>>(()=>supabase.from('profiles').select('id,user_id,tenant_id,full_name,email').eq('tenant_id',tenant),current),
+     pagedRows<Pick<Tables<'programmes'>,'id'|'title'>>(()=>supabase.from('programmes').select('id,title').eq('tenant_id',tenant),current),
+     pagedRows<Pick<Tables<'attendance_records'>,'id'|'student_id'|'status'>>(()=>supabase.from('attendance_records').select('id,student_id,status').eq('tenant_id',tenant),current),
+     pagedRows<Pick<Tables<'modules'>,'id'|'programme_id'|'title'|'code'>>(()=>supabase.from('modules').select('id,programme_id,title,code').eq('tenant_id',tenant),current),
     ]);
-    if([es,ps,programmes,attendance,modules].some(q=>q.error))throw Error('Student registry data unavailable');
-    const profiles=new Map((ps.data||[]).filter(p=>p.tenant_id===tenant).map(p=>[p.user_id,p]));
-    const titles=new Map((programmes.data||[]).map(p=>[p.id,p.title]));
+    if(!current())return;
+    for(const collection of [es,ps,programmes,attendance,modules]){
+     if(new Set(collection.map(row=>row.id)).size!==collection.length)throw Error('Registry changed during pagination; retry');
+    }
+    const profiles=new Map(ps.filter(p=>p.tenant_id===tenant).map(p=>[p.user_id,p]));
+    const titles=new Map(programmes.map(p=>[p.id,p.title]));
     const moduleMap=new Map<string,string[]>();
-    for(const m of modules.data||[]){const list=moduleMap.get(m.programme_id)||[];list.push([m.code,m.title].filter(Boolean).join(' — '));moduleMap.set(m.programme_id,list);}
+    for(const m of modules){const list=moduleMap.get(m.programme_id)||[];list.push([m.code,m.title].filter(Boolean).join(' — '));moduleMap.set(m.programme_id,list);}
     const marks=new Map<string,{present:number;total:number}>();
-    for(const mark of attendance.data||[]){
+    for(const mark of attendance){
      if(!['present','late','absent'].includes(mark.status))continue;
      const previous=marks.get(mark.student_id)||{present:0,total:0};
      previous.total++;if(['present','late'].includes(mark.status))previous.present++;
      marks.set(mark.student_id,previous);
     }
-    const rows=(es.data||[]).map(e=>{
+    const rows=es.map(e=>{
      const profile=profiles.get(e.student_id);
      const record=marks.get(e.student_id);
      return {id:e.id,studentId:e.student_id,programmeId:e.programme_id,name:profile?.full_name||'Student record unavailable',
@@ -72,7 +79,7 @@ function ScopedStudentRegistry(){
   return()=>{live=false;};
  },[authorised,tenant,refresh]);
  const filtered=useMemo(()=>students.filter(row=>
-  [row.name,row.email,row.programme,...row.modules].some(value=>value.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()))
+  matchesLocalSearch([row.name,row.email,row.programme,...row.modules].join(' '),search)
  ),[students,search]);
  const count=filtered.length;
  const pages=Math.max(1,Math.ceil(count/20));
@@ -100,7 +107,7 @@ function ScopedStudentRegistry(){
    <p className="mt-2 text-sm text-muted-foreground">Completion of an enrolment is not an external award, official certificate or university admission decision. Grades and certificates require verified independent assessment and authorised release.</p>
   </section>
   <CentreCardWorkspace/>
-  <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-3">
+  <div className="mb-5 grid grid-cols-1 min-[380px]:grid-cols-2 gap-3 lg:grid-cols-3">
    <StatCard label="Enrolment records" value={students.length} icon={GraduationCap}/>
    <StatCard label="Active enrolments" value={students.filter(s=>s.status==='active').length} icon={BookOpen}/>
    <StatCard label="Attendance recorded" value={students.filter(s=>s.attendanceRate!==null).length} icon={Calendar}/>
@@ -112,6 +119,7 @@ function ScopedStudentRegistry(){
      className="min-h-11 w-full rounded-lg border bg-background pl-9 pr-3 text-sm"/>
    </span>
   </label>
+  <div className="mb-3 flex flex-wrap gap-2"><Button variant="outline" onClick={()=>setRefresh(x=>x+1)}>Refresh registry</Button>{search&&<Button variant="ghost" onClick={()=>{setSearch('');setPage(0);}}>Clear search</Button>}</div>
   <p role="status" className="mb-3 text-sm text-muted-foreground">{filtered.length} of {students.length} authorised enrolment records shown by this filter.</p>
   <DataTable data={filtered.slice(current*20,current*20+20)} columns={columns}
    emptyTitle="No matching enrolments" emptyDescription="Only authorised enrolments in your assigned centre are displayed."/>

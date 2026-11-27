@@ -4,7 +4,7 @@ import {MemoryRouter} from 'react-router-dom';
 import {readFileSync} from 'node:fs';
 
 const state=vi.hoisted(()=>({
- user:{id:'director',tenantId:'centre-a',role:'centre_director'} as any,
+ user:{id:'director',tenantId:'centre-a',role:'centre_director',roles:['centre_director']} as any,
  fail:'',queries:[] as {table:string;filters:{column:string;value:unknown}[]}[],
  records:{
   student_enrolments:[
@@ -12,15 +12,15 @@ const state=vi.hoisted(()=>({
    {id:'e2',student_id:'student-b',programme_id:'p2',tenant_id:'centre-b',status:'active',enrolled_at:'2026-10-01'}
   ],
   profiles:[
-   {user_id:'student-a',tenant_id:'centre-a',full_name:'Student in my centre',email:'a@example.test'},
-   {user_id:'student-b',tenant_id:'centre-b',full_name:'Private other centre',email:'b@example.test'}
+   {id:'profile-a',user_id:'student-a',tenant_id:'centre-a',full_name:'Student in my centre',email:'a@example.test'},
+   {id:'profile-b',user_id:'student-b',tenant_id:'centre-b',full_name:'Private other centre',email:'b@example.test'}
   ],
   programmes:[
    {id:'p1',tenant_id:'centre-a',title:'Business'},
    {id:'p2',tenant_id:'centre-b',title:'Another course'}
   ],
   modules:[{id:'m1',programme_id:'p1',tenant_id:'centre-a',title:'Business communication',code:'B1'},{id:'m2',programme_id:'p2',tenant_id:'centre-b',title:'Private module',code:'B2'}],
-  attendance_records:[{student_id:'student-a',tenant_id:'centre-a',status:'present'}],
+  attendance_records:[{id:'attendance-a',student_id:'student-a',tenant_id:'centre-a',status:'present'}],
  } as Record<string,Record<string,unknown>[]>,
 }));
 vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:state.user})}));
@@ -32,15 +32,16 @@ vi.mock('@/integrations/supabase/client',()=>({supabase:{from:(table:string)=>{
  const q:any={
   select:()=>q,
   eq:(column:string,value:unknown)=>{filters.push({column,value});return q;},
-  then:(resolve:any,reject:any)=>{
+  order:()=>q,
+  range:(from:number,to:number)=>{
    state.queries.push({table,filters});
    const rows=(state.records[table]||[]).filter(r=>filters.every(f=>r[f.column]===f.value));
-   return Promise.resolve(state.fail===table?{data:null,error:{message:'unavailable'}}:{data:rows,error:null}).then(resolve,reject);
+   return Promise.resolve(state.fail===table?{data:null,error:{message:'unavailable'}}:{data:rows.sort((a,b)=>String(a.id).localeCompare(String(b.id))).slice(from,to+1),error:null});
   }
  };return q;
 }}}));
 import StudentManagement from '@/pages/director/StudentManagement';
-beforeEach(()=>{state.user={id:'director',tenantId:'centre-a',role:'centre_director'};state.fail='';state.queries=[];});
+beforeEach(()=>{state.user={id:'director',tenantId:'centre-a',role:'centre_director',roles:['centre_director']};state.fail='';state.queries=[];});
 afterEach(cleanup);
 const show=()=>render(<MemoryRouter><StudentManagement/></MemoryRouter>);
 it('restricts every management registry query to the verified centre and does not read provisional grades',async()=>{
@@ -55,7 +56,7 @@ it('restricts every management registry query to the verified centre and does no
  expect(screen.queryByText(/Generate Certificate/)).toBeNull();
 });
 it('lecturer gets module-only navigation, not centre-wide student or billing data',async()=>{
- state.user={id:'lecturer',tenantId:'centre-a',role:'lecturer'};
+ state.user={id:'lecturer',tenantId:'centre-a',role:'lecturer',roles:['lecturer']};
  show();
  expect(screen.getByRole('link',{name:'My assigned modules'})).toHaveAttribute('href','/lecturer/teaching');
  expect(state.queries).toEqual([]);
@@ -67,6 +68,21 @@ it('keeps failed registry queries distinct from empty enrolments and supports a 
  expect(await screen.findByRole('alert')).toHaveTextContent('could not be verified completely');
  expect(screen.queryByText(/Student in my centre/)).toBeNull();
  expect(screen.getByRole('button',{name:'Retry registry'})).toBeInTheDocument();
+});
+it('rejects an unverified active management role without reading centre data',async()=>{
+ state.user={id:'director',tenantId:'centre-a',role:'centre_director',roles:['student']};
+ show();
+ expect(await screen.findByRole('alert')).toHaveTextContent('verified centre leadership');
+ expect(state.queries).toEqual([]);
+});
+it('reads beyond the first 250 enrolments',async()=>{
+ const original=state.records.student_enrolments;
+ try{
+  state.records.student_enrolments=Array.from({length:251},(_,i)=>({id:'enrolment-'+String(i).padStart(3,'0'),student_id:'student-a',programme_id:'p1',tenant_id:'centre-a',status:'active',enrolled_at:'2026-10-01'}));
+  show();
+  expect(await screen.findByText('Enrolment records: 251')).toBeInTheDocument();
+  expect(state.queries.filter(q=>q.table==='student_enrolments')).toHaveLength(2);
+ }finally{state.records.student_enrolments=original;}
 });
 it('removes the unverified official certificate issuance endpoint and arbitrary certificate form',()=>{
  const endpoint=readFileSync('supabase/functions/generate-certificate/index.ts','utf8');
