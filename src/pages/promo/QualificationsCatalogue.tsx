@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input';
 import { qualificationSelection } from '@/lib/qualificationSelection';
 import {matchesLocalSearch} from '@/lib/localSearch';
 import LaunchPhaseBadge from '@/components/launch/LaunchPhaseBadge';
-import {byLaunchPhase,qualificationPhase,registerInterestUrl} from '@/lib/launchPhases';
+import {byLaunchPhase,qualificationPhase,plannedLater2027Qualification,registerInterestUrl} from '@/lib/launchPhases';
 
 
 const levels = ['All', '3', '4', '5', '6'] as const;
@@ -59,7 +59,7 @@ export default function QualificationsCatalogue() {
       <PublicHero topic="guidance">
         <p className="text-label text-success">UK & international qualifications</p>
         <h1 className="mt-3 text-3xl font-extrabold sm:text-5xl">Choose a pathway that moves you forward</h1>
-        <p className="mt-4 text-muted-foreground"><strong className="text-foreground">Phase 1:</strong> OTHM and Qualifi Business and Accounting diplomas at Levels 3–5 open first. Other OTHM and Qualifi subjects, ATHE and Pearson qualifications follow in Phase 2.</p>
+        <p className="mt-4 text-muted-foreground"><strong className="text-foreground">Planned later in 2027:</strong> Level 3, 4 and 5 technology, business and accounting pathways, subject to verified regulated qualification, awarding-body and centre approvals. January 2027 is reserved for tuition and preparation courses.</p>
         <p className="mt-3 text-muted-foreground">Explore selected OTHM, Qualifi, ATHE and Pearson BTEC Fine Art qualification titles alongside VTCT Skills pathway guidance for learners in Pakistan. Options without current confirmed details are for planning only. Admissions must verify centre authorisation, entry eligibility and a place on the chosen intake before enrolment.</p>
       </PublicHero>
 <PageContents/>
@@ -67,7 +67,7 @@ export default function QualificationsCatalogue() {
       <AwardingBodyGuidance/>
 
       <section id="qualification-filters" className="scroll-mt-24 rounded-xl border bg-card p-5" aria-label="Filter qualification options">
-        <div className="mb-3 flex flex-wrap gap-2" role="group" aria-label="Launch phase">{phases.map(ph=><Button key={ph} size="sm" className="max-w-full whitespace-normal md:min-h-11" type="button" aria-pressed={phase===ph} variant={phase===ph?'default':'outline'} onClick={()=>updateFilter('phase',ph)}>{ph==='All'?'All phases':ph==='1'?'Phase 1 · enrolling first':'Phase 2 · coming soon'}</Button>)}</div>
+        <div className="mb-3 flex flex-wrap gap-2" role="group" aria-label="Launch phase">{phases.map(ph=><Button key={ph} size="sm" className="max-w-full whitespace-normal md:min-h-11" type="button" aria-pressed={phase===ph} variant={phase===ph?'default':'outline'} onClick={()=>updateFilter('phase',ph)}>{ph==='All'?'All phases':ph==='1'?'Phase 1 · January 2027':'Phase 2 · Future intake'}</Button>)}</div>
         <div className="flex flex-wrap gap-2" role="group" aria-label="Awarding body">
           {bodies.map(b=><Button key={b} size="sm" className="max-w-full whitespace-normal md:min-h-11" type="button" aria-pressed={body===b} variant={body===b?'default':'outline'} onClick={()=>updateFilter('body',b)}>{b==='All'?'All catalogue options':b}</Button>)}
         </div>
@@ -81,11 +81,11 @@ export default function QualificationsCatalogue() {
       {offersError&&<p role="status">Confirmed course details are temporarily unavailable. Please ask admissions before applying or paying.</p>}
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-label="Proposed qualifications">
         {filtered.map(q=>{const qPhase=qualificationPhase(q);const offer=offers.find(o=>o.course_key===courseOfferKey(q.body,q.name)&&currentCourseOffer(o,now));return <article key={q.body+q.name} className="flex min-w-0 flex-col rounded-xl border bg-card p-5 [overflow-wrap:anywhere]">
-          <div className="flex flex-wrap items-center gap-2"><span className="text-xs font-bold text-success">{q.body} · Level {q.level}</span><LaunchPhaseBadge phase={qPhase} /></div>
+          <div className="flex flex-wrap items-center gap-2"><span className="text-xs font-bold text-success">{q.body} · Level {q.level}</span><LaunchPhaseBadge phase={qPhase} />{plannedLater2027Qualification(q)&&<span className="text-xs font-semibold text-muted-foreground">Later in 2027 planned</span>}</div>
           <h2 className="mt-2 text-lg font-bold">{q.name}</h2><p className="mt-2 text-sm text-muted-foreground">{q.category}</p>
           <QualificationCurriculum qualification={q}/><div className="mt-4"><CourseAtAGlance compact course={`${q.body} ${q.name}`} entry={offer?.entry_requirements} fees={offer?.fees} intake={offer?.intake_date} delivery={q.curriculum?'Planned blended study with supervised studio and craft workshops. Practical attendance and facilities must be confirmed before enrolment.':'Planned online study with in-centre academic visits, subject to programme approval.'}/></div>
           {offer&&<p className="mt-3 text-xs text-muted-foreground">{offer.availability==='open'?'Open for applications':offer.availability==='upcoming'?'Upcoming intake':'Applications closed'} · Reviewed {offer.verified_at.slice(0,10)} · Valid until {offer.valid_until.slice(0,10)}</p>}
-          <Link className="mt-auto flex min-h-11 w-full min-w-0 max-w-full items-center justify-center rounded-lg border border-primary px-3 py-2 text-center text-sm font-semibold leading-relaxed text-primary [overflow-wrap:anywhere] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" to={qPhase===1?`/apply?${new URLSearchParams({area:'qualifications',course:`${q.body} ${q.name}`,level:`level-${q.level}`})}`:registerInterestUrl('qualifications',`${q.body} ${q.name}`)}>{qPhase===1?<>Review study options &amp; enquire</>:'Register interest for Phase 2'}</Link>
+          <Link className="mt-auto flex min-h-11 w-full min-w-0 max-w-full items-center justify-center rounded-lg border border-primary px-3 py-2 text-center text-sm font-semibold leading-relaxed text-primary [overflow-wrap:anywhere] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" to={qPhase===1?`/apply?${new URLSearchParams({area:'qualifications',course:`${q.body} ${q.name}`,level:`level-${q.level}`})}`:registerInterestUrl('qualifications',`${q.body} ${q.name}`)}>{qPhase===1?<>Review study options &amp; enquire</>:plannedLater2027Qualification(q)?'Register interest for later 2027':'Register interest for a future intake'}</Link>
         </article>})}
         {filtered.length===0&&<div className="col-span-full space-y-3 rounded-xl border bg-card p-5"><p>No matching qualifications. Try a different subject or search, or reset the filters.</p><Button className="max-w-full whitespace-normal" variant="outline" onClick={clearFilters}>Reset qualification search</Button></div>}
       </section>
