@@ -20,7 +20,7 @@ export function reviewFormativeDrafts(raw:string,existing:readonly FormativeQues
  const seen=new Set(existing.map(q=>norm(q.question)));
  for(const [i,value] of parsed.entries()){
   const fail=(message:string)=>issues.push({row:i+1,message});
-  if(!object(value)||Object.keys(value).length!==keys.length||keys.some(key=>!Object.hasOwn(value,key))){fail('Expected exactly the seven question fields. No IDs, approval status, instructions or tool calls are accepted.');continue;}
+  if(!object(value)||Object.keys(value).length!==keys.length||keys.some(key=>!Object.prototype.hasOwnProperty.call(value,key))){fail('Expected exactly the seven question fields. No IDs, approval status, instructions or tool calls are accepted.');continue;}
   const {subject,scope,topic,question,options,answer,explanation}=value;
   if(!bounded(subject,100)||!FORMATIVE_SUBJECTS.includes(subject)||!bounded(scope,160)||!bounded(topic,100)||!bounded(question,500)||!bounded(answer,200)||!bounded(explanation,1500)||explanation.trim().length<13){fail('Use an existing subject and bounded non-empty question, level, topic, answer and worked explanation.');continue;}
   if(!Array.isArray(options)||options.length!==4||!options.every(o=>bounded(o,200))||new Set(options.map(norm)).size!==4||options.filter(o=>o===answer).length!==1){fail('Four distinct options and exactly one matching answer are required.');continue;}
