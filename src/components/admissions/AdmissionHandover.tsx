@@ -12,7 +12,7 @@ function verifiedOptions(value:unknown):Options {
  if(!Array.isArray(obj.candidates)||!Array.isArray(obj.programmes))throw Error('Admission options were not confirmed');
  const candidates=obj.candidates as Options['candidates'];
  const programmes=obj.programmes as Options['programmes'];
- if(candidates.some(item=>!item||typeof item.id!=='string'||!item.id||typeof item.name!=='string'||typeof item.email!=='string')||
+ if(new Set(candidates.map(item=>item?.id)).size!==candidates.length||new Set(programmes.map(item=>item?.id)).size!==programmes.length||candidates.some(item=>!item||typeof item.id!=='string'||!item.id||typeof item.name!=='string'||typeof item.email!=='string')||
     programmes.some(item=>!item||typeof item.id!=='string'||!item.id||typeof item.title!=='string'))
   throw Error('Admission options were not confirmed');
  return {candidates,programmes};
@@ -24,9 +24,10 @@ function Review({application,onClose,onSaved}:{application:Application;onClose:(
  const [loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[error,setError]=useState(''),[refresh,setRefresh]=useState(0);
  const [uncertain,setUncertain]=useState(false),[checking,setChecking]=useState(false);
  const requestLock=useRef(false);
+ const recoveryLock=useRef(false);
  const mounted=useRef(true);
  useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;};},[]);
- useEffect(()=>{let active=true;setLoading(true);setError('');setStudent('');setProgramme('');
+ useEffect(()=>{let active=true;setLoading(true);setError('');setOptions({candidates:[],programmes:[]});setStudent('');setProgramme('');
   void(async()=>{try{const r=await db.rpc('get_unipathway_admission_options',{p_application:application.id});if(r.error)throw r.error;
    if(active)setOptions(verifiedOptions(r.data));
   }catch{if(active)setError('The learner and programme could not be verified. Retry before enrolling.');}finally{if(active)setLoading(false);}})();
@@ -34,7 +35,7 @@ function Review({application,onClose,onSaved}:{application:Application;onClose:(
  },[application.id,refresh]);
  async function submit(event:React.FormEvent){
   event.preventDefault();
-  if(requestLock.current||saving||uncertain)return;
+  if(requestLock.current||loading||saving||uncertain||error)return;
   if(!options.candidates.some(candidate=>candidate.id===student)||
      !options.programmes.some(item=>item.id===programme)||
      note.trim().length<20)return;
@@ -60,8 +61,8 @@ function Review({application,onClose,onSaved}:{application:Application;onClose:(
   }
  }
  async function checkStatus(){
-  if(!uncertain||checking||saving||!user?.tenantId||!student||!programme)return;
-  setChecking(true);setError('');
+  if(recoveryLock.current||!uncertain||checking||saving||!user?.tenantId||!student||!programme)return;
+  recoveryLock.current=true;setChecking(true);setError('');
   try{
    // Read-only exact-case recovery. RLS must separately authorise this staff
    // member; an absent or partial row never becomes a positive confirmation.
@@ -81,9 +82,9 @@ function Review({application,onClose,onSaved}:{application:Application;onClose:(
    }
   }catch(e){
    if(mounted.current)setError(e instanceof Error?e.message:'Status could not be verified');
-  }finally{if(mounted.current)setChecking(false);}
+  }finally{recoveryLock.current=false;if(mounted.current)setChecking(false);}
  }
- return <form onSubmit={submit} className="mt-4 space-y-4 rounded-lg border p-4" aria-label={`Review enrolment for ${application.student_name}`}>
+ return <form onSubmit={submit} className="mt-4 min-w-0 space-y-4 rounded-xl border bg-card p-3 sm:p-5 [overflow-wrap:anywhere]" aria-label={`Review enrolment for ${application.student_name}`}>
   <h3 className="font-semibold">{application.student_name} · {application.email}</h3>
   <p className="text-sm text-muted-foreground">Check the offer and identity evidence before granting course access. Only confirmed accounts matching the application email and active centre programmes are available. This action creates no invoice and does not confirm payment.</p>
   {loading&&<p role="status">Verifying admission options…</p>}
@@ -94,17 +95,18 @@ function Review({application,onClose,onSaved}:{application:Application;onClose:(
     <Button type="button" variant="outline" className="mt-2 min-h-11" disabled={checking||saving} onClick={()=>void checkStatus()}>
       {checking?'Checking status…':'Check recorded enrolment status'}
     </Button>
+    <p className="mt-2 text-xs text-muted-foreground">The reviewed fields are locked while the result is uncertain.</p>
   </section>}
-  {!loading&&<>
+  {!loading&&(!error||uncertain)&&<>
    {!options.candidates.length&&<p className="text-sm">No eligible confirmed learner account. Ask the applicant to register and confirm their email, then have admissions verify their centre membership.</p>}
-   <label className="block text-sm">Confirmed learner<select required disabled={saving||!!error} className="mt-1 w-full rounded border bg-background p-2" value={student} onChange={e=>setStudent(e.target.value)}><option value="">Choose the confirmed account</option>{options.candidates.map(c=><option key={c.id} value={c.id}>{c.name} · {c.email}</option>)}</select></label>
-   <label className="block text-sm">Active programme<select required disabled={saving||!!error} className="mt-1 w-full rounded border bg-background p-2" value={programme} onChange={e=>setProgramme(e.target.value)}><option value="">Choose the approved programme</option>{options.programmes.map(p=><option key={p.id} value={p.id}>{p.title}</option>)}</select></label>
+   <label className="block text-sm">Confirmed learner<select required disabled={saving||checking||uncertain||!!error} className="mt-1 min-h-11 w-full min-w-0 rounded-lg border bg-background p-2" value={student} onChange={e=>setStudent(e.target.value)}><option value="">Choose the confirmed account</option>{options.candidates.map(c=><option key={c.id} value={c.id}>{c.name} · {c.email}</option>)}</select></label>
+   <label className="block text-sm">Active programme<select required disabled={saving||checking||uncertain||!!error} className="mt-1 min-h-11 w-full min-w-0 rounded-lg border bg-background p-2" value={programme} onChange={e=>setProgramme(e.target.value)}><option value="">Choose the approved programme</option>{options.programmes.map(p=><option key={p.id} value={p.id}>{p.title}</option>)}</select></label>
    {!options.programmes.length&&<p className="text-sm">No eligible active programme. Ask the programme team to review the application’s programme link.</p>}
-   <label className="block text-sm">Admission decision and evidence reference<textarea required minLength={20} maxLength={2000} disabled={saving} className="mt-1 w-full rounded border bg-background p-2" rows={3} value={note} onChange={e=>setNote(e.target.value)} placeholder="Record the approved offer and identity evidence reference; do not paste identity documents."/></label>
+   <label className="block text-sm">Admission decision and evidence reference<textarea required minLength={20} maxLength={2000} disabled={saving||checking||uncertain} className="mt-1 w-full min-w-0 rounded-lg border bg-background p-3" rows={3} value={note} onChange={e=>setNote(e.target.value)} placeholder="Record the approved offer and identity evidence reference; do not paste identity documents."/></label>
   </>}
   <div className="flex flex-wrap gap-2"><Button type="submit" disabled={loading||saving||uncertain||!student||!programme||note.trim().length<20||!!error}>{saving?'Confirming…':'Confirm academic enrolment'}</Button>
    <Button type="button" variant="outline" disabled={saving||loading||uncertain} onClick={()=>setRefresh(x=>x+1)}>Recheck options</Button>
-   <Button type="button" variant="ghost" disabled={saving} onClick={onClose}>Cancel</Button></div>
+   <Button type="button" variant="ghost" disabled={saving||checking||uncertain} onClick={onClose}>Cancel</Button></div>
  </form>;
 }
 export default function AdmissionHandover({applications,onRefetch}:{applications:Application[];onRefetch:()=>void}){
