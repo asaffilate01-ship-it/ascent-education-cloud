@@ -7,6 +7,7 @@ import StatusBadge from '@/components/ui/StatusBadge';
 import { GraduationCap, Users, CreditCard, Shield, BookOpen, FileCheck, Handshake, BarChart3, TrendingUp, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useMemo } from 'react';
+import { useReducedMotion } from 'framer-motion';
 import AddStudentModal from '@/components/modals/AddStudentModal';
 import {invoiceMonths, attendanceWeeks, directorReport} from '@/lib/dashboardMetrics';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
@@ -15,6 +16,12 @@ import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, R
 
 export default function CentreDirectorDashboard() {
   const {user} = useAuth();
+  return <DirectorWorkspace key={JSON.stringify([user?.id,user?.tenantId,user?.role,user?.roles])}/>;
+}
+
+function DirectorWorkspace() {
+  const {user} = useAuth();
+  const reduceMotion=useReducedMotion();
   const verified=!!user?.id&&!!user?.tenantId&&user.role==='centre_director'&&user.roles?.includes('centre_director');
   const scope = {enabled: verified, filters: [{column: 'tenant_id', operator: 'eq' as const, value: user?.tenantId}]};
   const [addStudentOpen, setAddStudentOpen] = useState(false);
@@ -38,7 +45,7 @@ export default function CentreDirectorDashboard() {
 
   const loading = enrolments.loading || progLoading || appLoading || invLoading || attLoading;
   if (!verified) return <DashboardLayout title="Centre Director"><p role="alert">An active Centre Director role and a verified centre assignment are required.</p></DashboardLayout>;
-  if (loading) return <DashboardSkeleton />;
+  if (loading) return <DashboardLayout title="Centre Director"><DashboardSkeleton /></DashboardLayout>;
   if (enrolments.error || progError || appError || invError || attError) return <DashboardLayout title="Centre Director"><p role="alert">Dashboard data could not be loaded completely.</p><Button onClick={() => {void enrolments.refetch(); void progRefresh(); void appRefresh(); void invRefresh(); void attRefresh();}}>Retry dashboard</Button></DashboardLayout>;
 
   const totalStudents = new Set(enrolments.data.map(e=>e.student_id)).size;
@@ -53,7 +60,7 @@ export default function CentreDirectorDashboard() {
   const enrolled = applications.filter((a) => a.stage === 'enrolled').length;
 
   const funnelStages = [
-    { stage: 'Leads', count: totalLeads, pct: 100 },
+    { stage: 'Leads', count: totalLeads, pct: totalLeads ? 100 : 0 },
     { stage: 'Applications', count: applied, pct: totalLeads ? Math.round((applied / totalLeads) * 100) : 0 },
     { stage: 'Offers', count: offers, pct: totalLeads ? Math.round((offers / totalLeads) * 100) : 0 },
     { stage: 'Deposits', count: deposits, pct: totalLeads ? Math.round((deposits / totalLeads) * 100) : 0 },
@@ -71,7 +78,8 @@ export default function CentreDirectorDashboard() {
       title="Centre Director"
       subtitle="Full operations view"
       actions={
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button size="sm" variant="outline" onClick={()=>{void enrolments.refetch();void progRefresh();void appRefresh();void invRefresh();void attRefresh();}}>Refresh dashboard</Button>
           <Button size="sm" variant="outline" onClick={exportReport}>Download invoice summary</Button>
           <Button size="sm" onClick={() => setAddStudentOpen(true)}>+ Add Student</Button>
         </div>
@@ -91,7 +99,7 @@ export default function CentreDirectorDashboard() {
        ['Teams and cloud lab readiness','/director/tech-lab-access','Approve technology modules and learner-specific grants; Microsoft Graph and cloud lab providers need separate activation.'],
        ['Admission allocations','/director/allocations','Check KYC, offers, funding, correct modules, schedules and physical identity cards.']
       ].map(([title,to,description])=><Link key={to} to={to} className="rounded-xl border bg-card p-4 hover:bg-accent"><h2 className="font-semibold">{title}</h2><p className="mt-2 text-sm text-muted-foreground">{description}</p></Link>)}</section>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid min-w-0 grid-cols-1 min-[380px]:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
         <StatCard label="Total Students" value={String(totalStudents)} icon={GraduationCap} />
         <StatCard label="Active Programmes" value={String(activeProgrammes.length)} icon={BookOpen} />
         <StatCard label="Revenue Collected" value={`Rs.${totalCollected.toLocaleString()}`} icon={CreditCard} />
@@ -99,13 +107,13 @@ export default function CentreDirectorDashboard() {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-4 mb-6">
-        <div className="surface-card p-5">
+        <div className="surface-card min-w-0 p-3 sm:p-5">
           <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
             <BookOpen className="w-4 h-4 text-primary" /> Active Programmes
           </h3>
           <div className="space-y-2">
             {activeProgrammes.map((p) => (
-              <div key={p.id} className="flex items-center justify-between py-1.5 border-b border-border/30 last:border-0">
+              <div key={p.id} className="flex flex-wrap items-start justify-between gap-2 py-1.5 border-b border-border/30 last:border-0">
                 <div>
                   <p className="text-sm font-medium">{p.title}</p>
                   <p className="text-xs text-muted-foreground">{p.awarding_body} · {new Set(enrolments.data.filter(e=>e.programme_id===p.id).map(e=>e.student_id)).size} students</p>
@@ -117,10 +125,11 @@ export default function CentreDirectorDashboard() {
           </div>
         </div>
 
-        <div className="surface-card p-5">
+        <div className="surface-card min-w-0 p-3 sm:p-5">
           <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-            <BarChart3 className="w-4 h-4 text-primary" /> Admissions Funnel
+            <BarChart3 className="w-4 h-4 text-primary" /> Admissions stage summary
           </h3>
+          <p className="mb-3 text-xs text-muted-foreground">Current recorded stages, not a historical conversion rate. Percentages use all loaded applications as the denominator.</p>
           <div className="space-y-2">
             {funnelStages.map((s) => (
               <div key={s.stage}>
@@ -136,7 +145,7 @@ export default function CentreDirectorDashboard() {
           </div>
         </div>
 
-        <div className="surface-card p-5">
+        <div className="surface-card min-w-0 p-3 sm:p-5">
           <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
             <CreditCard className="w-4 h-4 text-primary" /> Financial Summary
           </h3>
@@ -147,12 +156,12 @@ export default function CentreDirectorDashboard() {
               { label: 'Outstanding', value: `Rs.${outstanding.toLocaleString()}`, sub: `${overdueCount} overdue` },
               { label: 'Commissions', value: `Rs.${commissions.toLocaleString()}` },
             ].map((f) => (
-              <div key={f.label} className="flex items-center justify-between py-1">
+              <div key={f.label} className="flex flex-wrap items-center justify-between gap-2 py-1">
                 <div>
                   <p className="text-sm">{f.label}</p>
                   {f.sub && <p className="text-xs text-muted-foreground">{f.sub}</p>}
                 </div>
-                <span className="text-sm font-semibold">{f.value}</span>
+                <span className="min-w-0 break-words text-sm font-semibold tabular-nums">{f.value}</span>
               </div>
             ))}
           </div>
@@ -161,7 +170,7 @@ export default function CentreDirectorDashboard() {
 
       {/* Charts Row */}
       <div className="grid lg:grid-cols-2 gap-4 mb-6">
-        <div className="surface-card p-5">
+        <div className="surface-card min-w-0 p-3 sm:p-5">
           <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-primary" /> Invoice totals by issue month
           </h3>
@@ -172,13 +181,13 @@ export default function CentreDirectorDashboard() {
               <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `Rs.${(v/1000).toFixed(0)}k`} />
               <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} formatter={(v: number) => [`Rs.${v.toLocaleString()}`, '']} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Area type="monotone" dataKey="billed" name="Billed" fill="hsl(var(--muted-foreground))" stroke="hsl(var(--muted-foreground))" fillOpacity={0.2} />
+              <Area isAnimationActive={!reduceMotion} type="monotone" dataKey="billed" name="Billed" fill="hsl(var(--muted-foreground))" stroke="hsl(var(--muted-foreground))" fillOpacity={0.2} />
               <Area type="monotone" dataKey="collected" name="Collected" fill="hsl(var(--primary))" stroke="hsl(var(--primary))" fillOpacity={0.4} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
 
-        <div className="surface-card p-5">
+        <div className="surface-card min-w-0 p-3 sm:p-5">
           <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
             <Calendar className="w-4 h-4 text-primary" /> Attendance Rate
           </h3>
@@ -189,7 +198,7 @@ export default function CentreDirectorDashboard() {
                 <XAxis dataKey="week" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
                 <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `${v}%`} />
                 <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} formatter={(v: number) => [`${v}%`, 'Rate']} />
-                <Bar dataKey="rate" name="Attendance %" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                <Bar isAnimationActive={!reduceMotion} dataKey="rate" name="Attendance %" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
