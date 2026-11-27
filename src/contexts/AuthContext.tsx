@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, useRef, ReactNode } fro
 import { supabase } from '@/integrations/supabase/client';
 import { UserRole } from '@/types/platform';
 import {verifiedRoleMemberships} from '@/lib/roleMembership';
+import {INSTITUTIONAL_AUTH_ENABLED,institutionalAssurance} from '@/lib/institutionalAuth';
 import type { User, Session } from '@supabase/supabase-js';
 
 interface AuthUser {
@@ -76,8 +77,16 @@ export const ROLE_HOME: Record<UserRole, string> = {
 };
 
 async function fetchAuthUser(supaUser: User): Promise<AuthUser> {
-  // Make sure self-registered users have a UniPathway profile and role
-  try { await (supabase.rpc as any)('ensure_my_account'); } catch { /* non-blocking */ }
+  // Institutional mode must not bootstrap or assign access from public signup metadata.
+  if(!INSTITUTIONAL_AUTH_ENABLED){try { await (supabase.rpc as any)('ensure_my_account'); } catch { /* non-blocking */ }}
+  else {
+    const {data,error}=await supabase.auth.getUser();
+    const verified=data?.user;
+    const assurance=await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if(error||!verified||verified.id!==supaUser.id||assurance.error||!institutionalAssurance(verified.email,!!verified.email_confirmed_at,assurance.data?.currentLevel))throw Error('Verified institutional MFA session required');
+    const access=await (supabase.rpc as any)('unipathway_institutional_access');
+    if(access.error||access.data!==true)throw Error('Approved institutional account required');
+  }
   // Fetch profile
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
@@ -129,10 +138,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     setSession(supaSession);
+    if(INSTITUTIONAL_AUTH_ENABLED){setUser(null);setLoading(true);}
     if(!navigator.onLine){
       // Keep an already-loaded identity in memory, but never reconstruct roles from disk.
       // Cold offline startup uses the separate saved-content reader.
-      if(identityChanged)await setLearningAccount(null).catch(()=>{});
+      if(identityChanged||INSTITUTIONAL_AUTH_ENABLED)await setLearningAccount(null).catch(()=>{});
       if(generation===authGeneration.current)setLoading(false);
       return;
     }
@@ -146,8 +156,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       if (generation !== authGeneration.current) return;
       setUser(null);
+      if(INSTITUTIONAL_AUTH_ENABLED)await setLearningAccount(null).catch(()=>{});
     }
-    setLoading(false);
+    if(generation===authGeneration.current)setLoading(false);
   };
 
   useEffect(() => {
@@ -185,6 +196,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refreshProfile = async () => {
     const generation = ++authGeneration.current;
     if (!session?.user) { setUser(null); return; }
+    if(INSTITUTIONAL_AUTH_ENABLED)setUser(null);
     try {
       const authUser = await fetchAuthUser(session.user);
       if (generation !== authGeneration.current) return;
