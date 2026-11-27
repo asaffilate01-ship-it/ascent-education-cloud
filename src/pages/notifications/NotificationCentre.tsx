@@ -1,7 +1,7 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Bell, Check, Clock, AlertTriangle, MessageSquare, CreditCard, GraduationCap, FileText, Users, Settings, CheckCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
@@ -40,33 +40,34 @@ export default function NotificationCentre() {
   const [filter, setFilter] = useState<NotificationType>('all');
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const fetchNotifications = async () => {
-    const { data } = await supabase
-      .from('notifications')
-      .select('*')
-      .order('created_at', { ascending: false });
-    setNotifications((data || []) as Notification[]);
-    setLoading(false);
-  };
+  const [error, setError] = useState('');
+  const [retry, setRetry] = useState(0);
+  const generation = useRef(0);
 
   useEffect(() => {
-    fetchNotifications();
-
-    // Real-time subscription
-    const channel = supabase
-      .channel('notifications-realtime')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'notifications',
-      }, (payload) => {
-        setNotifications((prev) => [payload.new as Notification, ...prev]);
-      })
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
-  }, []);
+    const token = ++generation.current;
+    setNotifications([]); setError(''); setLoading(true);
+    if (!user?.id) { setLoading(false); return; }
+    const recipient = user.id;
+    const current = () => generation.current === token;
+    const fetchNotifications = async () => {
+      try {
+        const {data, error} = await supabase.from('notifications').select('*')
+          .eq('user_id', recipient).order('created_at', {ascending:false});
+        if (!current()) return;
+        if (error) throw error;
+        setNotifications((data || []) as Notification[]);
+      } catch { if (current()) setError('Notifications could not be loaded. Please retry.'); }
+      finally { if (current()) setLoading(false); }
+    };
+    void fetchNotifications();
+    const channel = supabase.channel('notifications-realtime')
+      .on('postgres_changes', {event:'INSERT',schema:'public',table:'notifications',filter:`user_id=eq.${recipient}`}, payload => {
+        if (!current() || payload.new.user_id !== recipient) return;
+        setNotifications(prev => [payload.new as Notification, ...prev.filter(n => n.id !== payload.new.id)]);
+      }).subscribe();
+    return () => { generation.current++; supabase.removeChannel(channel); };
+  }, [user?.id, user?.tenantId, retry]);
 
   const filtered = filter === 'all' ? notifications :
     filter === 'urgent' ? notifications.filter(n => n.severity === 'warning' || n.severity === 'urgent') :
@@ -74,17 +75,21 @@ export default function NotificationCentre() {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  const markAllRead = async () => {
-    const unreadIds = notifications.filter(n => !n.read).map(n => n.id);
-    if (unreadIds.length === 0) return;
-    await supabase.from('notifications').update({ read: true } as any).in('id', unreadIds);
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  const markIdsRead = async (ids: string[]) => {
+    if (!user?.id || !ids.length) return;
+    const token = generation.current;
+    try {
+      const {data, error} = await supabase.from('notifications').update({read:true})
+        .eq('user_id',user.id).in('id',ids).select('id');
+      if (generation.current !== token) return;
+      if (error) throw error;
+      const confirmed = new Set((data || []).map(row => row.id));
+      setNotifications(prev => prev.map(n => confirmed.has(n.id) ? {...n,read:true} : n));
+      setError(ids.every(id => confirmed.has(id)) ? '' : 'Some read statuses could not be confirmed. Please retry.');
+    } catch { if (generation.current === token) setError('Read status could not be confirmed. Please retry.'); }
   };
-
-  const markRead = async (id: string) => {
-    await supabase.from('notifications').update({ read: true } as any).eq('id', id);
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-  };
+  const markAllRead = () => markIdsRead(notifications.filter(n => !n.read).map(n => n.id));
+  const markRead = (id: string) => markIdsRead([id]);
 
   const severityColor = (s: string) => {
     if (s === 'urgent' || s === 'warning') return 'text-warning';
@@ -97,13 +102,14 @@ export default function NotificationCentre() {
   return (
     <DashboardLayout
       title="Notifications"
-      subtitle={`${unreadCount} unread notification${unreadCount !== 1 ? 's' : ''}`}
+      subtitle={error ? "Notification status may be incomplete" : `${unreadCount} unread notification${unreadCount !== 1 ? 's' : ''}`}
       actions={
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={markAllRead}><CheckCheck className="w-3.5 h-3.5 mr-1.5" />Mark All Read</Button>
+          <Button variant="outline" size="sm" disabled={!unreadCount} onClick={markAllRead}><CheckCheck className="w-3.5 h-3.5 mr-1.5" />Mark All Read</Button>
         </div>
       }
     >
+      {error && <div role="alert" className="mb-4 flex flex-wrap items-center gap-3 text-sm text-destructive">{error}<Button variant="outline" onClick={() => setRetry(n => n+1)}>Refresh notifications</Button></div>}
       {/* Filter tabs */}
       <div className="flex items-center gap-1 mb-4 overflow-x-auto">
         {([
@@ -116,7 +122,8 @@ export default function NotificationCentre() {
           <button
             key={tab.key}
             onClick={() => setFilter(tab.key)}
-            className={`px-4 py-2 rounded-lg text-xs font-medium transition-default whitespace-nowrap ${
+            aria-pressed={filter === tab.key}
+            className={`min-h-11 px-4 py-2 rounded-lg text-xs font-medium transition-default whitespace-nowrap ${
               filter === tab.key ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:bg-accent'
             }`}
           >
@@ -130,9 +137,9 @@ export default function NotificationCentre() {
         {filtered.map((n) => {
           const Icon = ICON_MAP[n.type] || Bell;
           return (
-            <div
+            <button type="button"
               key={n.id}
-              className={`surface-card p-4 flex items-start gap-3 transition-default hover:shadow-lg cursor-pointer ${
+              className={`surface-card w-full text-left p-4 flex items-start gap-3 transition-default hover:shadow-lg cursor-pointer ${
                 !n.read ? 'border-l-3 border-l-primary bg-primary/[0.02]' : ''
               }`}
               onClick={() => !n.read && markRead(n.id)}
@@ -151,10 +158,10 @@ export default function NotificationCentre() {
                 <p className="text-xs text-muted-foreground mt-0.5">{n.message}</p>
                 <p className="text-[10px] text-muted-foreground mt-1.5">{timeAgo(n.created_at)}</p>
               </div>
-            </div>
+            </button>
           );
         })}
-        {filtered.length === 0 && (
+        {filtered.length === 0 && !error && (
           <div className="surface-card p-12 text-center text-muted-foreground text-sm">No notifications</div>
         )}
       </div>

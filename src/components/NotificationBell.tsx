@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Bell, FileText, CreditCard, Settings, MessageSquare } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -34,20 +34,30 @@ export default function NotificationBell() {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+  const generation = useRef(0);
 
   useEffect(() => {
-    if (!user) return;
+    const token = ++generation.current;
+    setNotifications([]); setOpen(false); setError(''); setLoading(true);
+    if (!user?.id) return;
+    const current = () => generation.current === token;
 
     const fetchNotifs = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('notifications')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(10);
-      setNotifications((data || []) as Notification[]);
+      if (!current()) return;
+      setLoading(false);
+      if (error) { setError('Notifications could not be loaded. Open the notification centre to retry.'); return; }
+      setError(''); setNotifications((data || []) as Notification[]);
     };
 
-    fetchNotifs();
+    void fetchNotifs().catch(() => { if (current()) { setLoading(false); setError('Notifications could not be loaded.'); } });
 
     const channel = supabase
       .channel('bell-notifications')
@@ -55,18 +65,27 @@ export default function NotificationBell() {
         event: 'INSERT',
         schema: 'public',
         table: 'notifications',
+        filter: `user_id=eq.${user.id}`,
       }, (payload) => {
-        setNotifications((prev) => [payload.new as Notification, ...prev].slice(0, 10));
+        if (!current() || payload.new.user_id !== user.id) return;
+        setNotifications((prev) => [payload.new as Notification, ...prev.filter(n => n.id !== payload.new.id)].slice(0, 10));
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
-  }, [user]);
+    return () => { generation.current++; supabase.removeChannel(channel); };
+  }, [user?.id, user?.tenantId]);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const markRead = async (id: string) => {
-    await supabase.from('notifications').update({ read: true } as any).eq('id', id);
+    if (!user?.id) return;
+    const token = generation.current;
+    try {
+      const { data, error } = await supabase.from('notifications').update({ read: true }).eq('id', id).eq('user_id', user.id).select('id').single();
+      if (generation.current !== token) return;
+      if (error || data?.id !== id) throw Error('Unconfirmed update');
+      setError('');
+    } catch { if (generation.current === token) setError('Read status could not be confirmed. Please retry.'); return; }
     setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, read: true } : n));
   };
 
@@ -86,7 +105,7 @@ export default function NotificationBell() {
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="p-2 rounded-lg hover:bg-secondary transition-default relative focus-ring"
+        className="min-h-11 min-w-11 flex items-center justify-center p-2 rounded-lg hover:bg-secondary transition-default relative focus-ring"
         aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
         aria-expanded={open}
         aria-haspopup="true"
@@ -115,17 +134,18 @@ export default function NotificationBell() {
               )}
             </div>
 
-            {notifications.length === 0 ? (
+            {error && <p role="alert" className="p-3 text-xs text-destructive">{error}</p>}
+            {loading ? <p role="status" className="p-4 text-sm">Loading notifications…</p> : notifications.length === 0 && !error ? (
               <div className="p-8 text-center text-sm text-muted-foreground">No notifications</div>
             ) : (
               <div>
                 {notifications.slice(0, 5).map((n) => {
                   const Icon = ICON_MAP[n.type] || Bell;
                   return (
-                    <div
+                    <button type="button"
                       key={n.id}
                       onClick={() => { if (!n.read) markRead(n.id); }}
-                      className={`flex items-start gap-3 px-4 py-3 hover:bg-accent/50 transition-default cursor-pointer border-b border-border/50 last:border-0 ${
+                      className={`flex w-full text-left items-start gap-3 px-4 py-3 hover:bg-accent/50 transition-default cursor-pointer border-b border-border/50 last:border-0 ${
                         !n.read ? 'bg-primary/[0.03]' : ''
                       }`}
                     >
@@ -140,7 +160,7 @@ export default function NotificationBell() {
                         <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">{n.message}</p>
                         <p className="text-[10px] text-muted-foreground mt-1">{timeAgo(n.created_at)}</p>
                       </div>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
