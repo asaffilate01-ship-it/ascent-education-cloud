@@ -15,6 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantBranding } from '@/hooks/useTenantBranding';
 import Seo from '@/components/Seo';
 import TurnstileChallenge from '@/components/enquiry/TurnstileChallenge';
+import {PUBLIC_MESSAGE_ROUTING_ENABLED,verifyPublicMessageReceipt,publicMessageStatus} from '@/lib/publicMessageDelivery';
 export default function TenantContactPage() {
   const {slug}=useParams();
   const [query]=useSearchParams();
@@ -29,7 +30,9 @@ function ContactWorkspace({slug}:{slug?:string}) {
   const allowAdvice=(slug||'unipathway')==='unipathway'&&!interest.summary;
   const consultation=allowAdvice?consultationPrefill(params,location.state):null;
   const advice=allowAdvice?(consultation??internationalAdvicePrefill(params)):null;
-  const secureContact=import.meta.env.VITE_UNIPATHWAY_SECURE_CONTACT_ENABLED==='true'&&(slug||'unipathway')==='unipathway';
+  const mailRouting=PUBLIC_MESSAGE_ROUTING_ENABLED&&(slug||'unipathway')==='unipathway';
+  const secureContact=(mailRouting||import.meta.env.VITE_UNIPATHWAY_SECURE_CONTACT_ENABLED==='true')&&(slug||'unipathway')==='unipathway';
+  const [mailAttempt,setMailAttempt]=useState<{id:string;retry:boolean}|null>(null);
   const [privacyAcknowledged,setPrivacyAcknowledged]=useState(false);
   const [captchaToken,setCaptchaToken]=useState('');
   const [challengeRevision,setChallengeRevision]=useState(0);
@@ -42,7 +45,7 @@ function ContactWorkspace({slug}:{slug?:string}) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if(pending.current)return;
+    if(pending.current||mailAttempt?.retry===false)return;
     if (!formData.name || !formData.email || !formData.message) {
       toast.error('Please fill in all required fields');
       return;
@@ -51,20 +54,25 @@ function ContactWorkspace({slug}:{slug?:string}) {
     if(secureContact&&!captchaToken){toast.error('Complete security verification before sending.');return;}
     pending.current=true;setSending(true);setFeedback(null);
     try {
-      const endpoint=secureContact?'unipathway-secure-contact':'contact-form';
+      const endpoint=mailRouting?'unipathway-public-message':secureContact?'unipathway-secure-contact':'contact-form';
+      const attempt=mailRouting?(mailAttempt??{id:crypto.randomUUID(),retry:true}):null;
+      if(attempt)setMailAttempt(attempt);
       const body=secureContact
-        ? {...formData,tenant_slug:'unipathway',privacy_acknowledged:true,captcha_token:captchaToken}
+        ? {...formData,tenant_slug:'unipathway',privacy_acknowledged:true,captcha_token:captchaToken,...(attempt?{request_id:attempt.id,channel:'admissions'}:{})}
         : {...formData,tenant_slug:slug||'unipathway'};
       const {data,error}=await supabase.functions.invoke(endpoint,{body});
       if(!alive.current)return;
       if(error||(secureContact?data?.ok!==true:data?.success!==true))throw new Error('Your message could not be confirmed. Please try again.');
-      const message='Message sent. Our admissions team will reply using your contact details.';
+      const receipt=attempt?verifyPublicMessageReceipt(data,attempt.id,'admissions'):null;
+      if(receipt&&!receipt.complete){setMailAttempt({...attempt!,retry:receipt.retryAvailable});setFeedback({kind:'success',message:publicMessageStatus(receipt,'admissions')});return;}
+      if(receipt)setMailAttempt(null);
+      const message=receipt?publicMessageStatus(receipt,'admissions'):'Message sent. Our admissions team will reply using your contact details.';
       setFeedback({kind:'success',message});toast.success(message);
       setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
       if(secureContact)setPrivacyAcknowledged(false);
     } catch {
       if(!alive.current)return;
-      const message='Your message could not be confirmed. Your details are still here. Please retry or contact admissions by email.';
+      const message=mailRouting?'Your message could not be confirmed. Keep this reference and retry the same details after another security check, or contact admissions.':'Your message could not be confirmed. Your details are still here. Please retry or contact admissions by email.';
       setFeedback({kind:'error',message});toast.error(message);
     } finally {
       pending.current=false;
@@ -84,7 +92,7 @@ function ContactWorkspace({slug}:{slug?:string}) {
             <p className="text-label text-success">Talk to UniPathway</p>
             <h1 className="mt-3 text-3xl font-bold sm:text-5xl">Let’s find your next step.</h1>
             <p className="mt-4 text-muted-foreground">For students based in Pakistan. Ask about subjects, entry requirements, class times or fees, with online learning across Pakistan and in-class learning in Jhelum.</p>
-            <a href="#contact-form" className="mt-6 inline-flex min-h-11 items-center rounded-lg bg-primary px-5 py-3 font-semibold text-primary-foreground">Send an enquiry</a>
+            <div className="mt-6 flex flex-wrap gap-3"><a href="#contact-form" className="inline-flex min-h-11 items-center rounded-lg bg-primary px-5 py-3 font-semibold text-primary-foreground">Student and admissions enquiries</a>{(slug||"unipathway")==="unipathway"&&<Button asChild variant="outline" className="min-h-11"><Link to="/teach-with-us">Tutors and lecturers — teach with us</Link></Button>}</div>
             <p className="mt-4 text-sm text-muted-foreground">Use the form below for general questions. Please do not include identity documents or bank details.</p>
           </PublicHero></div>
 
@@ -125,12 +133,14 @@ function ContactWorkspace({slug}:{slug?:string}) {
 
             {/* Form */}
             <form id="contact-form" aria-busy={sending} onSubmit={handleSubmit} className="scroll-mt-28 min-w-0 lg:col-span-2 surface-card p-4 sm:p-6">
-              <h3 className="text-lg font-bold mb-4">{interest.summary?'Review your course enquiry':consultation?'Review your consultation request':advice?'Review your advice enquiry':'Send us a message'}</h3>
+              <h3 className="text-lg font-bold mb-4">{interest.summary?'Review your course enquiry':consultation?'Review your consultation request':advice?'Review your advice enquiry':'Student and admissions enquiry'}</h3>
               {interest.summary&&<div className="mb-4 rounded-lg border bg-secondary/40 p-3 text-sm"><p className="font-semibold">Your selected study interest</p><p className="mt-1 break-words">{interest.summary}</p><Link className="mt-2 inline-flex min-h-11 items-center font-semibold underline underline-offset-4" to={courseInterestEditUrl(params)}>Change study choices</Link><p className="mt-1 text-muted-foreground">Please review the course, level and study format in your message before sending. Admissions must confirm approval, fees and the next available intake. This is an enquiry, not an application or confirmed place.</p></div>}
               {advice&&<div className="mb-4 rounded-lg border bg-secondary/40 p-3 text-sm"><p className="font-semibold">Your selected advice topic</p><p className="mt-1">{advice.title}</p><Link className="mt-2 inline-flex min-h-11 items-center font-semibold underline underline-offset-4" to={consultation?"/consultation":"/international-study"} state={consultation?location.state:undefined}>{consultation?"Change consultation preferences":"Change advice topic"}</Link><p className="mt-1 text-muted-foreground">Review or edit your message before sending. This is an enquiry, not a service agreement or immigration assessment. Do not include passports, bank statements or other sensitive documents.</p></div>}
               {feedback&&<p role={feedback.kind==='error'?'alert':'status'} className="mb-4 rounded-lg border p-3 text-sm">{feedback.message}</p>}
+              {mailAttempt&&<p className="mb-4 break-all rounded-lg border p-3 text-xs">Request reference: {mailAttempt.id}. The original message is locked while its result is being reconciled.</p>}
               <fieldset disabled={sending} className="min-w-0">
               <legend className="sr-only">Admissions enquiry details</legend>
+              <fieldset disabled={!!mailAttempt} className="min-w-0"><legend className="sr-only">Original message details</legend>
               <div className="grid min-w-0 grid-cols-1 sm:grid-cols-2 gap-4 mb-4 [&>div]:min-w-0">
                 <div>
                   <label htmlFor="contact-name" className="text-label mb-1.5 block">Full Name *</label>
@@ -169,6 +179,7 @@ function ContactWorkspace({slug}:{slug?:string}) {
                   placeholder="How can we help you?"
                 />
               </div>
+              </fieldset>
               {secureContact&&<div className="mb-4 space-y-3">
                 <label className="flex min-h-11 items-start gap-3 text-sm">
                   <input type="checkbox" required className="mt-1 size-4 shrink-0" checked={privacyAcknowledged} onChange={e=>setPrivacyAcknowledged(e.target.checked)}/>
@@ -177,8 +188,8 @@ function ContactWorkspace({slug}:{slug?:string}) {
                 <TurnstileChallenge onToken={setCaptchaToken} resetSignal={challengeRevision}/>
                 {!import.meta.env.VITE_TURNSTILE_SITE_KEY&&<p role="status" className="text-sm text-muted-foreground">Secure enquiry verification is not configured. Please contact admissions by email while this service is being activated.</p>}
               </div>}
-              <Button className="w-full px-3 sm:w-auto sm:px-8" type="submit" disabled={sending||(secureContact&&(!privacyAcknowledged||!captchaToken))}>
-                {sending ? 'Sending...' : <><Send aria-hidden="true" className="hidden w-4 h-4 mr-1.5 sm:block" /><span className="whitespace-normal [overflow-wrap:normal]">Send Message</span></>}
+              <Button className="w-full px-3 sm:w-auto sm:px-8" type="submit" disabled={sending||mailAttempt?.retry===false||(secureContact&&(!privacyAcknowledged||!captchaToken))}>
+                {sending ? 'Sending...' : <><Send aria-hidden="true" className="hidden w-4 h-4 mr-1.5 sm:block" /><span className="whitespace-normal [overflow-wrap:normal]">{mailAttempt?'Retry same message':'Send Message'}</span></>}
               </Button>
               </fieldset>
             </form>
