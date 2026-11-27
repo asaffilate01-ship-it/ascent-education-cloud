@@ -7,6 +7,7 @@ const modes=['Online','Hybrid','In-class (Jhelum)','Flexible'] as const;
 export type MessagePayload={name:string;email:string;phone:string;subject:string;message:string;role?:string;mode?:string;subjects?:string;qualifications?:string;availability?:string};
 export type PublicMessage={requestId:string;channel:MessageChannel;captchaToken:string;payload:MessagePayload};
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const singleMailbox=(email:string)=>/^[a-z0-9][a-z0-9._%+-]{0,63}@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/i.test(email)&&!email.split('@')[0].includes('..')&&!email.split('@')[0].endsWith('.');
 function field(value:unknown,max:number,min=1):string|null{
  if(typeof value!=='string'||value.length>max)return null;
  const result=value.trim();
@@ -15,18 +16,18 @@ function field(value:unknown,max:number,min=1):string|null{
 export function parsePublicMessage(input:unknown):PublicMessage|null{
  if(!input||typeof input!=='object'||Array.isArray(input))return null;
  const v=input as Record<string,unknown>;
- if(v.tenant_slug!=='unipathway'||v.privacy_acknowledged!==true||typeof v.request_id!=='string'||!uuid.test(v.request_id)||!['admissions','recruitment'].includes(String(v.channel)))return null;
+ if(v.tenant_slug!=='unipathway'||v.privacy_acknowledged!==true||typeof v.request_id!=='string'||!uuid.test(v.request_id)||(typeof v.channel!=='string'||!['admissions','recruitment'].includes(v.channel)))return null;
  const channel=v.channel as MessageChannel;
  const allowed=new Set(['tenant_slug','privacy_acknowledged','request_id','channel','captcha_token','name','email','phone','subject','message',...(channel==='recruitment'?['role','mode','subjects','qualifications','availability']:[])]);
  if(Object.keys(v).some(key=>!allowed.has(key)))return null;
  if(channel==='admissions'){
   const parsed=validateSecureContact(input);
-  if(!parsed)return null;
+  if(!parsed||!singleMailbox(parsed.email))return null;
   const {captchaToken,...payload}=parsed;
   return {requestId:v.request_id.toLowerCase(),channel,captchaToken,payload};
  }
  const parsed=validateSecureContact({...v,subject:'General Enquiry'});
- if(!parsed||!roles.includes(v.role as typeof roles[number])||!modes.includes(v.mode as typeof modes[number]))return null;
+ if(!parsed||!singleMailbox(parsed.email)||!roles.includes(v.role as typeof roles[number])||!modes.includes(v.mode as typeof modes[number]))return null;
  const subjects=field(v.subjects,200,2),qualifications=field(v.qualifications,300,2),availability=field(v.availability,240,2);
  if(!subjects||!qualifications||!availability)return null;
  const {name,email,phone,message,captchaToken}=parsed;
