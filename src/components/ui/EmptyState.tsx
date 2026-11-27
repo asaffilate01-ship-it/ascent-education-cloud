@@ -1,5 +1,5 @@
 import { LucideIcon, Inbox, FileSearch, Users, CreditCard, BookOpen, BarChart3 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 
 interface EmptyStateProps {
@@ -30,29 +30,30 @@ export default function EmptyState({
   variant = 'default',
   preset = 'data',
 }: EmptyStateProps) {
+  const reduceMotion = useReducedMotion();
   const config = PRESET_CONFIG[preset] || PRESET_CONFIG.data;
   const Icon = icon || config.icon;
   const isCompact = variant === 'compact';
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={reduceMotion ? false : { opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-      className={`flex flex-col items-center justify-center text-center ${
-        variant === 'card' ? 'surface-card p-8' : ''
-      } ${isCompact ? 'py-8 px-4' : 'py-16 px-6'}`}
+      transition={{ duration: reduceMotion ? 0 : 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+      className={`flex min-w-0 flex-col items-center justify-center text-center [overflow-wrap:anywhere] ${
+        variant === 'card' ? 'surface-card' : ''
+      } ${isCompact ? 'py-6 px-3 sm:py-8 sm:px-4' : 'py-10 px-4 sm:py-16 sm:px-6'}`}
     >
       {/* Animated icon with gradient background */}
       <motion.div
-        initial={{ scale: 0.8 }}
+        initial={reduceMotion ? false : { scale: 0.8 }}
         animate={{ scale: 1 }}
-        transition={{ delay: 0.1, duration: 0.3, type: 'spring', stiffness: 200 }}
+        transition={reduceMotion ? {duration:0} : { delay: 0.1, duration: 0.3, type: 'spring', stiffness: 200 }}
         className={`relative mb-4 ${isCompact ? 'w-12 h-12' : 'w-16 h-16'}`}
       >
         <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${config.gradient} blur-lg`} />
         <div className={`relative w-full h-full rounded-2xl bg-gradient-to-br ${config.gradient} border border-border/30 flex items-center justify-center`}>
-          <Icon className={`text-muted-foreground ${isCompact ? 'w-5 h-5' : 'w-7 h-7'}`} />
+          <Icon aria-hidden="true" className={`text-muted-foreground ${isCompact ? 'w-5 h-5' : 'w-7 h-7'}`} />
         </div>
       </motion.div>
 
@@ -67,7 +68,8 @@ export default function EmptyState({
         <Button
           onClick={onAction}
           size={isCompact ? 'sm' : 'default'}
-          className="mt-4"
+          type="button"
+          className="mt-4 min-h-11 max-w-full"
         >
           {actionLabel}
         </Button>
