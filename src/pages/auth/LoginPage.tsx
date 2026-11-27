@@ -6,10 +6,13 @@ import { Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ROLE_HOME, useAuth } from '@/contexts/AuthContext';
 import unipathwayLogo from '@/assets/unipathway-logo.png';
+import InstitutionalLogin from '@/components/auth/InstitutionalLogin';
+import {INSTITUTIONAL_AUTH_ENABLED} from '@/lib/institutionalAuth';
 
 
 
-export default function LoginPage() {
+export default function LoginPage(){return INSTITUTIONAL_AUTH_ENABLED?<InstitutionalLogin/>:<LegacyLogin/>;}
+function LegacyLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);

@@ -38,6 +38,15 @@ export async function authenticateRequest(req: Request): Promise<AuthResult | Re
     return unauthorizedResponse();
   }
 
+  if(Deno.env.get('UNIPATHWAY_INSTITUTIONAL_AUTH_ENABLED')==='true'){
+    // A valid JWT alone does not establish ongoing access. The database checks
+    // current institutional approval, centre membership, live session and AAL2.
+    if(data.claims.aal!=='aal2'||data.claims.is_anonymous!==false)return unauthorizedResponse('Verified institutional session required');
+    try{
+      const access=await supabase.rpc('unipathway_institutional_access');
+      if(access.error||access.data!==true)return unauthorizedResponse('Verified institutional session required');
+    }catch{return unauthorizedResponse('Verified institutional session required');}
+  }
   return {
     userId: data.claims.sub as string,
     email: (data.claims.email as string) || '',
