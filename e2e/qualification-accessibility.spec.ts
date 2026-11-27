@@ -77,6 +77,6 @@ test('2027 launch and recruitment separate preparation from planned regulated qu
  const visa=page.getByRole('region',{name:'Explore study, work and family routes worldwide'});
  await expect(visa).toBeVisible();
  await expect(visa.getByRole('heading',{name:'Marriage, spouse and family'})).toBeVisible();
- const family=visa.getByRole('article').filter({has:visa.getByRole('heading',{name:'Marriage, spouse and family'})});
+ const family=visa.getByRole('article').filter({has:page.getByRole('heading',{name:'Marriage, spouse and family',exact:true})});
  await expect(family.getByRole('link',{name:'Request information'})).toHaveAttribute('href','/contact?advice=family-visa#contact-form');
 });
