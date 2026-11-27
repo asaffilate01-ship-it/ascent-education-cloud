@@ -173,7 +173,7 @@ function FinanceWorkspace() {
     actions={<Button onClick={() => setInvoiceOpen(true)} disabled={!canWrite || loading || !!dataError}><FileText aria-hidden="true"/>New student invoice</Button>}>
     <div className="space-y-5 text-base">
       <p className="max-w-prose text-sm text-muted-foreground">Link each new student invoice to the correct account. A recorded payment reference stays pending until verified; it does not reduce a learner’s balance by itself.</p>
-      {!canWrite && <p role="status" className="rounded-lg border p-4 text-sm">Your current account can review centre invoices. Creating invoices or recording payments requires a verified Finance Officer or Centre Director membership in this centre; Platform Owner access alone does not grant those writes.</p>}
+      {!canWrite && <p role="status" aria-label="Invoice permissions" className="rounded-lg border p-4 text-sm">Your current account can review centre invoices. Creating invoices or recording payments requires a verified Finance Officer or Centre Director membership in this centre; Platform Owner access alone does not grant those writes.</p>}
       <div className="flex flex-wrap gap-3">
         <Button variant="outline" onClick={() => void refetch()} disabled={loading}>Refresh invoices</Button>
         {user?.role === 'finance_officer' && <Button asChild variant="outline"><Link to="/finance/payments">Review payment records</Link></Button>}
@@ -206,7 +206,7 @@ function FinanceWorkspace() {
               </dl>
               <p className="text-sm text-muted-foreground">Totals cover all loaded, non-refunded invoices in this centre. Student charges and their payments exclude commission invoices. Commission invoices are recorded amounts, not proof of earned or payable commission.</p>
             </section>
-            {missingAccounts > 0 && <p role="status" className="rounded-lg border p-4 text-sm">{missingAccounts} existing student invoice(s) have no linked account. A matching name alone cannot make them visible in a learner’s fees page. Finance must review those account links.</p>}
+            {missingAccounts > 0 && <p role="status" aria-label="Unlinked learner accounts" className="rounded-lg border p-4 text-sm">{missingAccounts} existing student invoice(s) have no linked account. A matching name alone cannot make them visible in a learner’s fees page. Finance must review those account links.</p>}
             <section aria-label="Find invoices" className="min-w-0 space-y-3 rounded-xl border bg-card p-3 sm:p-4">
               <div className="grid min-w-0 grid-cols-[repeat(auto-fit,minmax(min(100%,16rem),1fr))] gap-3">
                 <label className="min-w-0 text-sm font-medium" htmlFor="invoice-search">Search by learner or invoice reference
@@ -237,7 +237,7 @@ function FinanceWorkspace() {
             </section>
             <section aria-labelledby="invoice-list-title" className="space-y-3">
               <h2 id="invoice-list-title" className="text-lg font-semibold">Invoices ({filtered.length})</h2>
-              <p role="status" className="text-sm text-muted-foreground">{filtered.length?`Showing ${page*PAGE_SIZE+1}–${Math.min((page+1)*PAGE_SIZE,filtered.length)} of ${filtered.length} matching invoices`:"No matching invoices"}</p>
+              <p role="status" aria-label="Invoice results" className="text-sm text-muted-foreground">{filtered.length?`Showing ${page*PAGE_SIZE+1}–${Math.min((page+1)*PAGE_SIZE,filtered.length)} of ${filtered.length} matching invoices`:"No matching invoices"}</p>
               {!rows.length ? <div className="space-y-2 rounded-xl border bg-card p-5"><h3 className="font-semibold">No invoices yet</h3><p className="text-sm text-muted-foreground">Create a student invoice after choosing a verified account in this centre.</p></div> :
                 !filtered.length ? <div className="space-y-3 rounded-xl border bg-card p-5"><h3 className="font-semibold">No invoices match these filters</h3><p className="text-sm text-muted-foreground">Try another name or invoice reference, or clear the filters.</p><Button variant="outline" onClick={resetFilters}>Show all invoices</Button></div> : <>
                   <ul className="space-y-3 xl:hidden">{visible.map(invoice => {
@@ -274,7 +274,7 @@ function FinanceWorkspace() {
                   </div>
                   {pageCount > 1 && <nav aria-label="Invoice pages" className="flex flex-wrap items-center gap-3">
                     <Button variant="outline" disabled={page === 0} onClick={() => setPageIndex(page - 1)}>Previous invoices</Button>
-                    <p role="status" className="text-sm">Page {page + 1} of {pageCount} · {filtered.length} matching invoices</p>
+                    <p className="text-sm">Page {page + 1} of {pageCount} · {filtered.length} matching invoices</p>
                     <Button variant="outline" disabled={page + 1 >= pageCount} onClick={() => setPageIndex(page + 1)}>Next invoices</Button>
                   </nav>}
                 </>}
