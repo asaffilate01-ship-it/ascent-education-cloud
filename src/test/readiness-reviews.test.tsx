@@ -100,3 +100,29 @@ it('clears previously accepted audit history when a new history response fails c
  expect(await screen.findByText('Review history unavailable. Retry.')).toBeInTheDocument();
  expect(screen.queryByText(/Revision 2: pending/)).toBeNull();
 });
+
+it('does not allow an existing mandatory waiver to clear a launch check',async()=>{
+ mocks.rows.mockImplementation(async(_db,table)=>({data:table==='production_readiness_checks'?[{
+  id:'check-1',tenant_id:'centre-1',check_key:'tenant_role_isolation',category:'security',
+  status:'not_applicable',revision:4,evidence_reference:'waiver-123',checked_at:'2026-11-18T12:00:00Z',
+  checked_by:'reviewer',notes:'Legacy exception',valid_until:null,
+ }]:[],error:null}));
+ render(<ProductionReadiness/>);
+ expect(await screen.findByText('This critical launch check requires a current evidenced pass. An exemption cannot clear it.')).toBeInTheDocument();
+ fireEvent.click(screen.getByText('Record a review'));
+ expect(screen.getByRole('option',{name:'not_applicable'})).toBeDisabled();
+ expect(screen.getByText('Save review')).toBeDisabled();
+ fireEvent.change(screen.getByLabelText('Decision'),{target:{value:'blocked'}});
+ expect(screen.getByText('Save review')).toBeEnabled();
+ expect(mocks.rpc).not.toHaveBeenCalled();
+ expect(screen.getByText(/Production activation register/)).toBeInTheDocument();
+});
+it('retains a documented optional exemption decision for an out-of-scope capability',async()=>{
+ mocks.rows.mockImplementation(async(_db,table)=>({data:table==='production_readiness_checks'?[{
+  id:'check-1',tenant_id:'centre-1',check_key:'cctv_security_playback',category:'security',
+  status:'pending',revision:1,evidence_reference:null,checked_at:null,checked_by:null,notes:null,valid_until:null,
+ }]:[],error:null}));
+ render(<ProductionReadiness/>);
+ fireEvent.click(await screen.findByText('Record a review'));
+ expect(screen.getByRole('option',{name:'not_applicable'})).toBeEnabled();
+});
