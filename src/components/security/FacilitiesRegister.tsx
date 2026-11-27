@@ -9,6 +9,7 @@ import {facilitiesMaintenanceRows,maintenanceCounts,type MaintenanceTiming} from
 import {verifyFacilitiesRegister,type FacilityRegister} from '@/lib/facilitiesRegister';
 import {FACILITIES_WRITE_ENABLED,facilitiesWriterScope} from '@/lib/facilitiesCommands';
 import FacilitiesRecordCommands from '@/components/security/FacilitiesRecordCommands';
+import FacilitiesReminderCalendar from '@/components/security/FacilitiesReminderCalendar';
 import FacilitiesFollowupWorkspace from '@/components/security/FacilitiesFollowupWorkspace';
 import {FACILITIES_FOLLOWUPS_ENABLED} from '@/lib/facilitiesFollowups';
 
@@ -62,6 +63,7 @@ function RegisterView({tenant,writer}:{tenant:string|null;writer:boolean}){
   {permitted&&tenant&&writer&&<FacilitiesRecordCommands tenant={tenant} snapshot={snapshot} refresh={refresh}/>}
   {permitted&&tenant&&FACILITIES_FOLLOWUPS_ENABLED&&<FacilitiesFollowupWorkspace tenant={tenant} register={snapshot} writer={writer}/>}
   {snapshot&&<>
+   {writer&&<FacilitiesReminderCalendar rows={rows}/>}
    <p className="mt-3 text-sm text-muted-foreground">Recorded inspection outcomes are not certification of equipment safety. Dates are compared in Pakistan time. {writer?'Recording requires a verified director and a separate server write gate.':'This workspace is read-only.'}</p>
    <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{[['Registered assets',snapshot.assets.length],['Latest recorded defects',counts.defects],['Overdue or due today',counts.due],['Due within seven days',counts.soon],['Next date not recorded',counts.unscheduled],['Inspection evidence required',counts.unverified]].map(([label,n])=><article className="rounded-lg border p-3" key={label}><p className="text-sm text-muted-foreground">{label}</p><p className="mt-1 text-xl font-semibold">{n}</p></article>)}</div>
    <div className="mt-4 rounded-xl border p-3 sm:p-4">
