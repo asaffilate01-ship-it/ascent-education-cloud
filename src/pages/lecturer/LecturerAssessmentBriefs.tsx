@@ -325,7 +325,7 @@ function BriefsWorkspace({moduleFilter}: {moduleFilter: string}) {
       <DialogContent className="min-w-0 max-w-xl overflow-x-hidden overflow-y-auto overscroll-contain rounded-lg px-[min(1rem,16px)] py-4 text-sm [overflow-wrap:anywhere] sm:p-6 [&>button:last-child]:min-h-11 [&>button:last-child]:min-w-11 [&>button:last-child]:right-1 [&>button:last-child]:top-1"
          // An explicit CSS calc keeps the modal within the viewport even at 200% text.
          // Avoid ambiguous Tailwind arbitrary calc/min parsing; scroll INSIDE the review.
-         style={{width:'calc(100vw - 32px)',maxWidth:'min(36rem, calc(100vw - 32px))',maxHeight:'calc(100dvh - 32px)',gridTemplateColumns:'minmax(0,1fr)',boxSizing:'border-box'}}
+         style={{width:'min(576px, calc(100% - 32px))',maxWidth:'calc(100% - 32px)',maxHeight:'calc(100dvh - 32px)',gridTemplateColumns:'minmax(0,1fr)',boxSizing:'border-box'}}
         onOpenAutoFocus={event => {event.preventDefault(); opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null; reviewHeading.current?.focus();}}
         onCloseAutoFocus={event => {event.preventDefault(); const target = recoveryButton.current || (opener.current?.isConnected && !opener.current.matches(':disabled') ? opener.current : workspaceHeading.current); target?.focus();}}
         onEscapeKeyDown={event => {if (operation.current) event.preventDefault();}} onInteractOutside={event => {if (operation.current) event.preventDefault();}}>
