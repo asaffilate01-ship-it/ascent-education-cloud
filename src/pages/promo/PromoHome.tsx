@@ -13,7 +13,7 @@ import { byLaunchPhase, routePhase } from '@/lib/launchPhases';
 const allPathways = [
   { title: 'Complete Education Centre', caption: 'Matric, FSc, ICS/ICom, IGCSE, O/A Levels, IELTS and technology certifications', to: '/education-centre', icon: GraduationCap, number: '00' },
   { title: 'UK & international qualifications', caption: 'Planned later in 2027: Levels 3–5 in technology, business and accounting, subject to approvals', to: '/qualifications', icon: GraduationCap, number: '01' },
-  { title: 'Technology Academy', caption: 'January 2027 plan: AI, coding, cloud, databases and technology certification preparation', to: '/tech-academy', icon: School, number: '02' },
+  { title: 'Technology Academy', caption: 'January 2027 plan: AI, Python and web coding, cloud computing, databases and technology certification preparation', to: '/tech-academy', icon: School, number: '02' },
   { title: 'Accounting & Finance Academy', caption: 'ACCA exam preparation with timed mocks and tutor feedback', to: '/finance-academy', icon: GraduationCap, number: '09' },
   { title: 'Women’s Beauty & Aesthetics', caption: 'Planned beauty training; CIBTAC centre and CPD UK approvals under preparation', to: '/beauty-aesthetics', icon: GraduationCap, number: '10' },
   { title: 'Art, Crafts & Sewing', caption: 'Fine art, sewing, tailoring, embroidery, ceramics and selling handmade products online across Pakistan', to: '/creative-crafts', icon: School, number: '11' },
