@@ -16,6 +16,7 @@ import ServiceActivationQueue from '@/components/admissions/ServiceActivationQue
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
 import { admissionsPath, applicationReviewAction } from '@/lib/admissionsNavigation';
+import {matchesLocalSearch} from '@/lib/localSearch';
 import {consultationTriage,parseConsultationLead} from '@/lib/consultationTriage';
 
 const PIPELINE_STAGES = [
@@ -41,9 +42,15 @@ const stageVariant = (s: string): 'success' | 'warning' | 'danger' | 'info' | 'n
 
 export default function AdmissionsCRM() {
   const {user}=useAuth();
+  return <AdmissionsWorkspace key={JSON.stringify([user?.id,user?.tenantId,user?.role,user?.roles])}/>;
+}
+
+function AdmissionsWorkspace() {
+  const {user}=useAuth();
   const tenant=user?.tenantId||'';
   const canWork=!!user?.id&&!!tenant&&!!user.role&&['admissions_admin','centre_director'].includes(user.role)&&user.roles?.includes(user.role);
   const [addLeadOpen, setAddLeadOpen] = useState(false);
+  const [pageState,setPageState]=useState({filter:'',index:0});
   const [params, setParams] = useSearchParams();
   const view = params.get('view') === 'kanban' ? 'kanban' : 'table';
   const search = params.get('q') || '';
@@ -64,7 +71,7 @@ export default function AdmissionsCRM() {
   });
 
   if(!canWork)return <DashboardLayout title="Admissions Pipeline"><p role="alert">A verified Admissions Admin or Centre Director role and a centre assignment are required.</p></DashboardLayout>;
-  if (loading) return <DashboardSkeleton />;
+  if (loading) return <DashboardLayout title="Admissions Pipeline"><DashboardSkeleton /></DashboardLayout>;
   if(error)return <DashboardLayout title="Admissions Pipeline"><div role="alert" className="rounded border border-destructive p-4">Applications could not be loaded. <Button onClick={()=>void refetch()}>Retry</Button></div></DashboardLayout>;
 
   const scoped=applications.filter(app=>app.tenant_id===tenant);
@@ -79,19 +86,20 @@ export default function AdmissionsCRM() {
       const d = (app as any).destination || (source.startsWith('consultancy_') ? source.replace('consultancy_', '') : source.startsWith('university_progression_') ? source.replace('university_progression_', '') : 'pakistan');
       if (String(d).toLowerCase() !== destFilter) return false;
     }
-    if (search.trim()) {
-      const q = search.trim().toLowerCase();
-      return (
-        app.student_name.toLowerCase().includes(q) ||
-        app.email.toLowerCase().includes(q) ||
-        (app.programme_name || '').toLowerCase().includes(q) ||
-        (app.counsellor || '').toLowerCase().includes(q) ||
-        source.includes(q)
-      );
-    }
+    if (search.trim()) return matchesLocalSearch([app.student_name,app.email,app.programme_name,app.counsellor,source].filter(Boolean).join(' '),search);
+
     return true;
   });
 
+  const filterKey=JSON.stringify([search,stageFilter,destFilter,sourceFilter,view]);
+  const pageCount=Math.max(1,Math.ceil(filtered.length/25));
+  const page=Math.min(pageState.filter===filterKey?pageState.index:0,pageCount-1);
+  const visible=filtered.slice(page*25,page*25+25);
+  const pagination=(className:string)=>filtered.length>25&&<nav aria-label="Application pages" className={className+' mt-4 flex-wrap items-center gap-3'}>
+    <Button variant="outline" disabled={page===0} onClick={()=>setPageState({filter:filterKey,index:page-1})}>Previous applications</Button>
+    <span className="text-sm">Page {page+1} of {pageCount}</span>
+    <Button variant="outline" disabled={page+1>=pageCount} onClick={()=>setPageState({filter:filterKey,index:page+1})}>Next applications</Button>
+  </nav>;
   const totalLeads = scoped.length;
   const applied = scoped.filter((a) => !['lead', 'contacted', 'qualified', 'lost'].includes(a.stage)).length;
   const offers = scoped.filter((a) => ['conditional_offer', 'unconditional_offer'].includes(a.stage)).length;
@@ -102,7 +110,7 @@ export default function AdmissionsCRM() {
       title="Admissions Pipeline"
       subtitle="Review offers, enrol learners and follow up on applications"
       actions={
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="hidden md:flex items-center rounded-md border border-border overflow-hidden">
             <button
               aria-label="Kanban view" aria-pressed={view === 'kanban'} onClick={() => setFilter('view', 'kanban')}
@@ -147,13 +155,13 @@ export default function AdmissionsCRM() {
       </div></details>
 
       {/* Search & Filters */}
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
+      <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border bg-card p-3 sm:p-4">
+        <div className="relative min-w-0 basis-full sm:basis-auto sm:flex-1 sm:min-w-[180px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
           <Input aria-label="Search applications" placeholder="Search by name, email, programme..." value={search} onChange={(e) => setFilter('q', e.target.value)} maxLength={120} className="pl-9 h-11 text-sm" />
         </div>
         <Select value={stageFilter} onValueChange={value => setFilter('stage', value)}>
-          <SelectTrigger aria-label="Filter by application stage" className="w-[150px] h-11 text-sm">
+          <SelectTrigger aria-label="Filter by application stage" className="w-full sm:w-[150px] min-w-0 h-11 text-sm">
             <SelectValue placeholder="Stage" />
           </SelectTrigger>
           <SelectContent>
@@ -164,7 +172,7 @@ export default function AdmissionsCRM() {
           </SelectContent>
         </Select>
         <Select value={sourceFilter} onValueChange={value => setFilter('source', value)}>
-          <SelectTrigger aria-label="Filter by lead source" className="w-[160px] h-11 text-sm"><SelectValue placeholder="Lead source" /></SelectTrigger>
+          <SelectTrigger aria-label="Filter by lead source" className="w-full sm:w-[160px] min-w-0 h-11 text-sm"><SelectValue placeholder="Lead source" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All lead sources</SelectItem>
             <SelectItem value="ielts">IELTS enquiries</SelectItem>
@@ -173,7 +181,7 @@ export default function AdmissionsCRM() {
           </SelectContent>
         </Select>
         <Select value={destFilter} onValueChange={value => setFilter('destination', value)}>
-          <SelectTrigger aria-label="Filter by study destination" className="w-[150px] h-11 text-sm">
+          <SelectTrigger aria-label="Filter by study destination" className="w-full sm:w-[150px] min-w-0 h-11 text-sm">
             <SelectValue placeholder="Destination" />
           </SelectTrigger>
           <SelectContent>
@@ -186,12 +194,13 @@ export default function AdmissionsCRM() {
             <SelectItem value="australia">🇦🇺 Australia</SelectItem>
           </SelectContent>
         </Select>
+        {(search||stageFilter!=='all'||sourceFilter!=='all'||destFilter!=='all')&&<Button variant="ghost" onClick={()=>setParams(current=>{const next=new URLSearchParams(current);for(const key of ['q','stage','source','destination'])next.delete(key);return next;},{replace:true})}>Clear filters</Button>}
       </div>
 
       <section className="md:hidden space-y-3 mb-5" aria-label="Application task cards">
         <h2 className="font-semibold">Applications ({filtered.length})</h2>
         {filtered.length===0&&<p className="text-muted-foreground">No applications match your filters.</p>}
-        {filtered.map(app=><article key={app.id} className="surface-card p-4 space-y-2 min-w-0 break-words">
+        {visible.map(app=><article key={app.id} className="surface-card p-4 space-y-2 min-w-0 break-words">
           <h3 className="font-semibold">{app.student_name}</h3><p className="text-sm text-muted-foreground">{app.email}</p>
           <p>{app.programme_name||'Programme not yet assigned'}</p>
           <StatusBadge status={app.stage.replace(/_/g,' ')} variant={stageVariant(app.stage)}/>
@@ -203,6 +212,7 @@ export default function AdmissionsCRM() {
             </Link>
           </Button>
         </article>)}
+        {pagination("flex")}
       </section>
       <div className="hidden md:block">
       {/* View Toggle */}
@@ -214,7 +224,7 @@ export default function AdmissionsCRM() {
             <h2 className="text-sm font-semibold">Applications ({filtered.length})</h2>
           </div>
           <div className="surface-card overflow-hidden">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary" tabIndex={0} role="region" aria-label="Scrollable applications table">
               <table className="w-full">
                 <thead>
                   <tr className="surface-data">
@@ -228,7 +238,7 @@ export default function AdmissionsCRM() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((app) => (
+                  {visible.map((app) => (
                     <tr key={app.id} className="border-t border-border/50 hover:bg-secondary/50 transition-default">
                       <td className="px-4 py-3">
                         <p className="text-sm font-medium">{app.student_name}</p>
@@ -259,6 +269,7 @@ export default function AdmissionsCRM() {
               <div className="py-12 text-center text-muted-foreground text-sm">No applications match your filters</div>
             )}
           </div>
+          {pagination("flex")}
         </>
       )}
 
