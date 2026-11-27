@@ -1,3 +1,5 @@
+import {ORIGINAL_FORMATIVE_EXPANSION} from './formativeQuestionExpansion';
+import {CALCULATION_PRACTICE} from './formativeCalculations';
 /** Original formative practice authored for staff review. Not secure assessment items. */
 export type FormativeQuestion={id:string;subject:string;scope:string;topic:string;question:string;options:string[];answer:string;explanation:string;revision:number;status:'draft_review_required'};
 export const FORMATIVE_QUESTIONS:readonly FormativeQuestion[]=[
@@ -1530,5 +1532,7 @@ export const FORMATIVE_QUESTIONS:readonly FormativeQuestion[]=[
   "explanation": "Cuánto asks how much; cuesta means costs.",
   "revision": 1,
   "status": "draft_review_required"
- }
+ },
+ ...ORIGINAL_FORMATIVE_EXPANSION,
+ ...CALCULATION_PRACTICE
 ];
