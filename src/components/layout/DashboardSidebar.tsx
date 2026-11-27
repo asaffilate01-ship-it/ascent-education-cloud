@@ -548,9 +548,11 @@ export function getNavigationSections(role: UserRole, search = ''): NavSection[]
 
 export { NAV_CONFIG };
 
-export default function DashboardSidebar() {
+export default function DashboardSidebar({collapsed: collapsedProp, onCollapsedChange}: {collapsed?:boolean;onCollapsedChange?:(value:boolean)=>void} = {}) {
   const { user, setRole, logout } = useAuth();
-  const [collapsed, setCollapsed] = useState(false);
+  const [localCollapsed, setLocalCollapsed] = useState(false);
+  const collapsed=collapsedProp??localCollapsed;
+  const setCollapsed=(value:boolean)=>{setLocalCollapsed(value);onCollapsedChange?.(value);};
   const [navSearch, setNavSearch] = useState('');
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
@@ -635,11 +637,11 @@ export default function DashboardSidebar() {
       </div>
 
       {/* Nav */}
-      <nav aria-label="Workspace navigation" className="flex-1 overflow-y-auto py-3 px-2.5">
+      <nav aria-label="Workspace navigation" className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-3 px-2.5">
         {!collapsed && <input type="search" maxLength={120} aria-label="Find a page" aria-describedby="sidebar-search-count" placeholder="Find a page…" value={navSearch} onChange={e => setNavSearch(e.target.value)} className="mb-3 w-full rounded-lg border border-sidebar-border bg-sidebar-accent px-3 py-2 text-sm text-sidebar-foreground" />}
         <p id="sidebar-search-count" role="status" className={navSearch.trim()?'mb-2 px-3 text-xs text-sidebar-foreground/70':'sr-only'}>{navSearch.trim()? `${sections.reduce((count,section)=>count+section.items.length,0)} matching pages`:'Search your authorised workspace pages by keyword.'}</p>
         {navSearch && !sections.some(s => s.items.length) && <p className="px-3 text-sm">No matching pages. Try another name.</p>}
-        {sections.map((section, si) => collapsed && si > 0 ? null : (
+        {sections.map((section, si) => (
           <details key={`${user.role}-${si}-${navSearch}`} open={collapsed || si === 0 || !!navSearch || section.items.some(i => i.path === location.pathname)} className={si > 0 ? 'mt-5' : ''}>
             {(
 
@@ -701,14 +703,15 @@ export default function DashboardSidebar() {
         <button
           aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
           onClick={() => setCollapsed(!collapsed)}
-          className="hidden lg:block p-2 rounded-lg hover:bg-sidebar-accent transition-default text-sidebar-foreground/50"
+          aria-expanded={!collapsed}
+          className="hidden lg:inline-flex min-h-11 min-w-11 items-center justify-center p-2 rounded-lg hover:bg-sidebar-accent transition-default text-sidebar-foreground/50"
         >
           {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
         </button>
         {!collapsed && (
           <button
             onClick={()=>void logout().catch(error=>toast.error(error instanceof Error?error.message:'Sign-out failed. Please retry.'))}
-            className="flex items-center gap-2 text-xs text-sidebar-foreground/50 hover:text-sidebar-foreground transition-default ml-auto pr-2"
+            className="flex min-h-11 items-center gap-2 rounded-lg px-2 text-xs text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-default ml-auto"
           >
             <LogOut className="w-3.5 h-3.5" />
             Logout
@@ -742,8 +745,8 @@ export default function DashboardSidebar() {
 
       {/* Sidebar */}
       <aside id="unipathway-dashboard-nav" ref={asideRef} role={mobileOpen ? "dialog" : undefined} aria-modal={mobileOpen || undefined} aria-label="Dashboard navigation"
-        className={`fixed left-0 top-0 h-dvh bg-sidebar text-sidebar-foreground flex flex-col z-50 transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)]
-          ${collapsed ? 'w-16' : 'w-60'}
+        className={`fixed left-0 top-0 h-dvh bg-sidebar text-sidebar-foreground flex flex-col z-50 transition-all duration-300 ease-in-out motion-reduce:transition-none
+          ${collapsed ? 'w-16' : 'w-60 max-w-[calc(100vw-1rem)]'}
           ${mobileOpen ? 'translate-x-0 shadow-2xl visible' : '-translate-x-full invisible lg:translate-x-0 lg:visible'}
         `}
       >
