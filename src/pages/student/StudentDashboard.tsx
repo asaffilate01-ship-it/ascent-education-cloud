@@ -5,7 +5,8 @@ import { Link } from 'react-router-dom';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { useAuth } from '@/contexts/AuthContext';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { matchesLocalSearch } from '@/lib/localSearch';
 import { db } from '@/lib/db';
 import StudentLearningAgenda from '@/components/student/StudentLearningAgenda';
 import STEMCoachLearningAccess from '@/components/student/STEMCoachLearningAccess';
@@ -27,6 +28,7 @@ function StudentDashboardContent() {
   const programmesQuery = useSupabaseQuery('programmes', {enabled: verified && programmeIds.length > 0, filters: [...scope, {column: 'id', operator: 'in', value: programmeIds}]});
   const modulesQuery = useSupabaseQuery('modules', {enabled: verified && programmeIds.length > 0, filters: [...scope, {column: 'programme_id', operator: 'in', value: programmeIds}]});
   const moduleIds = modulesQuery.data.map(row => row.id);
+  const [programmeSearch,setProgrammeSearch]=useState('');
   type ReleasedBrief={id:string;tenant_id:string;module_id:string;title:string};
   const [gradeSummary,setGradeSummary]=useState<ReleasedOverview>({average:null,results:[],total:0});
   const [gradeRefresh,setGradeRefresh]=useState(0);
@@ -62,9 +64,15 @@ function StudentDashboardContent() {
   const loading = queries.some(query => query.loading);
 
   const approvedAverage=gradeSummary.average;
+  const modulesByProgramme=useMemo(()=>{
+    const grouped=new Map<string,typeof modules>();
+    for(const item of modules){const group=grouped.get(item.programme_id)||[];group.push(item);grouped.set(item.programme_id,group);}
+    return grouped;
+  },[modules]);
+  const visibleProgrammes=programmes.filter(p=>matchesLocalSearch([p.title,p.level,p.awarding_body,...(modulesByProgramme.get(p.id)||[]).map(m=>[m.code,m.title].filter(Boolean).join(' '))].join(' '),programmeSearch));
 
   if (!verified) return <DashboardLayout title="Today"><p role="alert">An active, verified Student role and assigned centre are required. No learning data is loaded.</p></DashboardLayout>;
-  if (loading) return <DashboardSkeleton />;
+  if (loading) return <DashboardLayout title="Today"><DashboardSkeleton /></DashboardLayout>;
   if (queries.some(query => query.error)) return <DashboardLayout title="Today"><p role="alert">Your learning records could not be loaded completely.</p><Button onClick={() => queries.forEach(query => void query.refetch())}>Retry learning records</Button></DashboardLayout>;
 
   const stats = [
@@ -103,8 +111,8 @@ function StudentDashboardContent() {
       </section>
 
       {/* Recent Grades */}
-      <div className="grid lg:grid-cols-2 gap-4">
-        <div className="surface-card p-5">
+      <div className="grid min-w-0 lg:grid-cols-2 gap-4">
+        <div className="surface-card min-w-0 p-3 sm:p-5">
           <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-primary" /> Recent Grades
           </h3>
@@ -126,18 +134,20 @@ function StudentDashboardContent() {
           </div>
         </div>
 
-        <div className="surface-card p-5">
+        <div className="surface-card min-w-0 p-3 sm:p-5">
           <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
             <MessageSquare className="w-4 h-4 text-primary" /> Programme Overview
           </h3>
+          {programmes.length>0&&<div className="mb-4 flex flex-wrap items-end gap-2"><label className="min-w-0 flex-1 text-sm font-medium">Find a programme or module<input type="search" maxLength={120} value={programmeSearch} onChange={e=>setProgrammeSearch(e.target.value)} className="mt-1 block min-h-11 w-full rounded-lg border bg-background px-3 py-2" placeholder="Programme, module or code"/></label>{programmeSearch&&<Button variant="outline" onClick={()=>setProgrammeSearch('')}>Clear search</Button>}</div>}
+          <p role="status" className="mb-3 text-sm text-muted-foreground">{programmes.length===0?'No active programme records available. Contact admissions if you expect course access.':visibleProgrammes.length===0?'No programmes match your search.':programmeSearch?visibleProgrammes.length+' matching programmes':''}</p>
           <div className="space-y-4">
-            {programmes.map((p) => (
-              <div key={p.id}>
-                <div className="flex items-center justify-between mb-1.5">
+            {visibleProgrammes.map((p) => (
+              <div key={p.id} className="min-w-0 rounded-xl border border-border/70 p-3 sm:p-4 [overflow-wrap:anywhere]">
+                <div className="flex min-w-0 items-start justify-between mb-1.5">
                   <div>
                     <p className="text-sm font-medium">{p.title}</p>
                     <p className="text-xs text-muted-foreground">{p.level} · {p.awarding_body}</p>
-                    <details className="mt-2"><summary className="cursor-pointer text-sm">{modules.filter(m=>m.programme_id===p.id).length} programme {modules.filter(m=>m.programme_id===p.id).length===1?'module':'modules'}</summary><ul className="mt-2 space-y-1 text-sm">{modules.filter(m=>m.programme_id===p.id).map(m=><li key={m.id}><Link className="underline" to={'/student/module?module='+encodeURIComponent(m.id)}>{[m.code,m.title].filter(Boolean).join(' — ')}</Link></li>)}</ul><p className="text-xs text-muted-foreground">Modules in your enrolled programme curriculum; individual elective registration is not confirmed here.</p></details>
+                    <details className="mt-2"><summary className="min-h-11 cursor-pointer py-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{(modulesByProgramme.get(p.id)||[]).length} programme {(modulesByProgramme.get(p.id)||[]).length===1?'module':'modules'}</summary><ul className="mt-2 space-y-1 text-sm">{(modulesByProgramme.get(p.id)||[]).map(m=><li key={m.id}><Link className="inline-flex min-h-11 items-center underline underline-offset-4" to={'/student/module?module='+encodeURIComponent(m.id)}>{[m.code,m.title].filter(Boolean).join(' — ')}</Link></li>)}</ul><p className="text-xs text-muted-foreground">Modules in your enrolled programme curriculum; individual elective registration is not confirmed here.</p></details>
                   </div>
                 </div>
               </div>
