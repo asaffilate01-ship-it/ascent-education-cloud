@@ -91,7 +91,7 @@ function ContactWorkspace({slug}:{slug?:string}) {
           <div className="mb-10"><PublicHero topic="guidance">
             <p className="text-label text-success">Talk to UniPathway</p>
             <h1 className="mt-3 text-3xl font-bold sm:text-5xl">Let’s find your next step.</h1>
-            <p className="mt-4 text-muted-foreground">For students based in Pakistan. Ask about subjects, entry requirements, class times or fees, with online learning across Pakistan and in-class learning in Jhelum.</p>
+            <p className="mt-4 text-muted-foreground">For students based in Pakistan. Enquire about the planned January 2027 intake: Classes 9–12 tuition, IELTS, technology and certification preparation, and ACCA preparation. Level 3–5 technology, business and accounting qualification pathways are planned later in 2027, subject to approvals. Confirm fees, timetable and availability with admissions.</p>
             <div className="mt-6 flex flex-wrap gap-3"><a href="#contact-form" className="inline-flex min-h-11 items-center rounded-lg bg-primary px-5 py-3 font-semibold text-primary-foreground">Student and admissions enquiries</a>{(slug||"unipathway")==="unipathway"&&<Button asChild variant="outline" className="min-h-11"><Link to="/teach-with-us">Tutors and lecturers — teach with us</Link></Button>}</div>
             <p className="mt-4 text-sm text-muted-foreground">Use the form below for general questions. Please do not include identity documents or bank details.</p>
           </PublicHero></div>
