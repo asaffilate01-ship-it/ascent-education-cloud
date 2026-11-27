@@ -8,6 +8,7 @@ import { findInternationalStudyGuide, immigrationSourcesChecked, internationalSt
 
 import { internationalAdviceTopics, internationalAdviceUrl } from '@/lib/internationalAdvice';
 import {scholarshipResearchUrl} from '@/lib/scholarshipResearch';
+import GlobalVisaGuidance from '@/components/public/GlobalVisaGuidance';
 
 const hub = '/international-study';
 
@@ -71,7 +72,7 @@ export default function InternationalStudy() {
             <>
               <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary-foreground/90"><Globe2 aria-hidden="true" className="size-5" /> UniPathway study abroad</p>
               <h1 className="mt-3 max-w-3xl text-3xl font-extrabold leading-tight sm:text-5xl">International study &amp; visa guidance</h1>
-              <p className="mt-4 max-w-2xl text-base leading-relaxed">Find out how to research courses, then check the separate student visa or study permit process with the official authority. Start with a destination below.</p>
+              <p className="mt-4 max-w-2xl text-base leading-relaxed">Research degree progression and official study, work, post-study, marriage and family immigration information. Start with a destination or choose the purpose of your enquiry.</p>
             </>
           )}
           {(!destination||guide)&&<a href="#advisory-services" className="mt-6 inline-flex min-h-11 max-w-full items-center gap-2 rounded-lg bg-background px-4 py-3 text-sm font-bold text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4">Explore adviser support <ArrowRight aria-hidden="true" className="size-4 shrink-0"/></a>}
@@ -123,6 +124,8 @@ export default function InternationalStudy() {
           <div><Button variant="outline" asChild><Link to={hub}>Compare other destinations <ArrowRight aria-hidden="true" /></Link></Button></div>
         </>}
         {destination && !guide && <Button asChild><Link to={hub}>Open the guide directory</Link></Button>}
+        {!destination&&<GlobalVisaGuidance/>}
+        {guide&&<Button asChild variant="outline"><Link to="/international-study#global-visa-guidance">Work, family and post-study visa information</Link></Button>}
         {(!destination||guide)&&<AdvisoryServices destination={guide?.slug} />}
         {(!destination||guide)&&<section className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border bg-card p-5"><div><h2 className="text-lg font-bold">Funding and application planning</h2><p className="mt-2 text-sm text-muted-foreground">Research official funding sources, record verified dates and export your own planning calendar.</p></div><Button asChild variant="outline"><Link to={scholarshipResearchUrl(guide?.slug)}>Scholarship and deadline planner <ArrowRight aria-hidden="true" className="ml-2 size-4"/></Link></Button></section>}
         <GuidanceBoundary />
