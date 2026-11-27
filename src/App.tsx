@@ -21,7 +21,7 @@ import { studyDestinations } from "@/lib/studyDestinations";
 import RouteIndexing from '@/components/RouteIndexing';
 import ScrollToTop from "@/components/ScrollToTop";
 const FamilySharing = lazy(() => import('./pages/student/FamilySharing'));
-const AIChatWidgetLazy = lazy(() => import("@/components/AIChatWidget"));
+// Study tutor temporarily withheld from all app surfaces until launch approval.
 
 // Auth
 const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
@@ -710,7 +710,7 @@ const App = () => (
             <CookieConsent />
             <PWAInstallPrompt />
             <MobileBottomNav />
-            <AIChatWidgetLazy />
+
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
