@@ -27,3 +27,7 @@ verify_jwt = false
 # and the frontend secure-contact flag have passed hosted acceptance.
 [functions.unipathway-secure-contact]
 verify_jwt = false
+
+# Public messages require server activation, Turnstile and durable quota.
+[functions.unipathway-public-message]
+verify_jwt = false

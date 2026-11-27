@@ -31,6 +31,7 @@ export const studyLinks = [
   { label: 'Education consultancy', detail: 'Universities, admissions, counselling and career guidance', to: '/pathways', icon: Globe2 },
   { label: 'Pakistan funded skills', detail: 'PSDF, PITB e-Rozgaar, WDD SEHR and NAVTTC', to: '/funded-courses', icon: BriefcaseBusiness },
   { label: 'Pakistan careers & internships', detail: 'Planned employer partnerships and practical placements', to: '/careers', icon: BriefcaseBusiness },
+  { label: 'Teach with UniPathway', detail: 'Part-time tutor and lecturer enquiries', to: '/teach-with-us', icon: BriefcaseBusiness },
   { label: 'Overseas student support', detail: 'Accommodation, banking, work and graduate guidance', to: '/student-support', icon: Globe2 },
 ];
 
@@ -128,7 +129,7 @@ export default function PublicNav() {
       <Button ref={mobileTrigger} variant="outline" size="icon" className="shrink-0 rounded-full lg:hidden" aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open} onClick={() => {setOpen(!open);setCourseQuery('');}}>{open ? <X /> : <Menu />}</Button>
     </div>
     {open && <nav aria-label="Mobile navigation" className="h-[calc(100dvh-4rem)] overflow-y-auto border-t border-border bg-background px-4 pb-28 pt-4 animate-in fade-in-0 slide-in-from-top-2 sm:h-[calc(100dvh-5rem)] sm:px-8 lg:hidden">
-      <div className="mb-6 grid grid-cols-2 gap-2">{[['All courses','/study'],['International study & visa guidance','/international-study'],['Request a consultation','/consultation'],['Contact admissions','/contact'],['About UniPathway','/about'],['Student sign in','/login']].map(([label,to])=><Link key={to} to={to} className="flex min-h-12 min-w-0 items-center rounded-xl border bg-card px-3 py-2 text-sm font-semibold [overflow-wrap:anywhere]">{label}</Link>)}</div>
+      <div className="mb-6 grid grid-cols-2 gap-2">{[['All courses','/study'],['International study & visa guidance','/international-study'],['Request a consultation','/consultation'],['Contact admissions','/contact'],['Teach with us','/teach-with-us'],['About UniPathway','/about'],['Student sign in','/login']].map(([label,to])=><Link key={to} to={to} className="flex min-h-12 min-w-0 items-center rounded-xl border bg-card px-3 py-2 text-sm font-semibold [overflow-wrap:anywhere]">{label}</Link>)}</div>
       <label htmlFor="mobile-course-search" className="text-label">Find a course or service</label>
       <input id="mobile-course-search" type="search" maxLength={120} value={courseQuery} onChange={e => setCourseQuery(e.target.value)} placeholder="Try IELTS, tuition, technology…" className="mt-2 min-h-12 w-full rounded-xl border border-border bg-card px-4 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" />
       <p role="status" className="mt-2 text-xs text-muted-foreground">{courseQuery.trim() ? `${matchingCourses.length} matching options` : 'Explore our most popular courses'}</p>

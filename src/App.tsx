@@ -186,6 +186,7 @@ const QualificationsCatalogue = lazy(() => import("./pages/promo/QualificationsC
 const GermanPreparation = lazy(() => import("./pages/promo/GermanPreparation"));
 const FundedCourses = lazy(() => import("./pages/promo/FundedCourses"));
 const Careers = lazy(() => import("./pages/promo/Careers"));
+const TeachWithUs = lazy(() => import("./pages/promo/TeachWithUs"));
 const StudentSupport = lazy(() => import("./pages/promo/StudentSupport"));
 const ResidentialPlanner = lazy(() => import("./pages/residential/ResidentialPlanner"));
 const ResidentialWeeks = lazy(() => import("./pages/residential/ResidentialWeeks"));
@@ -352,6 +353,7 @@ function AppRoutes() {
         <Route path="/german-preparation" element={<GermanPreparation />} />
         <Route path="/funded-courses" element={<FundedCourses />} />
         <Route path="/careers" element={<Careers />} />
+        <Route path="/teach-with-us" element={<TeachWithUs />} />
         <Route path="/student-support" element={<StudentSupport />} />
         <Route path="/wellbeing/anonymous" element={<StudentWellbeing anonymousOnly />} />
         <Route path="/courses" element={<RedirectToTenant suffix="/courses" />} />

@@ -33,9 +33,9 @@ test('ATHE planned titles preserve programme filters and registration context on
  await expect(page.getByRole('combobox',{name:'Qualification level'})).toHaveValue('4');
  const cards=page.getByRole('region',{name:'Proposed qualifications'}).getByRole('article');
  await expect(cards).toHaveCount(2);
- await expect(cards.first().getByText('Phase 2 · Coming soon')).toBeVisible();
+ await expect(cards.first().getByText('Phase 2 · Future intake / register interest')).toBeVisible();
  const title=await cards.first().getByRole('heading',{level:2,name:/^Level 4 /}).innerText();
- const enquiry=cards.first().getByRole('link',{name:'Register interest for Phase 2'});
+ const enquiry=cards.first().getByRole('link',{name:'Register interest for a future intake'});
  const url=new URL(await enquiry.getAttribute('href')||'',page.url());
  expect(url.pathname).toBe('/apply');
  expect(url.searchParams.get('area')).toBe('qualifications');
@@ -53,4 +53,30 @@ test('ATHE planned titles preserve programme filters and registration context on
     return JSON.stringify({width,scroll,overflows});
   })).toBe('fits');
  }
+});
+
+test('2027 launch and recruitment separate preparation from planned regulated qualifications',async({context,page})=>{
+ await context.addInitScript(()=>localStorage.setItem('cookie_consent_v2',JSON.stringify({essential:true,analytics:false,marketing:false,timestamp:'2026-11-27T00:00:00.000Z'})));
+ await context.route('https://unipathway-browser-ci.invalid/**',route=>route.fulfill({status:200,headers:{'access-control-allow-origin':'*','content-type':'application/json'},body:'[]'}));
+ await page.setViewportSize({width:390,height:844});
+ await page.goto('/');
+ const launch=page.getByRole('region',{name:'Your January 2027 study options'});
+ await expect(launch).toContainText('Classes 9–12 tuition');
+ await expect(launch).toContainText('ACCA exam preparation');
+ await expect(launch).toContainText('AI, coding, cloud computing and databases');
+ await expect(launch.getByRole('heading',{name:'Build towards a university degree'})).toBeVisible();
+ await page.goto('/teach-with-us');
+ await expect(page.getByRole('heading',{name:'January 2027 and later intakes'})).toBeVisible();
+ await expect(page.getByRole('region',{name:'January 2027 and later intakes'})).toContainText('All teaching is part-time');
+ await expect(page.getByRole('link',{name:'jobs@unipathway.pk',exact:true}).first()).toHaveAttribute('href','mailto:jobs@unipathway.pk');
+ for(const width of [360,390,768,1440]){
+  await page.setViewportSize({width,height:900});
+  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+ }
+ await page.goto('/international-study');
+ const visa=page.getByRole('region',{name:'Explore study, work and family routes worldwide'});
+ await expect(visa).toBeVisible();
+ await expect(visa.getByRole('heading',{name:'Marriage, spouse and family'})).toBeVisible();
+ const family=visa.getByRole('article').filter({has:page.getByRole('heading',{name:'Marriage, spouse and family',exact:true})});
+ await expect(family.getByRole('link',{name:'Request information'})).toHaveAttribute('href','/contact?advice=family-visa#contact-form');
 });

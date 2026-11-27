@@ -12,8 +12,8 @@ import PhaseOneLaunch from '@/components/launch/PhaseOneLaunch';
 import { byLaunchPhase, routePhase } from '@/lib/launchPhases';
 const allPathways = [
   { title: 'Complete Education Centre', caption: 'Matric, FSc, ICS/ICom, IGCSE, O/A Levels, IELTS and technology certifications', to: '/education-centre', icon: GraduationCap, number: '00' },
-  { title: 'UK & international qualifications', caption: 'Business and accounting diplomas, Levels 3–5, open first; more subjects follow in Phase 2', to: '/qualifications', icon: GraduationCap, number: '01' },
-  { title: 'Technology Academy', caption: 'AI courses plus Microsoft, AWS and Cisco cloud and networking certification prep; Python and coding follow', to: '/tech-academy', icon: School, number: '02' },
+  { title: 'UK & international qualifications', caption: 'Planned later in 2027: Levels 3–5 in technology, business and accounting, subject to approvals', to: '/qualifications', icon: GraduationCap, number: '01' },
+  { title: 'Technology Academy', caption: 'January 2027 plan: AI, Python and web coding, cloud computing, databases and technology certification preparation', to: '/tech-academy', icon: School, number: '02' },
   { title: 'Accounting & Finance Academy', caption: 'ACCA exam preparation with timed mocks and tutor feedback', to: '/finance-academy', icon: GraduationCap, number: '09' },
   { title: 'Women’s Beauty & Aesthetics', caption: 'Planned beauty training; CIBTAC centre and CPD UK approvals under preparation', to: '/beauty-aesthetics', icon: GraduationCap, number: '10' },
   { title: 'Art, Crafts & Sewing', caption: 'Fine art, sewing, tailoring, embroidery, ceramics and selling handmade products online across Pakistan', to: '/creative-crafts', icon: School, number: '11' },
@@ -56,7 +56,7 @@ export default function PromoHome() {
           ['International study & visa guidance', '/international-study', Globe2], ['Student portal', '/login', Video],
         ] as const).map(([label,to,Icon])=><Link key={to} to={to} className="group flex min-h-14 items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold hover:bg-success/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><Icon className="size-5 shrink-0 text-success"/><span className="min-w-0 break-words">{label}</span><ArrowRight className="ml-auto size-4 shrink-0 text-muted-foreground"/></Link>)}</div>
       </nav>
-      <div className="mx-auto max-w-7xl px-5 pt-14 sm:px-8 sm:pt-20"><PhaseOneLaunch eyebrow="Now launching · Phase 1" /></div>
+      <div className="mx-auto max-w-7xl px-5 pt-14 sm:px-8 sm:pt-20"><PhaseOneLaunch eyebrow="Planned January 2027 intake · Phase 1" /></div>
       <section id="study" className="scroll-mt-28 py-14 sm:py-20"><div className="mx-auto max-w-7xl px-5 sm:px-8">
         <p className="text-xs font-bold uppercase tracking-widest text-success">01 / Find your direction</p>
         <div className="mt-3 flex flex-wrap items-end justify-between gap-6"><div className="min-w-0 flex-[1_1_24rem]"><h2 className="text-3xl font-bold tracking-tight sm:text-4xl">What would you like to learn?</h2><p className="mt-3 max-w-xl text-muted-foreground">Start with a subject. Check the course details, then speak to us about entry requirements, fees and the next intake.</p></div><div className="relative min-w-0 flex-[1_1_20rem]"><label htmlFor="home-course-search" className="sr-only">Search learning areas</label><Search className="pointer-events-none absolute left-4 top-4 size-5 text-muted-foreground" /><input ref={searchInput} id="home-course-search" type="search" maxLength={120} aria-describedby="home-course-results" value={query} onChange={e=>setQuery(e.target.value.slice(0,120))} placeholder="Try Python, IELTS or finance" className="h-14 w-full rounded-xl border bg-card pl-12 pr-4 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" /></div></div>

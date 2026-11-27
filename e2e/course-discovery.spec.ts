@@ -85,8 +85,8 @@ test('Pearson Fine Art and craft options expose modules and a course-specific Ph
  const enquiry=hnd.getByRole('link',{name:/Ask about Pearson BTEC Level 5/});
  expect(new URL(await enquiry.getAttribute('href')||'',page.url()).searchParams.get('course')).toBe('Pearson BTEC Level 5 Higher National Diploma in Fine Art');
  await expect(hnd.getByText('Pearson Fine Art specification available from admissions')).toBeVisible();
- await expect(hnd.getByText('Phase 2 · Coming soon')).toBeVisible();
- const interest=hnd.getByRole('link',{name:'Register interest for Phase 2'});
+ await expect(hnd.getByText('Phase 2 · Future intake / register interest')).toBeVisible();
+ const interest=hnd.getByRole('link',{name:'Register interest for a future intake'});
  const interestUrl=new URL(await interest.getAttribute('href')||'',page.url());
  expect(interestUrl.pathname).toBe('/apply');
  expect(interestUrl.searchParams.get('course')).toBe('Pearson BTEC Level 5 Higher National Diploma in Fine Art');

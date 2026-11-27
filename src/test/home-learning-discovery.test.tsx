@@ -15,7 +15,7 @@ it('finds a learning area by words in any order across its title and description
   mount();
   const search = screen.getByRole('searchbox', {name: 'Search learning areas'});
   fireEvent.change(search, {target: {value: '  CLOUD   Ｐｙｔｈｏｎ  '}});
-  expect(screen.getByRole('link', {name: /Technology Academy AI/})).toHaveAttribute('href', '/tech-academy');
+  expect(screen.getByRole('link', {name: /Technology Academy.*January 2027 plan/})).toHaveAttribute('href', '/tech-academy');
   expect(screen.getByRole('status')).toHaveTextContent('1 matching learning area');
   expect(screen.queryByRole('heading', {name: 'German Courses'})).toBeNull();
   fireEvent.change(search, {target: {value: 'Python cloud'}});

@@ -34,7 +34,7 @@ export default function EducationCentreHub(){
    <PublicHero topic="study">
     <p className="text-label font-semibold text-success">UniPathway Centre · Online & in-centre</p>
     <h1 className="mt-3 text-3xl font-bold md:text-5xl">One learning centre. Every next step.</h1>
-    <p className="mt-4 max-w-3xl text-muted-foreground">Find support for school exams, learn a language or build skills for work. Browse our learning areas below, then ask admissions about entry requirements, fees and the next available class.</p>
+    <p className="mt-4 max-w-3xl text-muted-foreground">Find support for school exams, learn a language or build skills for work. January 2027 is planned for Classes 9–12 tuition, IELTS, technology certification and skills preparation, and ACCA preparation. Level 3–5 technology, business and accounting qualification pathways are planned later in 2027 subject to approvals. Ask admissions about entry requirements, fees and confirmed class availability.</p>
     <div className="mt-6 flex flex-wrap gap-3">
      <Button asChild><Link to="/study">Explore all study options <ArrowRight className="ml-1 size-4"/></Link></Button>
      <Button variant="outline" asChild><Link to="/contact">Ask admissions about an intake</Link></Button>
