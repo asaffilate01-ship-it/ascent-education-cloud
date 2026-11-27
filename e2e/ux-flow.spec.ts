@@ -27,7 +27,7 @@ async function records(context: BrowserContext, role: string, tables: Record<str
     const request = route.request(), url = new URL(request.url());
     const name = url.pathname.split('/').at(-1) || '';
     requests.push({name, method: request.method(), params: url.searchParams});
-    const headers = {'access-control-allow-origin': '*', 'content-type': 'application/json'};
+    const headers = {'access-control-allow-origin': '*', 'access-control-expose-headers': 'content-range', 'content-type': 'application/json'};
     if (failures.has(name) || failures.has(`${request.method()}:${name}`)) {
       return route.fulfill({status: 503, headers, body: JSON.stringify({message: 'Synthetic unavailable source'})});
     }
