@@ -29,6 +29,6 @@ it('shares the published canonical URL without preview origins or tracking param
   const article = screen.getByRole('article');
   expect(within(article).getAllByRole('img')).toHaveLength(4); // Cover and three related covers; footer partners are independent.
   expect(within(article).getByAltText(post.coverAlt)).toHaveAttribute('src', post.cover);
-  expect(screen.getByText('Powered by iTechLounge')).toBeInTheDocument();
+  expect(screen.queryByText('Powered by iTechLounge')).not.toBeInTheDocument();
   expect(screen.getByText('ITech Education Ltd')).toBeInTheDocument();
 });
