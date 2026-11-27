@@ -66,6 +66,8 @@ jobs:
         run: node scripts/test-unipathway-physical-security-db.mjs
       - name: Private student application planning and cross-centre access rehearsal
         run: node scripts/test-student-application-planner-db.mjs
+      - name: Institutional account, session and MFA restrictive policy rehearsal
+        run: node scripts/test-institutional-auth-db.mjs
       - name: Exam session planning, reviewer independence, disabled gates and multi-centre RLS rehearsal
         run: node scripts/test-unipathway-exam-operations-db.mjs
       - name: Candidate roster F2, active enrolment, provisional seats and independent approval rehearsal
