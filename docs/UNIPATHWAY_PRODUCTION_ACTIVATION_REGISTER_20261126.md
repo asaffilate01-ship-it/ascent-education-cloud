@@ -1,6 +1,6 @@
 # Production activation register — 26 November 2026
 
-The authorised centre-leadership Production Readiness workspace includes a read-only register of ten reviewed client activation switches. It reports the running build's client configuration, not a live server probe, user permission or launch decision. No setting can be edited from the dashboard. A browser switch being enabled does not establish backend readiness.
+The authorised centre-leadership Production Readiness workspace includes a read-only register of eleven reviewed client activation switches. It reports the running build's client configuration, not a live server probe, user permission or launch decision. No setting can be edited from the dashboard. A browser switch being enabled does not establish backend readiness.
 
 ## Safe activation sequence
 
@@ -15,7 +15,7 @@ The authorised centre-leadership Production Readiness workspace includes a read-
 
 - Secure enquiries: see UNIPATHWAY_PUBLIC_ENQUIRY_ACTIVATION_20261126.md. Server secrets never belong in client settings.
 - Student planning: see UNIPATHWAY_STUDENT_APPLICATION_PLANNING_ACTIVATION.md.
-- Physical security, visitor writes and facilities: see UNIPATHWAY_FACILITIES_REGISTER_ACTIVATION.md and the reviewed physical-security forward patch. Visitor writes and facilities depend on the physical-security browser switch; server-side dependencies are separate.
+- Physical security, visitor writes and facilities: see UNIPATHWAY_FACILITIES_REGISTER_ACTIVATION.md and the reviewed physical-security forward patch. Visitor writes and facilities depend on the physical-security browser switch. Facilities writes also require the facilities read switch and the separate hosted write gate; server-side dependencies are separate.
 - Technology lab entitlements, private messaging, class release, office access and staff invitations: use their existing schema and acceptance suites, then verify with actual centre-specific authorised accounts.
 
 The .env.example declarations for reviewed switches are deliberately false. Existing production values are unchanged. The Turnstile site key is public; the secret, quota pepper, service-role key and other provider credentials must remain in authorised server environments.
