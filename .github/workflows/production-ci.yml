@@ -140,7 +140,7 @@ jobs:
       - name: Browser startup diagnostics (real DOM and captured runtime errors)
         run: npx playwright test e2e/browser-startup-diagnostics.spec.ts --workers=1
       - name: Chromium acceptance for public, progression and protected routes
-        run: npx playwright test e2e/unipathway-ielts-admissions.spec.ts e2e/public-smoke.spec.ts e2e/assessment-evidence.spec.ts e2e/private-feedback.spec.ts e2e/centre-feedback.spec.ts e2e/course-discovery.spec.ts e2e/qualification-accessibility.spec.ts e2e/admissions-deadline-planner.spec.ts
+        run: npx playwright test e2e/unipathway-ielts-admissions.spec.ts e2e/public-smoke.spec.ts e2e/assessment-evidence.spec.ts e2e/private-feedback.spec.ts e2e/centre-feedback.spec.ts e2e/course-discovery.spec.ts e2e/qualification-accessibility.spec.ts e2e/admissions-deadline-planner.spec.ts e2e/formative-practice-studio.spec.ts
       - name: Pakistan course enquiry selection, review and responsive editing (synthetic only)
         run: npx playwright test e2e/pakistan-course-enquiry.spec.ts --workers=1 --output=test-results/course-enquiry
       - name: Retain course enquiry responsive evidence before other suites clean output
