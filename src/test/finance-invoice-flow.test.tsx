@@ -73,7 +73,7 @@ describe('finance invoice handoff', () => {
     mount();
     expect(mock.query).toHaveBeenCalledWith('invoices', expect.objectContaining({enabled: true}));
     expect(summary('Student charges billed')).toHaveTextContent('PKR 1,000.50');
-    expect(screen.getByRole('status')).toHaveTextContent('Platform Owner access alone does not grant those writes');
+    expect(screen.getByRole('status',{name:'Invoice permissions'})).toHaveTextContent('Platform Owner access alone does not grant those writes');
     expect(screen.getByRole('button', {name: 'New student invoice'})).toBeDisabled();
     expect(screen.queryByRole('button', {name: /Record student payment for/})).toBeNull();
   });
@@ -94,7 +94,7 @@ describe('finance invoice handoff', () => {
   });
   it('flags unlinked invoices without offering payment against a name alone', () => {
     mock.rows = [row('unlinked', {student_id: null})]; mount();
-    expect(screen.getByRole('status')).toHaveTextContent('no linked account');
+    expect(screen.getByRole('status',{name:'Unlinked learner accounts'})).toHaveTextContent('no linked account');
     expect(screen.queryByRole('button', {name: /Record student payment for/})).toBeNull();
   });
   it.each([
@@ -117,7 +117,7 @@ describe('finance invoice handoff', () => {
   it('paginates the loaded queue and searches all words beyond the current page', () => {
     mock.rows = Array.from({length: 21}, (_, index) => row('invoice-' + index, {student_name: index === 20 ? 'Zara Farah' : 'Learner ' + index}));
     mount(); expect(within(screen.getByRole('list')).getAllByRole('listitem')).toHaveLength(20);
-    fireEvent.click(screen.getByRole('button', {name: 'Next invoices'})); expect(screen.getByRole('status')).toHaveTextContent('Page 2 of 2');
+    fireEvent.click(screen.getByRole('button', {name: 'Next invoices'})); expect(screen.getByRole('status',{name:'Invoice results'})).toHaveTextContent('Showing 21–21 of 21 matching invoices');
     expect(within(screen.getByRole('list')).getAllByRole('listitem')).toHaveLength(1);
     fireEvent.change(screen.getByLabelText('Search by learner or invoice reference'), {target: {value: 'farah zara'}});
     expect(screen.getByRole('heading', {name: 'Invoices (1)'})).toBeInTheDocument();
@@ -125,8 +125,21 @@ describe('finance invoice handoff', () => {
     fireEvent.change(screen.getByLabelText('Invoice status'), {target: {value: 'paid'}});
     expect(screen.getByText('No invoices match these filters')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', {name: 'Show all invoices'}));
-    expect(screen.getByRole('status')).toHaveTextContent('Page 1 of 2');
+    expect(screen.getByRole('status',{name:'Invoice results'})).toHaveTextContent('Showing 1–20 of 21 matching invoices');
     expect(screen.getByLabelText('Search by learner or invoice reference')).toHaveFocus();
+  });
+  it('filters missing learner accounts without including commission records or enabling unsupported payments', () => {
+    mock.rows = [row(), row('unlinked', {student_id:null,student_name:'Unlinked learner'}), row('commission', {type:'commission',student_id:null,student_name:'Commission record',sponsor_amount:0,sponsor_paid:0})];
+    mount();
+    const filter=screen.getByRole('button',{name:'Missing learner account'});
+    fireEvent.click(filter);
+    expect(filter).toHaveAttribute('aria-pressed','true');
+    expect(screen.getByRole('heading',{name:'Invoices (1)'})).toBeInTheDocument();
+    expect(within(screen.getByRole('list')).getByText('Unlinked learner')).toBeInTheDocument();
+    expect(screen.queryByRole('button',{name:/Record student payment for/})).toBeNull();
+    fireEvent.click(screen.getByRole('button',{name:'Clear invoice filters'}));
+    expect(filter).toHaveAttribute('aria-pressed','false');
+    expect(screen.getByRole('heading',{name:'Invoices (3)'})).toBeInTheDocument();
   });
   it('keeps a payment workspace mounted through invoice refresh', () => {
     const view = mount(); fireEvent.click(screen.getAllByRole('button', {name: /Record student payment for/})[0]);

@@ -52,6 +52,7 @@ function FinanceWorkspace() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
+  const [accountFilter,setAccountFilter]=useState('all');
   const [pageIndex, setPageIndex] = useState(0);
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState('');
@@ -100,6 +101,7 @@ function FinanceWorkspace() {
   const filtered = rows.filter(invoice =>
     (statusFilter === 'all' || invoice.status === statusFilter) &&
     (typeFilter === 'all' || invoice.type === typeFilter) &&
+    (accountFilter === 'all' || (invoice.type !== 'commission' && !invoice.student_id)) &&
     matchesLocalSearch(invoice.student_name + ' ' + invoice.id, search));
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const page = Math.min(pageIndex, pageCount - 1);
@@ -108,7 +110,7 @@ function FinanceWorkspace() {
   const reportTooLarge = reportCount > 5000;
 
   function resetFilters() {
-    setSearch(''); setStatusFilter('all'); setTypeFilter('all'); setPageIndex(0);
+    setSearch(''); setStatusFilter('all'); setTypeFilter('all'); setAccountFilter('all'); setPageIndex(0);
     searchRef.current?.focus();
   }
   function canRecord(invoice: Invoice) {
@@ -171,7 +173,7 @@ function FinanceWorkspace() {
     actions={<Button onClick={() => setInvoiceOpen(true)} disabled={!canWrite || loading || !!dataError}><FileText aria-hidden="true"/>New student invoice</Button>}>
     <div className="space-y-5 text-base">
       <p className="max-w-prose text-sm text-muted-foreground">Link each new student invoice to the correct account. A recorded payment reference stays pending until verified; it does not reduce a learner’s balance by itself.</p>
-      {!canWrite && <p role="status" className="rounded-lg border p-4 text-sm">Your current account can review centre invoices. Creating invoices or recording payments requires a verified Finance Officer or Centre Director membership in this centre; Platform Owner access alone does not grant those writes.</p>}
+      {!canWrite && <p role="status" aria-label="Invoice permissions" className="rounded-lg border p-4 text-sm">Your current account can review centre invoices. Creating invoices or recording payments requires a verified Finance Officer or Centre Director membership in this centre; Platform Owner access alone does not grant those writes.</p>}
       <div className="flex flex-wrap gap-3">
         <Button variant="outline" onClick={() => void refetch()} disabled={loading}>Refresh invoices</Button>
         {user?.role === 'finance_officer' && <Button asChild variant="outline"><Link to="/finance/payments">Review payment records</Link></Button>}
@@ -204,12 +206,12 @@ function FinanceWorkspace() {
               </dl>
               <p className="text-sm text-muted-foreground">Totals cover all loaded, non-refunded invoices in this centre. Student charges and their payments exclude commission invoices. Commission invoices are recorded amounts, not proof of earned or payable commission.</p>
             </section>
-            {missingAccounts > 0 && <p role="status" className="rounded-lg border p-4 text-sm">{missingAccounts} existing student invoice(s) have no linked account. A matching name alone cannot make them visible in a learner’s fees page. Finance must review those account links.</p>}
-            <section aria-label="Find invoices" className="space-y-3">
+            {missingAccounts > 0 && <p role="status" aria-label="Unlinked learner accounts" className="rounded-lg border p-4 text-sm">{missingAccounts} existing student invoice(s) have no linked account. A matching name alone cannot make them visible in a learner’s fees page. Finance must review those account links.</p>}
+            <section aria-label="Find invoices" className="min-w-0 space-y-3 rounded-xl border bg-card p-3 sm:p-4">
               <div className="grid min-w-0 grid-cols-[repeat(auto-fit,minmax(min(100%,16rem),1fr))] gap-3">
                 <label className="min-w-0 text-sm font-medium" htmlFor="invoice-search">Search by learner or invoice reference
                   <span className="relative mt-1 block"><Search aria-hidden="true" className="pointer-events-none absolute left-3 top-3 size-4 text-muted-foreground"/>
-                    <Input id="invoice-search" ref={searchRef} value={search} onChange={event => {setSearch(event.target.value); setPageIndex(0);}} className="pl-9" placeholder="Name or full invoice reference"/></span>
+                    <Input id="invoice-search" type="search" maxLength={120} ref={searchRef} value={search} onChange={event => {setSearch(event.target.value); setPageIndex(0);}} className="pl-9" placeholder="Name or full invoice reference"/></span>
                 </label>
                 <div className="min-w-0 text-sm font-medium"><label htmlFor="finance-invoice-status">Invoice status</label>
                   <select id="finance-invoice-status" className="mt-1 block min-h-11 w-full min-w-0 rounded-lg border bg-background px-3 py-2" value={statusFilter} onChange={event => {setStatusFilter(event.target.value); setPageIndex(0);}}>
@@ -223,17 +225,19 @@ function FinanceWorkspace() {
                 </div>
               </div>
               <div className="flex flex-wrap gap-3">
-                <Button variant="outline" onClick={resetFilters} disabled={!search && statusFilter === 'all' && typeFilter === 'all'}>Clear invoice filters</Button>
+                <Button type="button" variant={accountFilter==='missing'?'default':'outline'} aria-pressed={accountFilter==='missing'} onClick={()=>{setAccountFilter(v=>v==='missing'?'all':'missing');setPageIndex(0);}}>Missing learner account</Button>
+                <Button variant="outline" onClick={resetFilters} disabled={!search && statusFilter === 'all' && typeFilter === 'all' && accountFilter === 'all'}>Clear invoice filters</Button>
                 <Button variant="outline" onClick={() => void handleExportCSV()} disabled={exporting || reportTooLarge || !reportCount}>
                   {exporting ? <Loader2 aria-hidden="true" className="animate-spin"/> : <Download aria-hidden="true"/>}Export centre invoice report
                 </Button>
               </div>
-              <p className="text-sm text-muted-foreground">The export follows the status filter only. Search, invoice type and pagination apply to this screen.</p>
+              <p className="text-sm text-muted-foreground">The export follows the status filter only. Search, invoice type, learner account and pagination filters apply to this screen.</p>
               {reportTooLarge && <p role="status" className="text-sm">The report service supports up to 5,000 invoices at a time. Choose a smaller status group or ask finance for a complete audited export.</p>}
               {exportError && <p role="alert" className="text-sm text-destructive">{exportError}</p>}
             </section>
             <section aria-labelledby="invoice-list-title" className="space-y-3">
               <h2 id="invoice-list-title" className="text-lg font-semibold">Invoices ({filtered.length})</h2>
+              <p role="status" aria-label="Invoice results" className="text-sm text-muted-foreground">{filtered.length?`Showing ${page*PAGE_SIZE+1}–${Math.min((page+1)*PAGE_SIZE,filtered.length)} of ${filtered.length} matching invoices`:"No matching invoices"}</p>
               {!rows.length ? <div className="space-y-2 rounded-xl border bg-card p-5"><h3 className="font-semibold">No invoices yet</h3><p className="text-sm text-muted-foreground">Create a student invoice after choosing a verified account in this centre.</p></div> :
                 !filtered.length ? <div className="space-y-3 rounded-xl border bg-card p-5"><h3 className="font-semibold">No invoices match these filters</h3><p className="text-sm text-muted-foreground">Try another name or invoice reference, or clear the filters.</p><Button variant="outline" onClick={resetFilters}>Show all invoices</Button></div> : <>
                   <ul className="space-y-3 xl:hidden">{visible.map(invoice => {
@@ -250,9 +254,9 @@ function FinanceWorkspace() {
                     </li>;
                   })}</ul>
                   <div className="hidden rounded-xl border bg-card xl:block">
-                    <div className="overflow-x-auto" role="region" aria-label="Invoice table" tabIndex={0}>
+                    <div className="max-w-full overflow-x-auto overscroll-x-contain focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary" role="region" aria-label="Invoice table" tabIndex={0}>
                       <table className="w-full min-w-[68rem] table-fixed text-sm"><caption className="sr-only">Centre invoices, student and sponsor shares, and payment recording</caption>
-                        <colgroup>{['24%', '9%', '14%', '14%', '15%', '24%'].map((width, index) => <col key={index} style={{width}}/>)}</colgroup>
+                        <colgroup>{['23%', '9%', '14%', '14%', '16%', '24%'].map((width, index) => <col key={index} style={{width}}/>)}</colgroup>
                         <thead><tr className="border-b">{['Learner / invoice', 'Type', 'Student share due', 'Sponsor share due', 'Status / due date', 'Action'].map(label => <th key={label} scope="col" className="p-3 text-left font-semibold">{label}</th>)}</tr></thead>
                         <tbody>{visible.map(invoice => {
                           const liability = feeLiability(invoice);
@@ -270,7 +274,7 @@ function FinanceWorkspace() {
                   </div>
                   {pageCount > 1 && <nav aria-label="Invoice pages" className="flex flex-wrap items-center gap-3">
                     <Button variant="outline" disabled={page === 0} onClick={() => setPageIndex(page - 1)}>Previous invoices</Button>
-                    <p role="status" className="text-sm">Page {page + 1} of {pageCount} · {filtered.length} matching invoices</p>
+                    <p className="text-sm">Page {page + 1} of {pageCount} · {filtered.length} matching invoices</p>
                     <Button variant="outline" disabled={page + 1 >= pageCount} onClick={() => setPageIndex(page + 1)}>Next invoices</Button>
                   </nav>}
                 </>}
