@@ -11,7 +11,8 @@ import FacilitiesFollowupWorkspace from '@/components/security/FacilitiesFollowu
 const tenant='centre-a',asset='10000000-0000-4000-8000-000000000001',inspection='10000000-0000-4000-8000-000000000002',action='10000000-0000-4000-8000-000000000003';
 const register:FacilityRegister={assets:[{id:asset,tenant_id:tenant,category:'extinguisher',asset_code:'F01',location:'Reception',planned_inspection_date:'2026-11-27'}],inspections:[{id:inspection,tenant_id:tenant,asset_id:asset,inspected_on:'2026-11-27',outcome:'defect',notes:'Observed defect',next_due_date:null,recorded_at:'2026-11-27T06:00:00Z'}]};
 const row={id:action,tenant_id:tenant,asset_id:asset,inspection_id:inspection,task:'Arrange inspection',team:'facilities',target_date:'2026-11-27',created_at:'2026-11-27T07:00:00Z',resolved_at:null,resolution_evidence:null};
-beforeEach(()=>mocks.rpc.mockReset());
+// Do not return the mock function: Vitest treats returned functions as teardown callbacks.
+beforeEach(()=>{mocks.rpc.mockReset();});
 afterEach(cleanup);
 describe('facilities follow-up workspace',()=>{
  it('preserves the exact open request after an uncertain response',async()=>{
