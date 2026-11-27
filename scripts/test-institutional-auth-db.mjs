@@ -43,6 +43,13 @@ async function as(role,token,sql){
 }
 const allowed=async token=>(await as('authenticated',token,'SELECT public.unipathway_institutional_access() AS ok')).rows[0].ok;
 assert.equal(await allowed(claims),true);
+await q(`UPDATE auth.sessions SET ip='192.0.2.11' WHERE id='${session}'`);
+await q(`UPDATE auth.sessions SET aal='aal1' WHERE id='${session}'`);
+assert.equal(await allowed(claims),false);
+await q(`UPDATE auth.sessions SET aal='aal2' WHERE id='${session}'`);
+assert.equal((await q("SELECT count(*)::int AS n FROM unipathway_identity.login_events")).rows[0].n,3);
+await assert.rejects(()=>as('authenticated',claims,'SELECT * FROM unipathway_identity.login_events'),/permission denied/i);
+assert.equal(await allowed(claims),true);
 assert.equal(await allowed({...claims,aal:'aal1'}),false);
 assert.equal(await allowed({...claims,session_id:'30000000-0000-4000-8000-000000000099'}),false);
 assert.equal(await allowed({...claims,is_anonymous:true}),false);
