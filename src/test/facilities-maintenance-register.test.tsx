@@ -1,0 +1,44 @@
+import {render,screen,fireEvent,cleanup} from '@testing-library/react';
+import {afterEach,beforeEach,describe,expect,it,vi} from 'vitest';
+const mocks=vi.hoisted(()=>({rpc:vi.fn()}));
+vi.mock('@/lib/db',()=>({db:mocks}));
+vi.mock('@/contexts/AuthContext',()=>({useAuth:()=>({user:{id:'officer',tenantId:'centre-a',role:'security_officer',roles:['security_officer']}})}));
+vi.mock('@/lib/physicalSecurity',()=>({PHYSICAL_SECURITY_ENABLED:true,physicalSecurityScope:()=> 'centre-a'}));
+vi.mock('@/lib/facilitiesCommands',()=>({FACILITIES_WRITE_ENABLED:false,facilitiesWriterScope:()=>null}));
+vi.mock('@/components/security/FacilitiesRecordCommands',()=>({default:()=>null}));
+vi.mock('@/lib/facilitiesPlanning',async(importOriginal)=>{
+ const actual=await importOriginal<typeof import('@/lib/facilitiesPlanning')>();
+ return {...actual,pakistanCalendarDate:()=> '2026-11-27'};
+});
+const asset=(id:string,asset_code:string,planned_inspection_date:string)=>({id,tenant_id:'centre-a',category:'extinguisher',asset_code,location:'Reception',planned_inspection_date});
+beforeEach(()=>{vi.resetModules();vi.stubEnv('VITE_UNIPATHWAY_FACILITIES_REGISTER_ENABLED','true');mocks.rpc.mockReset();});
+afterEach(()=>{cleanup();vi.unstubAllEnvs();});
+describe('verified facilities maintenance review',()=>{
+ it('filters overdue, defects and missing next dates without inventing safety clearance',async()=>{
+  mocks.rpc.mockResolvedValue({data:{assets:[asset('a','FIRE-01','2026-11-20'),asset('b','FIRE-02','2026-11-01')],inspections:[{id:'inspection-1',tenant_id:'centre-a',asset_id:'b',inspected_on:'2026-11-25',outcome:'defect',notes:'Seal requires review',next_due_date:null,recorded_at:'2026-11-25T10:00:00Z'}]},error:null});
+  const {default:FacilitiesRegister}=await import('@/components/security/FacilitiesRegister');
+  render(<FacilitiesRegister/>);
+  expect(await screen.findByText('Maintenance and inspection review queue')).toBeInTheDocument();
+  expect(mocks.rpc).toHaveBeenCalledWith('get_unipathway_facilities_register',{p_tenant:'centre-a'});
+  expect(screen.getByText(/FIRE-01 ·/)).toBeInTheDocument();
+  expect(screen.getByText(/FIRE-02 ·/)).toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText('Inspection review filter'),{target:{value:'due'}});
+  expect(screen.getByText(/FIRE-01 ·/)).toBeInTheDocument();
+  expect(screen.queryByText(/FIRE-02 ·/)).toBeNull();
+  fireEvent.change(screen.getByLabelText('Inspection review filter'),{target:{value:'unscheduled'}});
+  expect(screen.getByText(/FIRE-02 ·/)).toBeInTheDocument();
+  expect(screen.queryByText(/FIRE-01 ·/)).toBeNull();
+  expect(screen.getByText('Reception · Next date not recorded')).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button',{name:'View history'}));
+  expect(screen.getByText('Seal requires review')).toBeInTheDocument();
+  expect(screen.queryByRole('button',{name:'Record inspection'})).toBeNull();
+ });
+ it('does not render a maintenance queue when the snapshot is foreign',async()=>{
+  mocks.rpc.mockResolvedValue({data:{assets:[{...asset('a','FOREIGN','2026-11-20'),tenant_id:'centre-b'}],inspections:[]},error:null});
+  const {default:FacilitiesRegister}=await import('@/components/security/FacilitiesRegister');
+  render(<FacilitiesRegister/>);
+  expect(await screen.findByRole('alert')).toHaveTextContent('could not be verified');
+  expect(screen.queryByText('Maintenance and inspection review queue')).toBeNull();
+  expect(screen.queryByText(/FOREIGN ·/)).toBeNull();
+ });
+});
