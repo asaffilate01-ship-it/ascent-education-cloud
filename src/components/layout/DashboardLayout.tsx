@@ -9,7 +9,7 @@ import { useTheme } from '@/hooks/useTheme';
 import AdvancedSearch from '@/components/AdvancedSearch';
 import CommsBadge from '@/components/CommsBadge';
 import NotificationBell from '@/components/NotificationBell';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 
 interface DashboardLayoutProps {
@@ -35,6 +35,8 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
   const { theme, toggleTheme } = useTheme();
   const reduceMotion = useReducedMotion();
   const [cmdOpen, setCmdOpen] = useState(false);
+  const [navCollapsed, setNavCollapsed] = useState(false);
+  useEffect(()=>{setNavCollapsed(false);setCmdOpen(false);},[user?.id,user?.tenantId,user?.role]);
 
   const pathSegments = location.pathname.split('/').filter(Boolean);
   const breadcrumbs = pathSegments.map((seg, i) => ({
@@ -50,10 +52,10 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
   return (
     <div className="min-h-dvh bg-secondary/40">
       <a href="#dashboard-content" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:rounded-lg focus:bg-card focus:p-3">Skip to dashboard content</a>
-      <DashboardSidebar />
-      <div className="lg:pl-60 pl-0">
+      <DashboardSidebar collapsed={navCollapsed} onCollapsedChange={setNavCollapsed} />
+      <div className={`min-w-0 pl-0 transition-[padding] duration-300 motion-reduce:transition-none ${navCollapsed ? 'lg:pl-16' : 'lg:pl-60'}`}>
         {/* Premium Top Bar */}
-        <header className="sticky top-0 z-40 min-h-14 flex flex-wrap items-center justify-between gap-x-2 gap-y-2 sm:gap-x-3 py-1.5 sm:py-2 px-3 sm:px-4 lg:px-6 border-b border-border/40 bg-card/90 backdrop-blur-xl shadow-sm">
+        <header className="sticky top-0 z-40 min-h-14 flex flex-wrap items-center justify-between gap-x-2 gap-y-2 sm:gap-x-3 py-1.5 sm:py-2 px-3 sm:px-4 lg:px-6 border-b border-border/40 bg-card/95 backdrop-blur-xl shadow-sm">
           <div className="ml-12 flex min-h-11 min-w-0 flex-[1_1_6rem] flex-col justify-center lg:ml-0">
             {breadcrumbs.length > 1 && (
               <nav aria-label="Breadcrumb" className="hidden min-w-0 flex-wrap md:flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5">
@@ -61,9 +63,9 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
                   <span key={bc.path} className="flex items-center gap-1.5">
                     {i > 0 && <span className="text-border">/</span>}
                     {bc.isLast ? (
-                      <span className="font-semibold text-foreground">{bc.label}</span>
+                      <span aria-current="page" className="font-semibold text-foreground">{bc.label}</span>
                     ) : (
-                      <Link to={bc.path} className="hover:text-foreground transition-default">{bc.label}</Link>
+                      <Link to={bc.path} className="hover:text-foreground transition-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-sm">{bc.label}</Link>
                     )}
                   </span>
                 ))}
@@ -109,9 +111,9 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
           initial={reduceMotion ? false : { opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: reduceMotion ? 0 : 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-          className="px-3 py-4 sm:px-6 sm:py-8 lg:px-8 pb-[calc(7.5rem+env(safe-area-inset-bottom))] lg:pb-10"
+          className="min-w-0 px-3 pt-5 sm:px-6 sm:pt-7 lg:px-8 lg:pt-8 pb-[calc(7.5rem+env(safe-area-inset-bottom))] lg:pb-10"
         >
-          <div className="page-shell min-w-0 [overflow-wrap:anywhere]"><div className="mb-5 sm:mb-7 flex flex-wrap items-start justify-between gap-4"><div className="min-w-0 flex-[1_1_24rem]"><h1 className="text-xl font-bold tracking-tight text-foreground sm:text-3xl">{title}</h1>{subtitle && <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">{subtitle}</p>}</div>{actions && <div className="flex min-w-0 max-w-full flex-wrap gap-2">{actions}</div>}</div><WorkspaceShortcuts />{!!workspaceLinks.length && <nav aria-label="Learning workspace" className="mb-5 flex flex-wrap gap-2">{workspaceLinks.map(([label,to])=><Link key={to} to={workspacePath(to,location.search)} aria-current={location.pathname===to?'page':undefined} className={`inline-flex min-h-11 items-center rounded-lg border px-3 py-2 text-sm font-medium ${location.pathname===to?'bg-primary text-primary-foreground':'bg-card hover:bg-accent'}`}>{label}</Link>)}</nav>}
+          <div className="page-shell min-w-0 [overflow-wrap:anywhere]"><div className="mb-5 sm:mb-7 flex flex-wrap items-start justify-between gap-3 sm:gap-4 border-b border-border/60 pb-4 sm:pb-5"><div className="min-w-0 flex-[1_1_24rem]"><h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl [overflow-wrap:anywhere]">{title}</h1>{subtitle && <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">{subtitle}</p>}</div>{actions && <div className="flex min-w-0 max-w-full flex-wrap gap-2">{actions}</div>}</div><WorkspaceShortcuts />{!!workspaceLinks.length && <nav aria-label="Learning workspace" className="mb-5 flex flex-wrap gap-2">{workspaceLinks.map(([label,to])=><Link key={to} to={workspacePath(to,location.search)} aria-current={location.pathname===to?'page':undefined} className={`inline-flex min-h-11 items-center rounded-lg border px-3 py-2 text-sm font-medium ${location.pathname===to?'bg-primary text-primary-foreground':'bg-card hover:bg-accent'}`}>{label}</Link>)}</nav>}
             {children}</div>
         </motion.main>
       </div>
