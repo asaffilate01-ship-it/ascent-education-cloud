@@ -35,8 +35,8 @@ export default function FacilitiesFollowupWorkspace({tenant,register,writer}:{te
   })();
   return()=>{active=false;};
  },[tenant,register,revision]);
- const verified=!!register&&state?.register===register&&state.revision===revision;
- const rows=verified?state.rows:null;
+ const verified=!!register&&!!state&&state.register===register&&state.revision===revision;
+ const rows=verified&&state?state.rows:null;
  const refresh=()=>setRevision(n=>n+1);
  const today=pakistanCalendarDate();
  const locked=!writer||!register||!rows||busy||!!pending;
