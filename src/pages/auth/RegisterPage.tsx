@@ -8,13 +8,18 @@ import { Button } from '@/components/ui/button';
 import { Eye, EyeOff, ArrowRight, CheckCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import BrandLogo from '@/components/BrandLogo';
+import {INSTITUTIONAL_AUTH_ENABLED} from '@/lib/institutionalAuth';
 
 const ACCOUNT_TYPES = [
   { key: 'student', label: 'Student', desc: 'I want to study', role: 'student' },
   { key: 'agent', label: 'Agent', desc: 'Apply for verified recruitment-agent access', role: 'agent' },
 ] as const;
 
-export default function RegisterPage() {
+export default function RegisterPage(){
+ if(INSTITUTIONAL_AUTH_ENABLED)return <main className="min-h-dvh bg-background flex items-center justify-center px-4 py-10"><section className="w-full max-w-md space-y-5"><BrandLogo className="h-10"/><h1 className="text-2xl font-bold">Request information from UniPathway</h1><p className="text-sm text-muted-foreground">Public registration is closed. Admissions and authorised administrators issue institutional accounts after approval. You can enquire with your personal email without creating an account.</p><Button asChild className="w-full min-h-11"><Link to="/contact">Contact admissions</Link></Button><Button asChild variant="outline" className="w-full min-h-11"><Link to="/login">Sign in with assigned account</Link></Button></section></main>;
+ return <LegacyRegistration/>;
+}
+function LegacyRegistration() {
   const [step, setStep] = useState<'type' | 'form'>('type');
   const [accountType, setAccountType] = useState<'student' | 'agent'>('student');
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', password: '' });
