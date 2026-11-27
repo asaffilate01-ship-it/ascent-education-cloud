@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import unipathwayLogo from '@/assets/unipathway-logo.png';
+import {INSTITUTIONAL_AUTH_ENABLED,INSTITUTIONAL_MIN_PASSWORD,institutionalEmail} from '@/lib/institutionalAuth';
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState('');
@@ -16,8 +17,8 @@ export default function ResetPasswordPage() {
 
   useEffect(() => {
     let active=true;
-    void supabase.auth.getUser().then(({data,error})=>{if(active)setIsRecovery(!error&&!!data.user);}).catch(()=>{if(active)setIsRecovery(false);});
-    const {data:{subscription}}=supabase.auth.onAuthStateChange((_event,session)=>{if(active)setIsRecovery(!!session?.user);});
+    void supabase.auth.getUser().then(({data,error})=>{if(active)setIsRecovery(!error&&!!data.user&&(!INSTITUTIONAL_AUTH_ENABLED||!!institutionalEmail(data.user.email)));}).catch(()=>{if(active)setIsRecovery(false);});
+    const {data:{subscription}}=supabase.auth.onAuthStateChange((_event,session)=>{if(active)setIsRecovery(!!session?.user&&(!INSTITUTIONAL_AUTH_ENABLED||!!institutionalEmail(session.user.email)));});
     return()=>{active=false;subscription.unsubscribe();};
   }, []);
 
@@ -27,8 +28,9 @@ export default function ResetPasswordPage() {
       toast.error('Passwords do not match');
       return;
     }
-    if (password.length < 8) {
-      toast.error('Password must be at least 8 characters');
+    const minimum=INSTITUTIONAL_AUTH_ENABLED?INSTITUTIONAL_MIN_PASSWORD:8;
+    if (password.length < minimum) {
+      toast.error('Password must be at least '+minimum+' characters');
       return;
     }
 
@@ -41,6 +43,7 @@ export default function ResetPasswordPage() {
       return;
     }
 
+    if(INSTITUTIONAL_AUTH_ENABLED){const result=await supabase.auth.signOut({scope:'global'});if(result.error){toast.error('Password updated, but sign-out could not be confirmed. Contact your administrator.');return;}}
     toast.success('Password updated successfully');
     navigate('/login');
   };
@@ -75,7 +78,7 @@ export default function ResetPasswordPage() {
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Min 8 characters"
+                placeholder={'Min '+(INSTITUTIONAL_AUTH_ENABLED?INSTITUTIONAL_MIN_PASSWORD:8)+' characters'}
                 className="w-full bg-secondary text-sm px-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-primary/20"
               />
               <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
