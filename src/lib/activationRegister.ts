@@ -1,6 +1,7 @@
 /** Browser switches only. These values do not prove backend installation or provider health. */
 export const activationDefinitions=[
  {key:'VITE_UNIPATHWAY_SECURE_CONTACT_ENABLED',label:'Secure public enquiries',area:'Admissions',requires:[],needsSiteKey:true,evidence:'Active tenant, deployed contact handlers, durable quota, Turnstile acceptance and coordinated server-side secure-only enforcement.'},
+ {key:'VITE_UNIPATHWAY_FACILITIES_FOLLOWUPS_ENABLED',label:'Facilities follow-up records',area:'Security',requires:['VITE_UNIPATHWAY_PHYSICAL_SECURITY_ENABLED','VITE_UNIPATHWAY_FACILITIES_REGISTER_ENABLED'],evidence:'Reviewed fourth facilities patch, separate follow-up gate, hosted role and inspection-link acceptance; recording additionally requires the facilities write gates.'},
  {key:'VITE_UNIPATHWAY_STUDENT_PLANS_ENABLED',label:'Private student application planning',area:'Admissions',requires:[],evidence:'Reviewed student-planner forward patch, disabled-gate and two-centre hosted RLS acceptance; then authorised server gate.'},
  {key:'VITE_UNIPATHWAY_PHYSICAL_SECURITY_ENABLED',label:'Physical security operations',area:'Security',requires:[],evidence:'Approved physical security schema, centre-bound roles, hosted read acceptance and hardware gateway checks.'},
  {key:'VITE_UNIPATHWAY_PHYSICAL_VISITOR_WRITES_ENABLED',label:'Visitor arrival and departure writes',area:'Security',requires:['VITE_UNIPATHWAY_PHYSICAL_SECURITY_ENABLED'],evidence:'Verified physical reads, visitor write gate, officer authorisation, duplicate and uncertain-result recovery tests.'},
@@ -30,6 +31,7 @@ export function describeActivationState(inputs:ActivationInputs){
 export function currentActivationInputs():ActivationInputs{
  return {
   VITE_UNIPATHWAY_SECURE_CONTACT_ENABLED:import.meta.env.VITE_UNIPATHWAY_SECURE_CONTACT_ENABLED,
+  VITE_UNIPATHWAY_FACILITIES_FOLLOWUPS_ENABLED:import.meta.env.VITE_UNIPATHWAY_FACILITIES_FOLLOWUPS_ENABLED,
   VITE_UNIPATHWAY_STUDENT_PLANS_ENABLED:import.meta.env.VITE_UNIPATHWAY_STUDENT_PLANS_ENABLED,
   VITE_UNIPATHWAY_PHYSICAL_SECURITY_ENABLED:import.meta.env.VITE_UNIPATHWAY_PHYSICAL_SECURITY_ENABLED,
   VITE_UNIPATHWAY_PHYSICAL_VISITOR_WRITES_ENABLED:import.meta.env.VITE_UNIPATHWAY_PHYSICAL_VISITOR_WRITES_ENABLED,
