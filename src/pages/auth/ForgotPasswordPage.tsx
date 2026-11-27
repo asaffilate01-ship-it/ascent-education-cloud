@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Mail, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import unipathwayLogo from '@/assets/unipathway-logo.png';
+import {INSTITUTIONAL_AUTH_ENABLED,institutionalEmail} from '@/lib/institutionalAuth';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -15,15 +16,17 @@ export default function ForgotPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
+    const address=INSTITUTIONAL_AUTH_ENABLED?institutionalEmail(email):email.trim();
+    if(!address){toast.error('Use your assigned @unipathway.pk email address.');return;}
 
     setLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    const { error } = await supabase.auth.resetPasswordForEmail(address, {
       redirectTo: isNativeApp() ? `${NATIVE_AUTH_CALLBACK}?flow=recovery` : `${window.location.origin}/reset-password`,
     });
     setLoading(false);
 
     if (error) {
-      toast.error(error.message);
+      toast.error('The recovery request could not be completed. Please retry or contact your administrator.');
       return;
     }
     setSent(true);
@@ -43,7 +46,7 @@ export default function ForgotPasswordPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="text-label mb-1.5 block">Email Address</label>
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="w-full bg-secondary text-sm px-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-primary/20" />
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={INSTITUTIONAL_AUTH_ENABLED?'your.name@unipathway.pk':'you@example.com'} className="w-full bg-secondary text-sm px-4 py-3 rounded-lg outline-none focus:ring-2 focus:ring-primary/20" />
               </div>
               <Button type="submit" className="w-full py-3" disabled={loading}>
                 {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
