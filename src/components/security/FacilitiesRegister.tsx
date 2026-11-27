@@ -10,6 +10,8 @@ import {verifyFacilitiesRegister,type FacilityRegister} from '@/lib/facilitiesRe
 import {FACILITIES_WRITE_ENABLED,facilitiesWriterScope} from '@/lib/facilitiesCommands';
 import FacilitiesRecordCommands from '@/components/security/FacilitiesRecordCommands';
 import FacilitiesReminderCalendar from '@/components/security/FacilitiesReminderCalendar';
+import FacilitiesFollowupWorkspace from '@/components/security/FacilitiesFollowupWorkspace';
+import {FACILITIES_FOLLOWUPS_ENABLED} from '@/lib/facilitiesFollowups';
 
 const enabled=import.meta.env.VITE_UNIPATHWAY_FACILITIES_REGISTER_ENABLED==='true';
 const timingLabels:Record<MaintenanceTiming,string>={overdue:'Overdue',due_today:'Due today',next_seven_days:'Next seven days',later:'Later',unscheduled:'Next date not recorded'};
@@ -59,7 +61,9 @@ function RegisterView({tenant,writer}:{tenant:string|null;writer:boolean}){
   {waiting&&<p role="status" className="mt-3 text-sm">Verifying centre facilities records…</p>}
   {failed&&<p role="alert" className="mt-3 text-sm text-destructive">The facilities register could not be verified. Check activation or centre permission before relying on it.</p>}
   {permitted&&tenant&&writer&&<FacilitiesRecordCommands tenant={tenant} snapshot={snapshot} refresh={refresh}/>}
+  {permitted&&tenant&&FACILITIES_FOLLOWUPS_ENABLED&&<FacilitiesFollowupWorkspace tenant={tenant} register={snapshot} writer={writer}/>}
   {snapshot&&<>
+   {writer&&<FacilitiesReminderCalendar rows={rows}/>}
    <p className="mt-3 text-sm text-muted-foreground">Recorded inspection outcomes are not certification of equipment safety. Dates are compared in Pakistan time. {writer?'Recording requires a verified director and a separate server write gate.':'This workspace is read-only.'}</p>
    <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{[['Registered assets',snapshot.assets.length],['Latest recorded defects',counts.defects],['Overdue or due today',counts.due],['Due within seven days',counts.soon],['Next date not recorded',counts.unscheduled],['Inspection evidence required',counts.unverified]].map(([label,n])=><article className="rounded-lg border p-3" key={label}><p className="text-sm text-muted-foreground">{label}</p><p className="mt-1 text-xl font-semibold">{n}</p></article>)}</div>
    <div className="mt-4 rounded-xl border p-3 sm:p-4">
@@ -68,7 +72,6 @@ function RegisterView({tenant,writer}:{tenant:string|null;writer:boolean}){
     <div className="mt-3 grid min-w-0 gap-3 sm:grid-cols-2"><label className="block min-w-0 text-sm font-medium">Find an asset<Input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Asset reference, category or location"/></label><label className="block min-w-0 text-sm font-medium">Inspection review filter<select className="mt-1 min-h-11 w-full min-w-0 rounded-lg border bg-background px-3" value={filter} onChange={e=>setFilter(e.target.value)}>{filters.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label></div>
     <div className="mt-3 flex flex-wrap items-center justify-between gap-3"><p role="status" className="text-sm text-muted-foreground">{visible.length} of {rows.length} registered assets shown · Pakistan date: {today}</p>{(search||filter!=='all')&&<Button variant="outline" onClick={()=>{setSearch('');setFilter('all');}}>Clear filters</Button>}</div>
    </div>
-   {writer&&<FacilitiesReminderCalendar rows={rows}/>}
    {!visible.length&&<p className="mt-3 text-sm">{snapshot.assets.length?'No matching assets.':'No registered assets were returned for this verified centre.'}</p>}
    <div className="mt-3 divide-y">{visible.map(({asset:a,latest,dueDate,timing})=>{
     return <article key={a.id} className="flex flex-wrap items-center justify-between gap-3 py-3"><div className="min-w-0 flex-1 break-words"><p className="font-medium">{a.asset_code} · {a.category.replace(/_/g,' ')}</p><p className="text-sm text-muted-foreground">{a.location} · {dueDate?'Inspection due '+dueDate+' ('+timingLabels[timing]+')':timingLabels[timing]}</p><p className="text-sm">{latest?'Latest recorded outcome: '+latest.outcome.replace(/_/g,' '):'No inspection recorded'}</p></div><Button variant="outline" onClick={()=>setSelected(s=>s===a.id?'':a.id)} aria-expanded={selected===a.id}>{selected===a.id?'Close history':'View history'}</Button></article>;
