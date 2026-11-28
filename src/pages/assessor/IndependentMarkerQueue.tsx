@@ -9,6 +9,7 @@ import MarkHistory from '@/components/assessment/MarkHistory';
 import FeedbackLibrary from '@/components/assessment/FeedbackLibrary';
 import EvidenceReview from '@/components/assessment/EvidenceReview';
 import {criterionComplete,feedbackPrompts,appendFeedback} from '@/lib/assessment/marking';
+import {matchesLocalSearch} from '@/lib/localSearch';
 import {useSearchParams} from 'react-router-dom';
 import CourseworkFiles from '@/components/assessment/CourseworkFiles';
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
@@ -60,7 +61,7 @@ function MarkerWorkspace({scope,latestScope,permitted}:{scope:string;latestScope
  const queueReadyRef=useRef(false),queueLoadingRef=useRef(false);
  const [queueRevision,setQueueRevision]=useState(0);
  const uncertainMarks=useRef(new Map<string,UnconfirmedMark>());
- const draftReadyRef=useRef(''),draftUncertainRef=useRef(false);
+ const draftReadyRef=useRef(''),draftUncertainRef=useRef(false),editorAttempt=useRef('');
  const markButton=useRef<HTMLButtonElement>(null),statusButton=useRef<HTMLButtonElement>(null);
  const [attempts,setAttempts]=useState<Attempt[]>([]),[briefs,setBriefs]=useState<Brief[]>([]);
  const [criteria,setCriteria]=useState<Criterion[]>([]),[drafts,setDrafts]=useState<AIDraft[]>([]);
@@ -150,7 +151,7 @@ function MarkerWorkspace({scope,latestScope,permitted}:{scope:string;latestScope
  useEffect(()=>{void load();const counter=generation;return()=>{counter.current++;};},[load]);
  const refreshQueue=()=>{
   if(!permitted||authLoading||!mounted.current||queueLoadingRef.current||operation.current||reviewRef.current)return;
-  if(dirty&&!uncertainMarks.current.has(selected)&&!window.confirm('Refresh the allocated queue and reload the stored draft? Unsaved editor changes will be discarded only after a successful refresh.'))return;
+  if(dirty&&!uncertainMarks.current.has(selected)&&!window.confirm('Refresh the allocated queue and reload the stored draft? Unsaved editor changes will be replaced only when the stored draft has been checked.'))return;
   void load();
  };
 
@@ -163,18 +164,27 @@ function MarkerWorkspace({scope,latestScope,permitted}:{scope:string;latestScope
   setDraftReady('');setDraftError('');setSavedAt('');setDraftRevision(0);setDraftUncertain(false);
   if(!queueReadyRef.current||!current?.id||!uid||!tenant||authLoading||!permitted)return;
   const retained=uncertainMarks.current.get(current.id)?.review;
-  setScores(retained?copyScores(retained.scores):{});setFeedback(retained?.feedback||'');setGuidance(retained?.guidance||'');setDirty(retained?.dirty||false);
+  const sameEditor=editorAttempt.current===target.attempt;
+  editorAttempt.current=target.attempt;
+  // Keep local edits in memory until the same attempt's saved draft is verified.
+  // A different attempt must never see the previous attempt's wording.
+  if(!sameEditor||retained){setScores(retained?copyScores(retained.scores):{});setFeedback(retained?.feedback||'');setGuidance(retained?.guidance||'');setDirty(retained?.dirty||false);}
   void Promise.resolve(db.from('uni_marking_drafts').select('criteria,feedback,guidance,revision,updated_at')
-   .eq('attempt_id',current.id).eq('marker_id',uid).eq('tenant_id',tenant).limit(1)).then(result=>{
-    if(!currentRequest())return;if(result.error)throw result.error;const draft=result.data?.[0];
-    if(draft){
-     if(!retained){setScores(draft.criteria||{});setFeedback(draft.feedback||'');setGuidance(draft.guidance||'');}
-     setDraftRevision(draft.revision);setSavedAt(draft.updated_at);
+   .eq('attempt_id',current.id).eq('marker_id',uid).eq('tenant_id',tenant).limit(2)).then(result=>{
+    if(!currentRequest())return;if(result.error)throw result.error;
+    if(!Array.isArray(result.data)||result.data.length>1)throw Error('Saved draft uniqueness could not be verified');
+    const draft=result.data[0];
+    if(result.data.length===1&&(!draft||!Number.isSafeInteger(draft.revision)||draft.revision<1||typeof draft.updated_at!=='string'||!Number.isFinite(Date.parse(draft.updated_at))))throw Error('Saved draft revision could not be verified');
+    if(!retained){
+     const content=draft?prepareDraftRestore(draft,rubric):{criteria:{},feedback:'',guidance:''};
+     if(!content)throw Error('Saved draft does not match the current rubric');
+     setScores(content.criteria);setFeedback(content.feedback);setGuidance(content.guidance);setDirty(false);
     }
+    if(draft){setDraftRevision(draft.revision);setSavedAt(draft.updated_at);}
     draftReadyRef.current=target.attempt;setDraftReady(target.attempt);
-   }).catch(()=>{if(currentRequest())setDraftError('Saved draft could not be checked. Retry before editing to avoid overwriting existing work.');});
+   }).catch(()=>{if(currentRequest())setDraftError('Saved draft could not be checked. Existing local edits are retained while editing is locked. Retry before editing to avoid overwriting existing work.');});
   return()=>{requestActive=false;};
- },[current?.id,selected,uid,tenant,authLoading,draftReload,queueRevision,currentContext,scope,permitted]);
+ },[current?.id,selected,uid,tenant,authLoading,draftReload,queueRevision,currentContext,scope,permitted,rubric]);
 
  async function saveDraft(){
   if(!current||!canEdit()||draftUncertainRef.current)return;
@@ -347,7 +357,7 @@ function MarkerWorkspace({scope,latestScope,permitted}:{scope:string;latestScope
   }finally{finish(token);}
  };
  const actionable=attempts.filter(a=>['submitted','qa_rejected'].includes(a.status));
- const visible=attempts.filter(a=>(filter==='all'||['submitted','qa_rejected'].includes(a.status))&&`${briefs.find(b=>b.id===a.brief_id)?.title||''} ${a.id}`.toLowerCase().includes(query.toLowerCase()));
+ const visible=attempts.filter(a=>(filter==='all'||['submitted','qa_rejected'].includes(a.status))&&matchesLocalSearch(`${briefs.find(b=>b.id===a.brief_id)?.title||''} ${a.id}`,query));
  const completed=rubric.filter(c=>criterionComplete(scores[c.criterion_code],Number(c.max_points))).length;
  const editingBlocked=loading||!!error||!queueReadyRef.current||!!busy||!!review||!!pendingMark;
  return <DashboardLayout title="Marking Workspace" subtitle="Mark curriculum evidence separately from the lecturer, using Omniqora only as a private assistant"><div className="min-w-0 text-base [overflow-wrap:anywhere] [&_button]:max-w-full [&_button]:whitespace-normal [&_button]:[overflow-wrap:anywhere]">
@@ -366,7 +376,7 @@ function MarkerWorkspace({scope,latestScope,permitted}:{scope:string;latestScope
   {error&&<p role="alert" className="rounded-xl border border-destructive px-[min(1rem,12px)] py-4">{error}. Try reloading. If this continues, contact your centre administrator.</p>}
   {!loading&&!error&&<div className="flex min-w-0 flex-wrap gap-5">
    <section className="min-w-0 flex-[1_1_16rem] rounded-xl border bg-card px-[min(1rem,12px)] py-4 sm:p-5"><h2 className="font-semibold">Your marking queue ({actionable.length} need action)</h2>
-    <label className="mt-3 block text-sm">Find an assessment<Input className="min-w-0 px-[min(0.75rem,12px)]" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Title or anonymised reference"/></label>
+    <label className="mt-3 block text-sm">Find an assessment<Input className="min-w-0 px-[min(0.75rem,12px)]" type="search" maxLength={120} value={query} onChange={e=>setQuery(e.target.value)} placeholder="Title or anonymised reference"/></label>
     <label className="mt-3 block text-sm">Show<select className="mt-1 min-h-11 w-full min-w-0 rounded-md border bg-background px-[min(0.75rem,12px)]" value={filter} onChange={e=>setFilter(e.target.value)}><option value="action">Needs marking</option><option value="all">All allocated submissions</option></select></label>
     <p className="mt-2 text-sm text-muted-foreground">{visible.length} matching · newest received first</p>
     <div className="mt-3 space-y-2">{visible.slice(page*25,page*25+25).map(a=><button key={a.id} disabled={!!busy||!!review} aria-pressed={selected===a.id} onClick={()=>select(a.id)} className={`w-full rounded-lg border px-[min(0.75rem,12px)] py-3 text-left ${selected===a.id?'border-primary bg-primary/5':''}`}>
