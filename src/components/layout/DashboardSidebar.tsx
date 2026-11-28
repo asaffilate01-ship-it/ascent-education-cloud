@@ -1,10 +1,11 @@
+import BrandLogo from '@/components/BrandLogo';
 import {tuitionReportsEnabled} from '@/lib/tuitionReports';
 import {matchesLocalSearch} from '@/lib/localSearch';
 import {workspacePath} from '@/lib/workspaceContext';
 import { toast } from 'sonner';
 import { useAuth, ROLE_LABELS, ROLE_HOME } from '@/contexts/AuthContext';
 import { UserRole } from '@/types/platform';
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Building2, CreditCard, Shield,
   GraduationCap, BookOpen, Video, ClipboardList, ClipboardCheck, BarChart3,
@@ -608,24 +609,13 @@ export default function DashboardSidebar({collapsed: collapsedProp, onCollapsedC
   const sidebarContent = (
     <>
       {/* Brand */}
-      <div className="flex items-center gap-3 px-4 h-14 border-b border-sidebar-border">
-        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-          isLandlord ? 'gradient-gold' : 'gradient-primary'
-        }`}>
-          {isLandlord ? (
-            <Cloud className="w-4 h-4 text-sidebar-primary-foreground" />
-          ) : (
-            <GraduationCap className="w-4 h-4 text-sidebar-primary-foreground" />
-          )}
+      <div className={`flex min-h-16 items-center gap-2 py-2 border-b border-sidebar-border ${collapsed?'justify-center px-1':'px-3'}`}>
+        <div className={collapsed?'shrink-0':'min-w-0 flex-1 space-y-1'}>
+          <Link to={ROLE_HOME[user.role]} aria-label="UniPathway dashboard home" className="flex min-w-0 items-center rounded-lg bg-white p-1.5 focus-visible:ring-2 focus-visible:ring-sidebar-ring">
+            <BrandLogo compact={collapsed} className={collapsed?'size-8':'h-9 max-w-full'}/>
+          </Link>
+          {!collapsed&&<p className="min-w-0 break-words px-1 text-xs leading-tight text-sidebar-foreground/80 font-medium">{isLandlord?'Platform Owner':ROLE_LABELS[user.role]}</p>}
         </div>
-        {!collapsed && (
-          <div className="overflow-hidden flex-1">
-            <p className="text-sm font-extrabold tracking-tight truncate">UniPathway</p>
-            <p className="text-xs text-sidebar-foreground/70 font-medium">
-              {isLandlord ? 'Platform Owner' : ROLE_LABELS[user.role]}
-            </p>
-          </div>
-        )}
         {/* Mobile close */}
         <button
           onClick={() => setMobileOpen(false)}

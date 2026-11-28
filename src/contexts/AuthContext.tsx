@@ -3,6 +3,7 @@ import { disableNativePush } from '@/lib/nativePush';
 import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { UserRole } from '@/types/platform';
+import {demoIdentityAllowed} from '@/lib/demoAccess';
 import {verifiedRoleMemberships} from '@/lib/roleMembership';
 import {INSTITUTIONAL_AUTH_ENABLED,institutionalAssurance} from '@/lib/institutionalAuth';
 import type { User, Session } from '@supabase/supabase-js';
@@ -77,6 +78,7 @@ export const ROLE_HOME: Record<UserRole, string> = {
 };
 
 async function fetchAuthUser(supaUser: User): Promise<AuthUser> {
+  if(!demoIdentityAllowed(supaUser.email))throw Error('Demonstration account requires an isolated demo project');
   // Institutional mode must not bootstrap or assign access from public signup metadata.
   if(!INSTITUTIONAL_AUTH_ENABLED){try { await (supabase.rpc as any)('ensure_my_account'); } catch { /* non-blocking */ }}
   else {

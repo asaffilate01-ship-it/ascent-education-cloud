@@ -1,11 +1,13 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { ROLE_HOME, useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import unipathwayLogo from '@/assets/unipathway-logo.png';
+import {demoIdentityAllowed,DEMO_ACCOUNT_EMAIL,isolatedDemoDeployment} from '@/lib/demoAccess';
+import WorkspaceRolePicker from '@/components/auth/WorkspaceRolePicker';
 import InstitutionalLogin from '@/components/auth/InstitutionalLogin';
 import {INSTITUTIONAL_AUTH_ENABLED} from '@/lib/institutionalAuth';
 
@@ -13,40 +15,26 @@ import {INSTITUTIONAL_AUTH_ENABLED} from '@/lib/institutionalAuth';
 
 export default function LoginPage(){return INSTITUTIONAL_AUTH_ENABLED?<InstitutionalLogin/>:<LegacyLogin/>;}
 function LegacyLogin() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(()=>isolatedDemoDeployment(window.location.hostname,import.meta.env.VITE_SUPABASE_URL,import.meta.env.VITE_UNIPATHWAY_DEMO_PROJECT_REF)?DEMO_ACCOUNT_EMAIL:'');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
-  const tapTimestamps = useRef<number[]>([]);
-  const navigate = useNavigate();
-  const { user: authUser } = useAuth();
-
-  // Navigate only once AuthContext has hydrated the signed-in user,
-  // so the role guard on the destination never bounces back to /login.
-  useEffect(() => {
-    if (!signedIn) return;
-    if (authUser) {
-      navigate(ROLE_HOME[authUser.role] || '/student', { replace: true });
-    }
-  }, [signedIn, authUser, navigate]);
-
-  const handleLogoTap = useCallback(() => {
-    const now = Date.now();
-    tapTimestamps.current = [...tapTimestamps.current.filter(t => now - t < 3000), now];
-    if (tapTimestamps.current.length >= 5) {
-      tapTimestamps.current = [];
-    }
-  }, []);
+  const submitLock=useRef(false);
+  const { user: authUser, loading: authLoading, session, logout } = useAuth();
+  const [loginError,setLoginError]=useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitLock.current||signedIn)return;
+    if(!demoIdentityAllowed(email)){setLoginError('Use the isolated platform demo to sign in with the demonstration account.');return;}
     if (!email || !password) {
       toast.error('Please enter email and password');
       return;
     }
 
-    setLoading(true);
+    submitLock.current=true;
+    setLoading(true);setLoginError('');
     try {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
@@ -58,21 +46,19 @@ function LegacyLogin() {
 
     toast.success('Signed in successfully');
 
-    if (data.user) {
-      // Navigation happens in the effect above once the user's roles are loaded.
-      setSignedIn(true);
-    } else {
-      navigate('/student');
-    }
-    } catch { toast.error('Sign-in could not be completed. Check your connection and secure device storage.'); } finally { setLoading(false); }
+    if (data.user&&data.session) {
+      setSignedIn(true);setPassword('');
+    } else setLoginError('A verified sign-in session was not returned.');
+    } catch { setLoginError('Sign-in could not be completed. Check your connection and secure device storage.'); } finally { submitLock.current=false;setLoading(false); }
   };
 
+  if(authUser&&!authLoading)return <WorkspaceRolePicker/>;
   return (
     <div className="min-h-dvh bg-background flex">
       {/* Left: Branding */}
       <div className="hidden lg:flex lg:w-1/2 gradient-primary relative flex-col justify-between p-12">
         <div>
-          <div className="flex items-center gap-3 mb-16 cursor-pointer select-none" onClick={handleLogoTap}>
+          <div className="flex items-center gap-3 mb-16">
             <div className="inline-flex items-center rounded-2xl bg-white/95 px-5 py-3 shadow-lg ring-1 ring-white/20">
               <img src={unipathwayLogo} alt="UniPathway" className="h-11 w-auto" />
             </div>
@@ -81,12 +67,12 @@ function LegacyLogin() {
             Your Gateway to Global Qualifications
           </h1>
           <p className="text-gradient-foreground/90 mt-4 text-lg max-w-md leading-relaxed">
-            Study UK-regulated diplomas online and progress to universities in the UK, Germany and beyond.
+            Explore tuition, skills, languages and qualification pathways. Progression depends on confirmed entry requirements and programme approval.
           </p>
         </div>
         <div className="space-y-4">
           {[
-            { stat: '13', label: 'Specialized Portals' },
+            { stat: '21', label: 'Role-specific workspaces' },
             { stat: '20+', label: 'Platform Modules' },
             { stat: 'UK diplomas', label: 'Accreditation Support' },
           ].map((s) => (
@@ -99,16 +85,17 @@ function LegacyLogin() {
       </div>
 
       {/* Right: Form */}
-      <div className="flex-1 flex items-center justify-center p-8 overflow-y-auto">
+      <div className="flex min-w-0 flex-1 items-center justify-center px-4 py-8 sm:p-8 overflow-y-auto">
         <div className="w-full max-w-md">
-          <div className="lg:hidden flex items-center gap-2 mb-8 cursor-pointer select-none" onClick={handleLogoTap}>
+          <div className="lg:hidden flex items-center gap-2 mb-8">
             <img src={unipathwayLogo} alt="UniPathway" className="h-10 w-auto" />
           </div>
 
           <h2 className="text-2xl font-bold mb-1">Welcome back</h2>
           <p className="text-muted-foreground text-sm mb-6">Sign in to your account to continue</p>
 
-          <form onSubmit={handleLogin} className="space-y-4">
+          {loginError&&<p role="alert" className="mb-4 text-sm text-destructive">{loginError}</p>}
+          {(signedIn||session)?<section className="space-y-3 rounded-xl border p-4"><p role="status">{authLoading?'Verifying your assigned roles…':'Your assigned access is not confirmed. No dashboard has been opened.'}</p><Button variant="outline" onClick={()=>{void logout().then(()=>setSignedIn(false)).catch(()=>setLoginError('Sign-out could not be confirmed.'));}}>Sign out and retry</Button></section>:<form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label htmlFor="login-email" className="text-label mb-1.5 block">Email</label>
               <input
@@ -141,8 +128,9 @@ function LegacyLogin() {
               {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               Sign In <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
-          </form>
+          </form>}
 
+          <p className="mt-5 text-center text-sm"><Link to="/demo" className="font-semibold text-primary underline underline-offset-4">Explore the role-based demo</Link></p>
           <p className="text-center text-xs text-muted-foreground mt-6">
             Don't have an account? <Link to="/register" className="text-primary hover:underline font-medium">Register</Link>
           </p>

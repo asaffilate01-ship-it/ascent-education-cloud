@@ -25,3 +25,24 @@ it('removes stale public canonical and marks private routes noindex',()=>{
  document.head.innerHTML='<link rel="canonical" href="https://unipathway.pk/uk"><meta name="robots" content="index, follow">';
  render(<MemoryRouter initialEntries={['/student']}><RouteIndexing/></MemoryRouter>);expect(document.querySelector('link[rel="canonical"]')).toBeNull();expect(document.querySelector('meta[name="robots"]')).toHaveAttribute('content','noindex, follow');
 });
+
+it('uses correctly sized branded PNG icons and separates maskable artwork',()=>{
+ for(const [path,size] of [['public/pwa-192x192.png',192],['public/pwa-512x512.png',512],['public/pwa-maskable-512x512.png',512]] as const){
+  const icon=readFileSync(path);expect(icon.subarray(0,8).toString('hex')).toBe('89504e470d0a1a0a');expect(icon.readUInt32BE(16)).toBe(size);expect(icon.readUInt32BE(20)).toBe(size);
+ }
+ const manifest=readFileSync('vite.config.ts','utf8');
+ expect(manifest).toContain('pwa-maskable-512x512.png?v=2');
+ expect(readFileSync('index.html','utf8')).toContain('favicon.png?v=2');
+});
+it('publishes route-specific keywords and accurate default social image metadata',()=>{
+ render(<MemoryRouter initialEntries={['/']}><Seo title="Old" description="Old"/></MemoryRouter>);
+ expect(document.querySelector('meta[name="keywords"]')).toHaveAttribute('content',publicSeo['/'].keywords.join(', '));
+ expect(document.querySelector('meta[property="og:image:width"]')).toHaveAttribute('content','1200');
+ expect(document.querySelector('meta[property="og:image:height"]')).toHaveAttribute('content','630');
+ expect(document.querySelector('meta[property="og:image:alt"]')).toHaveAttribute('content',expect.stringContaining('UniPathway'));
+});
+it('removes public route metadata and canonical on the private demo entry',()=>{
+ document.head.innerHTML='<link rel="canonical" href="https://unipathway.pk/"><meta name="keywords" content="stale"><meta property="og:title" content="Old public page">';
+ render(<MemoryRouter initialEntries={['/demo']}><RouteIndexing/></MemoryRouter>);
+ expect(document.querySelector('link[rel="canonical"]')).toBeNull();expect(document.querySelector('meta[name="robots"]')).toHaveAttribute('content','noindex, follow');expect(document.querySelector('meta[name="keywords"]')).toHaveAttribute('content','');expect(document.title).toContain('demo');
+});

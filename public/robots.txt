@@ -12,6 +12,20 @@ Disallow: /reset-password$
 Disallow: /reset-password/
 
 # Private application areas
+Disallow: /office$
+Disallow: /office/
+Disallow: /assessor$
+Disallow: /assessor/
+Disallow: /eqa$
+Disallow: /eqa/
+Disallow: /health$
+Disallow: /health/
+Disallow: /security$
+Disallow: /security/
+Disallow: /workspace$
+Disallow: /workspace/
+Disallow: /classroom$
+Disallow: /classroom/
 Disallow: /landlord$
 Disallow: /landlord/
 Disallow: /director$
