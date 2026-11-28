@@ -6,6 +6,7 @@ import {institutionalEmail} from '@/lib/institutionalAuth';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Eye,EyeOff,ShieldCheck} from 'lucide-react';
+import {demoIdentityAllowed,DEMO_ACCOUNT_EMAIL,isolatedDemoDeployment} from '@/lib/demoAccess';
 import WorkspaceRolePicker from '@/components/auth/WorkspaceRolePicker';
 import BrandLogo from '@/components/BrandLogo';
 
@@ -13,7 +14,7 @@ type Factor={id:string;friendly_name?:string;status:string;factor_type:string};
 type Setup={id:string;qr:string;secret:string};
 export default function InstitutionalLogin(){
  const {user,session,loading:authLoading}=useAuth();
- const [email,setEmail]=useState(''),[password,setPassword]=useState(''),[show,setShow]=useState(false);
+ const [email,setEmail]=useState(()=>isolatedDemoDeployment(window.location.hostname,import.meta.env.VITE_SUPABASE_URL,import.meta.env.VITE_UNIPATHWAY_DEMO_PROJECT_REF)?DEMO_ACCOUNT_EMAIL:''),[password,setPassword]=useState(''),[show,setShow]=useState(false);
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[factors,setFactors]=useState<Factor[]|null>(null);
  const [setup,setSetup]=useState<Setup|null>(null),[factorId,setFactorId]=useState(''),[code,setCode]=useState('');
  const [reload,setReload]=useState(0),[assured,setAssured]=useState(false);
@@ -49,6 +50,7 @@ export default function InstitutionalLogin(){
   finally{lock.current=false;if(alive.current)setBusy(false);}
  }
  function signIn(e:FormEvent){e.preventDefault();const address=institutionalEmail(email);
+  if(!demoIdentityAllowed(address)){setError('Use the isolated platform demo to sign in with the demonstration account.');return;}
   if(!address){setError('Use your assigned @unipathway.pk email address.');return;}
   if(!password){setError('Enter your password.');return;}
   void run(async()=>{
