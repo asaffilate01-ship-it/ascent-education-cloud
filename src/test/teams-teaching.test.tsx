@@ -1,7 +1,7 @@
 import {cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
 import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 import {MemoryRouter} from 'react-router-dom';
-import {arrangeTeachingGroups,isTeamsMeetingUrl} from '@/lib/teamsTeaching';
+import {arrangeTeachingGroups,isTeamsMeetingUrl,readTeachingPlan,teachingPlanIssue,moveTeachingLearner} from '@/lib/teamsTeaching';
 import {TeachingDesk} from '@/pages/classroom/TeamsTeachingDesk';
 const mocks=vi.hoisted(()=>({rpc:vi.fn(),from:vi.fn()}));
 vi.mock('@/lib/db',()=>({db:mocks}));
@@ -49,4 +49,43 @@ it('retires the alternate provider token endpoint without signing caller moderat
  const {readFileSync}=await import('node:fs');
  const source=readFileSync('supabase/functions/jaas-token/index.ts','utf8');
  expect(source).toContain('status:410');expect(source).not.toContain('SignJWT');expect(source).not.toContain('JAAS_API_KEY');
+});
+
+it('rejects duplicate or private invitation projections and preserves stale assignments for repair',()=>{
+ const group={name:'Pair 1',task:'Discuss',members:['a','removed']};
+ const parsed=readTeachingPlan({...plan,groups:[group]},true);
+ expect(parsed.groups).toEqual([group]);
+ expect(teachingPlanIssue(parsed.groups,roster,'',15)).toContain('no longer eligible');
+ expect(teachingPlanIssue(moveTeachingLearner(parsed.groups,'removed',-1),roster,'',15)).toBe('');
+ expect(()=>readTeachingPlan({...plan,roster:[roster[0],roster[0]]},true)).toThrow();
+ expect(()=>readTeachingPlan({...plan,groups:[group,{...group,name:'Pair 2'}]},true)).toThrow();
+ expect(()=>readTeachingPlan(plan,false)).toThrow();
+ expect(()=>readTeachingPlan({...plan,can_manage:false,roster:[],groups:[group]},false)).toThrow();
+ expect(readTeachingPlan({...plan,can_manage:false,roster:[],groups:[{name:'Pair 1',task:'Discuss'}]},false).groups).toEqual([{name:'Pair 1',task:'Discuss',members:[]}]);
+});
+it('moves an assigned learner without duplicates and retains an unchanged group',()=>{
+ const groups=arrangeTeachingGroups(roster,2);
+ expect(moveTeachingLearner(groups,'a',0)).toEqual(groups);
+ expect(moveTeachingLearner(groups,'a',1).map(g=>g.members)).toEqual([['b'],['c','a']]);
+ expect(moveTeachingLearner(groups,'c',-1).map(g=>g.members)).toEqual([['a','b']]);
+ expect(teachingPlanIssue(groups,roster,'',0)).toContain('1–180');
+ expect(teachingPlanIssue([groups[0],{...groups[1],name:groups[0].name}],roster,'',15)).toContain('unique name');
+});
+it('blocks a malformed invitation plan before private session or board reads',async()=>{
+ mocks.rpc.mockResolvedValueOnce({data:{...plan,roster:[roster[0],roster[0]]}});
+ mount();await screen.findByRole('alert');
+ expect(mocks.from).not.toHaveBeenCalled();
+});
+it('blocks invalid activity minutes and requires reconciliation after an unconfirmed write',async()=>{
+ mount();fireEvent.click(await screen.findByText('Generate pairs'));
+ fireEvent.change(screen.getByLabelText('Activity minutes'),{target:{value:'0'}});
+ expect(screen.getByRole('button',{name:'Save teaching plan'})).toBeDisabled();
+ fireEvent.change(screen.getByLabelText('Activity minutes'),{target:{value:'15'}});
+ mocks.rpc.mockResolvedValueOnce({data:9});
+ fireEvent.click(screen.getByRole('button',{name:'Save teaching plan'}));
+ expect(await screen.findByRole('alert')).toHaveTextContent('Refresh to reconcile');
+ expect(screen.getByRole('button',{name:'Save teaching plan'})).toBeDisabled();
+ expect(screen.getByRole('button',{name:'Copy plan for Teams setup'})).toBeDisabled();
+ expect(screen.getByLabelText('Class instructions')).toBeDisabled();
+ expect(screen.getByText('Unsaved plan changes')).toBeInTheDocument();
 });
