@@ -1,18 +1,18 @@
 import {useEffect,useRef,useState,type FormEvent} from 'react';
-import {Link,useNavigate} from 'react-router-dom';
+import {Link} from 'react-router-dom';
 import {supabase} from '@/integrations/supabase/client';
-import {ROLE_HOME,useAuth} from '@/contexts/AuthContext';
+import {useAuth} from '@/contexts/AuthContext';
 import {institutionalEmail} from '@/lib/institutionalAuth';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Eye,EyeOff,ShieldCheck} from 'lucide-react';
+import WorkspaceRolePicker from '@/components/auth/WorkspaceRolePicker';
 import BrandLogo from '@/components/BrandLogo';
 
 type Factor={id:string;friendly_name?:string;status:string;factor_type:string};
 type Setup={id:string;qr:string;secret:string};
 export default function InstitutionalLogin(){
  const {user,session,loading:authLoading}=useAuth();
- const navigate=useNavigate();
  const [email,setEmail]=useState(''),[password,setPassword]=useState(''),[show,setShow]=useState(false);
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[factors,setFactors]=useState<Factor[]|null>(null);
  const [setup,setSetup]=useState<Setup|null>(null),[factorId,setFactorId]=useState(''),[code,setCode]=useState('');
@@ -20,7 +20,6 @@ export default function InstitutionalLogin(){
  const lock=useRef(false),generation=useRef(0),alive=useRef(false);
  const principal=session?.user.id;
  useEffect(()=>{alive.current=true;return()=>{alive.current=false;generation.current++;};},[]);
- useEffect(()=>{if(user&&!authLoading)navigate(ROLE_HOME[user.role]||'/',{replace:true});},[user,authLoading,navigate]);
  useEffect(()=>{
   const token=++generation.current;
   setFactors(null);setSetup(null);setFactorId('');setCode('');setAssured(false);setError('');
@@ -77,6 +76,7 @@ export default function InstitutionalLogin(){
   });
  }
  const signOut=()=>void run(async()=>{const r=await supabase.auth.signOut({scope:'local'});if(r.error)throw Error();setPassword('');});
+ if(user&&!authLoading)return <WorkspaceRolePicker/>;
  return <div className="min-h-dvh bg-background flex flex-col lg:flex-row">
   <aside className="hidden lg:flex lg:w-5/12 gradient-primary flex-col justify-between p-12 text-gradient-foreground">
    <div><span className="inline-flex rounded-xl bg-white p-3"><BrandLogo className="h-11"/></span><h1 className="mt-12 text-4xl font-bold">Your secure learning workspace.</h1><p className="mt-4 max-w-md leading-relaxed">Assigned institutional accounts, centre-specific permissions and authenticator verification protect our learners and staff.</p></div><p className="text-sm">UniPathway Education · Pakistan</p>
@@ -100,6 +100,7 @@ export default function InstitutionalLogin(){
      </form>}
      <div className="flex flex-wrap gap-2"><Button type="button" variant="outline" disabled={busy} onClick={signOut}>Sign out</Button>{!factors&&error&&<Button type="button" variant="outline" disabled={busy} onClick={()=>setReload(n=>n+1)}>Retry verification setup</Button>}</div>
     </>}
+    {!principal&&<Link to="/demo" className="inline-flex min-h-11 items-center text-sm font-semibold underline">Explore the role-based demo</Link>}
     <p className="text-sm text-muted-foreground">Need an account or help recovering access? <Link to="/contact" className="font-medium underline">Contact UniPathway</Link>. Do not send passwords or verification codes.</p><Link to="/" className="inline-flex min-h-11 items-center text-sm underline">Back to UniPathway</Link>
    </section>
   </main>
