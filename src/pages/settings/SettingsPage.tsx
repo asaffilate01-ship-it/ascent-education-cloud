@@ -1,3 +1,4 @@
+import {demoAccountActionsBlocked} from '@/lib/demoAccess';
 import { disableNativePush } from '@/lib/nativePush';
 import NativeNotifications from '@/components/native/NativeNotifications';
 import AccountOperations from '@/components/admin/AccountOperations';
@@ -41,6 +42,7 @@ const PREF_CATEGORIES = [
 
 export default function SettingsPage() {
   const { user, refreshProfile, logout } = useAuth();
+  const sharedDemo=demoAccountActionsBlocked(user?.email,window.location.hostname);
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('profile');
   const [profileData, setProfileData] = useState({
@@ -140,6 +142,7 @@ export default function SettingsPage() {
   }, [user]);
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if(sharedDemo){toast.error('The shared demonstration identity is managed by the demo administrator.');return;}
     const file = e.target.files?.[0];
     if (!file || !user) return;
     setUploadingAvatar(true);
@@ -170,6 +173,7 @@ export default function SettingsPage() {
   ];
 
   const handleSaveProfile = async () => {
+    if(sharedDemo){toast.error('The shared demonstration identity is managed by the demo administrator.');return;}
     if (!user) return;
     setSavingProfile(true);
     const { error } = await supabase
@@ -190,6 +194,7 @@ export default function SettingsPage() {
   };
 
   const handleChangePassword = async () => {
+    if(sharedDemo){toast.error('The shared demonstration identity is managed by the demo administrator.');return;}
     if (passwords.new !== passwords.confirm) {
       toast.error('Passwords do not match');
       return;
@@ -212,6 +217,7 @@ export default function SettingsPage() {
 
   // ─── 2FA handlers ───
   const handleEnrollMfa = async () => {
+    if(sharedDemo){toast.error('The shared demonstration identity is managed by the demo administrator.');return;}
     setMfaEnrolling(true);
     const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'Authenticator App' });
     setMfaEnrolling(false);
@@ -226,6 +232,7 @@ export default function SettingsPage() {
   };
 
   const handleVerifyMfa = async () => {
+    if(sharedDemo){toast.error('The shared demonstration identity is managed by the demo administrator.');return;}
     if (!mfaFactorId || mfaCode.length !== 6) return;
     setMfaVerifying(true);
     const { data: challenge, error: cErr } = await supabase.auth.mfa.challenge({ factorId: mfaFactorId });
@@ -247,6 +254,7 @@ export default function SettingsPage() {
   };
 
   const handleUnenrollMfa = async () => {
+    if(sharedDemo){toast.error('The shared demonstration identity is managed by the demo administrator.');return;}
     if (!mfaFactorId) return;
     setMfaUnenrolling(true);
     const { error } = await supabase.auth.mfa.unenroll({ factorId: mfaFactorId });
@@ -316,6 +324,7 @@ export default function SettingsPage() {
 
   return (
     <DashboardLayout title="Settings" subtitle="Platform configuration and preferences">
+      {sharedDemo&&<p role="status" className="mb-4 rounded-xl border bg-card p-3 text-sm">Shared demonstration account: profile, password, authenticator and account deletion controls are reserved for the demo administrator.</p>}
       <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
         {/* Sidebar */}
         <div className="lg:w-52 shrink-0">
@@ -353,7 +362,7 @@ export default function SettingsPage() {
                   <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
                   <button
                     onClick={() => avatarInputRef.current?.click()}
-                    disabled={uploadingAvatar}
+                    disabled={uploadingAvatar||sharedDemo}
                     className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-default"
                   >
                     {uploadingAvatar ? <Loader2 className="w-5 h-5 animate-spin text-primary-foreground" /> : <Upload className="w-5 h-5 text-primary-foreground" />}
@@ -379,7 +388,7 @@ export default function SettingsPage() {
                   <label className="text-label mb-1.5 block">Phone / WhatsApp</label>
                   <input value={profileData.phone} onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))} placeholder="+92 300 1234567" className={inputClass} />
                 </div>
-                <Button onClick={handleSaveProfile} disabled={savingProfile}>
+                <Button onClick={handleSaveProfile} disabled={savingProfile||sharedDemo}>
                   {savingProfile && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
                   Save Profile
                 </Button>
@@ -475,7 +484,7 @@ export default function SettingsPage() {
                   <div className="space-y-3">
                     <input type="password" placeholder="New password" value={passwords.new} onChange={(e) => setPasswords(p => ({ ...p, new: e.target.value }))} className={inputClass} />
                     <input type="password" placeholder="Confirm new password" value={passwords.confirm} onChange={(e) => setPasswords(p => ({ ...p, confirm: e.target.value }))} className={inputClass} />
-                    <Button onClick={handleChangePassword} disabled={changingPassword} size="sm">
+                    <Button onClick={handleChangePassword} disabled={changingPassword||sharedDemo} size="sm">
                       {changingPassword && <Loader2 className="w-3 h-3 animate-spin mr-1" />}
                       Update Password
                     </Button>
@@ -497,12 +506,12 @@ export default function SettingsPage() {
                       </div>
                     </div>
                     {mfaEnabled ? (
-                      <Button variant="outline" size="sm" onClick={handleUnenrollMfa} disabled={mfaUnenrolling} className="text-destructive border-destructive/30">
+                      <Button variant="outline" size="sm" onClick={handleUnenrollMfa} disabled={mfaUnenrolling||sharedDemo} className="text-destructive border-destructive/30">
                         {mfaUnenrolling ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <X className="w-3 h-3 mr-1" />}
                         Disable
                       </Button>
                     ) : (
-                      <Button variant="outline" size="sm" onClick={handleEnrollMfa} disabled={mfaEnrolling}>
+                      <Button variant="outline" size="sm" onClick={handleEnrollMfa} disabled={mfaEnrolling||sharedDemo}>
                         {mfaEnrolling ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <QrCode className="w-3 h-3 mr-1" />}
                         Enable
                       </Button>
@@ -743,7 +752,7 @@ export default function SettingsPage() {
                     <p className="text-xs text-muted-foreground">Permanently delete your account and all data</p>
                   </div>
                   {!showDeleteConfirm ? (
-                    <Button variant="outline" size="sm" className="text-xs text-destructive border-destructive/30" onClick={() => setShowDeleteConfirm(true)}>
+                    <Button variant="outline" size="sm" className="text-xs text-destructive border-destructive/30" disabled={sharedDemo} onClick={() => setShowDeleteConfirm(true)}>
                       <Trash2 className="w-3 h-3 mr-1" /> Request
                     </Button>
                   ) : (
@@ -753,9 +762,9 @@ export default function SettingsPage() {
                         variant="destructive"
                         size="sm"
                         className="text-xs"
-                        disabled={deletingAccount}
+                        disabled={deletingAccount||sharedDemo}
                         onClick={async () => {
-                          if (!user) return;
+                          if (!user||sharedDemo) return;
                           setDeletingAccount(true);
                           try { await disableNativePush(); } catch { toast.error('Reconnect and disable device notifications before deleting your account.'); setDeletingAccount(false); return; }
                           const { error } = await supabase.rpc('delete_user_account', { _user_id: user.id });
@@ -869,7 +878,7 @@ export default function SettingsPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setMfaDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleVerifyMfa} disabled={mfaVerifying || mfaCode.length !== 6}>
+            <Button onClick={handleVerifyMfa} disabled={sharedDemo||mfaVerifying || mfaCode.length !== 6}>
               {mfaVerifying ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Check className="w-4 h-4 mr-2" />}
               Verify & Enable
             </Button>
