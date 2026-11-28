@@ -9,7 +9,12 @@ const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const useTechLabModuleIds=()=>useContext(TechLabContext);
 export default function TechLabAccessGate({children}:{children:React.ReactNode}){
  const {user}=useAuth();
+ return <ScopedTechLabAccess key={JSON.stringify([user?.id,user?.tenantId,user?.role,user?.roles])}>{children}</ScopedTechLabAccess>;
+}
+function ScopedTechLabAccess({children}:{children:React.ReactNode}){
+ const {user}=useAuth();
  const [modules,setModules]=useState<readonly string[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState('');
+ const [revision,setRevision]=useState(0);
  const permitted=!!user?.id&&!!user?.tenantId&&user.role==='student'&&user.roles?.includes('student');
  useEffect(()=>{
   let active=true;setModules([]);setError('');setLoading(true);
@@ -25,7 +30,7 @@ export default function TechLabAccessGate({children}:{children:React.ReactNode})
    finally{if(active)setLoading(false);}
   })();
   return()=>{active=false;};
- },[user?.id,user?.tenantId,user?.role,user?.roles?.join(','),permitted]);
+ },[user?.id,user?.tenantId,user?.role,user?.roles?.join(','),permitted,revision]);
  if(!permitted)return <main role="alert" className="mx-auto max-w-2xl space-y-4 p-6">Your current role and centre are not authorised to access student technology labs. <Link className="underline" to="/student">Return to your dashboard</Link>.</main>;
  if(!enabled)return <main role="status" className="mx-auto max-w-2xl space-y-4 p-6">
   <h1 className="text-xl font-semibold">Technology lab access is being verified</h1>
@@ -38,6 +43,7 @@ export default function TechLabAccessGate({children}:{children:React.ReactNode})
  if(error||!modules.length)return <main role="alert" className="mx-auto max-w-2xl space-y-4 p-6">
   <h1 className="text-xl font-semibold">No current technology lab authorisation</h1>
   <p>{error||'Your active programmes do not currently include an approved, individually granted technology lab. Other students may access their standard course content without the tech lab.'}</p>
+  {error&&<Button variant="outline" onClick={()=>{setModules([]);setLoading(true);setError('');setRevision(n=>n+1);}}>Retry lab authorisation</Button>}
   <p>Meanwhile, the browser Tech Lab and Language Lab are open to every student, in class or at home.</p>
   <div className="flex flex-wrap gap-3"><Button asChild><Link to="/labs/tech">Open the Tech Lab</Link></Button><Button asChild variant="outline"><Link to="/labs/language">Open the Language Lab</Link></Button><Button asChild variant="outline"><Link to="/student/courses">My course modules</Link></Button></div>
  </main>;
