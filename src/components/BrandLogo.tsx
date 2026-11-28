@@ -9,5 +9,5 @@ export default function BrandLogo({ compact = false, className = '' }: BrandLogo
       <img src="/brand/unipathway-mark.svg" alt="UniPathway" className={`inline-block aspect-square object-contain ${className}`} />
     );
   }
-  return <img src={logo} alt="UniPathway" className={`h-auto w-auto max-w-full object-contain ${className}`} />;
+  return <img src={logo} alt="UniPathway" className={`w-auto max-w-full object-contain ${className}`} />;
 }
