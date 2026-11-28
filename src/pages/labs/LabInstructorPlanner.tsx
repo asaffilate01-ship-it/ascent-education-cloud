@@ -59,7 +59,7 @@ function ScopedPlanner(){
   setModules([]);setTemplates([]);setRuns([]);setClasses([]);setRequests([]);setEvidence([]);setHelp([]);
   try{
    if(!authorised||!userId||!tenant)throw Error('A verified active teaching role and centre are required.');
-   const all=verifyLabRows<Module>(await readLabPages(()=>{let q=db.from('modules').select('id,title,lecturer_id,tenant_id').eq('tenant_id',tenant);return isManager?q:q.eq('lecturer_id',userId);},current),tenant);
+   const all=verifyLabRows<Module>(await readLabPages(()=>{const q=db.from('modules').select('id,title,lecturer_id,tenant_id').eq('tenant_id',tenant);return isManager?q:q.eq('lecturer_id',userId);},current),tenant);
    if(all.some(m=>typeof m.title!=='string'||(!isManager&&m.lecturer_id!==userId)))throw Error('Module scope could not be verified');
    const allowed=all.sort((a,b)=>a.title.localeCompare(b.title)),ids=allowed.map(m=>m.id);
    const [rawTemplates,rawClasses]=await Promise.all([
