@@ -28,3 +28,29 @@ export function labAttemptSummary(rows:readonly {template_id:string;status:strin
  const matching=rows.filter(row=>row.template_id===templateId);
  return {used:matching.filter(row=>!['failed','cancelled'].includes(row.status)).length,active:matching.some(row=>blockedLabRequestStates.has(row.status))};
 }
+
+type PageQuery={order:(column:string)=>{range:(from:number,to:number)=>PromiseLike<{data:unknown;error:unknown}>}};
+/** Bounded full read, with a final empty page allowed at the exact limit.
+ * Reject any incomplete response instead of presenting truncated allowances. */
+export async function readLabPages(makeQuery:()=>PageQuery,current:()=>boolean,key='id'):Promise<unknown[]>{
+ const rows:unknown[]=[];
+ for(let offset=0;offset<=10000;offset+=250){
+  if(!current())throw Error('Lab read superseded');
+  const result=await makeQuery().order(key).range(offset,offset+249);
+  if(!current())throw Error('Lab read superseded');
+  if(result.error||!Array.isArray(result.data)||result.data.length>250||rows.length+result.data.length>10000)throw Error('Lab records could not be fully verified');
+  rows.push(...result.data);
+  if(result.data.length<250)return rows;
+ }
+ throw Error('Lab record limit reached');
+}
+export async function readLabIdBatches(ids:readonly string[],makeQuery:(ids:string[])=>PageQuery,current:()=>boolean,key='id'):Promise<unknown[]>{
+ const unique=[...new Set(ids)];
+ if(unique.length>10000||unique.some(id=>!nonempty(id)))throw Error('Invalid lab record references');
+ const rows:unknown[]=[];
+ for(let i=0;i<unique.length;i+=50){
+  rows.push(...await readLabPages(()=>makeQuery(unique.slice(i,i+50)),current,key));
+  if(rows.length>10000)throw Error('Lab record limit reached');
+ }
+ return rows;
+}
