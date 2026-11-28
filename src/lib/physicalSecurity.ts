@@ -46,3 +46,20 @@ export function validateVisitorReceipt(data:unknown,tenant:string,status:'in_bui
  return row as {id:string;tenant_id:string;status:string;pass_number:string};
 }
 export const displayTime=(date:string|null)=>date&&Number.isFinite(Date.parse(date))?new Date(date).toLocaleString('en-PK',{timeZone:'Asia/Karachi'}):'Not recorded';
+
+/** Reject inconsistent secure projections before displaying totals. The key is
+ * the stable identifier emitted by the server for each record kind. */
+export function verifySecurityPage<T extends {tenant_id:string}>(rows:readonly T[],centre:string,key:string,seen:Set<string>,eventId?:string):T[]{
+ const verified=requireCentreRows(rows,centre);
+ const keys=new Set<string>();
+ for(const row of verified){
+  const value=(row as Record<string,unknown>)[key];
+  if(typeof value!=='string'||!value.trim()||value.length>256||seen.has(value)||keys.has(value))
+   throw Error('Duplicate or missing secure record identity');
+  if(eventId&&(row as Record<string,unknown>).muster_event_id!==eventId)
+   throw Error('Unexpected emergency event record');
+  keys.add(value);
+ }
+ for(const id of keys)seen.add(id);
+ return verified;
+}
