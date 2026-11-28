@@ -31,7 +31,7 @@ function Workspace({uid,tenant,role}:{uid:string;tenant:string;role:RateRole}){
   try{await action();}catch{if(active.current)setError(failure);}finally{lock.current=false;if(active.current)setBusy(false);}
  }
  function clearSnapshot(){setRegister(null);setPreview(null);setReviewId('');setNote('');setPage(0);setPreviewPage(0);}
- async function load(){if(!rateDate(month+'-01'))return;clearSnapshot();await run(async()=>{
+ async function load(){if(!enabled||lock.current||!rateDate(month+'-01'))return;clearSnapshot();await run(async()=>{
   const r=await db.rpc('get_unipathway_teaching_rates',{p_month:month+'-01',p_role:role});if(r.error)throw Error();const value=readRateRegister(r.data,tenant,role,month);
   if(active.current){setRegister(value);if(!value.roster.some(x=>x.id===lecturer))setLecturer('');}
  },'Rate register could not be verified. No rates are shown; check centre activation or retry.');}
@@ -52,7 +52,7 @@ function Workspace({uid,tenant,role}:{uid:string;tenant:string;role:RateRole}){
    if(active.current){clearSnapshot();setNotice('Independent finance review recorded. Reload the month for the confirmed rate and gross preview.');}
   },'Review not confirmed. Your decision is retained; retry exactly or reload the register.');
  }
- async function calculate(){if(role!=='finance_officer'||!rateDate(month+'-01')||month>today.slice(0,7))return;setPreview(null);setPreviewPage(0);await run(async()=>{
+ async function calculate(){if(!enabled||lock.current||role!=='finance_officer'||!rateDate(month+'-01')||month>today.slice(0,7))return;setPreview(null);setPreviewPage(0);await run(async()=>{
   const r=await db.rpc('preview_unipathway_teaching_remuneration',{p_month:month+'-01'});if(r.error)throw Error();const value=readRatePreview(r.data,tenant,month);if(active.current)setPreview(value);
  },'Approved remuneration could not be reconciled. No amounts are shown; retry after checking the source records.');}
  const totals=preview?previewTotals(preview.rows):null,pages=Math.max(1,Math.ceil((register?.rates.length||0)/10)),previewPages=Math.max(1,Math.ceil((preview?.rows.length||0)/10));

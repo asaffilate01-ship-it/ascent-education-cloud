@@ -1,3 +1,4 @@
+import {matchesLocalSearch} from '@/lib/localSearch';
 import {rateDate,readRatePreview,previewTotals,type RateRole,type RatePreview} from '@/lib/teachingRateRegister';
 type Summary=RatePreview&{source_count:number;rejected_claims:number;unresolved_claims:number;gross_paisa:number};
 type Status='prepared'|'reviewed'|'rejected';
@@ -37,4 +38,9 @@ export function readGrossMonth(raw:unknown,tenant:string,role:RateRole,month:str
  const seen=new Set<string>();
  for(const h of raw.rejected_history){if(!obj(h)||!uuid(h.id)||h.status!=='rejected'||!time(h.prepared_at)||!time(h.reviewed_at)||!note(h.review_note)||!digest(h.fingerprint)||seen.has(h.id)||h.id===batch?.id)throw Error('Invalid rejected history');seen.add(h.id);}
  return {summary,fingerprint:raw.fingerprint,ready:raw.ready,contains_own:raw.contains_own,batch,batch_current:raw.batch_current as boolean|null,rejected_history:raw.rejected_history as GrossMonth['rejected_history']};
+}
+
+/** Presentation-only filters for the exact verified current or stored evidence. */
+export function filterGrossEvidence(rows:readonly RatePreview['rows'][number][],search:string,unresolvedOnly:boolean){
+ return rows.filter(r=>(!unresolvedOnly||r.resolution!=='calculated')&&matchesLocalSearch([r.lecturer_name,r.lecturer_id,r.agreement_id||''].join(' '),search));
 }
