@@ -9,6 +9,7 @@ import { Eye, EyeOff, ArrowRight, CheckCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import BrandLogo from '@/components/BrandLogo';
 import {INSTITUTIONAL_AUTH_ENABLED} from '@/lib/institutionalAuth';
+import {demoAccountActionsBlocked} from '@/lib/demoAccess';
 
 const ACCOUNT_TYPES = [
   { key: 'student', label: 'Student', desc: 'I want to study', role: 'student' },
@@ -16,6 +17,7 @@ const ACCOUNT_TYPES = [
 ] as const;
 
 export default function RegisterPage(){
+ if(demoAccountActionsBlocked(null,window.location.hostname))return <main className="min-h-dvh grid place-items-center p-5"><section className="w-full max-w-md space-y-4 rounded-xl border bg-card p-5"><BrandLogo className="h-10"/><h1 className="text-xl font-bold">Demo registration is unavailable</h1><p>The fictional demonstration account is managed by the authorised demo administrator.</p><Button asChild><Link to="/login">Return to demo sign-in</Link></Button></section></main>;
  if(INSTITUTIONAL_AUTH_ENABLED)return <main className="min-h-dvh bg-background flex items-center justify-center px-4 py-10"><section className="w-full max-w-md space-y-5"><BrandLogo className="h-10"/><h1 className="text-2xl font-bold">Request information from UniPathway</h1><p className="text-sm text-muted-foreground">Public registration is closed. Admissions and authorised administrators issue institutional accounts after approval. You can enquire with your personal email without creating an account.</p><Button asChild className="w-full min-h-11"><Link to="/contact">Contact admissions</Link></Button><Button asChild variant="outline" className="w-full min-h-11"><Link to="/login">Sign in with assigned account</Link></Button></section></main>;
  return <LegacyRegistration/>;
 }
@@ -35,6 +37,7 @@ function LegacyRegistration() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    if(demoAccountActionsBlocked(formData.email,window.location.hostname)){toast.error('The demonstration identity cannot be registered here.');return;}
     if (!formData.name || !formData.email || !formData.password) {
       toast.error('Please fill in all required fields');
       return;

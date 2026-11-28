@@ -4,6 +4,7 @@ import {ArrowRight,Search,ShieldCheck} from 'lucide-react';
 import {ROLE_HOME,ROLE_LABELS,useAuth} from '@/contexts/AuthContext';
 import {KNOWN_UNIPATHWAY_ROLES} from '@/lib/roleMembership';
 import {matchesLocalSearch} from '@/lib/localSearch';
+import {workspaceRoleFamilies,rolesInWorkspaceFamily} from '@/lib/workspaceRoleCatalog';
 import type {UserRole} from '@/types/platform';
 import BrandLogo from '@/components/BrandLogo';
 import {Button} from '@/components/ui/button';
@@ -42,24 +43,24 @@ export default function WorkspaceRolePicker(){
  return <Picker key={JSON.stringify([identity,user?.tenantId,roles])} roles={roles} activeRole={user?.role} loading={!!loading} hint={params.get('role')} onRole={setRole} onLogout={logout} navigate={navigate}/>;
 }
 function Picker({roles,activeRole,loading,hint,onRole,onLogout,navigate}:{roles:UserRole[];activeRole?:UserRole;loading:boolean;hint:string|null;onRole:(r:UserRole)=>void;onLogout:()=>Promise<void>;navigate:ReturnType<typeof useNavigate>}){
- const [search,setSearch]=useState('');
+ const [search,setSearch]=useState(''),[family,setFamily]=useState('all');
  const [requested,setRequested]=useState<UserRole|null>(null);
  const [selected,setSelected]=useState<UserRole|null>(()=>roles.find(r=>r===hint)||null);
  const [signingOut,setSigningOut]=useState(false),[error,setError]=useState('');
  const selectedRole=selected&&roles.includes(selected)?selected:null;
- const filtered=roles.filter(role=>matchesLocalSearch(ROLE_LABELS[role]+' '+roleDescriptions[role],search));
+ const filtered=rolesInWorkspaceFamily(roles,family).filter(role=>matchesLocalSearch(ROLE_LABELS[role]+' '+roleDescriptions[role],search));
  useEffect(()=>{
-  if(loading||!activeRole||!roles.includes(activeRole))return;
+  if(loading||signingOut||!activeRole||!roles.includes(activeRole))return;
   const next=requested||(roles.length===1?roles[0]:null);
   if(next&&roles.includes(next)&&next===activeRole)navigate(ROLE_HOME[next],{replace:true});
- },[activeRole,loading,requested,roles,navigate]);
+ },[activeRole,loading,requested,roles,navigate,signingOut]);
  function open(){
-  if(loading||requested||!selectedRole||!roles.includes(selectedRole))return;
-  setRequested(selectedRole);onRole(selectedRole);
+  if(loading||signingOut||requested||!selectedRole||!roles.includes(selectedRole))return;
+  setError('');setRequested(selectedRole);try{onRole(selectedRole);}catch{setRequested(null);setError('The selected role could not be opened. Please retry.');}
  }
  return <main className="min-h-dvh bg-secondary/30 px-4 py-8 sm:px-8 lg:py-12">
   <div className="mx-auto max-w-5xl space-y-5">
-   <header className="flex flex-wrap items-center justify-between gap-3"><span className="inline-flex rounded-xl bg-white p-3 shadow-sm"><BrandLogo className="h-9 max-w-full sm:h-11"/></span><Button variant="outline" disabled={signingOut} onClick={()=>{setSigningOut(true);setError('');void onLogout().then(()=>navigate('/',{replace:true})).catch(()=>{setError('Sign-out could not be confirmed. Please retry.');setSigningOut(false);});}}>Sign out</Button></header>
+   <header className="flex flex-wrap items-center justify-between gap-3"><span className="inline-flex rounded-xl bg-white p-3 shadow-sm"><BrandLogo className="h-9 max-w-full sm:h-11"/></span><Button variant="outline" disabled={signingOut||!!requested} onClick={()=>{setSigningOut(true);setError('');void onLogout().then(()=>navigate('/',{replace:true})).catch(()=>{setError('Sign-out could not be confirmed. Please retry.');setSigningOut(false);});}}>Sign out</Button></header>
    <section className="rounded-2xl border bg-card p-4 sm:p-6">
     <p className="flex items-center gap-2 text-sm font-semibold text-primary"><ShieldCheck className="size-5" aria-hidden="true"/> Verified workspace access</p>
     <h1 className="mt-3 text-2xl font-bold tracking-tight sm:text-3xl">Choose your workspace</h1>
@@ -67,10 +68,13 @@ function Picker({roles,activeRole,loading,hint,onRole,onLogout,navigate}:{roles:
     {error&&<p role="alert" className="mt-3 text-sm text-destructive">{error}</p>}
     {loading?<p role="status" className="mt-4">Verifying assigned access…</p>:!activeRole||!roles.includes(activeRole)?<p role="alert" className="mt-4">No verified workspace is available. Contact the authorised administrator.</p>:<>
      {roles.length>1&&<label className="mt-5 block max-w-xl text-sm font-medium">Find a role<span className="relative mt-1 block"><Search aria-hidden="true" className="absolute left-3 top-3 size-4 text-muted-foreground"/><input type="search" maxLength={120} value={search} onChange={e=>setSearch(e.target.value)} className="min-h-11 w-full rounded-lg border bg-background pl-9 pr-3" placeholder="Student, finance, lecturer…"/></span></label>}
-     <p className="mt-3 text-sm text-muted-foreground">{filtered.length} of {roles.length} assigned roles</p>
-     <fieldset className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" disabled={!!requested}><legend className="sr-only">Select a verified role</legend>{filtered.map(role=><label key={role} className={'flex min-w-0 cursor-pointer items-start gap-3 rounded-xl border p-4 focus-within:ring-2 focus-within:ring-ring '+(selectedRole===role?'border-primary bg-primary/5':'bg-background hover:bg-accent/40')}><input type="radio" name="workspace-role" value={role} checked={selectedRole===role} onChange={()=>setSelected(role)} className="mt-1 size-4 shrink-0 accent-primary"/><span className="min-w-0"><span className="block font-semibold">{ROLE_LABELS[role]}</span><span className="mt-1 block text-sm text-muted-foreground">{roleDescriptions[role]}</span></span></label>)}</fieldset>
+     {hint&&!roles.some(role=>role===hint)&&<p role="status" className="mt-3 rounded-lg border p-3 text-sm">The requested role is not assigned to this account. Choose an available workspace.</p>}
+     <p className="mt-3 text-sm font-medium">Current workspace: {ROLE_LABELS[activeRole]}</p>
+     {roles.length>1&&<label className="mt-3 block max-w-xl text-sm font-medium">Workspace area<select value={family} disabled={!!requested||signingOut} onChange={e=>setFamily(e.target.value)} className="mt-1 min-h-11 w-full rounded-lg border bg-background px-3 py-2"><option value="all">All assigned workspaces</option>{workspaceRoleFamilies.filter(group=>rolesInWorkspaceFamily(roles,group.id).length>0).map(group=><option key={group.id} value={group.id}>{group.label}</option>)}</select></label>}
+     <p role="status" aria-label="Assigned role results" className="mt-3 text-sm text-muted-foreground">{filtered.length} of {roles.length} assigned roles</p>
+     <fieldset className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" disabled={!!requested||signingOut}><legend className="sr-only">Select a verified role</legend>{filtered.map(role=><label key={role} className={'flex min-w-0 cursor-pointer items-start gap-3 rounded-xl border p-4 focus-within:ring-2 focus-within:ring-ring '+(selectedRole===role?'border-primary bg-primary/5':'bg-background hover:bg-accent/40')}><input type="radio" name="workspace-role" value={role} checked={selectedRole===role} onChange={()=>setSelected(role)} className="mt-1 size-4 shrink-0 accent-primary"/><span className="min-w-0"><span className="block font-semibold">{ROLE_LABELS[role]}</span><span className="mt-1 block text-sm text-muted-foreground">{roleDescriptions[role]}</span></span></label>)}</fieldset>
      {!filtered.length&&<p className="mt-3 text-sm">No assigned roles match your search.</p>}
-     <div className="mt-5 flex flex-wrap items-center gap-3"><Button className="min-h-11" disabled={!selectedRole||!!requested} onClick={open}>{requested?'Opening workspace…':'Open selected workspace'}<ArrowRight className="ml-2 size-4" aria-hidden="true"/></Button>{search&&<Button variant="outline" onClick={()=>setSearch('')}>Clear search</Button>}</div>
+     <div className="mt-5 flex flex-wrap items-center gap-3"><Button className="min-h-11" disabled={!selectedRole||!!requested||signingOut} onClick={open}>{requested?'Opening workspace…':'Open selected workspace'}<ArrowRight className="ml-2 size-4" aria-hidden="true"/></Button>{(search||family!=='all')&&<Button variant="outline" disabled={!!requested||signingOut} onClick={()=>{setSearch('');setFamily('all');}}>Clear filters</Button>}</div>
     </>}
    </section>
    <Link to="/" className="inline-flex min-h-11 items-center text-sm underline">Back to UniPathway</Link>

@@ -4,7 +4,9 @@ import {cleanup,fireEvent,render,screen} from '@testing-library/react';
 import {MemoryRouter,Routes,Route} from 'react-router-dom';
 import type {UserRole} from '@/types/platform';
 import {KNOWN_UNIPATHWAY_ROLES} from '@/lib/roleMembership';
-import {demoLoginUrl,isDemoAccount,isolatedDemoDeployment} from '@/lib/demoAccess';
+import {workspaceRoleFamilies,rolesInWorkspaceFamily} from '@/lib/workspaceRoleCatalog';
+import {canRegisterAppWorker} from '@/lib/appServiceWorker';
+import {demoLoginUrl,isDemoAccount,isolatedDemoDeployment,demoRolePreference,signInBoundary,demoDeploymentBlocked,demoAccountActionsBlocked} from '@/lib/demoAccess';
 import WorkspaceRolePicker,{verifiedWorkspaceChoices} from '@/components/auth/WorkspaceRolePicker';
 import DemoPage from '@/pages/auth/DemoPage';
 
@@ -58,4 +60,54 @@ it('blocks demonstration identity from the known production project and other or
  expect(isolatedDemoDeployment('unipathway.pk','https://'+ref+'.supabase.co',ref)).toBe(false);
  expect(isolatedDemoDeployment('demo.unipathway.pk','https://sthrhcmjypwuorlbscfw.supabase.co','sthrhcmjypwuorlbscfw')).toBe(false);
  expect(isolatedDemoDeployment('demo.unipathway.pk','https://wrong.supabase.co',ref)).toBe(false);
+});
+
+describe('role categories, deep links and shared demo boundaries',()=>{
+ it('covers every configured role exactly once without creating additional memberships',()=>{
+  const all=workspaceRoleFamilies.flatMap(group=>[...group.roles]);
+  expect(all).toHaveLength(21);
+  expect(new Set(all).size).toBe(21);
+  expect([...all].sort()).toEqual([...KNOWN_UNIPATHWAY_ROLES].sort());
+  expect(rolesInWorkspaceFamily(['lecturer','student'],'operations')).toEqual([]);
+  expect(rolesInWorkspaceFamily(['student','finance_officer'],'operations')).toEqual(['finance_officer']);
+  expect(rolesInWorkspaceFamily(['student'],'invalid')).toEqual([]);
+ });
+ it('preserves selected role in the demo link and filters all 21 entries by functional area',()=>{
+  vi.stubEnv('VITE_UNIPATHWAY_DEMO_ORIGIN','https://demo.unipathway.pk');
+  render(<MemoryRouter initialEntries={['/demo?role=finance_officer']}><DemoPage/></MemoryRouter>);
+  expect(screen.getByRole('radio',{name:/finance_officer/})).toBeChecked();
+  expect(screen.getByRole('link',{name:'Continue to demo'})).toHaveAttribute('href','https://demo.unipathway.pk/login?role=finance_officer&demo=1');
+  fireEvent.change(screen.getByLabelText('Workspace area'),{target:{value:'partners'}});
+  expect(screen.getAllByRole('radio')).toHaveLength(4);
+  fireEvent.click(screen.getByRole('radio',{name:/parent_guardian/}));
+  expect(screen.getByRole('link',{name:'Continue to demo'})).toHaveAttribute('href','https://demo.unipathway.pk/login?role=parent_guardian&demo=1');
+  fireEvent.click(screen.getByRole('button',{name:'Clear filters'}));
+  expect(screen.getAllByRole('radio')).toHaveLength(21);
+  expect(screen.getByRole('radio',{name:/parent_guardian/})).toBeChecked();
+ });
+ it('accepts every known role preference and rejects unrecognised or injected role values',()=>{
+  for(const role of KNOWN_UNIPATHWAY_ROLES){
+   expect(demoRolePreference(role)).toBe(role);
+   expect(new URL(demoLoginUrl('https://demo.unipathway.pk',role)!).searchParams.get('role')).toBe(role);
+  }
+  for(const invalid of ['','owner','../landlord','student&role=superadmin','https://example.com']){
+   expect(demoRolePreference(invalid)).toBeNull();
+   expect(demoLoginUrl('https://demo.unipathway.pk',invalid)).toBeNull();
+  }
+ });
+ it('blocks misconfigured demo startup, real credentials on the demo host and shared account mutations',()=>{
+  const ref='abcdefghijklmnopqrst',url='https://'+ref+'.supabase.co';
+  expect(demoDeploymentBlocked('demo.unipathway.pk',url,ref)).toBe(false);
+  expect(demoDeploymentBlocked('demo.unipathway.pk','https://sthrhcmjypwuorlbscfw.supabase.co',ref)).toBe(true);
+  expect(demoDeploymentBlocked('unipathway.pk',undefined,undefined)).toBe(false);
+  expect(signInBoundary('demo@unipathway.pk','demo.unipathway.pk',url,ref)).toBe(true);
+  expect(signInBoundary('real@unipathway.pk','demo.unipathway.pk',url,ref)).toBe(false);
+  expect(signInBoundary('demo@unipathway.pk','unipathway.pk',url,ref)).toBe(false);
+  expect(signInBoundary('real@unipathway.pk','unipathway.pk',url,ref)).toBe(true);
+  expect(demoAccountActionsBlocked('real@unipathway.pk','demo.unipathway.pk')).toBe(true);
+  expect(demoAccountActionsBlocked(' DEMO@unipathway.pk ','unipathway.pk')).toBe(true);
+  expect(demoAccountActionsBlocked('real@unipathway.pk','unipathway.pk')).toBe(false);
+  expect(canRegisterAppWorker({production:true,framed:false,hostname:'demo.unipathway.pk',search:''})).toBe(false);
+  expect(canRegisterAppWorker({production:true,framed:false,hostname:'unipathway.pk',search:''})).toBe(true);
+ });
 });

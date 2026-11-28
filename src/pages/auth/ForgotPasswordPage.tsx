@@ -7,6 +7,7 @@ import { ArrowLeft, Mail, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import unipathwayLogo from '@/assets/unipathway-logo.png';
 import {INSTITUTIONAL_AUTH_ENABLED,institutionalEmail} from '@/lib/institutionalAuth';
+import {demoAccountActionsBlocked} from '@/lib/demoAccess';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -16,6 +17,7 @@ export default function ForgotPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
+    if(demoAccountActionsBlocked(email,window.location.hostname)){toast.error('The demonstration credentials are managed by the demo administrator.');return;}
     const address=INSTITUTIONAL_AUTH_ENABLED?institutionalEmail(email):email.trim();
     if(!address){toast.error('Use your assigned @unipathway.pk email address.');return;}
 
@@ -32,6 +34,7 @@ export default function ForgotPasswordPage() {
     setSent(true);
   };
 
+  if(demoAccountActionsBlocked(null,window.location.hostname))return <main className="min-h-dvh grid place-items-center p-5"><section className="max-w-md space-y-4 rounded-xl border bg-card p-5"><h1 className="text-xl font-bold">Demo password recovery is unavailable</h1><p>Contact the authorised demo administrator for access.</p><Button asChild><Link to="/login">Return to sign-in</Link></Button></section></main>;
   return (
     <div className="min-h-dvh bg-background flex items-center justify-center p-8">
       <div className="w-full max-w-md">

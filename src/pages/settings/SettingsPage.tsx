@@ -1,10 +1,14 @@
+import SettingsOperationalPanels from '@/components/settings/SettingsOperationalPanels';
+import {settingsCapabilities} from '@/lib/settingsAccess';
+import {INSTITUTIONAL_AUTH_ENABLED,INSTITUTIONAL_MIN_PASSWORD} from '@/lib/institutionalAuth';
+import {demoAccountActionsBlocked} from '@/lib/demoAccess';
 import { disableNativePush } from '@/lib/nativePush';
 import NativeNotifications from '@/components/native/NativeNotifications';
 import AccountOperations from '@/components/admin/AccountOperations';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { Settings, Bell, Lock, Globe, Palette, Users, Shield, Database, Mail, Smartphone, Loader2, Camera, Upload, Download, Trash2, QrCode, LogOut, Check, X, ExternalLink, Plug } from 'lucide-react';
+import { Settings, Bell, Lock, Globe, Palette, Users, Shield, Database, Mail, Smartphone, Loader2, Camera, Upload, Download, Trash2, QrCode, LogOut, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -39,8 +43,14 @@ const PREF_CATEGORIES = [
   { key: 'messages', label: 'Messages', desc: 'New messages from staff' },
 ] as const;
 
-export default function SettingsPage() {
+export default function SettingsPage(){
+  const {user}=useAuth();
+  return <ScopedSettings key={JSON.stringify([user?.id,user?.tenantId,user?.role,user?.roles])}/>;
+}
+function ScopedSettings() {
   const { user, refreshProfile, logout } = useAuth();
+  const access=settingsCapabilities(user);
+  const sharedDemo=demoAccountActionsBlocked(user?.email,window.location.hostname);
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('profile');
   const [profileData, setProfileData] = useState({
@@ -69,79 +79,66 @@ export default function SettingsPage() {
   const [mfaUnenrolling, setMfaUnenrolling] = useState(false);
 
   // ─── Session state ───
-  const [currentSession, setCurrentSession] = useState<{ created_at?: string; user_agent?: string } | null>(null);
+  const [currentSession,setCurrentSession]=useState<{expiresAt:string|null}|null>(null);
+  const [sessionError,setSessionError]=useState(false),[mfaKnown,setMfaKnown]=useState(false);
+  const [profileLoading,setProfileLoading]=useState(true),[profileError,setProfileError]=useState('');
+  const [notifError,setNotifError]=useState(''),[reload,setReload]=useState(0);
+  const active=useRef(true);
+  useEffect(()=>{active.current=true;return()=>{active.current=false;};},[]);
 
   // ─── Notification preferences state ───
   const [notifPrefs, setNotifPrefs] = useState<NotifPrefs>(DEFAULT_PREFS);
   const [notifLoading, setNotifLoading] = useState(true);
   const [notifSaving, setNotifSaving] = useState(false);
 
-  // ─── Branding state ───
-  const [brandData, setBrandData] = useState({ brand_name: '', primary_color: '#8B1538', accent_color: '#D4A853', logo_url: '' });
-  const [brandLoading, setBrandLoading] = useState(true);
-  const [brandSaving, setBrandSaving] = useState(false);
-  const brandLogoRef = useRef<HTMLInputElement>(null);
-
-  // ─── Load session, MFA status, notif prefs, branding on mount ───
-  useEffect(() => {
-    if (!user) return;
-
-    // Session info
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) {
-        setCurrentSession({
-          created_at: data.session.expires_at ? new Date((data.session.expires_at - 3600) * 1000).toLocaleString() : undefined,
-        });
-      }
-    });
-
-    // MFA status
-    supabase.auth.mfa.listFactors().then(({ data }) => {
-      const totp = data?.totp?.find(f => f.status === 'verified');
-      setMfaEnabled(!!totp);
-      if (totp) setMfaFactorId(totp.id);
-    });
-
-    // Notification preferences
-    supabase
-      .from('notification_preferences')
-      .select('*')
-      .eq('user_id', user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data) {
-          const { id, user_id, created_at, updated_at, ...prefs } = data as any;
-          setNotifPrefs({ ...DEFAULT_PREFS, ...prefs });
+  // Read only the verified identity's records. Failed reads never become defaults.
+  useEffect(()=>{
+    let live=true;
+    if(!user?.id){setProfileLoading(false);setNotifLoading(false);return()=>{live=false;};}
+    const actorId=user.id;
+    setProfileLoading(true);setProfileError('');setNotifLoading(true);setNotifError('');
+    setCurrentSession(null);setSessionError(false);setMfaKnown(false);setMfaEnabled(false);setMfaFactorId(null);
+    void supabase.auth.getSession().then(({data,error})=>{
+      if(!live)return;
+      if(error||data.session?.user.id!==actorId){setSessionError(true);return;}
+      const expires=data.session.expires_at;
+      setCurrentSession({expiresAt:typeof expires==='number'&&Number.isFinite(expires)?new Date(expires*1000).toLocaleString():null});
+    }).catch(()=>{if(live)setSessionError(true);});
+    void supabase.auth.mfa.listFactors().then(({data,error})=>{
+      if(!live||error||!data||!Array.isArray(data.totp))return;
+      const totp=data.totp.find(f=>f.status==='verified');setMfaKnown(true);setMfaEnabled(!!totp);setMfaFactorId(totp?.id||null);
+    }).catch(()=>{});
+    void(async()=>{
+      try{
+        const {data,error}=await supabase.from('profiles').select('user_id,full_name,phone').eq('user_id',actorId).maybeSingle();
+        if(!live)return;
+        if(error||!data||data.user_id!==actorId||typeof data.full_name!=='string'||!(data.phone===null||typeof data.phone==='string'))throw Error('Profile unavailable');
+        setProfileData({full_name:data.full_name,email:user.email,phone:data.phone||''});
+      }catch{if(live)setProfileError('Profile could not be verified. Retry before editing.');}
+      finally{if(live)setProfileLoading(false);}
+    })();
+    void(async()=>{
+      try{
+        const {data,error}=await supabase.from('notification_preferences').select('*').eq('user_id',actorId).maybeSingle();
+        if(!live)return;
+        if(error||(data&&data.user_id!==actorId))throw Error('Preferences unavailable');
+        const prefs={...DEFAULT_PREFS};
+        if(data)for(const key of Object.keys(prefs) as (keyof NotifPrefs)[]){
+          const value=(data as unknown as Record<string,unknown>)[key];
+          if(typeof value!=='boolean')throw Error('Unverified preference');
+          prefs[key]=value;
         }
-        setNotifLoading(false);
-      });
-
-    // Branding (for centre_director / superadmin)
-    if (user.tenantId) {
-      supabase
-        .from('tenants')
-        .select('name, brand_name, primary_color, accent_color, logo_url')
-        .eq('id', user.tenantId)
-        .maybeSingle()
-        .then(({ data }) => {
-          if (data) {
-            setBrandData({
-              brand_name: (data as any).brand_name || (data as any).name || '',
-              primary_color: (data as any).primary_color || '#8B1538',
-              accent_color: (data as any).accent_color || '#D4A853',
-              logo_url: (data as any).logo_url || '',
-            });
-          }
-          setBrandLoading(false);
-        });
-    } else {
-      setBrandLoading(false);
-    }
-  }, [user]);
+        setNotifPrefs(prefs);
+      }catch{if(live)setNotifError('Notification preferences could not be verified. Retry before editing.');}
+      finally{if(live)setNotifLoading(false);}
+    })();
+    return()=>{live=false;};
+  },[user?.id,user?.email,reload]);
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if(sharedDemo){toast.error('The shared demonstration identity is managed by the demo administrator.');return;}
     const file = e.target.files?.[0];
-    if (!file || !user) return;
+    if (!file || !user||profileLoading||profileError||uploadingAvatar) return;
     setUploadingAvatar(true);
     const path = `${user.id}/${Date.now()}_${file.name}`;
     const { error: uploadErr } = await supabase.storage.from('avatars').upload(path, file, { upsert: true });
@@ -151,10 +148,12 @@ export default function SettingsPage() {
       return;
     }
     const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path);
-    await supabase.from('profiles').update({ avatar_url: urlData.publicUrl }).eq('user_id', user.id);
-    await refreshProfile();
+    const receipt=await supabase.from('profiles').update({avatar_url:urlData.publicUrl}).eq('user_id',user.id).select('user_id,avatar_url').maybeSingle();
+    if(!active.current)return;
     setUploadingAvatar(false);
-    toast.success('Avatar updated');
+    if(receipt.error||receipt.data?.user_id!==user.id||receipt.data.avatar_url!==urlData.publicUrl){toast.error('Avatar upload completed but profile update could not be verified.');return;}
+    await refreshProfile();
+    if(active.current)toast.success('Avatar updated');
   };
 
   const sections = [
@@ -167,35 +166,32 @@ export default function SettingsPage() {
     { id: 'integrations', label: 'Integrations', icon: Globe },
     { id: 'privacy', label: 'Privacy & GDPR', icon: Shield },
     { id: 'data', label: 'Data & Backup', icon: Database },
-  ];
+  ].filter(section=>section.id==='branding'?access.branding:section.id==='integrations'?access.leadership:section.id==='users'?access.users:section.id==='data'?access.data:true);
 
   const handleSaveProfile = async () => {
-    if (!user) return;
+    if(sharedDemo||!user||profileLoading||profileError||savingProfile)return;
+    const name=profileData.full_name.trim(),phone=profileData.phone.trim();
+    if(!name||name.length>160||phone.length>40){toast.error('Enter a valid name and phone number.');return;}
     setSavingProfile(true);
-    const { error } = await supabase
-      .from('profiles')
-      .update({
-        full_name: profileData.full_name,
-        phone: profileData.phone || null,
-      })
-      .eq('user_id', user.id);
-    setSavingProfile(false);
-
-    if (error) {
-      toast.error('Failed to update profile');
-      return;
-    }
-    await refreshProfile();
-    toast.success('Profile updated successfully');
+    try{
+      const {data,error}=await supabase.from('profiles').update({full_name:name,phone:phone||null}).eq('user_id',user.id).select('user_id,full_name,phone').maybeSingle();
+      if(!active.current)return;
+      if(error||data?.user_id!==user.id||data.full_name!==name||data.phone!==(phone||null))throw Error('Unconfirmed profile update');
+      await refreshProfile();
+      if(active.current)toast.success('Profile update verified');
+    }catch{if(active.current)toast.error('Profile update could not be verified. Refresh before retrying.');}
+    finally{if(active.current)setSavingProfile(false);}
   };
 
   const handleChangePassword = async () => {
+    if(sharedDemo){toast.error('The shared demonstration identity is managed by the demo administrator.');return;}
     if (passwords.new !== passwords.confirm) {
       toast.error('Passwords do not match');
       return;
     }
-    if (passwords.new.length < 8) {
-      toast.error('Password must be at least 8 characters');
+    const minimum=INSTITUTIONAL_AUTH_ENABLED?INSTITUTIONAL_MIN_PASSWORD:8;
+    if (passwords.new.length < minimum) {
+      toast.error('Password must be at least '+minimum+' characters');
       return;
     }
     setChangingPassword(true);
@@ -212,6 +208,8 @@ export default function SettingsPage() {
 
   // ─── 2FA handlers ───
   const handleEnrollMfa = async () => {
+    if(sharedDemo){toast.error('The shared demonstration identity is managed by the demo administrator.');return;}
+    if(!mfaKnown||mfaEnabled||mfaEnrolling)return;
     setMfaEnrolling(true);
     const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'Authenticator App' });
     setMfaEnrolling(false);
@@ -226,6 +224,7 @@ export default function SettingsPage() {
   };
 
   const handleVerifyMfa = async () => {
+    if(sharedDemo){toast.error('The shared demonstration identity is managed by the demo administrator.');return;}
     if (!mfaFactorId || mfaCode.length !== 6) return;
     setMfaVerifying(true);
     const { data: challenge, error: cErr } = await supabase.auth.mfa.challenge({ factorId: mfaFactorId });
@@ -247,7 +246,9 @@ export default function SettingsPage() {
   };
 
   const handleUnenrollMfa = async () => {
-    if (!mfaFactorId) return;
+    if(sharedDemo){toast.error('The shared demonstration identity is managed by the demo administrator.');return;}
+    if(INSTITUTIONAL_AUTH_ENABLED){toast.error('Institutional authenticator changes require authorised recovery.');return;}
+    if (!mfaKnown||!mfaFactorId) return;
     setMfaUnenrolling(true);
     const { error } = await supabase.auth.mfa.unenroll({ factorId: mfaFactorId });
     setMfaUnenrolling(false);
@@ -262,60 +263,24 @@ export default function SettingsPage() {
 
   // ─── Notification save ───
   const handleSaveNotifPrefs = async () => {
-    if (!user) return;
+    if(!user||sharedDemo||notifLoading||notifError||notifSaving)return;
     setNotifSaving(true);
-    const payload = { ...notifPrefs, user_id: user.id, updated_at: new Date().toISOString() };
-    const { error } = await supabase
-      .from('notification_preferences')
-      .upsert(payload, { onConflict: 'user_id' });
-    setNotifSaving(false);
-    if (error) {
-      toast.error('Failed to save preferences');
-      return;
-    }
-    toast.success('Notification preferences saved');
+    const payload={...notifPrefs,user_id:user.id,updated_at:new Date().toISOString()};
+    try{
+      const {data,error}=await supabase.from('notification_preferences').upsert(payload,{onConflict:'user_id'}).select('*').maybeSingle();
+      if(!active.current)return;
+      if(error||data?.user_id!==user.id||(Object.keys(notifPrefs) as (keyof NotifPrefs)[]).some(key=>(data as unknown as Record<string,unknown>)[key]!==notifPrefs[key]))throw Error('Unconfirmed preference update');
+      toast.success('Notification preferences verified');
+    }catch{if(active.current){setNotifError('Save could not be verified. Refresh the recorded preferences before retrying.');}}
+    finally{if(active.current)setNotifSaving(false);}
   };
-
-  const toggleNotifPref = (key: string) => {
-    setNotifPrefs(prev => ({ ...prev, [key]: !(prev as any)[key] }));
-  };
-
-  // ─── Branding save ───
-  const handleSaveBranding = async () => {
-    if (!user?.tenantId) return;
-    setBrandSaving(true);
-    const { error } = await supabase
-      .from('tenants')
-      .update({
-        brand_name: brandData.brand_name,
-        primary_color: brandData.primary_color,
-        accent_color: brandData.accent_color,
-        logo_url: brandData.logo_url,
-      })
-      .eq('id', user.tenantId);
-    setBrandSaving(false);
-    if (error) {
-      toast.error('Failed to save branding');
-      return;
-    }
-    toast.success('Branding updated successfully');
-  };
-
-  const handleBrandLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user?.tenantId) return;
-    const path = `${user.tenantId}/${Date.now()}_${file.name}`;
-    const { error } = await supabase.storage.from('avatars').upload(path, file, { upsert: true });
-    if (error) { toast.error('Upload failed'); return; }
-    const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path);
-    setBrandData(prev => ({ ...prev, logo_url: urlData.publicUrl }));
-    toast.success('Logo uploaded — save to apply');
-  };
+  const toggleNotifPref=(key:keyof NotifPrefs)=>{if(!sharedDemo&&!notifError&&!notifLoading&&!notifSaving)setNotifPrefs(prev=>({...prev,[key]:!prev[key]}));};
 
   const inputClass = 'w-full bg-secondary text-sm px-3 py-2.5 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 transition-all';
 
   return (
     <DashboardLayout title="Settings" subtitle="Platform configuration and preferences">
+      {sharedDemo&&<p role="status" className="mb-4 rounded-xl border bg-card p-3 text-sm">Shared demonstration account: profile, password, authenticator and account deletion controls are reserved for the demo administrator.</p>}
       <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
         {/* Sidebar */}
         <div className="lg:w-52 shrink-0">
@@ -324,7 +289,8 @@ export default function SettingsPage() {
               <button
                 key={s.id}
                 onClick={() => setActiveSection(s.id)}
-                className={`flex items-center gap-2 px-3 py-2 lg:py-2.5 rounded-lg text-sm transition-default text-left whitespace-nowrap ${
+                aria-pressed={activeSection===s.id}
+                className={`flex min-h-11 items-center gap-2 px-3 py-2 lg:py-2.5 rounded-lg text-sm transition-default text-left whitespace-nowrap ${
                   activeSection === s.id ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-secondary'
                 }`}
               >
@@ -336,11 +302,12 @@ export default function SettingsPage() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 surface-card p-6">
+        <div className="min-w-0 flex-1 surface-card p-3 sm:p-6">
           {/* ─── PROFILE ─── */}
           {activeSection === 'profile' && (
             <div className="max-w-lg">
               <h3 className="text-lg font-bold mb-4">My Profile</h3>
+              {profileLoading&&<p role="status" className="mb-3">Verifying profile…</p>}{profileError&&<div role="alert" className="mb-3 text-sm text-destructive">{profileError} <Button variant="outline" onClick={()=>setReload(n=>n+1)}>Refresh settings</Button></div>}
               <div className="flex items-center gap-4 mb-6">
                 <div className="relative group">
                   {user?.avatarUrl ? (
@@ -353,7 +320,7 @@ export default function SettingsPage() {
                   <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
                   <button
                     onClick={() => avatarInputRef.current?.click()}
-                    disabled={uploadingAvatar}
+                    disabled={uploadingAvatar||sharedDemo||profileLoading||!!profileError}
                     className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-default"
                   >
                     {uploadingAvatar ? <Loader2 className="w-5 h-5 animate-spin text-primary-foreground" /> : <Upload className="w-5 h-5 text-primary-foreground" />}
@@ -368,7 +335,7 @@ export default function SettingsPage() {
               <div className="space-y-4">
                 <div>
                   <label className="text-label mb-1.5 block">Full Name</label>
-                  <input value={profileData.full_name} onChange={(e) => setProfileData(prev => ({ ...prev, full_name: e.target.value }))} className={inputClass} />
+                  <input aria-label="Full name" disabled={sharedDemo||profileLoading||!!profileError||savingProfile} maxLength={160} value={profileData.full_name} onChange={(e) => setProfileData(prev => ({ ...prev, full_name: e.target.value }))} className={inputClass} />
                 </div>
                 <div>
                   <label className="text-label mb-1.5 block">Email</label>
@@ -377,9 +344,9 @@ export default function SettingsPage() {
                 </div>
                 <div>
                   <label className="text-label mb-1.5 block">Phone / WhatsApp</label>
-                  <input value={profileData.phone} onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))} placeholder="+92 300 1234567" className={inputClass} />
+                  <input aria-label="Phone / WhatsApp" disabled={sharedDemo||profileLoading||!!profileError||savingProfile} maxLength={40} value={profileData.phone} onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))} placeholder="+92 300 1234567" className={inputClass} />
                 </div>
-                <Button onClick={handleSaveProfile} disabled={savingProfile}>
+                <Button onClick={handleSaveProfile} disabled={savingProfile||sharedDemo||profileLoading||!!profileError}>
                   {savingProfile && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
                   Save Profile
                 </Button>
@@ -387,45 +354,13 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {/* ─── GENERAL ─── */}
-          {activeSection === 'general' && (
-            <div className="max-w-lg">
-              <h3 className="text-lg font-bold mb-4">General Settings</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-label mb-1.5 block">Centre Name</label>
-                  <input defaultValue="UniPathway Lahore" className={inputClass} />
-                </div>
-                <div>
-                  <label className="text-label mb-1.5 block">Contact Email</label>
-                  <input defaultValue="admin@unipathway.pk" className={inputClass} />
-                </div>
-                <div>
-                  <label className="text-label mb-1.5 block">Timezone</label>
-                  <select className={inputClass}>
-                    <option>Asia/Karachi (PKT, UTC+5)</option>
-                    <option>Europe/London (GMT/BST)</option>
-                    <option>America/Toronto (EST)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-label mb-1.5 block">Default Language</label>
-                  <select className={inputClass}>
-                    <option>English (UK)</option>
-                    <option>Urdu</option>
-                    <option>Arabic</option>
-                  </select>
-                </div>
-                <Button>Save Changes</Button>
-              </div>
-            </div>
-          )}
+          {activeSection==='general'&&<SettingsOperationalPanels area="general"/>}
 
           {/* ─── NOTIFICATIONS (persisted) ─── */}
           {activeSection === 'notifications' && (
             <div className="max-w-lg">
-              <NativeNotifications /><h3 className="text-lg font-bold mb-4">Notification Preferences</h3>
-              {notifLoading ? (
+              {!sharedDemo&&<NativeNotifications/>}<h3 className="text-lg font-bold mb-4">Notification Preferences</h3>
+              {notifError?<div role="alert" className="space-y-2 text-sm text-destructive"><p>{notifError}</p><Button variant="outline" onClick={()=>setReload(n=>n+1)}>Refresh preferences</Button></div>:notifLoading ? (
                 <div className="flex items-center gap-2 py-8 text-muted-foreground text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Loading…</div>
               ) : (
                 <div className="space-y-4">
@@ -443,7 +378,10 @@ export default function SettingsPage() {
                             <button
                               key={channel}
                               onClick={() => toggleNotifPref(prefKey)}
-                              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-default ${
+                              disabled={sharedDemo||notifSaving}
+                              aria-label={`${cat.label} ${channel}`}
+                              aria-pressed={notifPrefs[prefKey]}
+                              className={`min-w-11 min-h-11 rounded-lg flex items-center justify-center transition-default ${
                                 notifPrefs[prefKey] ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'
                               }`}
                               title={`${channel} ${notifPrefs[prefKey] ? 'on' : 'off'}`}
@@ -455,7 +393,7 @@ export default function SettingsPage() {
                       </div>
                     </div>
                   ))}
-                  <Button onClick={handleSaveNotifPrefs} disabled={notifSaving}>
+                  <Button onClick={handleSaveNotifPrefs} disabled={notifSaving||sharedDemo}>
                     {notifSaving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
                     Save Preferences
                   </Button>
@@ -475,7 +413,7 @@ export default function SettingsPage() {
                   <div className="space-y-3">
                     <input type="password" placeholder="New password" value={passwords.new} onChange={(e) => setPasswords(p => ({ ...p, new: e.target.value }))} className={inputClass} />
                     <input type="password" placeholder="Confirm new password" value={passwords.confirm} onChange={(e) => setPasswords(p => ({ ...p, confirm: e.target.value }))} className={inputClass} />
-                    <Button onClick={handleChangePassword} disabled={changingPassword} size="sm">
+                    <Button onClick={handleChangePassword} disabled={changingPassword||sharedDemo} size="sm">
                       {changingPassword && <Loader2 className="w-3 h-3 animate-spin mr-1" />}
                       Update Password
                     </Button>
@@ -492,17 +430,17 @@ export default function SettingsPage() {
                       <div>
                         <p className="text-sm font-medium">Two-Factor Authentication</p>
                         <p className="text-xs text-muted-foreground">
-                          {mfaEnabled ? 'Authenticator app enabled' : 'Add an extra layer of security'}
+                          {!mfaKnown?'Authenticator status could not be verified':mfaEnabled?'Authenticator app enabled':'No verified authenticator recorded'}
                         </p>
                       </div>
                     </div>
                     {mfaEnabled ? (
-                      <Button variant="outline" size="sm" onClick={handleUnenrollMfa} disabled={mfaUnenrolling} className="text-destructive border-destructive/30">
+                      <Button variant="outline" size="sm" onClick={handleUnenrollMfa} disabled={mfaUnenrolling||sharedDemo||!mfaKnown||INSTITUTIONAL_AUTH_ENABLED} className="text-destructive border-destructive/30">
                         {mfaUnenrolling ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <X className="w-3 h-3 mr-1" />}
                         Disable
                       </Button>
                     ) : (
-                      <Button variant="outline" size="sm" onClick={handleEnrollMfa} disabled={mfaEnrolling}>
+                      <Button variant="outline" size="sm" onClick={handleEnrollMfa} disabled={mfaEnrolling||sharedDemo||!mfaKnown}>
                         {mfaEnrolling ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <QrCode className="w-3 h-3 mr-1" />}
                         Enable
                       </Button>
@@ -521,24 +459,25 @@ export default function SettingsPage() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between bg-secondary/50 p-3 rounded-lg">
                       <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
+                        <div className={currentSession&&!sessionError?'w-2 h-2 bg-success rounded-full':'w-2 h-2 bg-muted-foreground rounded-full'} />
                         <div>
                           <p className="text-xs font-medium">Current Device</p>
                           <p className="text-[10px] text-muted-foreground">
-                            {currentSession?.created_at ? `Session started: ${currentSession.created_at}` : 'Active now'}
+                            {sessionError?'Session could not be verified':currentSession?.expiresAt?`Recorded token expiry: ${currentSession.expiresAt}`:currentSession?'Session verified; expiry unavailable':'Checking session…'}
                           </p>
                         </div>
                       </div>
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-success/10 text-success font-semibold">Active</span>
+                      <span className="text-xs px-2 py-0.5 rounded bg-secondary text-muted-foreground">{currentSession&&!sessionError?'Verified':'Unverified'}</span>
                     </div>
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
                     className="mt-3 text-xs"
+                    disabled={sharedDemo||!currentSession||sessionError}
                     onClick={async () => {
-                      await supabase.auth.signOut({ scope: 'others' });
-                      toast.success('All other sessions signed out');
+                      if(sharedDemo)return;
+                      try{const result=await supabase.auth.signOut({scope:'others'});if(result.error)throw result.error;toast.success('Other sessions revoked. Existing access tokens may remain valid until expiry.');}catch{toast.error('Other session revocation could not be verified.');}
                     }}
                   >
                     <LogOut className="w-3 h-3 mr-1" /> Sign Out Other Sessions
@@ -548,132 +487,8 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {/* ─── BRANDING (real editor) ─── */}
-          {activeSection === 'branding' && (
-            <div className="max-w-lg">
-              <h3 className="text-lg font-bold mb-1">Branding Settings</h3>
-              <p className="text-xs text-muted-foreground mb-6">Customise your centre's public-facing appearance</p>
-              {brandLoading ? (
-                <div className="flex items-center gap-2 py-8 text-muted-foreground text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Loading…</div>
-              ) : !user?.tenantId ? (
-                <div className="text-center py-12">
-                  <Palette className="w-10 h-10 mx-auto mb-3 text-muted-foreground/20" />
-                  <p className="text-sm text-muted-foreground">Branding is available for centres with an active tenant configuration.</p>
-                </div>
-              ) : (
-                <div className="space-y-5">
-                  {/* Logo */}
-                  <div>
-                    <label className="text-label mb-2 block">Centre Logo</label>
-                    <div className="flex items-center gap-4">
-                      {brandData.logo_url ? (
-                        <img src={brandData.logo_url} alt="Logo" className="w-16 h-16 rounded-xl object-contain border border-border bg-secondary p-1" />
-                      ) : (
-                        <div className="w-16 h-16 rounded-xl bg-secondary border border-border flex items-center justify-center">
-                          <Palette className="w-6 h-6 text-muted-foreground" />
-                        </div>
-                      )}
-                      <div>
-                        <input ref={brandLogoRef} type="file" accept="image/*" className="hidden" onChange={handleBrandLogoUpload} />
-                        <Button variant="outline" size="sm" onClick={() => brandLogoRef.current?.click()}>
-                          <Upload className="w-3 h-3 mr-1" /> Upload Logo
-                        </Button>
-                        <p className="text-[10px] text-muted-foreground mt-1">Recommended: 200×200px, PNG or SVG</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Brand Name */}
-                  <div>
-                    <label className="text-label mb-1.5 block">Brand Name</label>
-                    <input value={brandData.brand_name} onChange={e => setBrandData(p => ({ ...p, brand_name: e.target.value }))} className={inputClass} placeholder="e.g. UniPathway" />
-                  </div>
-
-                  {/* Colors */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-label mb-1.5 block">Primary Colour</label>
-                      <div className="flex items-center gap-2">
-                        <input type="color" value={brandData.primary_color} onChange={e => setBrandData(p => ({ ...p, primary_color: e.target.value }))} className="w-10 h-10 rounded-lg border border-border cursor-pointer" />
-                        <input value={brandData.primary_color} onChange={e => setBrandData(p => ({ ...p, primary_color: e.target.value }))} className={`${inputClass} flex-1`} />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-label mb-1.5 block">Accent Colour</label>
-                      <div className="flex items-center gap-2">
-                        <input type="color" value={brandData.accent_color} onChange={e => setBrandData(p => ({ ...p, accent_color: e.target.value }))} className="w-10 h-10 rounded-lg border border-border cursor-pointer" />
-                        <input value={brandData.accent_color} onChange={e => setBrandData(p => ({ ...p, accent_color: e.target.value }))} className={`${inputClass} flex-1`} />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Preview */}
-                  <div>
-                    <label className="text-label mb-2 block">Preview</label>
-                    <div className="rounded-xl border border-border p-4 bg-background">
-                      <div className="flex items-center gap-3 mb-3">
-                        {brandData.logo_url ? (
-                          <img src={brandData.logo_url} alt="Preview" className="w-8 h-8 rounded-lg object-contain" />
-                        ) : (
-                          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: brandData.primary_color }}>
-                            <span className="text-primary-foreground text-xs font-bold">{brandData.brand_name?.charAt(0) || 'U'}</span>
-                          </div>
-                        )}
-                        <span className="font-bold text-sm">{brandData.brand_name || 'Your Centre'}</span>
-                      </div>
-                      <div className="flex gap-2">
-                        <div className="h-8 rounded-lg px-4 flex items-center text-xs font-semibold text-primary-foreground" style={{ backgroundColor: brandData.primary_color }}>Primary</div>
-                        <div className="h-8 rounded-lg px-4 flex items-center text-xs font-semibold text-primary-foreground" style={{ backgroundColor: brandData.accent_color }}>Accent</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Button onClick={handleSaveBranding} disabled={brandSaving}>
-                    {brandSaving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-                    Save Branding
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ─── INTEGRATIONS (status panel) ─── */}
-          {activeSection === 'integrations' && (
-            <div className="max-w-lg">
-              <h3 className="text-lg font-bold mb-1">Integrations</h3>
-              <p className="text-xs text-muted-foreground mb-6">Connected services and external platforms</p>
-              <div className="space-y-3">
-                {[
-                  { name: 'Stripe Payments', desc: 'Fee collection and invoicing', icon: '💳', connected: true, status: 'Active' },
-                  { name: 'Email Service', desc: 'Transactional emails and notifications', icon: '📧', connected: true, status: 'Active' },
-                  { name: 'WhatsApp Business', desc: 'Student and parent messaging', icon: '💬', connected: true, status: 'Active' },
-                  { name: 'SMS Gateway', desc: 'Attendance and fee reminders', icon: '📱', connected: false, status: 'Not configured' },
-                  { name: 'Jitsi Meet', desc: 'Virtual classroom video conferencing', icon: '🎥', connected: true, status: 'Active' },
-                  { name: 'AWS WorkSpaces', desc: 'Cloud-based IT lab VMs', icon: '☁️', connected: false, status: 'Not configured' },
-                  { name: 'Google Calendar', desc: 'Academic calendar sync', icon: '📅', connected: false, status: 'Not configured' },
-                  { name: 'LMS Export', desc: 'SCORM/xAPI content packages', icon: '📦', connected: false, status: 'Not configured' },
-                ].map(integration => (
-                  <div key={integration.name} className="surface-data p-4 rounded-lg flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="text-xl">{integration.icon}</span>
-                      <div>
-                        <p className="text-sm font-medium">{integration.name}</p>
-                        <p className="text-xs text-muted-foreground">{integration.desc}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${integration.connected ? 'bg-success/10 text-success' : 'bg-secondary text-muted-foreground'}`}>
-                        {integration.status}
-                      </span>
-                      <Button variant="outline" size="sm" className="text-xs h-7">
-                        {integration.connected ? 'Configure' : 'Connect'}
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {activeSection==='branding'&&<SettingsOperationalPanels area="branding"/>}
+          {activeSection==='integrations'&&<SettingsOperationalPanels area="integrations"/>}
 
           {/* ─── PRIVACY & GDPR ─── */}
           {activeSection === 'privacy' && (
@@ -683,9 +498,9 @@ export default function SettingsPage() {
                 <div className="bg-success/5 border border-success/20 rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Shield className="w-4 h-4 text-success" />
-                    <span className="text-sm font-semibold text-success">GDPR Compliant</span>
+                    <span className="text-sm font-semibold text-success">Privacy and data rights</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">All data processing complies with GDPR regulations. Student data is encrypted at rest and in transit.</p>
+                  <p className="text-xs text-muted-foreground">Review the privacy notice and use verified personal-data request services. This screen does not certify legal compliance.</p>
                 </div>
 
                 <div className="flex items-center justify-between py-3 border-b border-border/50">
@@ -697,9 +512,9 @@ export default function SettingsPage() {
                     variant="outline"
                     size="sm"
                     className="text-xs"
-                    disabled={exportingData}
+                    disabled={exportingData||sharedDemo}
                     onClick={async () => {
-                      if (!user) return;
+                      if (!user||sharedDemo) return;
                       setExportingData(true);
                       const { data, error } = await supabase.rpc('export_user_data', { _user_id: user.id });
                       setExportingData(false);
@@ -707,7 +522,7 @@ export default function SettingsPage() {
                       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
                       const url = URL.createObjectURL(blob);
                       const a = document.createElement('a');
-                      a.href = url; a.download = `educloud-data-export-${new Date().toISOString().slice(0, 10)}.json`;
+                      a.href = url; a.download = `unipathway-data-export-${new Date().toISOString().slice(0, 10)}.json`;
                       a.click(); URL.revokeObjectURL(url);
                       toast.success('Data exported successfully');
                     }}
@@ -720,11 +535,11 @@ export default function SettingsPage() {
                 <div className="flex items-center justify-between py-3 border-b border-border/50">
                   <div>
                     <p className="text-sm font-medium">Consent Records</p>
-                    <p className="text-xs text-muted-foreground">View your consent history</p>
+                    <p className="text-xs text-muted-foreground">View this device’s recorded cookie preference</p>
                   </div>
                   <Button variant="outline" size="sm" className="text-xs" onClick={() => {
                     const consent = localStorage.getItem('cookie_consent');
-                    toast.info(`Cookie consent: ${consent || 'Not set'}. GDPR consent: Given at registration.`);
+                    toast.info(`Device cookie preference: ${consent || 'Not recorded'}. Other consent records must be verified separately.`);
                   }}>View</Button>
                 </div>
 
@@ -740,10 +555,10 @@ export default function SettingsPage() {
                 <div className="flex items-center justify-between py-3 border-b border-border/50">
                   <div>
                     <p className="text-sm font-medium text-destructive">Delete Account</p>
-                    <p className="text-xs text-muted-foreground">Permanently delete your account and all data</p>
+                    <p className="text-xs text-muted-foreground">Request account deletion; retention and legal obligations may apply.</p>
                   </div>
                   {!showDeleteConfirm ? (
-                    <Button variant="outline" size="sm" className="text-xs text-destructive border-destructive/30" onClick={() => setShowDeleteConfirm(true)}>
+                    <Button variant="outline" size="sm" className="text-xs text-destructive border-destructive/30" disabled={sharedDemo} onClick={() => setShowDeleteConfirm(true)}>
                       <Trash2 className="w-3 h-3 mr-1" /> Request
                     </Button>
                   ) : (
@@ -753,9 +568,9 @@ export default function SettingsPage() {
                         variant="destructive"
                         size="sm"
                         className="text-xs"
-                        disabled={deletingAccount}
+                        disabled={deletingAccount||sharedDemo}
                         onClick={async () => {
-                          if (!user) return;
+                          if (!user||sharedDemo) return;
                           setDeletingAccount(true);
                           try { await disableNativePush(); } catch { toast.error('Reconnect and disable device notifications before deleting your account.'); setDeletingAccount(false); return; }
                           const { error } = await supabase.rpc('delete_user_account', { _user_id: user.id });
@@ -776,64 +591,9 @@ export default function SettingsPage() {
           )}
 
           {/* ─── USER MANAGEMENT / DATA & BACKUP — placeholder for roles outside scope ─── */}
-          {activeSection === 'users' && <AccountOperations />}
+          {activeSection==='users'&&access.users&&(sharedDemo?<p role="status">Shared demo account invitations are reserved for the demo administrator. No email invitations will be sent here.</p>:<AccountOperations/>)}
 
-          {activeSection === 'data' && (
-            <div className="max-w-lg">
-              <h3 className="text-lg font-bold mb-1">Data & Backup</h3>
-              <p className="text-xs text-muted-foreground mb-6">Data management and export tools</p>
-              <div className="space-y-3">
-                <div className="surface-data p-4 rounded-lg flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">Export Students</p>
-                    <p className="text-xs text-muted-foreground">Download student records as CSV</p>
-                  </div>
-                  <Button variant="outline" size="sm" onClick={async () => {
-                    toast.info('Generating export…');
-                    const { data } = await supabase.from('profiles').select('full_name, email, phone, created_at');
-                    if (data?.length) {
-                      const csv = ['Name,Email,Phone,Created\n', ...data.map(r => `"${r.full_name}","${r.email}","${r.phone || ''}","${r.created_at}"\n`)].join('');
-                      const blob = new Blob([csv], { type: 'text/csv' });
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url; a.download = `students-export-${new Date().toISOString().slice(0,10)}.csv`;
-                      a.click(); URL.revokeObjectURL(url);
-                      toast.success('Export downloaded');
-                    } else toast.error('No data found');
-                  }}>
-                    <Download className="w-3 h-3 mr-1" /> Export
-                  </Button>
-                </div>
-                <div className="surface-data p-4 rounded-lg flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">Export Invoices</p>
-                    <p className="text-xs text-muted-foreground">Download financial records as CSV</p>
-                  </div>
-                  <Button variant="outline" size="sm" onClick={async () => {
-                    const { data } = await supabase.from('invoices').select('student_name, type, amount, paid, status, due_date, issued_date');
-                    if (data?.length) {
-                      const csv = ['Student,Type,Amount,Paid,Status,Due,Issued\n', ...data.map(r => `"${r.student_name}","${r.type}",${r.amount},${r.paid},"${r.status}","${r.due_date}","${r.issued_date}"\n`)].join('');
-                      const blob = new Blob([csv], { type: 'text/csv' });
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url; a.download = `invoices-export-${new Date().toISOString().slice(0,10)}.csv`;
-                      a.click(); URL.revokeObjectURL(url);
-                      toast.success('Export downloaded');
-                    } else toast.error('No data found');
-                  }}>
-                    <Download className="w-3 h-3 mr-1" /> Export
-                  </Button>
-                </div>
-                <div className="surface-data p-4 rounded-lg flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">Audit Logs</p>
-                    <p className="text-xs text-muted-foreground">View system activity and changes</p>
-                  </div>
-                  <Button variant="outline" size="sm" onClick={() => navigate('/audit')}>View</Button>
-                </div>
-              </div>
-            </div>
-          )}
+          {activeSection==='data'&&<SettingsOperationalPanels area="data"/>}
         </div>
       </div>
 
@@ -869,7 +629,7 @@ export default function SettingsPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setMfaDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleVerifyMfa} disabled={mfaVerifying || mfaCode.length !== 6}>
+            <Button onClick={handleVerifyMfa} disabled={sharedDemo||mfaVerifying || mfaCode.length !== 6}>
               {mfaVerifying ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Check className="w-4 h-4 mr-2" />}
               Verify & Enable
             </Button>

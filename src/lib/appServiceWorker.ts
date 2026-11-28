@@ -12,7 +12,7 @@ export function canRegisterAppWorker(context: WorkerContext): boolean {
     ['lovableproject.com', 'lovableproject-dev.com', 'beta.lovable.dev'].some(
       zone => host === zone || host.endsWith(`.${zone}`),
     );
-  return context.production && !context.framed && !preview &&
+  return context.production && !context.framed && !preview && host!=='demo.unipathway.pk' &&
     new URLSearchParams(context.search).get('sw') !== 'off';
 }
 
