@@ -6,9 +6,9 @@ import { disableNativePush } from '@/lib/nativePush';
 import NativeNotifications from '@/components/native/NativeNotifications';
 import AccountOperations from '@/components/admin/AccountOperations';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { Settings, Bell, Lock, Globe, Palette, Users, Shield, Database, Mail, Smartphone, Loader2, Camera, Upload, Download, Trash2, QrCode, LogOut, Check, X, ExternalLink, Plug } from 'lucide-react';
+import { Settings, Bell, Lock, Globe, Palette, Users, Shield, Database, Mail, Smartphone, Loader2, Camera, Upload, Download, Trash2, QrCode, LogOut, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -108,22 +108,30 @@ function ScopedSettings() {
       if(!live||error||!data||!Array.isArray(data.totp))return;
       const totp=data.totp.find(f=>f.status==='verified');setMfaKnown(true);setMfaEnabled(!!totp);setMfaFactorId(totp?.id||null);
     }).catch(()=>{});
-    void supabase.from('profiles').select('user_id,full_name,phone').eq('user_id',actorId).maybeSingle().then(({data,error})=>{
-      if(!live)return;
-      if(error||!data||data.user_id!==actorId||typeof data.full_name!=='string'||!(data.phone===null||typeof data.phone==='string'))throw Error('Profile unavailable');
-      setProfileData({full_name:data.full_name,email:user.email,phone:data.phone||''});
-    }).catch(()=>{if(live)setProfileError('Profile could not be verified. Retry before editing.');}).finally(()=>{if(live)setProfileLoading(false);});
-    void supabase.from('notification_preferences').select('*').eq('user_id',actorId).maybeSingle().then(({data,error})=>{
-      if(!live)return;
-      if(error||(data&&data.user_id!==actorId))throw Error('Preferences unavailable');
-      const prefs={...DEFAULT_PREFS};
-      if(data)for(const key of Object.keys(prefs) as (keyof NotifPrefs)[]){
-       const value=(data as unknown as Record<string,unknown>)[key];
-       if(typeof value!=='boolean')throw Error('Unverified preference');
-       prefs[key]=value;
-      }
-      setNotifPrefs(prefs);
-    }).catch(()=>{if(live)setNotifError('Notification preferences could not be verified. Retry before editing.');}).finally(()=>{if(live)setNotifLoading(false);});
+    void(async()=>{
+      try{
+        const {data,error}=await supabase.from('profiles').select('user_id,full_name,phone').eq('user_id',actorId).maybeSingle();
+        if(!live)return;
+        if(error||!data||data.user_id!==actorId||typeof data.full_name!=='string'||!(data.phone===null||typeof data.phone==='string'))throw Error('Profile unavailable');
+        setProfileData({full_name:data.full_name,email:user.email,phone:data.phone||''});
+      }catch{if(live)setProfileError('Profile could not be verified. Retry before editing.');}
+      finally{if(live)setProfileLoading(false);}
+    })();
+    void(async()=>{
+      try{
+        const {data,error}=await supabase.from('notification_preferences').select('*').eq('user_id',actorId).maybeSingle();
+        if(!live)return;
+        if(error||(data&&data.user_id!==actorId))throw Error('Preferences unavailable');
+        const prefs={...DEFAULT_PREFS};
+        if(data)for(const key of Object.keys(prefs) as (keyof NotifPrefs)[]){
+          const value=(data as unknown as Record<string,unknown>)[key];
+          if(typeof value!=='boolean')throw Error('Unverified preference');
+          prefs[key]=value;
+        }
+        setNotifPrefs(prefs);
+      }catch{if(live)setNotifError('Notification preferences could not be verified. Retry before editing.');}
+      finally{if(live)setNotifLoading(false);}
+    })();
     return()=>{live=false;};
   },[user?.id,user?.email,reload]);
 
@@ -451,7 +459,7 @@ function ScopedSettings() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between bg-secondary/50 p-3 rounded-lg">
                       <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
+                        <div className={currentSession&&!sessionError?'w-2 h-2 bg-success rounded-full':'w-2 h-2 bg-muted-foreground rounded-full'} />
                         <div>
                           <p className="text-xs font-medium">Current Device</p>
                           <p className="text-[10px] text-muted-foreground">
