@@ -36,12 +36,53 @@ export function examEventChecks(event:ExamCalendarEvent,events:readonly ExamCale
  if(events.some(other=>conflicting(event,other)))issues.push('possible same-venue time overlap');
  return issues;
 }
+/** Build the full readiness index once. A venue clash is a hint, not a
+ * capacity, candidate, or official examination approval check.
+ */
+export function examReadinessIndex(events:readonly ExamCalendarEvent[]){
+ const checks=new Map<string,string[]>();
+ const groups=new Map<string,{id:string;start:number;end:number}[]>();
+ let missingVenue=0,invalidDates=0,overlapPairs=0;
+ if(new Set(events.map(e=>e.id)).size!==events.length)throw Error('Duplicate exam calendar records');
+ for(const event of events){
+  const issues:string[]=[];
+  const venue=event.location?.trim().toLowerCase();
+  if(!venue){missingVenue++;issues.push('venue not recorded');}
+  if(!datesVerified(event)){invalidDates++;issues.push('invalid start or finish date');}
+  checks.set(event.id,issues);
+  const window=timeWindow(event);
+  if(!venue||!window||event.event_type!=='exam')continue;
+  const key=JSON.stringify([event.tenant_id,venue]);
+  const group=groups.get(key)||[];
+  group.push({id:event.id,...window});groups.set(key,group);
+ }
+ // Within each centre/venue, sort starts and ends once. Every ended
+ // interval started earlier; intervals touching at endpoints do not clash.
+ for(const group of groups.values()){
+  group.sort((a,b)=>a.start-b.start||a.end-b.end||a.id.localeCompare(b.id));
+  const ends=group.map(w=>w.end).sort((a,b)=>a-b);
+  let ended=0,maxPreviousEnd=-Infinity;
+  for(let i=0;i<group.length;i++){
+   const w=group[i];
+   while(ended<ends.length&&ends[ended]<=w.start)ended++;
+   overlapPairs+=i-ended;
+   if(maxPreviousEnd>w.start||(i+1<group.length&&group[i+1].start<w.end))
+    checks.get(w.id)!.push('possible same-venue time overlap');
+   maxPreviousEnd=Math.max(maxPreviousEnd,w.end);
+  }
+ }
+ return {checks,summary:{total:events.length,missingVenue,invalidDates,overlapPairs}};
+}
 export function examReadinessSummary(events:readonly ExamCalendarEvent[]){
- let overlapPairs=0;
- for(let i=0;i<events.length;i++)for(let j=i+1;j<events.length;j++)if(conflicting(events[i],events[j]))overlapPairs++;
- const checks=events.map(event=>examEventChecks(event,events));
- return {total:events.length,missingVenue:checks.filter(x=>x.includes('venue not recorded')).length,
-  invalidDates:checks.filter(x=>x.includes('invalid start or finish date')).length,overlapPairs};
+ // Preserve the existing helper's semantics for callers with duplicate IDs;
+ // the authenticated dashboard instead rejects duplicates before indexing.
+ if(new Set(events.map(e=>e.id)).size!==events.length){
+  let overlapPairs=0;
+  for(let i=0;i<events.length;i++)for(let j=i+1;j<events.length;j++)if(conflicting(events[i],events[j]))overlapPairs++;
+  const checks=events.map(event=>examEventChecks(event,events));
+  return {total:events.length,missingVenue:checks.filter(x=>x.includes('venue not recorded')).length,invalidDates:checks.filter(x=>x.includes('invalid start or finish date')).length,overlapPairs};
+ }
+ return examReadinessIndex(events).summary;
 }
 
 /** Defence-in-depth: a partial or inconsistent centre snapshot is never treated
