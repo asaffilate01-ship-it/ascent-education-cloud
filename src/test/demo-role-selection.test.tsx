@@ -4,7 +4,7 @@ import {cleanup,fireEvent,render,screen} from '@testing-library/react';
 import {MemoryRouter,Routes,Route} from 'react-router-dom';
 import type {UserRole} from '@/types/platform';
 import {KNOWN_UNIPATHWAY_ROLES} from '@/lib/roleMembership';
-import {demoLoginUrl} from '@/lib/demoAccess';
+import {demoLoginUrl,isDemoAccount,isolatedDemoDeployment} from '@/lib/demoAccess';
 import WorkspaceRolePicker,{verifiedWorkspaceChoices} from '@/components/auth/WorkspaceRolePicker';
 import DemoPage from '@/pages/auth/DemoPage';
 
@@ -48,4 +48,14 @@ describe('role selection and isolated demo entry',()=>{
   for(const input of [undefined,'','https://unipathway.pk','https://demo.unipathway.pk.evil.example','http://demo.unipathway.pk','https://demo.unipathway.pk/path','https://user:secret@demo.unipathway.pk/'])expect(demoLoginUrl(input,'student')).toBeNull();
   expect(demoLoginUrl('https://demo.unipathway.pk','finance_officer')).toBe('https://demo.unipathway.pk/login?role=finance_officer&demo=1');
  });
+});
+
+it('blocks demonstration identity from the known production project and other origins',()=>{
+ const ref='abcdefghijklmnopqrst';
+ expect(isDemoAccount(' DEMO@unipathway.pk ')).toBe(true);
+ expect(isDemoAccount('learner@unipathway.pk')).toBe(false);
+ expect(isolatedDemoDeployment('demo.unipathway.pk','https://'+ref+'.supabase.co',ref)).toBe(true);
+ expect(isolatedDemoDeployment('unipathway.pk','https://'+ref+'.supabase.co',ref)).toBe(false);
+ expect(isolatedDemoDeployment('demo.unipathway.pk','https://sthrhcmjypwuorlbscfw.supabase.co','sthrhcmjypwuorlbscfw')).toBe(false);
+ expect(isolatedDemoDeployment('demo.unipathway.pk','https://wrong.supabase.co',ref)).toBe(false);
 });
