@@ -91,7 +91,7 @@ function ScopedPlanner(){
  },[authorised,userId,tenant,isManager]);
  useEffect(()=>{void load();},[load]);
  const writeAllowed=()=>authorised&&!!tenant&&!!userId&&!loading&&!error&&!uncertain&&!lock.current&&mounted.current;
- async function write(key:string,operation:()=>Promise<void>,message:string,clear?:()=>void){
+ async function write(key:string,operation:()=>Promise<void>,message:string|(()=>string),clear?:()=>void){
   if(!writeAllowed())return;
   lock.current=true;setBusy(key);
   try{
@@ -99,7 +99,7 @@ function ScopedPlanner(){
    if(!mounted.current)return;
    if(!await load())throw Error('Refresh not confirmed');
    if(!mounted.current)return;
-   clear?.();toast.success(message);
+   clear?.();toast.success(typeof message==='function'?message():message);
   }catch{
    if(mounted.current){setUncertain(true);toast.error('The action could not be confirmed. Your entries are retained. Refresh records before retrying.');}
   }finally{lock.current=false;if(mounted.current)setBusy('');}
@@ -135,7 +135,7 @@ function ScopedPlanner(){
   },'Lab syllabus published to enrolled students.');
  };
  const schedule=async()=>{
-  const template=templates.find(t=>t.id===runTemplate&&t.active),window=instructorLabWindow(runStart,runEnd);
+  const template=templates.find(t=>t.id===runTemplate&&t.active&&['both','class_only'].includes(t.access_mode)),window=instructorLabWindow(runStart,runEnd);
   if(!template||!cohort.trim()||cohort.trim().length>100||!window||!userId||!tenant||![10,20,25,50,100,150].includes(runConcurrent))return toast.error('Choose a valid lab, cohort, capacity and start/end time.');
   if(linkedClass&&!classes.some(c=>c.id===linkedClass&&c.module_id===template.module_id))return toast.error('Teams class must belong to the same module');
   await write('run',async()=>{
@@ -146,10 +146,12 @@ function ScopedPlanner(){
  const invite=async(run:Run)=>{
   if(!writeAllowed()||!runs.some(r=>r.id===run.id&&['scheduled','active'].includes(r.status)))return;
   if(!window.confirm('Invite actively enrolled students to this module lab? This creates LMS invitations, not Microsoft or AWS credentials.'))return;
+  let invited=0;
   await write(run.id,async()=>{
    const {data,error}=await db.rpc('invite_enrolled_unipathway_lab_run',{p_run:run.id});
    if(error||!Number.isSafeInteger(data)||data<0||data>1000)throw Error('Unverified invitation count');
-  },'LMS invitations reconciled. No provider credentials or email delivery were confirmed.');
+   invited=data;
+  },()=>invited+' new LMS invitations recorded by the server. No provider credentials or email delivery confirmed.');
  };
  const review=async(note:Practice)=>{
   const value=answers[note.id]?.trim();
@@ -215,7 +217,7 @@ function ScopedPlanner(){
     {templates.map(t=><article key={t.id} className="min-w-0 rounded-xl border bg-card p-3 sm:p-5 [overflow-wrap:anywhere]">
      <div className="flex flex-wrap items-center justify-between gap-3"><div><h3 className="font-bold">{t.title}</h3>
       <p className="mt-1 text-xs text-muted-foreground">{modules.find(m=>m.id===t.module_id)?.title} · {t.provider} · {t.access_mode} · {t.published?'Published syllabus':'Private draft'} · {t.duration_minutes} minutes</p></div>
-      {!t.published&&<Button size="sm" variant="outline" disabled={!!busy} onClick={()=>publish(t)}>Publish syllabus</Button>}
+      {!t.published&&t.active&&<Button size="sm" variant="outline" disabled={!!busy} onClick={()=>publish(t)}>Publish syllabus</Button>}
      </div>
      <div className="mt-3 grid gap-2 md:grid-cols-[minmax(14rem,1fr)_2fr_auto]">
       <label className="text-sm font-medium">New exercise title<Input className="mt-1" value={taskTitles[t.id]||''} maxLength={140} onChange={e=>setTaskTitles(p=>({...p,[t.id]:e.target.value}))}/></label>
@@ -228,10 +230,10 @@ function ScopedPlanner(){
     <p className="mt-2 text-sm text-muted-foreground">A 120-student class may be invited as one cohort while only 25 cloud workspaces run concurrently. This protects spending and allows staggered practical groups. An optional Teams class links verbal teaching to the same LMS exercises.</p>
     <div className="mt-3 grid gap-3 md:grid-cols-2">
      <label className="text-sm font-medium">Lab syllabus<select className="mt-1 w-full rounded-md border bg-background p-2" value={runTemplate} onChange={e=>{setRunTemplate(e.target.value);setLinkedClass('');}}>
-      <option value="">Choose lab</option>{templates.map(t=><option key={t.id} value={t.id}>{t.title}</option>)}</select></label>
+      <option value="">Choose lab</option>{templates.filter(t=>t.active&&['both','class_only'].includes(t.access_mode)).map(t=><option key={t.id} value={t.id}>{t.title}</option>)}</select></label>
      <label className="text-sm font-medium">Cohort / lecture group<Input className="mt-1" maxLength={100} value={cohort} onChange={e=>setCohort(e.target.value)}/></label>
-     <label className="text-sm font-medium">Start<Input type="datetime-local" className="mt-1" value={runStart} onChange={e=>setRunStart(e.target.value)}/></label>
-     <label className="text-sm font-medium">End<Input type="datetime-local" className="mt-1" value={runEnd} onChange={e=>setRunEnd(e.target.value)}/></label>
+     <label className="text-sm font-medium">Start (device local time)<Input type="datetime-local" className="mt-1" value={runStart} onChange={e=>setRunStart(e.target.value)}/></label>
+     <label className="text-sm font-medium">End (device local time)<Input type="datetime-local" className="mt-1" value={runEnd} onChange={e=>setRunEnd(e.target.value)}/></label>
      <label className="text-sm font-medium">Concurrent workspaces (not total students)<select className="mt-1 w-full rounded-md border bg-background p-2" value={runConcurrent} onChange={e=>setRunConcurrent(Number(e.target.value))}>
       {[10,20,25,50,100,150].map(n=><option key={n} value={n}>{n} concurrent labs</option>)}</select></label>
      <label className="text-sm font-medium">Link Microsoft Teams class (optional)<select className="mt-1 w-full rounded-md border bg-background p-2" value={linkedClass} onChange={e=>setLinkedClass(e.target.value)}>
@@ -254,7 +256,7 @@ function ScopedPlanner(){
       <p className="text-xs font-semibold">Student reference {n.student_id.slice(0,8)} · {templates.find(t=>t.id===n.template_id)?.title}</p>
       <p className="mt-2 whitespace-pre-wrap text-sm">{n.notes}</p>
       <Textarea rows={2} className="mt-3" value={answers[n.id]||''} maxLength={2000}
-       placeholder="Constructive feedback (not a final grade)…" onChange={e=>setAnswers(p=>({...p,[n.id]:e.target.value}))}/>
+       aria-label={'Feedback for evidence '+n.id} placeholder="Constructive feedback (not a final grade)…" onChange={e=>setAnswers(p=>({...p,[n.id]:e.target.value}))}/>
       <Button size="sm" className="mt-2" disabled={!!busy||!answers[n.id]?.trim()} onClick={()=>review(n)}>Save feedback</Button>
      </div>)}</div>
     </div>
@@ -264,7 +266,7 @@ function ScopedPlanner(){
       <p className="text-xs font-semibold">Student {h.student_id.slice(0,8)} · {new Date(h.requested_at).toLocaleString()}</p>
       <p className="mt-2 whitespace-pre-wrap text-sm">{h.message}</p>
       <Textarea rows={2} className="mt-3" value={answers[h.id]||''} maxLength={2000}
-       placeholder="Guidance for the learner…" onChange={e=>setAnswers(p=>({...p,[h.id]:e.target.value}))}/>
+       aria-label={'Guidance for support '+h.id} placeholder="Guidance for the learner…" onChange={e=>setAnswers(p=>({...p,[h.id]:e.target.value}))}/>
       <Button size="sm" className="mt-2" disabled={!!busy||!answers[h.id]?.trim()} onClick={()=>reply(h)}>Reply & resolve</Button>
      </div>)}</div>
     </div>
