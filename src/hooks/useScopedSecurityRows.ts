@@ -26,7 +26,7 @@ export function useScopedSecurityRows<T extends {tenant_id:string}>(
   void (async()=>{
    const results:T[]=[];
    const seen=new Set<string>();
-   const identity=table==='centre_occupancy'?'person_key':'id';
+   const identity=table==='centre_occupancy'?null:'id';
    for(let page=0;page<MAX_PAGES;page++){
     if(extra&&(table!=='emergency_muster_status'||extra.column!=='muster_event_id'))throw Error('Unsupported secure filter');
     const {data,error}=await db.rpc('get_unipathway_security_operations_rows',{
