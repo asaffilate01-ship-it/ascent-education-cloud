@@ -6,6 +6,7 @@ import { Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import unipathwayLogo from '@/assets/unipathway-logo.png';
+import {demoIdentityAllowed,DEMO_ACCOUNT_EMAIL,isolatedDemoDeployment} from '@/lib/demoAccess';
 import WorkspaceRolePicker from '@/components/auth/WorkspaceRolePicker';
 import InstitutionalLogin from '@/components/auth/InstitutionalLogin';
 import {INSTITUTIONAL_AUTH_ENABLED} from '@/lib/institutionalAuth';
@@ -14,7 +15,7 @@ import {INSTITUTIONAL_AUTH_ENABLED} from '@/lib/institutionalAuth';
 
 export default function LoginPage(){return INSTITUTIONAL_AUTH_ENABLED?<InstitutionalLogin/>:<LegacyLogin/>;}
 function LegacyLogin() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(()=>isolatedDemoDeployment(window.location.hostname,import.meta.env.VITE_SUPABASE_URL,import.meta.env.VITE_UNIPATHWAY_DEMO_PROJECT_REF)?DEMO_ACCOUNT_EMAIL:'');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -26,6 +27,7 @@ function LegacyLogin() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (submitLock.current||signedIn)return;
+    if(!demoIdentityAllowed(email)){setLoginError('Use the isolated platform demo to sign in with the demonstration account.');return;}
     if (!email || !password) {
       toast.error('Please enter email and password');
       return;
