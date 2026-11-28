@@ -25,6 +25,7 @@ const FamilySharing = lazy(() => import('./pages/student/FamilySharing'));
 
 // Auth
 const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
+const DemoPage = lazy(() => import("./pages/auth/DemoPage"));
 const GuardianStaffDesk = lazy(() => import("./pages/parent/GuardianStaffDesk"));
 const RegisterPage = lazy(() => import("./pages/auth/RegisterPage"));
 const ForgotPasswordPage = lazy(() => import("./pages/auth/ForgotPasswordPage"));
@@ -379,6 +380,7 @@ function AppRoutes() {
 
         {/* ========== AUTH + LEGAL + UTILITIES ========== */}
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/demo" element={<DemoPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
