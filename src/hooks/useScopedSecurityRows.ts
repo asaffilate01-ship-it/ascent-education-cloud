@@ -1,7 +1,7 @@
 
 import {useEffect,useState} from 'react';
 import {db} from '@/lib/db';
-import {PHYSICAL_SECURITY_ENABLED,physicalSecurityScope,requireCentreRows} from '@/lib/physicalSecurity';
+import {PHYSICAL_SECURITY_ENABLED,physicalSecurityScope,verifySecurityPage} from '@/lib/physicalSecurity';
 
 type PhysicalTable='centre_occupancy'|'centre_access_events'|'centre_visitors'|'cctv_cameras'|'security_devices'|'emergency_muster_events'|'emergency_muster_status';
 type Principal={id:string;tenantId?:string;role:string;roles?:readonly string[]}|null|undefined;
@@ -25,6 +25,8 @@ export function useScopedSecurityRows<T extends {tenant_id:string}>(
   setState({key,data:[],loading:true,error:null});
   void (async()=>{
    const results:T[]=[];
+   const seen=new Set<string>();
+   const identity=table==='centre_occupancy'?null:'id';
    for(let page=0;page<MAX_PAGES;page++){
     if(extra&&(table!=='emergency_muster_status'||extra.column!=='muster_event_id'))throw Error('Unsupported secure filter');
     const {data,error}=await db.rpc('get_unipathway_security_operations_rows',{
@@ -33,7 +35,7 @@ export function useScopedSecurityRows<T extends {tenant_id:string}>(
     });
     if(!active)return;
     if(error||!Array.isArray(data)||data.length>PAGE_SIZE)throw Error('Secure centre query failed');
-    results.push(...requireCentreRows(data as T[],tenant));
+    results.push(...verifySecurityPage(data as T[],tenant,identity,seen,extra?.value));
     if(data.length<PAGE_SIZE){setState({key,data:results,loading:false,error:null});return;}
    }
    throw Error('Centre record limit reached; a verified server report is required');
