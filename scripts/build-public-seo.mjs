@@ -14,8 +14,9 @@ for(const path of [...Object.keys(publicSeo),...new Set(privatePaths)]){
  const page=publicSeo[path];const title=page?.title||'UniPathway | Secure learning portal';const description=page?.description||'Sign in to access your authorised UniPathway learning and administration services.';
  let html=template.replace(/<title>.*?<\/title>/s,`<title>${escape(title)}</title>`).replace(/<link[^>]+rel="canonical"[^>]*>/g,'');
  const image=SITE_URL+(blogImages[path]||'/brand/unipathway-social.png');
- const values={'og:image':image,'twitter:image':image,'description':description,'robots':page?'index, follow, max-image-preview:large, max-snippet:-1':'noindex, follow','og:type':path.startsWith('/blog/')?'article':'website','og:title':title,'og:description':description,'og:url':SITE_URL+path,'twitter:title':title,'twitter:description':description};
+ const values={'keywords':page?.keywords?.join(', ')||'','og:image:alt':blogImages[path]?title:'UniPathway — learning in Jhelum and online across Pakistan','twitter:image:alt':blogImages[path]?title:'UniPathway — learning in Jhelum and online across Pakistan','og:image':image,'twitter:image':image,'description':description,'robots':page?'index, follow, max-image-preview:large, max-snippet:-1':'noindex, follow','og:type':path.startsWith('/blog/')?'article':'website','og:title':title,'og:description':description,'og:url':SITE_URL+path,'twitter:title':title,'twitter:description':description};
  for(const [key,value] of Object.entries(values))html=html.replace(new RegExp(`(<meta (?:name|property)="${key}" content=")[^"]*("[^>]*>)`),(_,a,b)=>a+escape(value)+b);
+ if(blogImages[path])html=html.replace(/<meta property="og:image:(?:width|height|type)"[^>]*>/g,'');
  if(page)html=html.replace('</head>',`<link rel="canonical" href="${SITE_URL}${path}" />\n<script type="application/ld+json" data-seo="build">${JSON.stringify(breadcrumbSchema(path,title)).replaceAll('<','\\u003c')}</script>\n</head>`);
  const directory=path==='/'?'dist':`dist${path}`;await mkdir(directory,{recursive:true});await writeFile(`${directory}/index.html`,html);
 }
