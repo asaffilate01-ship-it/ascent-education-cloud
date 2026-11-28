@@ -9,6 +9,7 @@ import MarkHistory from '@/components/assessment/MarkHistory';
 import FeedbackLibrary from '@/components/assessment/FeedbackLibrary';
 import EvidenceReview from '@/components/assessment/EvidenceReview';
 import {criterionComplete,feedbackPrompts,appendFeedback} from '@/lib/assessment/marking';
+import {matchesLocalSearch} from '@/lib/localSearch';
 import {useSearchParams} from 'react-router-dom';
 import CourseworkFiles from '@/components/assessment/CourseworkFiles';
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
@@ -57,8 +58,10 @@ function MarkerWorkspace({scope,latestScope,permitted}:{scope:string;latestScope
  const context:Context={scope,attempt:selected,generation:selection.current.generation};
  const mounted=useRef(true),generation=useRef(0),draftGeneration=useRef(0);
  const operation=useRef<Action|null>(null),reviewRef=useRef<MarkReview|null>(null);
+ const queueReadyRef=useRef(false),queueLoadingRef=useRef(false);
+ const [queueRevision,setQueueRevision]=useState(0);
  const uncertainMarks=useRef(new Map<string,UnconfirmedMark>());
- const draftReadyRef=useRef(''),draftUncertainRef=useRef(false);
+ const draftReadyRef=useRef(''),draftUncertainRef=useRef(false),editorAttempt=useRef('');
  const markButton=useRef<HTMLButtonElement>(null),statusButton=useRef<HTMLButtonElement>(null);
  const [attempts,setAttempts]=useState<Attempt[]>([]),[briefs,setBriefs]=useState<Brief[]>([]);
  const [criteria,setCriteria]=useState<Criterion[]>([]),[drafts,setDrafts]=useState<AIDraft[]>([]);
@@ -81,7 +84,7 @@ function MarkerWorkspace({scope,latestScope,permitted}:{scope:string;latestScope
   &&selection.current.id===target.attempt&&selection.current.generation===target.generation,[latestScope,scope,permitted]);
  const active=(token:Action)=>operation.current===token&&currentContext(token);
  const acquire=(kind:Action['kind'],target:Context=context)=>{
-  if(!permitted||authLoading||!uid||!tenant||!target.attempt||!currentContext(target)||operation.current)return null;
+  if(!permitted||authLoading||!uid||!tenant||!target.attempt||!currentContext(target)||operation.current||!queueReadyRef.current)return null;
   const token:Action={...target,kind};operation.current=token;setBusy(kind);setActionError(null);return token;
  };
  const finish=(token:Action)=>{
@@ -89,7 +92,7 @@ function MarkerWorkspace({scope,latestScope,permitted}:{scope:string;latestScope
   if(currentContext(token))setBusy('');
  };
  const changeSelection=(id:string)=>setParams(previous=>{const next=new URLSearchParams(previous);if(id)next.set('attempt',id);else next.delete('attempt');return next;},{replace:true});
- const canEdit=()=>currentContext(context)&&eligible&&draftReadyRef.current===selected&&!operation.current&&!reviewRef.current&&!uncertainMarks.current.has(selected);
+ const canEdit=()=>queueReadyRef.current&&currentContext(context)&&eligible&&draftReadyRef.current===selected&&!operation.current&&!reviewRef.current&&!uncertainMarks.current.has(selected);
  const closeReview=()=>{
   if(operation.current)return;
   reviewRef.current=null;setReview(null);
@@ -110,16 +113,20 @@ function MarkerWorkspace({scope,latestScope,permitted}:{scope:string;latestScope
  },[selected,currentContext]);
 
  const load=useCallback(async()=>{
+  if(operation.current||reviewRef.current||!mounted.current)return;
   const token=++generation.current;
+  queueReadyRef.current=false;queueLoadingRef.current=true;
+  draftGeneration.current++;draftReadyRef.current='';setDraftReady('');
+  let verified=false;
   const currentRequest=()=>mounted.current&&latestScope.current===scope&&token===generation.current;
-  if(authLoading){setLoading(true);return;}
-  if(!permitted||!uid||!tenant){setError('A verified active assessment role and centre are required to open this workspace');setLoading(false);return;}
+  if(authLoading){queueLoadingRef.current=false;setLoading(true);return;}
+  if(!permitted||!uid||!tenant){setError('A verified active assessment role and centre are required to open this workspace');queueLoadingRef.current=false;setLoading(false);return;}
   setLoading(true);setError('');setPage(0);
   try{
    const allocations=await allocatedAssessmentRows('unipathway_assessment_allocations','attempt_id,marker_id',tenant,'marker_id',uid,currentRequest);
    if(!currentRequest())return;if(allocations.error)throw Error(allocations.error.message);
    const ids=((allocations.data||[]) as Allocation[]).map(row=>row.attempt_id);
-   if(!ids.length){setAttempts([]);setBriefs([]);setCriteria([]);setDrafts([]);return;}
+   if(!ids.length){setAttempts([]);setBriefs([]);setCriteria([]);setDrafts([]);verified=true;return;}
    const [at,advisory]=await Promise.all([
     assessmentRowsByIds('unipathway_assessment_attempts','id,brief_id,student_id,attempt_no,evidence_text,status,submitted_at,resubmission_guidance',tenant,'id',ids,currentRequest),
     assessmentRowsByIds('unipathway_assessment_ai_drafts','id,attempt_id,criteria_results,suggested_raw_score,strengths,missing_work,feedback,created_at',tenant,'attempt_id',ids,currentRequest)
@@ -127,7 +134,7 @@ function MarkerWorkspace({scope,latestScope,permitted}:{scope:string;latestScope
    if(!currentRequest())return;if(at.error||advisory.error)throw Error(at.error?.message||advisory.error?.message);
    const list=((at.data||[]) as Attempt[]).sort((a,b)=>b.submitted_at.localeCompare(a.submitted_at)||a.id.localeCompare(b.id));
    const briefIds=[...new Set(list.map(row=>row.brief_id))];
-   if(!briefIds.length){setAttempts(list);setBriefs([]);setCriteria([]);setDrafts([]);return;}
+   if(!briefIds.length){setAttempts(list);setBriefs([]);setCriteria([]);setDrafts([]);verified=true;return;}
    const [b,c]=await Promise.all([
     assessmentRowsByIds('unipathway_assessment_briefs','id,title,lecturer_id,learning_outcomes,teaching_summary,student_expectations,required_evidence,policy_reference,max_attempts,submission_cutoff',tenant,'id',briefIds,currentRequest),
     assessmentRowsByIds('unipathway_assessment_criteria','id,brief_id,criterion_code,criterion_description,learning_outcome,scoring_guidance,max_points,display_order',tenant,'brief_id',briefIds,currentRequest)
@@ -135,12 +142,18 @@ function MarkerWorkspace({scope,latestScope,permitted}:{scope:string;latestScope
    if(!currentRequest())return;if(b.error||c.error)throw Error(b.error?.message||c.error?.message);
    setAttempts(list);setDrafts(((advisory.data||[]) as AIDraft[]).sort((a,b)=>b.created_at.localeCompare(a.created_at)));
    setBriefs((b.data||[]) as Brief[]);setCriteria(((c.data||[]) as Criterion[]).sort((a,b)=>a.display_order-b.display_order));
+   verified=true;
   }catch(cause){
    if(!currentRequest())return;
    setAttempts([]);setBriefs([]);setCriteria([]);setDrafts([]);setError(errorMessage(cause,'Unable to load independent assessor queue'));
-  }finally{if(currentRequest())setLoading(false);}
+  }finally{if(currentRequest()){queueLoadingRef.current=false;queueReadyRef.current=verified;if(verified)setQueueRevision(value=>value+1);setLoading(false);}}
  },[uid,tenant,authLoading,scope,latestScope,permitted]);
  useEffect(()=>{void load();const counter=generation;return()=>{counter.current++;};},[load]);
+ const refreshQueue=()=>{
+  if(!permitted||authLoading||!mounted.current||queueLoadingRef.current||operation.current||reviewRef.current)return;
+  if(dirty&&!uncertainMarks.current.has(selected)&&!window.confirm('Refresh the allocated queue and reload the stored draft? Unsaved editor changes will be replaced only when the stored draft has been checked.'))return;
+  void load();
+ };
 
  useEffect(()=>{
   const target:Context={scope,attempt:selected,generation:selection.current.generation};
@@ -149,20 +162,29 @@ function MarkerWorkspace({scope,latestScope,permitted}:{scope:string;latestScope
   const currentRequest=()=>requestActive&&request===draftGeneration.current&&currentContext(target);
   draftReadyRef.current='';draftUncertainRef.current=false;
   setDraftReady('');setDraftError('');setSavedAt('');setDraftRevision(0);setDraftUncertain(false);
-  if(!current?.id||!uid||!tenant||authLoading||!permitted)return;
+  if(!queueReadyRef.current||!current?.id||!uid||!tenant||authLoading||!permitted)return;
   const retained=uncertainMarks.current.get(current.id)?.review;
-  setScores(retained?copyScores(retained.scores):{});setFeedback(retained?.feedback||'');setGuidance(retained?.guidance||'');setDirty(retained?.dirty||false);
+  const sameEditor=editorAttempt.current===target.attempt;
+  editorAttempt.current=target.attempt;
+  // Keep local edits in memory until the same attempt's saved draft is verified.
+  // A different attempt must never see the previous attempt's wording.
+  if(!sameEditor||retained){setScores(retained?copyScores(retained.scores):{});setFeedback(retained?.feedback||'');setGuidance(retained?.guidance||'');setDirty(retained?.dirty||false);}
   void Promise.resolve(db.from('uni_marking_drafts').select('criteria,feedback,guidance,revision,updated_at')
-   .eq('attempt_id',current.id).eq('marker_id',uid).eq('tenant_id',tenant).limit(1)).then(result=>{
-    if(!currentRequest())return;if(result.error)throw result.error;const draft=result.data?.[0];
-    if(draft){
-     if(!retained){setScores(draft.criteria||{});setFeedback(draft.feedback||'');setGuidance(draft.guidance||'');}
-     setDraftRevision(draft.revision);setSavedAt(draft.updated_at);
+   .eq('attempt_id',current.id).eq('marker_id',uid).eq('tenant_id',tenant).limit(2)).then(result=>{
+    if(!currentRequest())return;if(result.error)throw result.error;
+    if(!Array.isArray(result.data)||result.data.length>1)throw Error('Saved draft uniqueness could not be verified');
+    const draft=result.data[0];
+    if(result.data.length===1&&(!draft||!Number.isSafeInteger(draft.revision)||draft.revision<1||typeof draft.updated_at!=='string'||!Number.isFinite(Date.parse(draft.updated_at))))throw Error('Saved draft revision could not be verified');
+    if(!retained){
+     const content=draft?prepareDraftRestore(draft,rubric):{criteria:{},feedback:'',guidance:''};
+     if(!content)throw Error('Saved draft does not match the current rubric');
+     setScores(content.criteria);setFeedback(content.feedback);setGuidance(content.guidance);setDirty(false);
     }
+    if(draft){setDraftRevision(draft.revision);setSavedAt(draft.updated_at);}
     draftReadyRef.current=target.attempt;setDraftReady(target.attempt);
-   }).catch(()=>{if(currentRequest())setDraftError('Saved draft could not be checked. Retry before editing to avoid overwriting existing work.');});
+   }).catch(()=>{if(currentRequest())setDraftError('Saved draft could not be checked. Existing local edits are retained while editing is locked. Retry before editing to avoid overwriting existing work.');});
   return()=>{requestActive=false;};
- },[current?.id,selected,uid,tenant,authLoading,draftReload,currentContext,scope,permitted]);
+ },[current?.id,selected,uid,tenant,authLoading,draftReload,queueRevision,currentContext,scope,permitted,rubric]);
 
  async function saveDraft(){
   if(!current||!canEdit()||draftUncertainRef.current)return;
@@ -180,7 +202,7 @@ function MarkerWorkspace({scope,latestScope,permitted}:{scope:string;latestScope
   }finally{finish(token);}
  }
  const reloadDraft=()=>{
-  if(operation.current||reviewRef.current||uncertainMarks.current.has(selected)||!currentContext(context))return;
+  if(!queueReadyRef.current||operation.current||reviewRef.current||uncertainMarks.current.has(selected)||!currentContext(context))return;
   if(dirty&&!window.confirm('Discard unsaved edits and reload your latest saved draft?'))return;
   draftReadyRef.current='';setDraftReload(value=>value+1);
  };
@@ -194,7 +216,7 @@ function MarkerWorkspace({scope,latestScope,permitted}:{scope:string;latestScope
   setScores(content.criteria);setFeedback(content.feedback);setGuidance(content.guidance);setDirty(true);return true;
  };
  const select=(id:string)=>{
-  if(operation.current||reviewRef.current||id===selected)return;
+  if(!queueReadyRef.current||operation.current||reviewRef.current||id===selected)return;
   if(uncertainMarks.current.has(selected)){
    if(!window.confirm('Keep this unconfirmed mark for a status check and open another submission? Its reviewed draft stays in this workspace.'))return;
   }else if(dirty&&!window.confirm('Discard your unsent marking edits and open another submission?'))return;
@@ -238,7 +260,7 @@ function MarkerWorkspace({scope,latestScope,permitted}:{scope:string;latestScope
   }finally{finish(token);}
  };
  const mark=()=>{
-  if(!current||!brief||!uid||!tenant||!canEdit())return;
+  if(!current||!brief||!uid||!tenant||!canEdit()||draftUncertainRef.current)return;
   const all=rubric.map(criterion=>scores[criterion.criterion_code]);
   if(all.length<2||all.some((score,index)=>!criterionComplete(score,Number(rubric[index].max_points)))||feedback.trim().length<40){
    toast.error('Verify every criterion: evidence, missing work, score, reasoning and written feedback.');return;
@@ -250,7 +272,7 @@ function MarkerWorkspace({scope,latestScope,permitted}:{scope:string;latestScope
  };
  const submitMark=async()=>{
   const reviewed=reviewRef.current;
-  if(!reviewed||!currentContext(reviewed.context)||uncertainMarks.current.has(reviewed.attempt.id))return;
+  if(!reviewed||!queueReadyRef.current||draftUncertainRef.current||!current||!eligible||current.id!==reviewed.attempt.id||!currentContext(reviewed.context)||uncertainMarks.current.has(reviewed.attempt.id))return;
   const token=acquire('mark',reviewed.context);if(!token)return;
   uncertainMarks.current.set(token.attempt,{review:reviewed,message:'The submitted mark still needs a verified status check. Your reviewed draft is retained.'});
   try{
@@ -317,7 +339,7 @@ function MarkerWorkspace({scope,latestScope,permitted}:{scope:string;latestScope
   }finally{finish(token);}
  };
  const resubmit=async()=>{
-  if(!current||!brief||current.status!=='submitted'||!canEdit())return;
+  if(!current||!brief||current.status!=='submitted'||!canEdit()||draftUncertainRef.current)return;
   if(guidance.trim().length<50||current.attempt_no>=brief.max_attempts||Date.now()>new Date(brief.submission_cutoff).getTime()){
    toast.error('Resubmission requires actionable guidance, remaining attempts and an open cutoff.');return;
   }
@@ -335,9 +357,9 @@ function MarkerWorkspace({scope,latestScope,permitted}:{scope:string;latestScope
   }finally{finish(token);}
  };
  const actionable=attempts.filter(a=>['submitted','qa_rejected'].includes(a.status));
- const visible=attempts.filter(a=>(filter==='all'||['submitted','qa_rejected'].includes(a.status))&&`${briefs.find(b=>b.id===a.brief_id)?.title||''} ${a.id}`.toLowerCase().includes(query.toLowerCase()));
+ const visible=attempts.filter(a=>(filter==='all'||['submitted','qa_rejected'].includes(a.status))&&matchesLocalSearch(`${briefs.find(b=>b.id===a.brief_id)?.title||''} ${a.id}`,query));
  const completed=rubric.filter(c=>criterionComplete(scores[c.criterion_code],Number(c.max_points))).length;
- const editingBlocked=!!busy||!!review||!!pendingMark;
+ const editingBlocked=loading||!!error||!queueReadyRef.current||!!busy||!!review||!!pendingMark;
  return <DashboardLayout title="Marking Workspace" subtitle="Mark curriculum evidence separately from the lecturer, using Omniqora only as a private assistant"><div className="min-w-0 text-base [overflow-wrap:anywhere] [&_button]:max-w-full [&_button]:whitespace-normal [&_button]:[overflow-wrap:anywhere]">
   <section className="mb-5 rounded-xl border bg-primary/5 px-[min(1rem,12px)] py-4"><h2 className="flex items-center gap-2 font-semibold"><ShieldCheck className="size-5"/>AI suggestions are not grades</h2>
    <p className="mt-2 text-sm text-muted-foreground">You—not the teaching lecturer or AI—must score every criterion and cite actual submitted evidence. Document missing outcomes and your own reasoning. A separate IQA must approve or reject the marked submission before the student sees any score. Where the approved policy permits, request revisions before the final cutoff.</p>
@@ -349,11 +371,12 @@ function MarkerWorkspace({scope,latestScope,permitted}:{scope:string;latestScope
    <p className="mt-3 font-semibold">Recorded private score: {confirmation.score}/100</p>
    <p className="mt-2 text-sm text-muted-foreground">This score includes any policy-defined resubmission penalty. Independent IQA review and the separate release step are still required before the learner sees a result.</p>
   </section>}
+  {permitted&&<div className="mb-4 flex flex-wrap items-center gap-2"><Button variant="outline" disabled={loading||!!busy||!!review} onClick={refreshQueue}>Refresh allocated assessments</Button><p className="text-xs text-muted-foreground">Refresh verifies the current allocation and rubric before reopening your saved draft.</p></div>}
   {loading&&<p role="status">{authLoading?'Checking assessment access…':'Loading only your allocated assessments…'}</p>}
   {error&&<p role="alert" className="rounded-xl border border-destructive px-[min(1rem,12px)] py-4">{error}. Try reloading. If this continues, contact your centre administrator.</p>}
   {!loading&&!error&&<div className="flex min-w-0 flex-wrap gap-5">
    <section className="min-w-0 flex-[1_1_16rem] rounded-xl border bg-card px-[min(1rem,12px)] py-4 sm:p-5"><h2 className="font-semibold">Your marking queue ({actionable.length} need action)</h2>
-    <label className="mt-3 block text-sm">Find an assessment<Input className="min-w-0 px-[min(0.75rem,12px)]" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Title or anonymised reference"/></label>
+    <label className="mt-3 block text-sm">Find an assessment<Input className="min-w-0 px-[min(0.75rem,12px)]" type="search" maxLength={120} value={query} onChange={e=>setQuery(e.target.value)} placeholder="Title or anonymised reference"/></label>
     <label className="mt-3 block text-sm">Show<select className="mt-1 min-h-11 w-full min-w-0 rounded-md border bg-background px-[min(0.75rem,12px)]" value={filter} onChange={e=>setFilter(e.target.value)}><option value="action">Needs marking</option><option value="all">All allocated submissions</option></select></label>
     <p className="mt-2 text-sm text-muted-foreground">{visible.length} matching · newest received first</p>
     <div className="mt-3 space-y-2">{visible.slice(page*25,page*25+25).map(a=><button key={a.id} disabled={!!busy||!!review} aria-pressed={selected===a.id} onClick={()=>select(a.id)} className={`w-full rounded-lg border px-[min(0.75rem,12px)] py-3 text-left ${selected===a.id?'border-primary bg-primary/5':''}`}>
@@ -422,13 +445,13 @@ function MarkerWorkspace({scope,latestScope,permitted}:{scope:string;latestScope
       <CentreFeedbackLibrary key={current.id} disabled={editingBlocked} onInsert={insertFeedback}/>
       <FeedbackLibrary disabled={editingBlocked} onInsert={insertFeedback}/>
       <details className="mt-3 border-t pt-3"><summary className="cursor-pointer text-sm font-semibold">Feedback prompts</summary><p className="my-2 text-sm text-muted-foreground">Insert a starting point, then replace every bracketed instruction with feedback specific to this submission. Prompts never set scores.</p><div className="flex flex-wrap gap-2">{feedbackPrompts.map(p=><Button key={p.id} size="sm" variant="outline" disabled={editingBlocked} onClick={()=>insertFeedback(p.text)}>{p.label}</Button>)}</div></details>
-      <Button ref={markButton} className="mt-3 h-auto min-h-11 w-full px-[min(1rem,16px)] py-2 sm:w-auto" disabled={editingBlocked||!rubric.length||completed!==rubric.length||feedback.trim().length<40} onClick={()=>void mark()}>Send independent human mark to IQA</Button>
+      <Button ref={markButton} className="mt-3 h-auto min-h-11 w-full px-[min(1rem,16px)] py-2 sm:w-auto" disabled={editingBlocked||draftUncertain||!rubric.length||completed!==rubric.length||feedback.trim().length<40} onClick={()=>void mark()}>Send independent human mark to IQA</Button>
      </section>}
      {draftReady===current.id&&current.status==='submitted'&&current.attempt_no<brief.max_attempts&&Date.now()<=new Date(brief.submission_cutoff).getTime()&&
       <section className="min-w-0 rounded-xl border bg-card px-[min(1rem,12px)] py-4 sm:p-5"><h2 className="flex gap-2 font-semibold"><RotateCcw className="size-5"/>Return for resubmission instead</h2>
        <p className="mt-2 text-xs text-muted-foreground">Allowed by {brief.policy_reference}. Provide precise reasons and improvement instructions. Remaining time: until {new Date(brief.submission_cutoff).toLocaleString()}.</p>
        <Textarea disabled={editingBlocked} aria-label="Resubmission guidance" rows={4} className="mt-3 min-w-0 px-[min(0.75rem,12px)]" maxLength={6000} value={guidance} onChange={e=>{if(!canEdit())return;setDirty(true);setGuidance(e.target.value);}} placeholder="Explain which learning outcomes are not evidenced, what work needs adding, and how to correct it."/>
-       <Button className="mt-3 h-auto min-h-11 py-2" variant="outline" disabled={editingBlocked||guidance.trim().length<50} onClick={()=>void resubmit()}>Request permitted revision</Button>
+       <Button className="mt-3 h-auto min-h-11 py-2" variant="outline" disabled={editingBlocked||draftUncertain||guidance.trim().length<50} onClick={()=>void resubmit()}>Request permitted revision</Button>
       </section>}
      {!eligible&&<p className="rounded-lg border bg-secondary px-[min(1rem,12px)] py-4 text-sm">Marking is no longer available in this attempt state. IQA approval or a separate review is required.</p>}
     </>}
