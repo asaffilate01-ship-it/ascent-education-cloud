@@ -1,13 +1,18 @@
 {
   "/": {
-    "title": "UniPathway | Online & In-Class Learning in Pakistan",
-    "description": "Explore tuition, languages, qualifications and skills with UniPathway. Learn online across Pakistan or attend in-class sessions at our Jhelum centre.",
+    "title": "UniPathway | Education, Tuition & LMS in Pakistan",
+    "description": "Explore tuition, IELTS, accounting, UK qualification pathways and technology training in Jhelum and online across Pakistan, supported by UniPathway’s education platform.",
     "keywords": [
-      "online courses in Pakistan",
-      "online learning Pakistan",
-      "online tuition Pakistan",
+      "UniPathway",
+      "education management platform Pakistan",
+      "learning management system Pakistan",
+      "online courses Pakistan",
       "education centre Jhelum",
-      "sewing and craft courses Pakistan"
+      "Classes 9–12 tuition",
+      "IELTS preparation Jhelum",
+      "ACCA preparation Pakistan",
+      "UK diploma pathways Pakistan",
+      "AI and coding courses Pakistan"
     ]
   },
   "/education-centre": {
@@ -25,9 +30,11 @@
     "description": "Online tuition across Pakistan for Classes 9–12: sciences, maths, English, computer science and commerce for Federal and all provincial boards, IGCSE, O and A Level. In class at our Jhelum centre.",
     "keywords": [
       "online tuition Pakistan",
-      "online maths tuition Pakistan",
-      "online science tuition Pakistan",
-      "tuition Jhelum"
+      "Classes 9–12 tuition Jhelum",
+      "Matric tuition Pakistan",
+      "FSc tuition Pakistan",
+      "Cambridge IGCSE tuition",
+      "maths English science commerce tuition"
     ]
   },
   "/ielts-preparation": {
@@ -67,21 +74,26 @@
     ]
   },
   "/tech-academy": {
-    "title": "Online Technology Courses in Pakistan | UniPathway",
+    "title": "AI, Coding & Technology Courses in Pakistan | UniPathway",
     "description": "Explore AI, Python, coding, cyber security, cloud and DevOps learning online across Pakistan with UniPathway. Check delivery options and programme availability.",
     "keywords": [
-      "online technology courses Pakistan",
+      "AI courses Pakistan",
+      "coding courses Jhelum",
       "Python courses Pakistan",
-      "cyber security training Pakistan"
+      "cyber security training Pakistan",
+      "cloud computing courses Pakistan",
+      "technology certification preparation"
     ]
   },
   "/finance-academy": {
-    "title": "Accounting & Finance Courses in Pakistan | UniPathway",
+    "title": "ACCA Preparation & Accounting Courses Pakistan | UniPathway",
     "description": "Explore bookkeeping, financial accounting, modelling and IFA or ACCA preparation with UniPathway. Ask about current courses and entry requirements.",
     "keywords": [
+      "ACCA preparation Pakistan",
+      "ACCA preparation Jhelum",
       "accounting courses Pakistan",
-      "ACCA preparation",
-      "bookkeeping training"
+      "bookkeeping training",
+      "financial accounting courses"
     ]
   },
   "/creative-crafts": {
@@ -161,57 +173,92 @@
   "/consultation": {
     "title": "Request an education consultation | UniPathway",
     "description": "Prepare for a UniPathway education consultation in Jhelum or online, compare study goals and request an adviser appointment.",
-    "keywords": ["education consultation", "study abroad counselling", "Jhelum admissions advice", "UniPathway"]
+    "keywords": [
+      "education consultation",
+      "study abroad counselling",
+      "Jhelum admissions advice",
+      "UniPathway"
+    ]
   },
   "/international-study": {
     "title": "International Study & Visa Guidance | UniPathway",
     "description": "Compare international admissions steps and find official student visa and permit guidance for nine study destinations from Pakistan.",
-    "keywords": ["international study Pakistan", "student visa guidance"]
+    "keywords": [
+      "international study Pakistan",
+      "student visa guidance"
+    ]
   },
   "/international-study/uk": {
     "title": "United Kingdom Student Visa & International Study | UniPathway",
     "description": "Plan study in United Kingdom from Pakistan, with a separate admissions checklist and official immigration links.",
-    "keywords": ["international study Pakistan", "student visa guidance"]
+    "keywords": [
+      "international study Pakistan",
+      "student visa guidance"
+    ]
   },
   "/international-study/italy": {
     "title": "Italy Student Visa & International Study | UniPathway",
     "description": "Plan study in Italy from Pakistan, with a separate admissions checklist and official immigration links.",
-    "keywords": ["international study Pakistan", "student visa guidance"]
+    "keywords": [
+      "international study Pakistan",
+      "student visa guidance"
+    ]
   },
   "/international-study/germany": {
     "title": "Germany Student Visa & International Study | UniPathway",
     "description": "Plan study in Germany from Pakistan, with a separate admissions checklist and official immigration links.",
-    "keywords": ["international study Pakistan", "student visa guidance"]
+    "keywords": [
+      "international study Pakistan",
+      "student visa guidance"
+    ]
   },
   "/international-study/australia": {
     "title": "Australia Student Visa & International Study | UniPathway",
     "description": "Plan study in Australia from Pakistan, with a separate admissions checklist and official immigration links.",
-    "keywords": ["international study Pakistan", "student visa guidance"]
+    "keywords": [
+      "international study Pakistan",
+      "student visa guidance"
+    ]
   },
   "/international-study/canada": {
     "title": "Canada Study Permit & International Study | UniPathway",
     "description": "Plan study in Canada from Pakistan, with a separate admissions checklist and official immigration links.",
-    "keywords": ["international study Pakistan", "student visa guidance"]
+    "keywords": [
+      "international study Pakistan",
+      "student visa guidance"
+    ]
   },
   "/international-study/usa": {
     "title": "United States Student Visa & International Study | UniPathway",
     "description": "Plan study in United States from Pakistan, with a separate admissions checklist and official immigration links.",
-    "keywords": ["international study Pakistan", "student visa guidance"]
+    "keywords": [
+      "international study Pakistan",
+      "student visa guidance"
+    ]
   },
   "/international-study/france": {
     "title": "France Student Visa & International Study | UniPathway",
     "description": "Plan study in France from Pakistan, with a separate admissions checklist and official immigration links.",
-    "keywords": ["international study Pakistan", "student visa guidance"]
+    "keywords": [
+      "international study Pakistan",
+      "student visa guidance"
+    ]
   },
   "/international-study/spain": {
     "title": "Spain Student Visa & International Study | UniPathway",
     "description": "Plan study in Spain from Pakistan, with a separate admissions checklist and official immigration links.",
-    "keywords": ["international study Pakistan", "student visa guidance"]
+    "keywords": [
+      "international study Pakistan",
+      "student visa guidance"
+    ]
   },
   "/international-study/netherlands": {
     "title": "Netherlands Student Residence Permit & International Study | UniPathway",
     "description": "Plan study in Netherlands from Pakistan, with a separate admissions checklist and official immigration links.",
-    "keywords": ["international study Pakistan", "student visa guidance"]
+    "keywords": [
+      "international study Pakistan",
+      "student visa guidance"
+    ]
   },
   "/pathways": {
     "title": "Study Abroad & University Pathways | UniPathway",
