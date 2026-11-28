@@ -1,7 +1,7 @@
 
 import {describe,it,expect} from 'vitest';
 import {readFileSync} from 'node:fs';
-import {physicalSecurityScope,requireCentreRows,deviceHealth,occupancyStats,visitorStats,validateVisitorReceipt} from '@/lib/physicalSecurity';
+import {physicalSecurityScope,requireCentreRows,verifySecurityPage,deviceHealth,occupancyStats,visitorStats,validateVisitorReceipt} from '@/lib/physicalSecurity';
 const user=(role:string,roles:string[]= [role],tenantId?:string)=>({id:'actor',role,roles,tenantId});
 describe('UniPathway physical security permissions and operational honesty',()=>{
  it('rejects role-switch privileges, unrelated roles and global-only owners',()=>{
@@ -14,6 +14,23 @@ describe('UniPathway physical security permissions and operational honesty',()=>
  it('denies a mixed-centre response instead of silently counting another centre',()=>{
   expect(()=>requireCentreRows([{tenant_id:'centre-a'},{tenant_id:'centre-b'}],'centre-a')).toThrow();
   expect(requireCentreRows([{tenant_id:'centre-a'}],'centre-a')).toHaveLength(1);
+ });
+ it('rejects repeated security rows across pages and the wrong muster event',()=>{
+  const seen=new Set<string>(),row={id:'a',tenant_id:'centre-a',muster_event_id:'event-a'};
+  expect(verifySecurityPage([row],'centre-a','id',seen,'event-a')).toEqual([row]);
+  expect(()=>verifySecurityPage([row],'centre-a','id',seen,'event-a')).toThrow();
+  expect(()=>verifySecurityPage([{...row,id:'b',muster_event_id:'event-b'}],'centre-a','id',seen,'event-a')).toThrow();
+  expect(()=>verifySecurityPage([{...row,id:'c',tenant_id:'centre-b'}],'centre-a','id',seen)).toThrow();
+  expect(()=>verifySecurityPage([{...row,id:'d'},{...row,id:'d'}],'centre-a','id',seen)).toThrow();
+  expect(seen.size).toBe(1);
+ });
+ it('retains legitimate identical anonymous occupancy projections without exposing identities',()=>{
+  const row={tenant_id:'centre-a',person_type:'student',in_building:true,last_event_at:null,last_gate_id:null};
+  const seen=new Set<string>();
+  expect(occupancyStats(verifySecurityPage([row,row],'centre-a',null,seen)).inside).toBe(2);
+  expect(seen.size).toBe(0);
+  expect(()=>verifySecurityPage([{...row,in_building:'yes'}],'centre-a',null,seen)).toThrow();
+  expect(()=>verifySecurityPage([row],'centre-b',null,seen)).toThrow();
  });
  it('does not count previously recorded offline or stale devices as live',()=>{
   const now=Date.parse('2026-11-01T12:00:00Z');
@@ -39,7 +56,7 @@ describe('UniPathway physical security permissions and operational honesty',()=>
   expect(gate).toContain('PHYSICAL_SECURITY_ENABLED');
   expect(hook).toContain(".rpc('get_unipathway_security_operations_rows'");
   expect(hook).toContain('p_tenant:tenant');
-  expect(hook).toContain('requireCentreRows');
+  expect(hook).toContain('verifySecurityPage');
   for(const path of ['src/pages/security/CentreSecurity.tsx','src/pages/security/VisitorReception.tsx','src/pages/security/MusterMode.tsx','src/pages/security/SecurityCommandCentre.tsx']){
    const s=readFileSync(path,'utf8');expect(s).not.toContain("select('*')");expect(s).toContain('useScopedSecurityRows');
   }
