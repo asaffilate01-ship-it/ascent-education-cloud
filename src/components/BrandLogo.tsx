@@ -6,8 +6,8 @@ type BrandLogoProps = { compact?: boolean; className?: string; showTagline?: boo
 export default function BrandLogo({ compact = false, className = '' }: BrandLogoProps) {
   if (compact) {
     return (
-      <span className={`inline-block aspect-square overflow-hidden ${className}`} aria-label="UniPathway">
-        <img src={logo} alt="UniPathway" className="h-full w-auto max-w-none object-cover object-left" />
+      <span className={`inline-flex aspect-square shrink-0 items-center justify-center ${className}`}>
+        <img src="/brand/unipathway-mark.svg" alt="UniPathway" className="h-full w-full object-contain" />
       </span>
     );
   }
