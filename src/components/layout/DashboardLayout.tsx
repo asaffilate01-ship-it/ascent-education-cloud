@@ -75,6 +75,7 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
           </div>
           <div role="group" aria-label="Workspace actions" className="ml-auto flex min-w-0 max-w-full flex-wrap items-center justify-end gap-1 lg:gap-2">
             {user?.role==='student'&&<Link className="hidden sm:inline-flex min-h-11 items-center rounded-lg border px-3 text-xs hover:bg-accent" to="/student/downloads">Saved learning</Link>}
+            {(user?.roles?.length||0)>1&&<Link className="inline-flex min-h-11 items-center rounded-lg border px-3 text-xs font-semibold hover:bg-accent" to="/login">Switch role</Link>}
             <Link className="hidden md:inline-flex min-h-11 items-center rounded-lg border px-3 text-xs hover:bg-accent" to="/workspace">Workspace</Link>
             <button
               onClick={() => setCmdOpen(true)}
