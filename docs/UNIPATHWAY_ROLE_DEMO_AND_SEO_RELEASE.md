@@ -44,3 +44,12 @@ Secrets: `UNIPATHWAY_DEMO_URL`, `UNIPATHWAY_DEMO_PUBLISHABLE_KEY`, `UNIPATHWAY_D
 The approved fictional centre must use slug `unipathway-demo`. The confirmed demo identity must be tagged by the trusted administrator with app_metadata.fixture_namespace = unipathway-demo-v1. The check verifies the expected account ID, profile, exact role memberships and centre, and an HTTP noindex header at the separate demo origin. It uses real password authentication and locally signs out; it creates or changes no application records. It cannot establish complete demo data isolation from inspection of those few fields; that must be independently certified before providing credentials. It will fail if the demo's applicable institutional authentication/MFA policies prevent the read. Do not weaken MFA to make this check pass. Use separately authorised real-account browser acceptance for MFA, all 21 dashboards, feature flows and provider safety.
 
 To run, explicitly enter UNIPATHWAY_ISOLATED_DEMO_ONLY in the manual workflow. No workflow is triggered automatically by merging this release. Do not mark the demo active unless its independent isolation and full functional acceptance are verified.
+
+
+## Demo role journey and account boundaries
+
+The public selector supports shareable role preferences and four functional categories spanning all 21 role descriptions. Authenticated selection still depends exclusively on verified account memberships. A selected role never grants permissions.
+
+A misconfigured demo hostname now fails closed before loading the application; the demo is online-only and does not register the application service worker. Demo sign-in accepts only the demonstration identity, and the main host rejects that identity. Registration, password recovery and shared account profile/password/MFA/deletion controls are restricted in the browser; administrator-managed MFA is still required wherever institutional authentication applies.
+
+These browser safeguards do not replace database and authentication-provider enforcement. The isolated project administrator must prevent unintended credential mutations and external side effects at the server, use synthetic data only, and perform the protected acceptance workflow. No production accounts, passwords or permissions are changed by these updates.
