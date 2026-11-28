@@ -23,6 +23,6 @@ export function settingsIntegrationEvidence(raw:unknown,tenant:string,now:number
  return rows.map(row=>{
   const current=integrationCurrent(row,now);
   const stamp=parseZonedAcademicTimestamp(row.last_health_at);
-  return {id:row.id,key:row.integration_key,name:providerNames[row.integration_key]||row.integration_key.replace(/_/g,' '),status:current?'Health verified within 24 hours':statuses[row.status]||'Unrecognised status — review required',current,required:row.required_for_launch,checkedAt:stamp!==null&&stamp<=now?new Date(stamp).toISOString():null};
+  return {id:row.id,key:row.integration_key,name:Object.prototype.hasOwnProperty.call(providerNames,row.integration_key)?providerNames[row.integration_key]:row.integration_key.replace(/_/g,' '),status:current?'Health verified within 24 hours':Object.prototype.hasOwnProperty.call(statuses,row.status)?statuses[row.status]:'Unrecognised status — review required',current,required:row.required_for_launch,checkedAt:stamp!==null&&stamp<=now?new Date(stamp).toISOString():null};
  }).sort((a,b)=>Number(b.required)-Number(a.required)||a.name.localeCompare(b.name));
 }
