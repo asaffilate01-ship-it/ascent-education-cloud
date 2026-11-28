@@ -17,7 +17,7 @@ export default function PublicFooter() {
         <div><Link to="/" aria-label="UniPathway home"><BrandLogo className="h-16" /></Link><p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">Qualifications, school tuition, employer learning and global progression — connected through one learning experience.</p><p className="mt-3 text-sm font-semibold">Learn online across Pakistan or in class in Jhelum.</p><SocialIcons className="mt-4" /></div>
         <FooterCol title="Learn" links={studyLinks.filter(l => ['/study', '/scholarships', '/qualifications', '/tuition', '/ielts-preparation', '/german-preparation', '/tech-academy', '/finance-academy', '/beauty-aesthetics', '/creative-crafts'].includes(l.to)).map(l => [l.label, l.to])} />
         <FooterCol title="Study abroad" links={destinationLinks.map(l => [l.label, l.to])} />
-        <FooterCol title="Company" links={[['About', '/about'], ['Contact', '/contact'], ['Blog', '/blog'], ['Careers & internships', '/careers'], ['Sign in', '/login']]} />
+        <FooterCol title="Company" links={[['About', '/about'], ['Contact', '/contact'], ['Blog', '/blog'], ['Careers & internships', '/careers'], ['Sign in', '/login'], ['Explore the platform demo', '/demo']]} />
       </div>
       <div className="flex flex-col gap-3 border-t border-border py-6 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
         <div><CompanyDetails /><p className="mt-4">© {new Date().getFullYear()} UniPathway Education (Pvt.) Ltd. All rights reserved.</p></div>
