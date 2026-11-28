@@ -49,10 +49,17 @@ export const displayTime=(date:string|null)=>date&&Number.isFinite(Date.parse(da
 
 /** Reject inconsistent secure projections before displaying totals. The key is
  * the stable identifier emitted by the server for each record kind. */
-export function verifySecurityPage<T extends {tenant_id:string}>(rows:readonly T[],centre:string,key:string,seen:Set<string>,eventId?:string):T[]{
+export function verifySecurityPage<T extends {tenant_id:string}>(rows:readonly T[],centre:string,key:string|null,seen:Set<string>,eventId?:string):T[]{
  const verified=requireCentreRows(rows,centre);
  const keys=new Set<string>();
  for(const row of verified){
+  if(key===null){
+   // Occupancy is deliberately anonymous in the fixed server projection.
+   // Identical anonymous rows may be different people; never infer identity.
+   const occupancy=row as Record<string,unknown>;
+   if(typeof occupancy.in_building!=='boolean'||typeof occupancy.person_type!=='string'||!occupancy.person_type.trim())throw Error('Invalid anonymous occupancy record');
+   continue;
+  }
   const value=(row as Record<string,unknown>)[key];
   if(typeof value!=='string'||!value.trim()||value.length>256||seen.has(value)||keys.has(value))
    throw Error('Duplicate or missing secure record identity');
