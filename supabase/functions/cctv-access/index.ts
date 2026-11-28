@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.99.1';
 import { authenticateRequest } from '../_shared/auth.ts';
+import { cctvViewingAllowed } from '../_shared/cctvPermissions.ts';
 import { corsHeaders,rateLimit,rateLimitResponse } from '../_shared/cors.ts';
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...corsHeaders,'Content-Type':'application/json','Cache-Control':'no-store'}});
 Deno.serve(async req=>{
@@ -13,12 +14,10 @@ Deno.serve(async req=>{
   const scoped=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_ANON_KEY')!,{global:{headers:{Authorization:req.headers.get('Authorization')!}}});
   const [{data:camera,error},{data:roles,error:roleError}]=await Promise.all([
    scoped.from('unipathway_cctv_cameras').select('*').eq('id',body.cameraId).single(),
-   scoped.from('user_roles').select('role').eq('user_id',auth.userId),
+   scoped.from('user_roles').select('user_id,role,tenant_id').eq('user_id',auth.userId),
   ]);
   if(error||roleError||!camera||!camera.enabled)return json({error:'Camera unavailable to this account'},403);
-  const manager=roles?.some(r=>['superadmin','centre_director'].includes(r.role));
-  const security=roles?.some(r=>r.role==='security_officer');
-  if(!manager&&(!security||!(body.mode==='live'?camera.security_live:camera.security_playback)))return json({error:'Viewing permission required'},403);
+  if(!cctvViewingAllowed(roles,auth.userId,camera.tenant_id,body.mode,camera))return json({error:'Viewing permission required'},403);
   let start:string|null=null,end:string|null=null,reason:string|null=null;
   if(body.mode==='playback'){
    const a=Date.parse(body.startsAt),b=Date.parse(body.endsAt);
