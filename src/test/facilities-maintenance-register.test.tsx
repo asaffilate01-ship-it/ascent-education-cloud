@@ -33,6 +33,24 @@ describe('verified facilities maintenance review',()=>{
   expect(screen.getByText('Seal requires review')).toBeInTheDocument();
   expect(screen.queryByRole('button',{name:'Record inspection'})).toBeNull();
  });
+ it('searches the full verified asset list and paginates without changing maintenance totals',async()=>{
+  mocks.rpc.mockResolvedValue({data:{assets:Array.from({length:25},(_,i)=>asset('asset-'+i,'FIRE-'+String(i+1).padStart(2,'0'),'2026-11-20')),inspections:[]},error:null});
+  const {default:FacilitiesRegister}=await import('@/components/security/FacilitiesRegister');
+  render(<FacilitiesRegister/>);
+  expect(await screen.findByText('Maintenance and inspection review queue')).toBeInTheDocument();
+  expect(screen.getByText(/FIRE-01 ·/)).toBeInTheDocument();
+  expect(screen.queryByText(/FIRE-25 ·/)).toBeNull();
+  fireEvent.click(screen.getByRole('button',{name:'Next assets'}));
+  expect(screen.getByText(/FIRE-25 ·/)).toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText('Find an asset'),{target:{value:'reception FIRE-25'}});
+  expect(screen.getByText(/FIRE-25 ·/)).toBeInTheDocument();
+  expect(screen.queryByText(/FIRE-24 ·/)).toBeNull();
+  expect(screen.getByText(/1 of 25 registered assets shown/)).toBeInTheDocument();
+  expect(screen.getByText('Registered assets').parentElement).toHaveTextContent('25');
+  fireEvent.click(screen.getByRole('button',{name:'Clear filters'}));
+  expect(screen.getByText(/FIRE-01 ·/)).toBeInTheDocument();
+  expect(screen.getByText(/25 of 25 registered assets shown/)).toBeInTheDocument();
+ });
  it('does not render a maintenance queue when the snapshot is foreign',async()=>{
   mocks.rpc.mockResolvedValue({data:{assets:[{...asset('a','FOREIGN','2026-11-20'),tenant_id:'centre-b'}],inspections:[]},error:null});
   const {default:FacilitiesRegister}=await import('@/components/security/FacilitiesRegister');
