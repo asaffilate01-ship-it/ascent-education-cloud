@@ -15,7 +15,7 @@ import {BookOpen,Cloud,Clock,Code2,ExternalLink,GraduationCap,HardDrive,HelpCirc
 type Module={id:string;tenant_id:string;title:string;programme_id:string};
 type Template={id:string;module_id:string;tenant_id:string;title:string;provider:string;
  duration_minutes:number;max_attempts:number;access_mode:string;learning_outcomes:string|null;
- preparation_notes:string|null;estimated_cost_gbp:number;published:boolean};
+ preparation_notes:string|null;estimated_cost_gbp:number;published:boolean;active:boolean};
 type Run={id:string;tenant_id:string;template_id:string;cohort_reference:string;starts_at:string|null;ends_at:string|null;
  status:string;live_class_session_id:string|null;max_concurrent:number};
 type Invite={class_run_id:string;tenant_id:string;student_id:string;status:string};
@@ -66,10 +66,12 @@ function ScopedLabHub(){
   setModules([]);setTemplates([]);setTasks([]);setRuns([]);setRequests([]);setNotes([]);setSupport([]);setInvites([]);
   try{
    if(!authorised||!userId||!tenant)throw Error('Verified student and centre required');
-   const enrol=verifyLabRows<{id:string;tenant_id:string;student_id:string;programme_id:string}>(await readLabPages(()=>db.from('student_enrolments').select('id,tenant_id,student_id,programme_id,status').eq('student_id',userId).eq('tenant_id',tenant).eq('status','active'),current),tenant,userId);
-   if(enrol.some(row=>(row as typeof row&{status:string}).status!=='active'))throw Error('Unverified enrolment');
+   const enrol=verifyLabRows<{id:string;tenant_id:string;student_id:string;programme_id:string;status:string}>(await readLabPages(()=>db.from('student_enrolments').select('id,tenant_id,student_id,programme_id,status').eq('student_id',userId).eq('tenant_id',tenant).eq('status','active'),current),tenant,userId);
+   if(enrol.some(row=>row.status!=='active'))throw Error('Unverified enrolment');
    const programmes=[...new Set(enrol.map(row=>row.programme_id))];
-   const m=verifyLabRows<Module>(await readLabIdBatches(programmes,ids=>db.from('modules').select('id,title,programme_id,tenant_id').eq('tenant_id',tenant).in('programme_id',ids),current),tenant).filter(row=>programmes.includes(row.programme_id)&&approvedTechModules.includes(row.id));
+   const allModules=verifyLabRows<Module>(await readLabIdBatches(programmes,ids=>db.from('modules').select('id,title,programme_id,tenant_id').eq('tenant_id',tenant).in('programme_id',ids),current),tenant);
+   if(allModules.some(row=>!programmes.includes(row.programme_id)||typeof row.title!=='string'))throw Error('Unverified module membership');
+   const m=allModules.filter(row=>approvedTechModules.includes(row.id));
    const ids=m.map(row=>row.id);
    const [rawTemplates,rawRequests,rawInvites]=await Promise.all([
     readLabIdBatches(ids,group=>db.from('lab_templates').select('id,module_id,tenant_id,title,provider,duration_minutes,max_attempts,access_mode,learning_outcomes,preparation_notes,estimated_cost_gbp,published,active').eq('tenant_id',tenant).eq('active',true).eq('published',true).in('module_id',group),current),
@@ -77,7 +79,7 @@ function ScopedLabHub(){
     ids.length?readLabPages(()=>db.from('unipathway_lab_run_invitations').select('class_run_id,tenant_id,student_id,status').eq('student_id',userId).eq('tenant_id',tenant).in('status',['invited','accepted']),current,'class_run_id'):Promise.resolve([]),
    ]);
    const list=verifyLabRows<Template>(rawTemplates,tenant);
-   if(list.some(t=>!ids.includes(t.module_id)||!t.published||(t as Template&{active:boolean}).active!==true||!['self_study','class_only','both'].includes(t.access_mode)||!Number.isInteger(t.max_attempts)||t.max_attempts<1))throw Error('Unverified lab template');
+   if(list.some(t=>!ids.includes(t.module_id)||t.published!==true||t.active!==true||typeof t.title!=='string'||typeof t.provider!=='string'||!['self_study','class_only','both'].includes(t.access_mode)||!Number.isInteger(t.max_attempts)||t.max_attempts<1))throw Error('Unverified lab template');
    const allRequests=verifyLabRequestHistory<Request>(rawRequests,tenant,userId);
    const allInvites=verifyLabRows<Invite>(rawInvites,tenant,userId,'class_run_id');
    if(allInvites.some(row=>!['invited','accepted'].includes(row.status)))throw Error('Unverified invitation');
@@ -90,7 +92,7 @@ function ScopedLabHub(){
     readLabIdBatches(visibleRequests.map(row=>row.id),group=>db.from('unipathway_lab_support_requests').select('id,tenant_id,student_id,launch_request_id,message,status,requested_at,response').eq('student_id',userId).eq('tenant_id',tenant).in('launch_request_id',group),current),
    ]);
    const allTasks=verifyLabRows<Task>(rawTasks,tenant);
-   if(allTasks.some(task=>!labIds.includes(task.template_id)))throw Error('Unverified lab tasks');
+   if(allTasks.some(task=>!labIds.includes(task.template_id)||!Number.isSafeInteger(task.sequence_no)||typeof task.title!=='string'))throw Error('Unverified lab tasks');
    const allRuns=verifyLabRows<Run>(rawRuns,tenant);
    if(allRuns.some(run=>!runIds.includes(run.id)))throw Error('Unverified class lab');
    const allNotes=verifyLabRows<Note>(rawNotes,tenant,userId);
@@ -100,11 +102,12 @@ function ScopedLabHub(){
     notesByTask.add(note.task_id);
    }
    const allHelp=verifyLabRows<HelpReply>(rawHelp,tenant,userId);
-   if(allHelp.some(reply=>!visibleRequests.some(req=>req.id===reply.launch_request_id)))throw Error('Unverified lab support');
+   if(allHelp.some(reply=>!visibleRequests.some(req=>req.id===reply.launch_request_id)||typeof reply.message!=='string'||typeof reply.requested_at!=='string'))throw Error('Unverified lab support');
    if(!current())return null;
-   setModules(m);setTemplates(list.sort((a,b)=>a.title.localeCompare(b.title)));setRequests(visibleRequests);
-   setInvites(allInvites);setTasks(allTasks.sort((a,b)=>a.sequence_no-b.sequence_no||a.id.localeCompare(b.id)));
-   setRuns(allRuns.filter(row=>labIds.includes(row.template_id)));setNotes(allNotes);setSupport(allHelp.sort((a,b)=>b.requested_at.localeCompare(a.requested_at)));
+   list.sort((a,b)=>a.title.localeCompare(b.title));allTasks.sort((a,b)=>a.sequence_no-b.sequence_no||a.id.localeCompare(b.id));allHelp.sort((a,b)=>b.requested_at.localeCompare(a.requested_at));
+   setModules(m);setTemplates(list);setRequests(visibleRequests);
+   setInvites(allInvites);setTasks(allTasks);
+   setRuns(allRuns.filter(row=>labIds.includes(row.template_id)));setNotes(allNotes);setSupport(allHelp);
    setNeedsRefresh(false);
    return {requests:visibleRequests,notes:allNotes,support:allHelp};
   }catch{if(current())setError('Lab records or permissions could not be verified.');return null;}
@@ -194,7 +197,7 @@ function ScopedLabHub(){
    const steps=tasks.filter(x=>x.template_id===t.id);
    return <section key={t.id} className="min-w-0 rounded-xl border bg-card p-3 sm:p-5 [overflow-wrap:anywhere]">
     <div className="flex flex-wrap items-start justify-between gap-3">
-     <div><p className="text-xs font-semibold uppercase tracking-wide text-success">{module?.title||'My module'} · {providers[t.provider]||t.provider}</p>
+     <div><p className="text-xs font-semibold uppercase tracking-wide text-success">{module?.title||'My module'} · {Object.prototype.hasOwnProperty.call(providers,t.provider)?providers[t.provider]:t.provider}</p>
       <h2 className="mt-2 text-xl font-bold">{t.title}</h2>
       {t.learning_outcomes&&<p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">{t.learning_outcomes}</p>}
       {t.preparation_notes&&<p className="mt-2 whitespace-pre-wrap text-sm"><strong>Before the lab:</strong> {t.preparation_notes}</p>}
