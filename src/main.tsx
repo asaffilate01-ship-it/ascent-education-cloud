@@ -1,5 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { demoDeploymentBlocked } from "./lib/demoAccess";
+import OfflineReader from "./pages/learning/OfflineReader";
 import '@fontsource/sora/600.css';
 import '@fontsource/sora/700.css';
 import '@fontsource/sora/800.css';
@@ -16,7 +17,7 @@ if (root) {
  const demoHost=window.location.hostname==='demo.unipathway.pk';
  if(demoDeploymentBlocked(window.location.hostname,import.meta.env.VITE_SUPABASE_URL,import.meta.env.VITE_UNIPATHWAY_DEMO_PROJECT_REF)){
   document.title='UniPathway | Demo unavailable';
-  const robots=document.createElement('meta');robots.name='robots';robots.content='noindex, nofollow';document.head.appendChild(robots);
+  const robots=document.querySelector<HTMLMetaElement>('meta[name="robots"]')||document.createElement('meta');robots.name='robots';robots.content='noindex, nofollow';if(!robots.isConnected)document.head.appendChild(robots);
   renderer.render(<main className="min-h-dvh grid place-items-center bg-background p-5"><section className="w-full max-w-md space-y-4 rounded-xl border bg-card p-6"><img src="/brand/unipathway-mark.svg" alt="UniPathway" className="size-12"/><h1 className="text-2xl font-bold">Demo unavailable</h1><p role="alert" className="text-sm text-muted-foreground">The isolated demonstration environment has not been verified. No account or dashboard requests have been started.</p><a href="https://unipathway.pk/demo" className="inline-flex min-h-11 items-center underline">Back to UniPathway</a></section></main>);
  }else{
  void initialiseAppWorker();
@@ -25,7 +26,7 @@ if (root) {
  const showOffline=()=>{
   showingOffline=true;
   if(demoHost){renderer.render(<main className="min-h-dvh grid place-items-center p-5"><section className="max-w-md space-y-3"><h1 className="text-xl font-bold">Demo connection unavailable</h1><p>The demonstration requires an online connection. Reconnect and reload to continue.</p></section></main>);return;}
-  void import('./pages/learning/OfflineReader').then(({default:OfflineReader})=>{if(showingOffline)renderer.render(<OfflineReader/>);});
+  renderer.render(<OfflineReader/>);
  };
  // Only show saved learning when the device is genuinely offline. A failed
  // module load while online (e.g. preview/dev server restarting or a new
