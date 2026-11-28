@@ -609,13 +609,13 @@ export default function DashboardSidebar({collapsed: collapsedProp, onCollapsedC
   const sidebarContent = (
     <>
       {/* Brand */}
-      <div className="flex min-h-16 items-center gap-2 px-3 py-2 border-b border-sidebar-border">
-        <Link to={ROLE_HOME[user.role]} aria-label="UniPathway dashboard home" className={`flex min-w-0 items-center rounded-lg bg-white p-1.5 focus-visible:ring-2 focus-visible:ring-sidebar-ring ${collapsed?'shrink-0':'flex-1'}`}>
-          <BrandLogo compact={collapsed} className={collapsed?'size-8':'h-8 w-full max-w-[9.5rem]'}/>
-        </Link>
-        {!collapsed && (
-          <span className="min-w-0 max-w-[5.25rem] break-words text-[10px] leading-tight text-sidebar-foreground/80 font-medium">{isLandlord ? 'Platform Owner' : ROLE_LABELS[user.role]}</span>
-        )}
+      <div className={`flex min-h-16 items-center gap-2 py-2 border-b border-sidebar-border ${collapsed?'justify-center px-1':'px-3'}`}>
+        <div className={collapsed?'shrink-0':'min-w-0 flex-1 space-y-1'}>
+          <Link to={ROLE_HOME[user.role]} aria-label="UniPathway dashboard home" className="flex min-w-0 items-center rounded-lg bg-white p-1.5 focus-visible:ring-2 focus-visible:ring-sidebar-ring">
+            <BrandLogo compact={collapsed} className={collapsed?'size-8':'h-9 max-w-full'}/>
+          </Link>
+          {!collapsed&&<p className="min-w-0 break-words px-1 text-xs leading-tight text-sidebar-foreground/80 font-medium">{isLandlord?'Platform Owner':ROLE_LABELS[user.role]}</p>}
+        </div>
         {/* Mobile close */}
         <button
           onClick={() => setMobileOpen(false)}
