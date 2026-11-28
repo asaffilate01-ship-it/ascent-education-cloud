@@ -31,3 +31,16 @@ Use these as architectural references, not as evidence of active integrations. K
 ## Acceptance gate
 
 The checked-in regression tests cover UI role selection, verified membership and demo origin restrictions, public SEO and icon format. They do not prove hosting, live database connectivity, operational provider credentials or complete dashboard functionality. Complete real-account acceptance before claiming the demo or all integrations are operational.
+
+
+## Protected demo acceptance workflow
+
+After the isolated demo is provisioned, use the manual GitHub Actions workflow **UniPathway Isolated Demo Acceptance (Manual)** from main. Configure the protected `unipathway-demo` environment with approved deployment reviewers before entering any secret.
+
+Variables: `UNIPATHWAY_DEMO_PROJECT_REF`, `UNIPATHWAY_PRODUCTION_PROJECT_REF`, `UNIPATHWAY_DEMO_USER_ID`, `UNIPATHWAY_DEMO_TENANT_ID`.
+
+Secrets: `UNIPATHWAY_DEMO_URL`, `UNIPATHWAY_DEMO_PUBLISHABLE_KEY`, `UNIPATHWAY_DEMO_ACCOUNT_PASSWORD`. The workflow accepts only a publishable or matching legacy anon key, never a service-role key.
+
+The approved fictional centre must use slug `unipathway-demo`. The confirmed demo identity must be tagged by the trusted administrator with app_metadata.fixture_namespace = unipathway-demo-v1. The check verifies the expected account ID, profile, exact role memberships and centre, and an HTTP noindex header at the separate demo origin. It uses real password authentication and locally signs out; it creates or changes no application records. It cannot establish complete demo data isolation from inspection of those few fields; that must be independently certified before providing credentials. It will fail if the demo's applicable institutional authentication/MFA policies prevent the read. Do not weaken MFA to make this check pass. Use separately authorised real-account browser acceptance for MFA, all 21 dashboards, feature flows and provider safety.
+
+To run, explicitly enter UNIPATHWAY_ISOLATED_DEMO_ONLY in the manual workflow. No workflow is triggered automatically by merging this release. Do not mark the demo active unless its independent isolation and full functional acceptance are verified.
