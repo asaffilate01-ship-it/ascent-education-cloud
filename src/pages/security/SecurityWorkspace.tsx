@@ -1,4 +1,4 @@
-import {useEffect,useState} from 'react';
+import {useEffect,useState,useRef} from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {useAuth} from '@/contexts/AuthContext';
 import {db} from '@/lib/db';
@@ -17,6 +17,8 @@ function SecurityDesk(){
  const [cameras,setCameras]=useState<Camera[]>([]),[refresh,setRefresh]=useState(0),[loading,setLoading]=useState(true),[error,setError]=useState('');
  const [selected,setSelected]=useState(''),[mode,setMode]=useState<'live'|'playback'>('live'),[start,setStart]=useState(''),[end,setEnd]=useState(''),[reason,setReason]=useState('');
  const [session,setSession]=useState<Session|null>(null),[busy,setBusy]=useState(false),[mediaError,setMediaError]=useState(false);
+ const operation=useRef(false),mounted=useRef(true);
+ useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;};},[]);
  const [draft,setDraft]=useState({name:'',location:'',provider_camera_id:'',enabled:false,security_live:false,security_playback:false});
  useEffect(()=>{
   let active=true;setLoading(true);setError('');setCameras([]);setSelected('');setSession(null);
@@ -35,24 +37,24 @@ function SecurityDesk(){
  useEffect(()=>{if(!session)return;const timer=setTimeout(()=>{setSession(null);toast.info('Viewing session expired. Request a new session to continue.');},Math.max(0,Date.parse(session.expiresAt)-Date.now()));return()=>clearTimeout(timer);},[session]);
  const camera=cameras.find(c=>c.id===selected);
  async function open(){
-  if(!verified||!camera||!camera.enabled||busy||(!manager&&!(mode==='live'?camera.security_live:camera.security_playback)))return;
+  if(!verified||loading||!camera||!camera.enabled||busy||operation.current||(!manager&&!(mode==='live'?camera.security_live:camera.security_playback)))return;
   if(mode==='playback'){
    const from=Date.parse(start),to=Date.parse(end);
-   if(!reason.trim()||reason.trim().length<5||!Number.isFinite(from)||!Number.isFinite(to)||to<=from||to-from>86_400_000){
-    setError('Playback requires a valid time range of no more than 24 hours and an incident or review reason.');
+   if(!reason.trim()||reason.trim().length<5||!Number.isFinite(from)||!Number.isFinite(to)||to<=from||to>Date.now()||to-from>86_400_000){
+    setError('Playback requires a past time range of no more than 24 hours and an incident or review reason.');
     return;
    }
   }
-  setBusy(true);setSession(null);setMediaError(false);setError('');try{
+  operation.current=true;setBusy(true);setSession(null);setMediaError(false);setError('');try{
   const result=await supabase.functions.invoke('cctv-access',{body:{cameraId:camera.id,mode,startsAt:mode==='playback'?new Date(start).toISOString():null,endsAt:mode==='playback'?new Date(end).toISOString():null,reason:mode==='playback'?reason.trim():null}});
   if(result.error){let message='CCTV is unavailable. Ask your administrator to check the gateway connection.';try{message=(await result.error.context.json()).error||message;}catch{/* Non-JSON provider errors retain the safe fallback message. */}throw Error(message);}
   if(!result.data?.url||!result.data?.expiresAt)throw Error('No viewing session returned.');
   const stream=new URL(result.data.url);
   const expiry=Date.parse(result.data.expiresAt);
-  if(stream.protocol!=='https:'||!Number.isFinite(expiry)||expiry<=Date.now())
+  if(stream.protocol!=='https:'||stream.username||stream.password||!Number.isFinite(expiry)||expiry<=Date.now()||expiry>Date.now()+15*60000||!['video/mp4','application/vnd.apple.mpegurl'].includes(result.data.mimeType))
    throw Error('The camera provider did not return a current secure viewing session.');
-  setSession(result.data);
- }catch(e){setError(e instanceof Error?e.message:'Unable to open camera');}finally{setBusy(false);}}
+  if(mounted.current)setSession({url:stream.href,expiresAt:result.data.expiresAt,mimeType:result.data.mimeType});
+ }catch(e){if(mounted.current)setError(e instanceof Error?e.message:'Unable to open camera');}finally{operation.current=false;if(mounted.current)setBusy(false);}}
  async function save(){if(!manager||!user?.tenantId||busy)return;setBusy(true);try{const result=await db.from('unipathway_cctv_cameras').insert({...draft,tenant_id:user.tenantId}).select('id,tenant_id').single();
   if(result.error||!result.data?.id||result.data.tenant_id!==user.tenantId)throw Error('Camera registration was not confirmed for this centre.');setDraft({name:'',location:'',provider_camera_id:'',enabled:false,security_live:false,security_playback:false});setRefresh(n=>n+1);toast.success('Camera registered');}catch{toast.error('Camera could not be saved. Check the centre and camera reference.');}finally{setBusy(false);}}
  return <DashboardLayout title="Security · CCTV" subtitle="Authorised live view and recorded playback">
@@ -60,11 +62,11 @@ function SecurityDesk(){
   {!verified&&<p role="alert" className="mb-4 rounded-xl border p-4">An active, verified Security Officer or centre leadership role and a centre assignment are required.</p>}
   {verified&&loading&&<p role="status">Loading centre cameras…</p>}
   {error&&<p role="alert" className="mb-4 rounded-xl border border-destructive p-4">{error}</p>}
-  {verified&&!loading&&!cameras.length&&<p className="mb-4 rounded-xl border p-5">No cameras are available to this account. A centre administrator must register cameras and grant access.</p>}
-  {verified&&<section className="grid gap-4 rounded-2xl border bg-card p-5 sm:grid-cols-2">
+  {verified&&!loading&&!error&&!cameras.length&&<p className="mb-4 rounded-xl border p-5">No cameras are available to this account. A centre administrator must register cameras and grant access.</p>}
+  {verified&&<section className="grid min-w-0 gap-4 rounded-2xl border bg-card p-3 sm:p-5 sm:grid-cols-2">
    <label className="text-sm font-semibold">Camera<select disabled={busy} className="mt-1 min-h-11 w-full rounded-lg border bg-background p-2" value={selected} onChange={e=>{setSelected(e.target.value);setSession(null);}}><option value="">Select a camera</option>{cameras.map(c=><option key={c.id} value={c.id}>{c.name} — {c.location}{!c.enabled?' (disabled)':''}</option>)}</select></label>
    <label className="text-sm font-semibold">View<select disabled={busy} className="mt-1 min-h-11 w-full rounded-lg border bg-background p-2" value={mode} onChange={e=>{setMode(e.target.value as 'live'|'playback');setSession(null);}}><option value="live">Live</option><option value="playback">Playback</option></select></label>
-   {mode==='playback'&&<><label>From (your device timezone)<Input type="datetime-local" value={start} onChange={e=>setStart(e.target.value)}/></label><label>To (maximum 24 hours)<Input type="datetime-local" value={end} onChange={e=>setEnd(e.target.value)}/></label><label className="sm:col-span-2">Reason for playback<Input value={reason} maxLength={500} onChange={e=>setReason(e.target.value)} placeholder="Incident or review reference"/></label></>}
+   {mode==='playback'&&<><label>From (your device timezone)<Input disabled={busy} type="datetime-local" value={start} onChange={e=>setStart(e.target.value)}/></label><label>To (maximum 24 hours)<Input disabled={busy} type="datetime-local" value={end} onChange={e=>setEnd(e.target.value)}/></label><label className="sm:col-span-2">Reason for playback<Input disabled={busy} value={reason} maxLength={500} onChange={e=>setReason(e.target.value)} placeholder="Incident or review reference"/></label></>}
    <Button disabled={busy||!camera?.enabled||(!manager&&!(mode==='live'?camera?.security_live:camera?.security_playback))||(mode==='playback'&&(!start||!end||reason.trim().length<5))} onClick={()=>void open()}>{busy?'Requesting…':mode==='live'?'Open live view':'Open playback'}</Button>
    {session&&<div className="sm:col-span-2"><video key={session.url} controls autoPlay muted playsInline controlsList="nodownload" onError={()=>setMediaError(true)} className="aspect-video w-full rounded-xl bg-black"><source src={session.url} type={session.mimeType}/></video><Button className="mt-3" variant="outline" onClick={()=>setSession(null)}>Stop viewing</Button>{mediaError&&<p role="alert">This stream cannot play in your browser. Ask your CCTV administrator for a supported media format.</p>}</div>}
   </section>}
