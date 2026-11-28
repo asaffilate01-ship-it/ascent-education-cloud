@@ -1,0 +1,34 @@
+name: UniPathway Isolated Demo Acceptance (Manual)
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type UNIPATHWAY_ISOLATED_DEMO_ONLY'
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  verify-demo:
+    if: inputs.confirmation == 'UNIPATHWAY_ISOLATED_DEMO_ONLY' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    environment: unipathway-demo
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 24, cache: npm}
+      - run: npm ci --ignore-scripts
+      - name: Verify the existing fictional demo account without provisioning or provider actions
+        run: node scripts/verify-unipathway-demo.mjs
+        env:
+          APP_ENV: demo
+          DEMO_RUN_ACK: ${{ inputs.confirmation }}
+          DEMO_PROJECT_REF: ${{ vars.UNIPATHWAY_DEMO_PROJECT_REF }}
+          UNIPATHWAY_PRODUCTION_PROJECT_REF: ${{ vars.UNIPATHWAY_PRODUCTION_PROJECT_REF }}
+          DEMO_ORIGIN: https://demo.unipathway.pk
+          DEMO_SUPABASE_URL: ${{ secrets.UNIPATHWAY_DEMO_URL }}
+          DEMO_PUBLISHABLE_KEY: ${{ secrets.UNIPATHWAY_DEMO_PUBLISHABLE_KEY }}
+          DEMO_USER_ID: ${{ vars.UNIPATHWAY_DEMO_USER_ID }}
+          DEMO_TENANT_ID: ${{ vars.UNIPATHWAY_DEMO_TENANT_ID }}
+          DEMO_ACCOUNT_PASSWORD: ${{ secrets.UNIPATHWAY_DEMO_ACCOUNT_PASSWORD }}
