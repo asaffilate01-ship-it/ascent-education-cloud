@@ -3,7 +3,7 @@ import {Link} from 'react-router-dom';
 import {ROLE_LABELS} from '@/contexts/AuthContext';
 import {KNOWN_UNIPATHWAY_ROLES} from '@/lib/roleMembership';
 import {roleDescriptions} from '@/components/auth/WorkspaceRolePicker';
-import {demoLoginUrl} from '@/lib/demoAccess';
+import {demoLoginUrl,DEMO_ACCOUNT_EMAIL} from '@/lib/demoAccess';
 import {matchesLocalSearch} from '@/lib/localSearch';
 import type {UserRole} from '@/types/platform';
 import BrandLogo from '@/components/BrandLogo';
@@ -17,6 +17,7 @@ export default function DemoPage(){
  return <main className="min-h-dvh bg-secondary/40 px-4 py-8 sm:px-8 lg:py-12"><div className="mx-auto max-w-6xl space-y-6">
   <header className="flex flex-wrap items-center justify-between gap-3"><Link to="/" className="inline-flex rounded-xl bg-white p-3 shadow-sm"><BrandLogo className="h-10 max-w-full"/></Link><Button asChild variant="outline"><Link to="/login">Institutional sign-in</Link></Button></header>
   <section className="rounded-2xl border bg-card p-5 sm:p-8"><p className="flex items-center gap-2 text-sm font-semibold text-primary"><ShieldCheck className="size-5" aria-hidden="true"/> Separate demonstration workspace</p><h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Experience UniPathway by role</h1><p className="mt-3 max-w-2xl text-muted-foreground">Choose from all 21 role-specific workspaces. A connected demo uses fictional accounts and sample records, not live student, payroll or staff information.</p>
+   {href&&<p className="mt-4 rounded-lg border p-3 text-sm">Demo sign-in: <strong>{DEMO_ACCOUNT_EMAIL}</strong>. Use the password provided by the authorised demo administrator.</p>}
    {!href&&<p role="status" className="mt-4 rounded-lg border p-3 text-sm">Role selection is available. The isolated demo sign-in is not activated yet. No production permissions are granted here.</p>}
    <label className="mt-5 block max-w-xl text-sm font-medium">Find a demo role<input type="search" maxLength={120} value={search} onChange={e=>setSearch(e.target.value)} className="mt-1 min-h-11 w-full rounded-lg border bg-background px-3 py-2" placeholder="e.g. Lecturer, Student, Finance"/></label>
    <fieldset className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3"><legend className="sr-only">Choose a demo role</legend>{roles.map(r=><label key={r} className={'flex min-w-0 cursor-pointer items-start gap-3 rounded-xl border p-4 focus-within:ring-2 focus-within:ring-ring '+(role===r?'border-primary bg-primary/5':'bg-background hover:bg-accent/40')}><input type="radio" name="demo-role" checked={role===r} onChange={()=>setRole(r)} className="mt-1 size-4 shrink-0 accent-primary"/><span className="min-w-0"><span className="block font-semibold">{ROLE_LABELS[r]}</span><span className="mt-1 block text-sm text-muted-foreground">{roleDescriptions[r]}</span></span></label>)}</fieldset>
