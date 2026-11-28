@@ -8,3 +8,19 @@ export function demoLoginUrl(config:unknown,role:string):string|null{
   const target=new URL('/login',url.origin);target.searchParams.set('role',role);target.searchParams.set('demo','1');return target.href;
  }catch{return null;}
 }
+
+export const DEMO_ACCOUNT_EMAIL='demo@unipathway.pk';
+const LIVE_PROJECT_REF='sthrhcmjypwuorlbscfw';
+export function isDemoAccount(email:unknown):boolean{
+ return typeof email==='string'&&email.trim().toLowerCase()===DEMO_ACCOUNT_EMAIL;
+}
+/** Client-side defence only. The demo identity must never be provisioned in
+ * production; server permissions and a separate project enforce isolation. */
+export function isolatedDemoDeployment(host:string,url:unknown,ref:unknown):boolean{
+ if(host!=='demo.unipathway.pk'||typeof ref!=='string'||!(/^[a-z0-9]{20}$/).test(ref)||ref===LIVE_PROJECT_REF||typeof url!=='string')return false;
+ try{const u=new URL(url);return u.origin==='https://'+ref+'.supabase.co'&&u.pathname==='/'&&!u.username&&!u.password&&!u.search&&!u.hash;}catch{return false;}
+}
+export function demoIdentityAllowed(email:unknown):boolean{
+ if(!isDemoAccount(email))return true;
+ return typeof window!=='undefined'&&isolatedDemoDeployment(window.location.hostname,import.meta.env.VITE_SUPABASE_URL,import.meta.env.VITE_UNIPATHWAY_DEMO_PROJECT_REF);
+}
