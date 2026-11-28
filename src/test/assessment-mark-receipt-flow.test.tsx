@@ -156,7 +156,7 @@ it.each(['read error', 'null data', 'null row', 'duplicate rows', 'invalid revis
   await waitFor(() => expect(screen.getByLabelText('Individual written feedback')).toHaveValue('Saved feedback for the second learner'));
   mock.override.mockImplementation((query: Query) => {
     if (query.table !== 'uni_marking_drafts' || !hasFilter(query, 'attempt_id', ONE)) return undefined;
-    if (query.limit === 1 || defect === 'read error') return {data: null, error: {message: 'Saved-draft connection interrupted'}};
+    if (query.columns.startsWith('criteria,feedback') || defect === 'read error') return {data: null, error: {message: 'Saved-draft connection interrupted'}};
     if (defect === 'null data') return {data: null, error: null};
     if (defect === 'null row') return {data: [null], error: null};
     if (defect === 'duplicate rows') return {data: [savedDraft(), savedDraft()], error: null};
@@ -263,4 +263,73 @@ it('does not replace the next submission fields with an older in-flight draft re
   render(<App/>); await screen.findByText('Original evidence for submission 1'); fireEvent.click(screen.getByText('Force other selection')); await waitFor(() => expect(screen.getByLabelText('Individual written feedback')).toHaveValue('Saved feedback for the second learner'));
   fireEvent.change(screen.getByLabelText('Individual written feedback'), {target: {value: 'New second learner draft'}}); await act(async () => pending.resolve({data: [savedDraft(ONE, 'Stale first learner draft')], error: null}));
   expect(screen.getByLabelText('Individual written feedback')).toHaveValue('New second learner draft'); expect(screen.queryByDisplayValue('Stale first learner draft')).toBeNull();
+});
+
+
+describe('allocated assessment refresh and current rubric safety',()=>{
+ const refresh=()=>screen.getByRole('button',{name:'Refresh allocated assessments'});
+ it('reopens the checked rubric and latest private draft after refreshing the allocated queue',async()=>{
+  await open();
+  const pending=deferred<Reply>();
+  mock.override.mockImplementation((query:Query)=>query.table===ALLOCATIONS?pending.promise:undefined);
+  fireEvent.click(refresh());
+  expect(refresh()).toBeDisabled();
+  expect(screen.queryByLabelText('Individual written feedback')).toBeNull();
+  expect(mock.rpc).not.toHaveBeenCalled();
+  mock.tables.uni_marking_drafts=[savedDraft(ONE,'Updated private feedback from another authorised session.')];
+  mock.override.mockReset();
+  await act(async()=>pending.resolve({data:mock.tables[ALLOCATIONS],error:null}));
+  expect(await screen.findByLabelText('Individual written feedback')).toHaveValue('Updated private feedback from another authorised session.');
+  expect(mock.rpc).not.toHaveBeenCalled();
+ });
+ it('does not discard edits when the marker declines refresh',async()=>{
+  await open();
+  fireEvent.change(screen.getByLabelText('Individual written feedback'),{target:{value:'Retain my unsaved assessment notes.'}});
+  vi.mocked(window.confirm).mockReturnValueOnce(false);
+  const count=mock.queries.length;
+  fireEvent.click(refresh());
+  expect(screen.getByLabelText('Individual written feedback')).toHaveValue('Retain my unsaved assessment notes.');
+  expect(mock.queries.length).toBe(count);
+ });
+ it('removes revoked allocated work on refresh rather than reopening the previous editor',async()=>{
+  await open();
+  mock.tables[ALLOCATIONS]=mock.tables[ALLOCATIONS].filter(row=>row.attempt_id!==ONE);
+  fireEvent.click(refresh());
+  await screen.findByText(/Select an authorised submission/);
+  expect(screen.queryByLabelText('Individual written feedback')).toBeNull();
+  expect(screen.queryByText('Original evidence for submission 1')).toBeNull();
+  expect(mock.rpc).not.toHaveBeenCalled();
+ });
+ it('fails closed for a duplicate saved draft or a rubric-incompatible saved score',async()=>{
+  mock.tables.uni_marking_drafts=[savedDraft(),savedDraft()];
+  render(<App/>);
+  await screen.findByText(/Saved draft could not be checked/);
+  expect(screen.queryByLabelText('Individual written feedback')).toBeNull();
+  mock.tables.uni_marking_drafts=[{...savedDraft(),criteria:{A:{...criterion('A'),points:51},B:criterion('B')}}];
+  fireEvent.click(refresh());
+  await screen.findByText(/Saved draft could not be checked/);
+  expect(screen.queryByLabelText('Individual written feedback')).toBeNull();
+  expect(mock.rpc).not.toHaveBeenCalled();
+  mock.tables.uni_marking_drafts=[savedDraft()];
+  fireEvent.click(refresh());await screen.findByLabelText('Individual written feedback');expect(send()).toBeEnabled();
+ });
+ it('keeps refresh blocked during review confirmation and retains independent IQA gating',async()=>{
+  await open();const dialog=await review();
+  expect(refresh()).toBeDisabled();
+  expect(mock.rpc).not.toHaveBeenCalled();
+  fireEvent.click(within(dialog).getByRole('button',{name:'Keep editing'}));
+  expect(refresh()).toBeEnabled();
+  expect(mock.rpc).not.toHaveBeenCalled();
+ });
+ it('blocks a mark or resubmission after an unconfirmed draft save until reconciliation',async()=>{
+  await open();
+  fireEvent.change(screen.getByLabelText('Individual written feedback'),{target:{value:feedback+' Keep this unsaved addition.'}});
+  mock.rpc.mockResolvedValueOnce({data:null,error:null});
+  fireEvent.click(screen.getByRole('button',{name:'Save private draft'}));
+  await screen.findByText(/Save receipt did not match/);
+  expect(send()).toBeDisabled();
+  expect(screen.getByRole('button',{name:'Request permitted revision'})).toBeDisabled();
+  expect(mock.rpc).toHaveBeenCalledTimes(1);
+  expect(screen.getByLabelText('Individual written feedback')).toHaveValue(feedback+' Keep this unsaved addition.');
+ });
 });
