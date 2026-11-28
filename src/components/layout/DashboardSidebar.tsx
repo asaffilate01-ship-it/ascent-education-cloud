@@ -5,7 +5,7 @@ import {workspacePath} from '@/lib/workspaceContext';
 import { toast } from 'sonner';
 import { useAuth, ROLE_LABELS, ROLE_HOME } from '@/contexts/AuthContext';
 import { UserRole } from '@/types/platform';
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Building2, CreditCard, Shield,
   GraduationCap, BookOpen, Video, ClipboardList, ClipboardCheck, BarChart3,
