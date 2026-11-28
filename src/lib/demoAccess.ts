@@ -23,7 +23,7 @@ export function isolatedDemoDeployment(host:string,url:unknown,ref:unknown):bool
  try{const u=new URL(url);return u.origin==='https://'+ref+'.supabase.co'&&u.pathname==='/'&&!u.username&&!u.password&&!u.search&&!u.hash;}catch{return false;}
 }
 export function demoIdentityAllowed(email:unknown):boolean{
- return typeof window!=='undefined'&&signInBoundary(email,window.location.hostname,import.meta.env.VITE_SUPABASE_URL,import.meta.env.VITE_UNIPATHWAY_DEMO_PROJECT_REF);
+ return typeof window==='undefined'?!isDemoAccount(email):signInBoundary(email,window.location.hostname,import.meta.env.VITE_SUPABASE_URL,import.meta.env.VITE_UNIPATHWAY_DEMO_PROJECT_REF);
 }
 
 /** URL preferences may select an existing role, never grant a membership. */
@@ -36,4 +36,13 @@ export function signInBoundary(email:unknown,host:string,url:unknown,ref:unknown
  const demoHost=host==='demo.unipathway.pk';
  if(demoHost)return isolatedDemoDeployment(host,url,ref)&&isDemoAccount(email);
  return !isDemoAccount(email);
+}
+
+export function demoDeploymentBlocked(host:string,url:unknown,ref:unknown):boolean{
+ return host==='demo.unipathway.pk'&&!isolatedDemoDeployment(host,url,ref);
+}
+/** Shared fictional credentials are managed by the demo administrator, not
+ * by public registration, password recovery or account-editing screens. */
+export function demoAccountActionsBlocked(email:unknown,host:string):boolean{
+ return host==='demo.unipathway.pk'||isDemoAccount(email);
 }
