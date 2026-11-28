@@ -1,4 +1,5 @@
-import {useEffect,useState} from 'react';
+import {useEffect,useMemo,useState} from 'react';
+import {matchesLocalSearch} from '@/lib/localSearch';
 import {useAuth} from '@/contexts/AuthContext';
 import {db} from '@/lib/db';
 import {Button} from '@/components/ui/button';
@@ -27,7 +28,7 @@ function RegisterView({tenant,writer}:{tenant:string|null;writer:boolean}){
  const [state,setState]=useState<{revision:number;data:FacilityRegister|null;error:boolean}>({revision:-1,data:null,error:false});
  const [search,setSearch]=useState('');
  const [filter,setFilter]=useState('all');
- const [selected,setSelected]=useState('');
+ const [selected,setSelected]=useState(''),[page,setPage]=useState(0);
  useEffect(()=>{
   if(!permitted||!tenant)return;
   let active=true;
@@ -46,16 +47,17 @@ function RegisterView({tenant,writer}:{tenant:string|null;writer:boolean}){
  const failed=state.revision===revision&&state.error;
  const waiting=permitted&&!snapshot&&!failed;
  const today=pakistanCalendarDate();
- const rows=snapshot?facilitiesMaintenanceRows(snapshot,today):[];
+ const rows=useMemo(()=>snapshot?facilitiesMaintenanceRows(snapshot,today):[],[snapshot,today]);
  const counts=maintenanceCounts(rows);
  const visible=rows.filter(row=>{
   const a=row.asset;
-  const matches=[a.asset_code,a.category.replace(/_/g,' '),a.location].join(' ').toLowerCase().includes(search.trim().toLowerCase());
+  const matches=matchesLocalSearch([a.asset_code,a.category.replace(/_/g,' '),a.location].join(' '),search);
   return matches&&(filter==='all'||(filter==='defects'&&row.recordedDefect)||(filter==='due'&&['overdue','due_today'].includes(row.timing))||(filter==='unverified'&&row.needsEvidence)||row.timing===filter);
  });
- const asset=snapshot?.assets.find(a=>a.id===selected);
+ const pages=Math.max(1,Math.ceil(visible.length/20)),current=Math.min(page,pages-1);
+ const asset=visible.find(r=>r.asset.id===selected)?.asset;
  const history=snapshot?.inspections.filter(i=>i.asset_id===selected)??[];
- return <section className="mt-5 rounded-xl border bg-card p-5" aria-labelledby="facilities-register-title">
+ return <section className="mt-5 min-w-0 rounded-xl border bg-card p-3 sm:p-5" aria-labelledby="facilities-register-title">
   <div className="flex flex-wrap items-center justify-between gap-3"><h2 id="facilities-register-title" className="font-semibold">Facilities register</h2>{permitted&&<Button variant="outline" disabled={waiting} onClick={()=>setRevision(n=>n+1)}>Refresh register</Button>}</div>
   {!permitted&&<p className="mt-3 text-sm text-muted-foreground">Persistent facilities records are not enabled for this session. No records have been fetched.</p>}
   {waiting&&<p role="status" className="mt-3 text-sm">Verifying centre facilities records…</p>}
@@ -69,13 +71,14 @@ function RegisterView({tenant,writer}:{tenant:string|null;writer:boolean}){
    <div className="mt-4 rounded-xl border p-3 sm:p-4">
     <h3 className="font-semibold">Maintenance and inspection review queue</h3>
     <p className="mt-2 text-sm text-muted-foreground">Latest recorded defects appear first, followed by inspection dates. Categories can overlap. A recorded outcome is not an independent safety certification; the queue does not issue alerts or confirm completed repairs.</p>
-    <div className="mt-3 grid min-w-0 gap-3 sm:grid-cols-2"><label className="block min-w-0 text-sm font-medium">Find an asset<Input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Asset reference, category or location"/></label><label className="block min-w-0 text-sm font-medium">Inspection review filter<select className="mt-1 min-h-11 w-full min-w-0 rounded-lg border bg-background px-3" value={filter} onChange={e=>setFilter(e.target.value)}>{filters.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label></div>
-    <div className="mt-3 flex flex-wrap items-center justify-between gap-3"><p role="status" className="text-sm text-muted-foreground">{visible.length} of {rows.length} registered assets shown · Pakistan date: {today}</p>{(search||filter!=='all')&&<Button variant="outline" onClick={()=>{setSearch('');setFilter('all');}}>Clear filters</Button>}</div>
+    <div className="mt-3 grid min-w-0 gap-3 sm:grid-cols-2"><label className="block min-w-0 text-sm font-medium">Find an asset<Input type="search" maxLength={120} value={search} onChange={e=>{setSearch(e.target.value);setPage(0);setSelected('');}} placeholder="Asset reference, category or location"/></label><label className="block min-w-0 text-sm font-medium">Inspection review filter<select className="mt-1 min-h-11 w-full min-w-0 rounded-lg border bg-background px-3" value={filter} onChange={e=>{setFilter(e.target.value);setPage(0);setSelected('');}}>{filters.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label></div>
+    <div className="mt-3 flex flex-wrap items-center justify-between gap-3"><p role="status" className="text-sm text-muted-foreground">{visible.length} of {rows.length} registered assets shown · Pakistan date: {today}</p>{(search||filter!=='all')&&<Button variant="outline" onClick={()=>{setSearch('');setFilter('all');setPage(0);setSelected('');}}>Clear filters</Button>}</div>
    </div>
    {!visible.length&&<p className="mt-3 text-sm">{snapshot.assets.length?'No matching assets.':'No registered assets were returned for this verified centre.'}</p>}
-   <div className="mt-3 divide-y">{visible.map(({asset:a,latest,dueDate,timing})=>{
+   <div className="mt-3 divide-y">{visible.slice(current*20,current*20+20).map(({asset:a,latest,dueDate,timing})=>{
     return <article key={a.id} className="flex flex-wrap items-center justify-between gap-3 py-3"><div className="min-w-0 flex-1 break-words"><p className="font-medium">{a.asset_code} · {a.category.replace(/_/g,' ')}</p><p className="text-sm text-muted-foreground">{a.location} · {dueDate?'Inspection due '+dueDate+' ('+timingLabels[timing]+')':timingLabels[timing]}</p><p className="text-sm">{latest?'Latest recorded outcome: '+latest.outcome.replace(/_/g,' '):'No inspection recorded'}</p></div><Button variant="outline" onClick={()=>setSelected(s=>s===a.id?'':a.id)} aria-expanded={selected===a.id}>{selected===a.id?'Close history':'View history'}</Button></article>;
    })}</div>
+   {pages>1&&<nav aria-label="Facilities register pages" className="mt-4 flex flex-wrap items-center gap-3"><Button variant="outline" disabled={current===0} onClick={()=>{setPage(current-1);setSelected('');}}>Previous assets</Button><span className="text-sm">Page {current+1} of {pages}</span><Button variant="outline" disabled={current+1>=pages} onClick={()=>{setPage(current+1);setSelected('');}}>Next assets</Button></nav>}
    {asset&&<section className="mt-4 rounded-lg border p-4" aria-label={`Inspection history for ${asset.asset_code}`}><h3 className="font-semibold">Inspection history — {asset.asset_code}</h3>{history.length===0&&<p className="mt-2 text-sm">No inspection history recorded.</p>}{history.map(i=><article key={i.id} className="border-b py-3 last:border-0"><p className="font-medium">{i.inspected_on} · {i.outcome.replace(/_/g,' ')}</p><p className="whitespace-pre-wrap break-words text-sm">{i.notes}</p>{i.next_due_date&&<p className="text-sm text-muted-foreground">Next due: {i.next_due_date}</p>}</article>)}</section>}
   </>}
  </section>;
