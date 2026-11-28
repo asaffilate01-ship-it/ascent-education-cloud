@@ -6,7 +6,7 @@ import {institutionalEmail} from '@/lib/institutionalAuth';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Eye,EyeOff,ShieldCheck} from 'lucide-react';
-import {demoIdentityAllowed,DEMO_ACCOUNT_EMAIL,isolatedDemoDeployment} from '@/lib/demoAccess';
+import {demoIdentityAllowed,DEMO_ACCOUNT_EMAIL,isolatedDemoDeployment,demoAccountActionsBlocked} from '@/lib/demoAccess';
 import WorkspaceRolePicker from '@/components/auth/WorkspaceRolePicker';
 import BrandLogo from '@/components/BrandLogo';
 
@@ -20,6 +20,7 @@ export default function InstitutionalLogin(){
  const [reload,setReload]=useState(0),[assured,setAssured]=useState(false);
  const lock=useRef(false),generation=useRef(0),alive=useRef(false);
  const principal=session?.user.id;
+ const sharedDemo=demoAccountActionsBlocked(session?.user.email,window.location.hostname);
  useEffect(()=>{alive.current=true;return()=>{alive.current=false;generation.current++;};},[]);
  useEffect(()=>{
   const token=++generation.current;
@@ -60,7 +61,7 @@ export default function InstitutionalLogin(){
   });
  }
  function enrol(){void run(async()=>{
-  if(!principal||!factors||factors.length||setup)return;
+  if(!principal||!factors||factors.length||setup||sharedDemo)return;
   const token=generation.current;
   const result=await supabase.auth.mfa.enroll({factorType:'totp',friendlyName:'UniPathway authenticator',issuer:'UniPathway'});
   if(result.error||result.data.type!=='totp')throw Error();
@@ -94,7 +95,8 @@ export default function InstitutionalLogin(){
      <Button type="submit" className="min-h-12 w-full" disabled={busy}>{busy?'Checking credentials…':'Sign in'}</Button><Link to="/forgot-password" className="inline-flex min-h-11 items-center text-sm font-medium underline">Forgot your password?</Link>
     </form>:assured?<div className="space-y-3"><p role="status" className="text-sm">{authLoading?'Verifying assigned access…':user?'Opening your workspace…':'Verification completed; assigned access is not confirmed. Contact the authorised administrator.'}</p><Button type="button" variant="outline" disabled={busy} onClick={signOut}>Sign out</Button></div>:<>
      {!factors&&!error&&<p role="status" className="text-sm">Checking your verification methods…</p>}
-     {factors&&factors.length===0&&!setup&&<div className="space-y-3 rounded-xl border p-4"><h3 className="font-semibold">Set up your authenticator</h3><p className="text-sm text-muted-foreground">Use a trusted authenticator app. Keep the setup secret private. Your dashboard stays locked until verification is complete.</p><Button type="button" disabled={busy} onClick={enrol}>Set up authenticator app</Button></div>}
+     {sharedDemo&&factors&&factors.length===0&&!setup&&<p role="status" className="rounded-xl border p-4 text-sm">The demo administrator must configure the required authenticator. Institutional verification has not been bypassed.</p>}
+     {!sharedDemo&&factors&&factors.length===0&&!setup&&<div className="space-y-3 rounded-xl border p-4"><h3 className="font-semibold">Set up your authenticator</h3><p className="text-sm text-muted-foreground">Use a trusted authenticator app. Keep the setup secret private. Your dashboard stays locked until verification is complete.</p><Button type="button" disabled={busy} onClick={enrol}>Set up authenticator app</Button></div>}
      {setup&&<div className="space-y-2 rounded-xl border p-4"><p className="font-medium">Scan with your authenticator app</p><img src={setup.qr} alt="Authenticator setup QR code" className="mx-auto h-auto w-full max-w-48 bg-white p-2"/><details><summary className="cursor-pointer text-sm">Enter setup key manually</summary><p className="mt-2 break-all font-mono text-sm">{setup.secret}</p></details><p className="text-xs text-muted-foreground">Do not share this QR code or setup key. Enter your app's current six-digit code below.</p></div>}
      {(setup||!!factors?.length)&&<form className="space-y-3" onSubmit={verify}>
       {!setup&&factors&&factors.length>1&&<label className="block text-sm font-medium">Authenticator<select className="mt-1 block min-h-11 w-full rounded-lg border bg-background px-3" value={factorId} onChange={e=>setFactorId(e.target.value)}>{factors.map((f,i)=><option key={f.id} value={f.id}>{f.friendly_name||'Authenticator '+(i+1)}</option>)}</select></label>}
