@@ -1,4 +1,4 @@
-import {useEffect,useState} from 'react';
+import {useEffect,useMemo,useState} from 'react';
 import {Link} from 'react-router-dom';
 import {Button} from '@/components/ui/button';
 import BrandLogo from '@/components/BrandLogo';
@@ -20,13 +20,13 @@ function OperationalPanel({area}:{area:Area}){
  const {user}=useAuth();const access=settingsCapabilities(user);
  const tenant=user?.tenantId;
  const [revision,setRevision]=useState(0);
- const [state,setState]=useState<{loading:boolean;error:boolean;centre:{name:string;brand:string|null}|null;rows:ReturnType<typeof settingsIntegrationEvidence>}>({loading:false,error:false,centre:null,rows:[]});
+ const [state,setState]=useState<{loading:boolean;error:boolean;centre:{name:string;brand:string|null}|null}>({loading:!!tenant&&(area==='general'||(area==='integrations'&&access.integrations)),error:false,centre:null});
  const [now,setNow]=useState(Date.now());
  const [raw,setRaw]=useState<unknown[]>([]);
  const [search,setSearch]=useState(''),[requiredOnly,setRequiredOnly]=useState(false);
  useEffect(()=>{
   let active=true;const readCentre=!!tenant&&area==='general',readProviders=!!tenant&&area==='integrations'&&access.integrations;
-  setRaw([]);setState({loading:readCentre||readProviders,error:false,centre:null,rows:[]});
+  setRaw([]);setState({loading:readCentre||readProviders,error:false,centre:null});
   if(!tenant||(!readCentre&&!readProviders))return()=>{active=false;};
   void(async()=>{
    try{
@@ -34,17 +34,18 @@ function OperationalPanel({area}:{area:Area}){
      const result=await supabase.from('tenants').select('id,name,brand_name').eq('id',tenant).maybeSingle();
      const row=result.data;
      if(result.error||!row||row.id!==tenant||typeof row.name!=='string'||!row.name.trim()||!(row.brand_name===null||typeof row.brand_name==='string'))throw Error('Centre not verified');
-     if(active)setState({loading:false,error:false,centre:{name:row.name,brand:row.brand_name},rows:[]});
+     if(active)setState({loading:false,error:false,centre:{name:row.name,brand:row.brand_name}});
     }else{
      const rows=await pagedRows<unknown>(()=>db.from('production_integrations').select('id,tenant_id,integration_key,category,required_for_launch,status,last_health_at,last_error').eq('tenant_id',tenant),()=>active);
-     const verified=settingsIntegrationEvidence(rows,tenant,Date.now());
-     if(active){setRaw(rows);setNow(Date.now());setState({loading:false,error:false,centre:null,rows:verified});}
+     settingsIntegrationEvidence(rows,tenant,Date.now());
+     if(active){setRaw(rows);setNow(Date.now());setState({loading:false,error:false,centre:null});}
     }
-   }catch{if(active)setState({loading:false,error:true,centre:null,rows:[]});}
+   }catch{if(active)setState({loading:false,error:true,centre:null});}
   })();
   return()=>{active=false;};
  },[area,tenant,access.integrations,revision]);
  useEffect(()=>{if(area!=='integrations')return;const id=setInterval(()=>setNow(Date.now()),30000);return()=>clearInterval(id);},[area]);
+ const rows=useMemo(()=>area==='integrations'&&tenant&&!state.loading&&!state.error?settingsIntegrationEvidence(raw,tenant,now):[],[area,tenant,state.loading,state.error,raw,now]);
  const refresh=<Button variant="outline" disabled={state.loading} onClick={()=>setRevision(n=>n+1)}>Refresh records</Button>;
  const readiness=access.readinessPath&&access.centre?<Action to={access.readinessPath} label="Open production readiness"/>:null;
  if(area==='general')return <section className="space-y-4">
@@ -64,7 +65,6 @@ function OperationalPanel({area}:{area:Area}){
   {!access.studentPath&&!access.financePath&&!access.auditPath&&!readiness&&<p role="status">No centre-level reporting tools are available for this workspace.</p>}
  </section>;
  if(!access.integrations||!tenant)return <section className="space-y-3"><h3 className="text-lg font-semibold">Integration evidence</h3><p role="status">A verified centre leadership role and centre assignment are required to review provider health. Contact your administrator.</p></section>;
- const rows=state.loading||state.error?[]:settingsIntegrationEvidence(raw,tenant,now);
  const filtered=rows.filter(row=>(!requiredOnly||row.required)&&matchesLocalSearch([row.name,row.key,row.status].join(' '),search));
  return <section className="space-y-4"><div className="flex flex-wrap justify-between items-start gap-3"><div><h3 className="text-lg font-semibold">Integration evidence</h3><p className="text-sm text-muted-foreground">Recorded provider checks for this centre. No live health or activation is inferred from a configured record.</p></div>{refresh}</div>
   <div className="flex flex-wrap gap-2">{readiness}{access.director&&<Action to="/director/microsoft-education" label="Microsoft Education administration"/>}</div>
